@@ -1,0 +1,145 @@
+% File: chapters_part1/chap1_linguistics.tex
+
+\section{Nền tảng Ngôn ngữ học cho NLP}
+\label{sec:nen_tang_ngon_ngu_hoc}
+
+Trong kỷ nguyên của Học sâu, khi các mô hình Transformer khổng lồ dường như có thể "học" mọi thứ từ dữ liệu thô, một câu hỏi chính đáng được đặt ra: "Liệu kiến thức về Ngôn ngữ học có còn cần thiết?". Câu trả lời là một tiếng "Có" dứt khoát.
+
+Mặc dù chúng ta không còn phải viết tay các bộ quy tắc ngữ pháp phức tạp, việc hiểu các cấu trúc và nguyên lý cơ bản của ngôn ngữ mang lại những lợi ích to lớn:
+\begin{itemize}
+    \item \textbf{Thiết kế tác vụ (Task Design):} Giúp chúng ta định hình các bài toán NLP một cách có ý nghĩa. Ví dụ, tại sao "Nhận dạng Thực thể Tên" (NER) lại là một bài toán quan trọng? Vì "thực thể" là một khái niệm ngữ nghĩa cơ bản.
+    \item \textbf{Kỹ thuật đặc trưng (Feature Engineering):} Cung cấp ý tưởng cho các đặc trưng hữu ích, đặc biệt khi dữ liệu bị hạn chế.
+    \item \textbf{Phân tích lỗi (Error Analysis):} Giúp chúng ta hiểu tại sao một mô hình thất bại. Liệu nó thất bại vì không hiểu được cấu trúc cú pháp phức tạp, hay vì không giải quyết được sự đa nghĩa của từ?
+    \item \textbf{Đánh giá (Evaluation):} Giúp xây dựng các bộ dữ liệu đánh giá có thể kiểm tra các năng lực ngôn ngữ cụ thể của mô hình.
+\end{itemize}
+
+Mục này sẽ giới thiệu những khái niệm Ngôn ngữ học cốt lõi nhất, đóng vai trò là lăng kính để chúng ta nhìn vào các bài toán NLP trong suốt giáo trình này.
+
+\subsection{Các cấp độ phân tích ngôn ngữ: Hình thái học, Cú pháp, Ngữ nghĩa, Ngữ dụng}
+\label{ssec:cap_do_phan_tich}
+
+Ngôn ngữ học thường phân tích ngôn ngữ theo một hệ thống các cấp độ, đi từ đơn vị nhỏ nhất đến ý nghĩa trong bối cảnh rộng lớn nhất. Đây là một khung khái niệm vô cùng hữu ích để phân loại các bài toán NLP.
+
+\paragraph{1. Hình thái học (Morphology)}
+Là nghiên cứu về cấu trúc bên trong của từ. Hình thái học xem xét cách các từ được tạo thành từ những đơn vị có nghĩa nhỏ hơn gọi là \textbf{hình vị (morphemes)}.
+\begin{itemize}
+    \item \textbf{Ví dụ (tiếng Anh):} Từ \textit{unhappiness} được cấu tạo từ 3 hình vị: tiền tố \textit{un-} (phủ định), gốc từ \textit{happi} (hạnh phúc), và hậu tố \textit{-ness} (danh từ hóa).
+    \item \textbf{Ví dụ (tiếng Việt):} Tiếng Việt là một ngôn ngữ đơn lập (isolating language), nên cấu trúc hình thái không phức tạp như tiếng Anh. Tuy nhiên, khái niệm này vẫn có thể áp dụng cho các từ ghép như \textit{học sinh} (gồm hình vị \textit{học} và \textit{sinh}) hay \textit{nhà khoa học} (\textit{nhà-} + \textit{khoa học}).
+    \item \textbf{Ứng dụng trong NLP:} Lemmatization (đưa từ về dạng gốc, ví dụ: "running" $\rightarrow$ "run"), Stemming (cắt bỏ hậu tố), Phân tích hình thái.
+\end{itemize}
+
+\paragraph{2. Cú pháp (Syntax)}
+Là nghiên cứu về cách các từ kết hợp với nhau để tạo thành các cụm từ (phrases) và câu (sentences) đúng ngữ pháp. Cú pháp tập trung vào \textbf{quy tắc cấu trúc} của câu.
+\begin{itemize}
+    \item \textbf{Ví dụ:} Câu "Con mèo đuổi con chuột" là đúng cú pháp tiếng Việt. Câu *"Mèo con chuột con đuổi"* thì không, mặc dù các từ vẫn giữ nguyên. Cú pháp quy định trật tự từ và các mối quan hệ ngữ pháp.
+    \item \textbf{Ứng dụng trong NLP:} Phân tích cú pháp (Parsing), Gán nhãn Từ loại (Part-of-Speech Tagging), Kiểm tra ngữ pháp (Grammar Checking).
+\end{itemize}
+
+\paragraph{3. Ngữ nghĩa (Semantics)}
+Là nghiên cứu về \textbf{ý nghĩa} của từ, cụm từ và câu, độc lập với ngữ cảnh. Ngữ nghĩa trả lời câu hỏi "Câu này có nghĩa là gì?".
+\begin{itemize}
+    \item \textbf{Ví dụ:} Câu "Colorless green ideas sleep furiously" (Những ý tưởng xanh không màu ngủ một cách giận dữ) của Noam Chomsky là một câu đúng về mặt cú pháp nhưng vô nghĩa về mặt ngữ nghĩa.
+    \item Thử thách lớn của ngữ nghĩa là \textbf{sự mơ hồ (ambiguity)}. Ví dụ, từ "đường" có thể là "con đường" hoặc "đường ăn". Câu "Tôi thấy người đàn ông trên ngọn đồi với chiếc kính thiên văn" có thể có nghĩa là tôi dùng kính để thấy anh ta, hoặc anh ta là người có chiếc kính.
+    \item \textbf{Ứng dụng trong NLP:} Phân biệt ý của từ (Word Sense Disambiguation - WSD), Gán nhãn vai nghĩa (Semantic Role Labeling - SRL), Biểu diễn ý nghĩa câu.
+\end{itemize}
+
+\paragraph{4. Ngữ dụng (Pragmatics)}
+Là nghiên cứu về cách ngữ cảnh ảnh hưởng đến việc diễn giải ý nghĩa. Ngữ dụng xem xét ý định của người nói và cách người nghe hiểu được ý định đó. Nó trả lời câu hỏi "Người nói \textbf{muốn} nói gì khi nói câu này?".
+\begin{itemize}
+    \item \textbf{Ví dụ:} Nếu ai đó nói "Ở đây nóng quá", về mặt ngữ nghĩa, đó là một câu trần thuật về nhiệt độ. Nhưng về mặt ngữ dụng, đó có thể là một lời yêu cầu "Làm ơn bật quạt/điều hòa lên".
+    \item \textbf{Ứng dụng trong NLP:} Phân tích hội thoại (Discourse Analysis), Phân giải đồng tham chiếu (Coreference Resolution - xác định "anh ấy" trong một câu là đang chỉ đến ai), Nhận dạng hành động nói (Speech Act Recognition), các hệ thống đối thoại (Dialogue Systems).
+\end{itemize}
+
+Bốn cấp độ này tạo thành một chuỗi xử lý tự nhiên: từ nhận diện các đơn vị nhỏ nhất của từ (hình thái), đến cách chúng kết hợp thành câu (cú pháp), rồi ý nghĩa của câu đó (ngữ nghĩa), và cuối cùng là ý nghĩa trong một bối cảnh cụ thể (ngữ dụng).
+
+\subsection{Ngữ pháp hình thức (Formal Grammars): Ngữ pháp phi ngữ cảnh (CFG)}
+\label{ssec:cfg}
+
+Để máy tính có thể "hiểu" được cú pháp, các nhà ngôn ngữ học và khoa học máy tính đã phát triển các hệ thống quy tắc toán học gọi là \textbf{Ngữ pháp hình thức}. Một trong những loại ngữ pháp hình thức quan trọng và phổ biến nhất trong NLP thời kỳ đầu là \textbf{Ngữ pháp phi ngữ cảnh (Context-Free Grammar - CFG)}.
+
+\begin{definition}{Ngữ pháp phi ngữ cảnh (CFG)}{def:cfg}
+    Một CFG là một bộ quy tắc sản sinh (production rules) được dùng để tạo ra các chuỗi trong một ngôn ngữ. Nó được gọi là "phi ngữ cảnh" vì các quy tắc có thể được áp dụng bất kể ngữ cảnh xung quanh các ký hiệu. Một CFG được định nghĩa bởi một bộ 4 thành phần $(N, \Sigma, P, S)$:
+    \begin{itemize}
+        \item $N$: một tập hữu hạn các \textbf{ký hiệu phi-kết thúc} (non-terminal symbols), thường là các loại cụm từ như \texttt{NP} (Cụm danh từ), \texttt{VP} (Cụm động từ).
+        \item $\Sigma$: một tập hữu hạn các \textbf{ký hiệu kết thúc} (terminal symbols), chính là các từ trong từ vựng.
+        \item $P$: một tập hữu hạn các \textbf{quy tắc sản sinh} (production rules), có dạng $A \rightarrow \alpha$, trong đó $A \in N$ và $\alpha$ là một chuỗi các ký hiệu trong $(N \cup \Sigma)^*$.
+        \item $S$: \textbf{ký hiệu bắt đầu} (start symbol), thường là \texttt{S} (Sentence - Câu), $S \in N$.
+    \end{itemize}
+\end{definition}
+
+\begin{example}{Một CFG đơn giản cho Tiếng Việt}{ex:cfg_vietnamese}
+    Hãy xem xét một ngữ pháp rất nhỏ để tạo ra câu "con mèo đuổi con chuột":
+    \begin{itemize}
+        \item $N = \{ \texttt{S, NP, VP, Det, N, V} \}$
+        \item $\Sigma = \{ \text{con, mèo, đuổi, chuột} \}$
+        \item $S = \texttt{S}$
+        \item $P$ là tập các quy tắc sau:
+            \begin{enumerate}
+                \item \texttt{S $\rightarrow$ NP VP} (Một câu được tạo thành từ một Cụm danh từ và một Cụm động từ)
+                \item \texttt{NP $\rightarrow$ Det N} (Một cụm danh từ được tạo thành từ một Từ hạn định và một Danh từ)
+                \item \texttt{VP $\rightarrow$ V NP} (Một cụm động từ được tạo thành từ một Động từ và một Cụm danh từ)
+                \item \texttt{Det $\rightarrow$ con}
+                \item \texttt{N $\rightarrow$ mèo | chuột} (Ký hiệu `|` có nghĩa là "hoặc")
+                \item \texttt{V $\rightarrow$ đuổi}
+            \end{enumerate}
+    \end{itemize}
+    Sử dụng các quy tắc này, chúng ta có thể "sản sinh" ra câu mong muốn, và quá trình này có thể được hình dung bằng một \textbf{cây cú pháp (parse tree)}.
+\end{example}
+
+CFG là nền tảng lý thuyết cho \textit{phân tích cú pháp thành phần}, một khái niệm chúng ta sẽ tìm hiểu ngay sau đây.
+
+\subsection{Các lý thuyết cú pháp chính: Cú pháp thành phần (Constituency) và Cú pháp phụ thuộc (Dependency)}
+\label{ssec:constituency_dependency}
+
+Khi phân tích cấu trúc cú pháp của một câu, có hai cách tiếp cận chính, tương ứng với hai "trường phái" lớn trong ngôn ngữ học và NLP.
+
+\paragraph{1. Cú pháp thành phần (Constituency Syntax)}
+Cách tiếp cận này, vốn bắt nguồn trực tiếp từ CFG của Noam Chomsky \cite{chomsky1956three}, cho rằng câu được cấu tạo từ các \textbf{thành phần (constituents)} hay \textbf{cụm từ (phrases)} lồng vào nhau. Mỗi cụm từ là một đơn vị ngữ pháp hoạt động như một khối thống nhất.
+\begin{itemize}
+    \item \textbf{Ý tưởng cốt lõi:} Chia câu thành các cụm từ, rồi lại chia các cụm từ đó thành các cụm từ nhỏ hơn cho đến khi còn lại các từ riêng lẻ.
+    \item \textbf{Biểu diễn:} Sử dụng \textbf{cây cú pháp thành phần (constituency parse tree)}. Các nút trong (internal nodes) của cây là tên các cụm từ (\texttt{NP, VP, PP}), và các nút lá (leaf nodes) là các từ của câu.
+    \item \textbf{Ví dụ:} Với câu "Con mèo đuổi con chuột", cây thành phần sẽ trông như sau:
+    
+    \begin{center}
+        \texttt{(S (NP (Det con) (N mèo)) (VP (V đuổi) (NP (Det con) (N chuột))))}
+    \end{center}
+    
+    Cấu trúc này cho thấy rõ "con mèo" là một khối (Cụm danh từ - \texttt{NP}) và "đuổi con chuột" là một khối khác (Cụm động từ - \texttt{VP}).
+\end{itemize}
+
+\paragraph{2. Cú pháp phụ thuộc (Dependency Syntax)}
+Cách tiếp cận này không tập trung vào các cụm từ, mà tập trung vào mối quan hệ \textbf{phụ thuộc ngữ pháp} giữa các từ riêng lẻ.
+\begin{itemize}
+    \item \textbf{Ý tưởng cốt lõi:} Mỗi từ trong câu, ngoại trừ một từ gốc (thường là động từ chính), sẽ phụ thuộc vào một từ khác. Mối quan hệ này là mối quan hệ bất đối xứng giữa một \textbf{từ quản lý (head/governor)} và một \textbf{từ phụ thuộc (dependent/modifier)}.
+    \item \textbf{Biểu diễn:} Sử dụng \textbf{cây cú pháp phụ thuộc (dependency parse tree)}, thực chất là một đồ thị có hướng. Các nút là các từ, và các cạnh có nhãn là tên của mối quan hệ ngữ pháp (ví dụ: \texttt{nsubj} - chủ ngữ, \texttt{obj} - tân ngữ, \texttt{det} - từ hạn định).
+    \item \textbf{Ví dụ:} Với câu "Con mèo đuổi con chuột", đồ thị phụ thuộc sẽ có các quan hệ:
+    
+    \begin{itemize}
+        \item \texttt{đuổi} là gốc (root) của câu.
+        \item \texttt{mèo} là chủ ngữ (\texttt{nsubj}) của \texttt{đuổi}.
+        \item \texttt{chuột} là tân ngữ (\texttt{obj}) của \texttt{đuổi}.
+        \item \texttt{con} (thứ nhất) là từ hạn định (\texttt{det}) của \texttt{mèo}.
+        \item \texttt{con} (thứ hai) là từ hạn định (\texttt{det}) của \texttt{chuột}.
+    \end{itemize}
+\end{itemize}
+
+\begin{tcolorbox}[
+    title=So sánh Cú pháp Thành phần và Phụ thuộc,
+    colback=blue!5!white,
+    colframe=blue!50!black,
+    fonttitle=\bfseries
+]
+\begin{tabular}{p{0.45\linewidth} | p{0.45\linewidth}}
+    \textbf{Cú pháp Thành phần} & \textbf{Cú pháp Phụ thuộc} \\
+    \hline
+    Tập trung vào các \textbf{cụm từ} và cấu trúc lồng nhau. & Tập trung vào \textbf{mối quan hệ giữa các từ}. \\
+    \hline
+    Cung cấp thông tin cấu trúc rõ ràng về các khối ngữ pháp. & Cung cấp thông tin rõ ràng về quan hệ chức năng (ai làm gì ai). \\
+    \hline
+    Phù hợp hơn cho các ngôn ngữ có trật tự từ cố định (như tiếng Anh). & Linh hoạt hơn với các ngôn ngữ có trật tự từ tự do. \\
+    \hline
+    Phổ biến trong ngôn ngữ học lý thuyết và các hệ thống NLP thế hệ cũ. & Rất phổ biến trong các công cụ NLP hiện đại (ví dụ: spaCy, Stanza) do tính hữu ích cho các tác vụ ngữ nghĩa và tốc độ phân tích nhanh hơn. \\
+\end{tabular}
+\end{tcolorbox}
+
+Việc hiểu cả hai trường phái này rất quan trọng, vì chúng cung cấp những góc nhìn bổ trợ cho nhau về cấu trúc của ngôn ngữ và là nền tảng cho nhiều bài toán NLP cốt lõi mà chúng ta sẽ khám phá trong các chương tiếp theo.

@@ -1,0 +1,92 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters4/chap4_4.tex
+
+\section{Recipe 4: Fine-tuning cho Tác vụ Nhận dạng Thực thể (NER)}
+\label{sec:recipe_ner_finetuning}
+
+\textbf{Mục tiêu:} Fine-tune một mô hình Encoder-Only (ví dụ: RoBERTa) cho tác vụ NER. Recipe này nhấn mạnh vào việc tiền xử lý dữ liệu phức tạp hơn cho các tác vụ gán nhãn chuỗi.
+
+\textbf{Thành phần chính:}
+\begin{itemize}
+    \item \textbf{\texttt{transformers}:} Sử dụng \texttt{AutoModelForTokenClassification} và \texttt{Trainer}.
+    \item \textbf{\texttt{datasets}:} Tải bộ dữ liệu NER.
+    \item \textbf{\texttt{evaluate} (với \texttt{seqeval}):} Để tính toán F1-score ở cấp độ thực thể.
+\end{itemize}
+
+\textbf{Các bước thực hiện:}
+\begin{enumerate}
+    \item \textbf{Tải dữ liệu và tokenizer:} Tải bộ dữ liệu CoNLL-2003.
+    \item \textbf{Tiền xử lý và Căn chỉnh Nhãn:} Đây là bước phức tạp. Khi một từ bị tách thành nhiều subword bởi tokenizer, chúng ta cần đảm bảo các nhãn được căn chỉnh một cách chính xác.
+    \item \textbf{Tải mô hình:} Tải một mô hình \texttt{AutoModelForTokenClassification}.
+    \item \textbf{Thiết lập \texttt{Trainer}:} Sử dụng hàm \texttt{compute\_metrics} với \texttt{seqeval}.
+    \item \textbf{Huấn luyện:} Bắt đầu quá trình fine-tuning.
+\end{enumerate}
+
+
+\textbf{Mã nguồn (tập trung vào bước tiền xử lý):}
+
+\begin{example}{Fine-tuning cho Token Classification (NER)}{ex:ner_finetuning}
+    \begin{minted}{python}
+    # ... (cài đặt và import tương tự các recipe trước) ...
+    from datasets import load_dataset
+    from transformers import AutoTokenizer, AutoModelForTokenClassification, Trainer, TrainingArguments, DataCollatorForTokenClassification
+    import evaluate
+    import numpy as np
+    
+    # Bước 1: Tải dữ liệu
+    raw_datasets = load_dataset("conll2003")
+    label_names = raw_datasets["train"].features["ner_tags"].feature.names
+    
+    model_checkpoint = "roberta-base"
+    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+    
+    # Bước 2: Hàm tiền xử lý và căn chỉnh nhãn
+    def tokenize_and_align_labels(examples):
+        tokenized_inputs = tokenizer(examples["tokens"], truncation=True, is_split_into_words=True)
+        labels = []
+        for i, label in enumerate(examples["ner_tags"]):
+            word_ids = tokenized_inputs.word_ids(batch_index=i)
+            previous_word_idx = None
+            label_ids = []
+            for word_idx in word_ids:
+                if word_idx is None: # Special tokens like [CLS], [SEP]
+                    label_ids.append(-100)
+                elif word_idx != previous_word_idx: # First token of a new word
+                    label_ids.append(label[word_idx])
+                else: # Subsequent tokens of the same word
+                    label_ids.append(-100) # Chỉ gán nhãn cho subword đầu tiên
+                previous_word_idx = word_idx
+            labels.append(label_ids)
+        tokenized_inputs["labels"] = labels
+        return tokenized_inputs
+    
+    tokenized_datasets = raw_datasets.map(tokenize_and_align_labels, batched=True)
+    
+    # Bước 3 & 4 & 5: Tải mô hình, thiết lập Trainer và Huấn luyện
+    data_collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
+    seqeval = evaluate.load("seqeval")
+    
+    def compute_metrics(p):
+        predictions, labels = p
+        predictions = np.argmax(predictions, axis=2)
+        # (Phần decode và tính toán tương tự ví dụ seqeval ở Chương 2.2)
+        # ...
+        return {"precision": ..., "recall": ..., "f1": ...} # Kết quả từ seqeval
+    
+    model = AutoModelForTokenClassification.from_pretrained(
+        model_checkpoint, num_labels=len(label_names),
+    )
+    
+    args = TrainingArguments("roberta-ner", evaluation_strategy="epoch", learning_rate=2e-5)
+    trainer = Trainer(
+        model, args,
+        train_dataset=tokenized_datasets["train"],
+        eval_dataset=tokenized_datasets["validation"],
+        data_collator=data_collator,
+        tokenizer=tokenizer,
+        compute_metrics=compute_metrics
+    )
+    trainer.train()
+    \end{minted}
+\end{example}
+\textbf{Kết quả mong đợi:} Một mô hình được fine-tune chuyên biệt cho việc trích xuất các thực thể như Tên người, Tổ chức, Địa điểm từ văn bản.

@@ -1,0 +1,122 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters1/chap1_2.tex
+
+\section{Kỹ thuật Thu thập Dữ liệu}
+\label{sec:data_collection}
+
+Dữ liệu là nguồn sống của các mô hình học máy. Trước khi có thể làm sạch hay gán nhãn, chúng ta phải có được dữ liệu thô. Trong nhiều trường hợp, dữ liệu không có sẵn trong một cơ sở dữ liệu gọn gàng, mà nằm rải rác trên Internet. Mục này sẽ giới thiệu các công cụ và kỹ thuật phổ biến để thu thập dữ liệu văn bản từ các nguồn trực tuyến.
+
+\subsection{Sử dụng APIs: Cách tiếp cận "Lịch sự" và Đáng tin cậy}
+\label{ssec:apis}
+\begin{itemize}
+    \item \textbf{API là gì?} Giao diện Lập trình Ứng dụng (Application Programming Interface - API) là một tập hợp các quy tắc và giao thức cho phép các ứng dụng phần mềm khác nhau "nói chuyện" với nhau. Rất nhiều nền tảng lớn (Twitter, Reddit, Wikipedia, các trang tin tức) cung cấp API để các nhà phát triển có thể truy cập dữ liệu của họ một cách có cấu trúc và được cho phép.
+    \item \textbf{Tại sao nên ưu tiên?}
+        \begin{itemize}
+            \item \textbf{Có cấu trúc:} Dữ liệu trả về thường ở định dạng chuẩn như JSON, rất dễ phân tích.
+            \item \textbf{Đáng tin cậy:} Ít bị ảnh hưởng bởi những thay đổi về giao diện của trang web.
+            \item \textbf{"Lịch sự":} Bạn đang tuân thủ các quy tắc do nhà cung cấp dịch vụ đặt ra, tránh được các vấn đề pháp lý và kỹ thuật.
+        \end{itemize}
+    \item \textbf{Công cụ:} Thư viện `requests` của Python là công cụ tiêu chuẩn để thực hiện các yêu cầu HTTP đến các API.
+\end{itemize}
+
+\begin{example}{Lấy dữ liệu từ một API đơn giản với `requests`}{ex:requests_api}
+    Giả sử chúng ta muốn lấy một sự thật ngẫu nhiên về loài mèo từ API `catfact.ninja`.
+
+    \begin{minted}{python}
+    import requests
+    import json
+
+    # Địa chỉ của API endpoint
+    url = "https://catfact.ninja/fact"
+
+    try:
+        # Gửi một yêu cầu GET đến API
+        response = requests.get(url)
+        
+        # Kiểm tra xem yêu cầu có thành công không (status code 200)
+        response.raise_for_status() 
+        
+        # Phân tích dữ liệu JSON trả về
+        data = response.json()
+        fact = data['fact']
+        
+        print(f"Sự thật về loài mèo: {fact}")
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Lỗi khi gọi API: {e}")
+
+    \end{minted}
+    \textbf{Lưu ý quan trọng:} Hầu hết các API thương mại sẽ yêu cầu bạn đăng ký để nhận một "API key" (khóa xác thực) và có thể giới hạn số lượng yêu cầu bạn có thể thực hiện trong một khoảng thời gian (rate limiting).
+\end{example}
+
+\subsection{Web Scraping: Trích xuất Dữ liệu từ HTML}
+\label{ssec:web_scraping}
+Khi không có API, chúng ta phải dùng đến kỹ thuật \textbf{web scraping} (cào dữ liệu web) - quá trình tự động tải về và trích xuất thông tin từ các trang web.
+
+\begin{tcolorbox}[
+    title=Cảnh báo về Web Scraping,
+    colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
+]
+Web scraping là một công cụ mạnh mẽ nhưng cần được sử dụng một cách có trách nhiệm. Trước khi cào dữ liệu từ một trang web, hãy luôn:
+\begin{enumerate}
+    \item \textbf{Kiểm tra file `robots.txt`:} Truy cập `[tên\_trang\_web]/robots.txt` để xem các quy tắc của trang web về việc các bot tự động có được phép truy cập vào các phần nào của trang.
+    \item \textbf{Tôn trọng Điều khoản Dịch vụ (Terms of Service):} Đọc và tuân thủ các quy định của trang web.
+    \item \textbf{Tránh làm quá tải máy chủ:} Gửi các yêu cầu một cách từ từ, có độ trễ giữa các lần gọi, và tránh gửi quá nhiều yêu cầu trong một thời gian ngắn.
+\end{enumerate}
+\end{tcolorbox}
+
+\subsubsection{BeautifulSoup: Phân tích HTML một cách dễ dàng}
+`BeautifulSoup` là một thư viện Python giúp việc phân tích cú pháp (parsing) các tài liệu HTML và XML trở nên cực kỳ đơn giản. Nó không tự tải trang web, mà hoạt động trên nội dung HTML mà bạn cung cấp (thường là từ thư viện `requests`).
+
+\begin{itemize}
+    \item \textbf{Cơ chế hoạt động:} Nó biến một tài liệu HTML phức tạp thành một cây các đối tượng Python, cho phép bạn điều hướng và tìm kiếm các phần tử HTML dựa trên tên thẻ (tag), thuộc tính (attributes) như `id` hoặc `class`.
+\end{itemize}
+\begin{example}{Trích xuất tiêu đề bài viết với `requests` và `BeautifulSoup`}{ex:beautifulsoup-example}
+    \begin{minted}{python}
+    import requests
+    from bs4 import BeautifulSoup
+
+    # URL của trang web cần cào
+    url = "https://en.wikipedia.org/wiki/Natural_language_processing"
+
+    try:
+        # 1. Tải nội dung HTML của trang
+        response = requests.get(url)
+        response.raise_for_status()
+        
+        # 2. Tạo một đối tượng BeautifulSoup để phân tích HTML
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # 3. Tìm phần tử HTML chứa tiêu đề
+        # Bằng cách "Inspect Element" trên trình duyệt, ta thấy tiêu đề
+        # nằm trong một thẻ <h1> với class "firstHeading".
+        title_element = soup.find('h1', class_='firstHeading')
+        
+        # 4. Trích xuất nội dung văn bản từ phần tử
+        if title_element:
+            title_text = title_element.get_text()
+            print(f"Tiêu đề của trang là: {title_text}")
+        else:
+            print("Không tìm thấy tiêu đề.")
+            
+    except requests.exceptions.RequestException as e:
+        print(f"Lỗi khi tải trang: {e}")
+    \end{minted}
+\end{example}
+`BeautifulSoup` rất phù hợp cho các tác vụ cào dữ liệu quy mô nhỏ và các dự án học tập.
+
+\subsubsection{Scrapy: Một Framework Cào dữ liệu Toàn diện}
+Khi bạn cần cào dữ liệu từ hàng nghìn hoặc hàng triệu trang web, một kịch bản đơn giản với `requests` và `BeautifulSoup` là không đủ. `Scrapy` là một \textbf{framework} (khung làm việc) hoàn chỉnh cho việc cào dữ liệu quy mô lớn.
+
+\begin{itemize}
+    \item \textbf{Kiến trúc bất đồng bộ (Asynchronous):} Scrapy được xây dựng trên `Twisted`, một thư viện mạng bất đồng bộ, cho phép nó xử lý hàng nghìn yêu cầu cùng lúc mà không cần đợi yêu cầu trước hoàn thành. Điều này làm cho nó cực kỳ nhanh.
+    \item \textbf{Các thành phần chính:} Một dự án Scrapy bao gồm:
+        \begin{itemize}
+            \item \textbf{Spiders (Nhện):} Là các lớp Python bạn viết để định nghĩa cách cào một trang web cụ thể: bắt đầu từ URL nào, đi theo các liên kết nào, và trích xuất dữ liệu gì.
+            \item \textbf{Items:} Định nghĩa cấu trúc của dữ liệu bạn muốn trích xuất (ví dụ: một item "Bài viết" có các trường "tiêu đề", "tác giả", "nội dung").
+            \item \textbf{Pipelines:} Xử lý các item sau khi chúng được trích xuất (ví dụ: làm sạch dữ liệu, lưu vào cơ sở dữ liệu, loại bỏ các mục trùng lặp).
+            \item \textbf{Middlewares:} Can thiệp vào quá trình gửi yêu cầu và nhận phản hồi (ví dụ: để xoay vòng proxy, thay đổi user-agent).
+        \end{itemize}
+    \item \textbf{Khi nào nên dùng Scrapy?} Khi bạn cần xây dựng một hệ thống cào dữ liệu mạnh mẽ, có khả năng mở rộng, và cần xử lý một khối lượng lớn các trang web một cách hiệu quả.
+\end{itemize}
+Việc học Scrapy đòi hỏi nhiều công sức hơn, nhưng nó là một công cụ chuẩn công nghiệp cho các tác vụ thu thập dữ liệu quy mô lớn.

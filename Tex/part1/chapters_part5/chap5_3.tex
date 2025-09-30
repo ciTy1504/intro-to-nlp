@@ -1,0 +1,140 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap5_3.tex
+% Nội dung cho Chương 5, Phần 3
+
+\section{Kỹ thuật Prompt Engineering và Học trong Ngữ cảnh (In-context Learning)}
+\label{sec:prompt_engineering_icl}
+
+Với sự ra đời của các Mô hình Ngôn ngữ Lớn (LLMs) có quy mô hàng trăm tỷ tham số (ví dụ như họ GPT), một khả năng đáng kinh ngạc đã xuất hiện, được gọi là \textbf{Học trong Ngữ cảnh (In-context Learning - ICL)}.
+
+\begin{definition}{Học trong Ngữ cảnh (ICL)}{def:in_context_learning}
+    Học trong Ngữ cảnh là khả năng của một LLM có thể học và thực hiện một tác vụ mới chỉ bằng cách được cung cấp một vài ví dụ minh họa ngay trong \textbf{câu lệnh đầu vào (prompt)}, mà \textbf{không cần bất kỳ sự cập nhật trọng số nào} của mô hình.
+\end{definition}
+
+Nói cách khác, mô hình "học" bằng cách suy luận từ các ví dụ được đưa ra trong "bộ nhớ ngắn hạn" (ngữ cảnh của prompt), thay vì "học" bằng cách cập nhật "bộ nhớ dài hạn" (trọng số của mô hình) thông qua quá trình fine-tuning.
+
+Khả năng này đã khai sinh ra một lĩnh vực hoàn toàn mới: \textbf{Kỹ thuật Thiết kế Câu lệnh (Prompt Engineering)} -- nghệ thuật và khoa học của việc thiết kế các prompt hiệu quả để khai thác tối đa tiềm năng của LLMs.
+
+\subsection{Các cấp độ của Học trong Ngữ cảnh: Zero-shot, One-shot, Few-shot}
+\label{ssec:shot_learning}
+
+Khả năng ICL của LLMs thường được phân loại dựa trên số lượng ví dụ (`n`) được cung cấp trong prompt.
+
+\subsubsection{Zero-shot Learning (Học không cần ví dụ, n=0)}
+\begin{itemize}
+    \item \textbf{Cơ chế:} Chỉ cung cấp cho mô hình một mô tả về tác vụ và câu hỏi cần trả lời, không kèm theo bất kỳ ví dụ minh họa nào.
+    \item \textbf{Trực giác:} Đây là bài kiểm tra cuối cùng về khả năng tổng quát hóa của mô hình. Nó phải dựa hoàn toàn vào kiến thức đã học được trong quá trình pre-training để hiểu và thực hiện yêu cầu.
+    \item \textbf{Ví dụ (Phân tích cảm xúc):}
+        \begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black]
+        \textbf{Prompt:} \\
+        Phân loại cảm xúc của câu sau đây là Tích cực, Tiêu cực, hoặc Trung tính. \\
+        Câu: Món ăn này thật tuyệt vời! \\
+        Cảm xúc: 
+        \end{tcolorbox}
+        \textbf{Đầu ra mong muốn:} `Tích cực`
+\end{itemize}
+
+\subsubsection{One-shot Learning (Học với một ví dụ, n=1)}
+\begin{itemize}
+    \item \textbf{Cơ chế:} Cung cấp cho mô hình \textbf{một ví dụ} duy nhất về cặp (đầu vào, đầu ra) để làm mẫu, trước khi đưa ra câu hỏi thực sự.
+    \item \textbf{Trực giác:} Một ví dụ duy nhất giúp mô hình "định vị" được tác vụ, hiểu rõ hơn về định dạng đầu ra mong muốn và bối cảnh cụ thể.
+    \item \textbf{Ví dụ (Dịch từ vô nghĩa):}
+        \begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black]
+        \textbf{Prompt:} \\
+        Dịch từ "glorp" sang tiếng Việt có nghĩa là "vui vẻ". \\
+        Dịch từ "flumph" sang tiếng Việt có nghĩa là gì?
+        \end{tcolorbox}
+        \textbf{Đầu ra mong muốn:} Một từ vô nghĩa khác, thể hiện mô hình đã hiểu "quy luật" của tác vụ.
+\end{itemize}
+
+\subsubsection{Few-shot Learning (Học với vài ví dụ, n > 1)}
+\begin{itemize}
+    \item \textbf{Cơ chế:} Cung cấp cho mô hình \textbf{một vài ví dụ} (thường từ 2 đến vài chục) để minh họa cho tác vụ.
+    \item \textbf{Trực giác:} Càng nhiều ví dụ, mô hình càng có nhiều thông tin để suy luận ra quy luật và mẫu hình của tác vụ, từ đó đưa ra câu trả lời chính xác hơn. Đây là phương pháp phổ biến và hiệu quả nhất trong ICL.
+    \item \textbf{Ví dụ (Phép cộng):}
+        \begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black]
+        \textbf{Prompt:} \\
+        Q: 2 + 2 = ? \\
+        A: 4 \\
+        \\
+        Q: 5 + 8 = ? \\
+        A: 13 \\
+        \\
+        Q: 12 + 3 = ? \\
+        A: 
+        \end{tcolorbox}
+        \textbf{Đầu ra mong muốn:} `15`
+\end{itemize}
+Hiệu năng của mô hình thường tăng lên cùng với số lượng ví dụ, nhưng sẽ đạt đến một điểm bão hòa và bị giới hạn bởi độ dài ngữ cảnh của mô hình.
+
+\subsection{Chuỗi Suy luận (Chain-of-Thought - CoT) Prompting}
+\label{ssec:chain_of_thought}
+
+\subsubsection{Vấn đề của Prompting Tiêu chuẩn}
+Với các bài toán đòi hỏi suy luận nhiều bước (ví dụ: các bài toán logic, toán học), phương pháp few-shot tiêu chuẩn thường thất bại. Mô hình có thể cố gắng "đoán" câu trả lời cuối cùng một cách trực tiếp và thường đưa ra kết quả sai.
+
+\subsubsection{Giải pháp của CoT: ''Hãy suy nghĩ từng bước''}
+Chain-of-Thought (CoT) Prompting (Wei et al., 2022) Prompting \cite{wei2022chain} là một kỹ thuật đơn giản nhưng cực kỳ mạnh mẽ.
+\begin{tcolorbox}[
+    title=Trực giác của Chain-of-Thought,
+    colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries
+]
+Thay vì chỉ cung cấp các ví dụ (Câu hỏi, Trả lời), chúng ta hãy cung cấp các ví dụ bao gồm cả \textbf{quá trình suy luận từng bước (step-by-step reasoning)} dẫn đến câu trả lời cuối cùng. Điều này khuyến khích mô hình "bắt chước" quá trình suy nghĩ đó, phân rã một bài toán phức tạp thành các bước trung gian đơn giản hơn.
+\end{tcolorbox}
+
+\begin{example}{So sánh Standard Prompting và CoT Prompting}{ex:cot_comparison}
+    \textbf{Bài toán:} Roger có 5 quả bóng tennis. Anh ấy mua thêm 2 hộp, mỗi hộp có 3 quả. Hỏi bây giờ anh ấy có tất cả bao nhiêu quả bóng?
+    
+    \textbf{1. Standard Few-shot Prompting (Thường thất bại):}
+    \begin{tcolorbox}[colback=red!5!white, colframe=red!60!black]
+    Q: Một người bán hoa quả có 23 quả táo. Nếu anh ta dùng 20 quả để làm bánh và mua thêm 6 quả, anh ta còn lại bao nhiêu quả?
+    A: 9 quả.
+    
+    Q: Roger có 5 quả bóng tennis. Anh ấy mua thêm 2 hộp, mỗi hộp có 3 quả. Hỏi bây giờ anh ấy có tất cả bao nhiêu quả bóng?
+    A:
+    \end{tcolorbox}
+    \(\rightarrow\) Mô hình có thể trả lời sai, ví dụ `10`.
+
+    \textbf{2. Chain-of-Thought Prompting (Hiệu quả hơn):}
+    \begin{tcolorbox}[colback=green!5!white, colframe=green!60!black]
+    Q: Một người bán hoa quả có 23 quả táo. Nếu anh ta dùng 20 quả để làm bánh và mua thêm 6 quả, anh ta còn lại bao nhiêu quả?
+    A: Ban đầu anh ta có 23 quả táo. Anh ta dùng 20 quả nên còn 23 - 20 = 3 quả. Sau đó anh ta mua thêm 6 quả, vậy anh ta có 3 + 6 = 9 quả. Câu trả lời là 9.
+    
+    Q: Roger có 5 quả bóng tennis. Anh ấy mua thêm 2 hộp, mỗi hộp có 3 quả. Hỏi bây giờ anh ấy có tất cả bao nhiêu quả bóng?
+    A:
+    \end{tcolorbox}
+    \(\rightarrow\) Bị "mớm" bởi ví dụ trên, mô hình có khả năng cao sẽ sinh ra chuỗi suy luận: `Roger ban đầu có 5 quả bóng. Anh ấy mua thêm 2 hộp, mỗi hộp 3 quả, tức là thêm 2 * 3 = 6 quả. Tổng cộng anh ấy có 5 + 6 = 11 quả. Câu trả lời là 11.`
+\end{example}
+
+\paragraph{Zero-shot-CoT}
+Một khám phá thú vị sau đó là chúng ta thậm chí không cần cung cấp ví dụ. Chỉ cần thêm một câu thần chú đơn giản như \textbf{"Let's think step by step."} (Hãy suy nghĩ từng bước.) vào cuối prompt cũng đủ để kích hoạt khả năng suy luận theo chuỗi của các LLM lớn.
+
+\subsection{Các kỹ thuật nâng cao dựa trên CoT}
+\label{ssec:advanced_cot}
+CoT là một ý tưởng nền tảng, và nhiều kỹ thuật khác đã được xây dựng dựa trên nó để tăng cường hơn nữa độ tin cậy và chính xác.
+
+\subsubsection{Tự Nhất quán (Self-Consistency)}
+\begin{itemize}
+    \item \textbf{Vấn đề:} Ngay cả với CoT, quá trình sinh của LLM vẫn mang tính ngẫu nhiên (do việc lấy mẫu từ phân phối xác suất). Nếu chạy cùng một prompt nhiều lần, mô hình có thể tạo ra các chuỗi suy luận khác nhau, dẫn đến các câu trả lời khác nhau.
+    \item \textbf{Giải pháp của Self-Consistency (Wang et al., 2022) \cite{wang2022self}:}
+        \begin{enumerate}
+            \item Chạy cùng một prompt CoT nhiều lần (ví dụ: 10 lần) với nhiệt độ (temperature) lớn hơn 0 để tạo ra các chuỗi suy luận đa dạng.
+            \item Trích xuất câu trả lời cuối cùng từ mỗi chuỗi suy luận.
+            \item Chọn câu trả lời xuất hiện \textbf{thường xuyên nhất (majority vote)} làm câu trả lời cuối cùng.
+        \end{enumerate}
+    \item \textbf{Trực giác:} Nếu có nhiều con đường suy luận khác nhau nhưng đều dẫn đến cùng một câu trả lời, thì câu trả lời đó có khả năng cao là đúng. Kỹ thuật này giúp giảm thiểu ảnh hưởng của các lỗi suy luận ngẫu nhiên.
+\end{itemize}
+
+\subsubsection{Cây Suy tưởng (Tree of Thoughts - ToT)}
+\begin{itemize}
+    \item \textbf{Vấn đề:} CoT và Self-Consistency vẫn chỉ khám phá các con đường suy luận một cách độc lập. Chúng không có khả năng "quay lại", "đánh giá" hay "so sánh" các bước suy luận trung gian.
+    \item \textbf{Giải pháp của Tree of Thoughts (Yao et al., 2023) \cite{yao2023tree}:}
+        \begin{enumerate}
+            \item \textbf{Tạo cây:} Thay vì một chuỗi duy nhất, mô hình sẽ chủ động tạo ra một \textbf{cây các "suy tưởng" (thoughts)}. Tại mỗi bước, nó sẽ đề xuất nhiều bước tiếp theo có thể có, tạo thành các nhánh mới.
+            \item \textbf{Đánh giá:} Một "bộ đánh giá" (có thể là chính LLM đó) sẽ cho điểm mỗi nhánh (mỗi "suy tưởng" trung gian), đánh giá xem nó có hứa hẹn dẫn đến giải pháp cuối cùng hay không.
+            \item \textbf{Tìm kiếm:} Sử dụng các thuật toán tìm kiếm trên cây (như tìm kiếm theo chiều rộng hoặc chiều sâu) để khám phá cây suy tưởng một cách có hệ thống, ưu tiên các nhánh có điểm số cao và loại bỏ các nhánh không hứa hẹn.
+        \end{enumerate}
+    \item \textbf{Trực giác:} ToT mô phỏng cách con người giải quyết các vấn đề phức tạp hơn: chúng ta không chỉ đi theo một luồng suy nghĩ duy nhất, mà còn xem xét nhiều khả năng, đánh giá chúng, và quay lại nếu một hướng đi có vẻ sai lầm. ToT cho phép mô hình có khả năng tự đánh giá và lập kế hoạch một cách tường minh.
+\end{itemize}
+
+Các kỹ thuật prompt engineering, từ few-shot đơn giản đến các cấu trúc suy luận phức tạp như ToT, đang liên tục phát triển, biến việc "trò chuyện" với LLM trở thành một lĩnh vực kỹ thuật thực sự.

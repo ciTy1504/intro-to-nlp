@@ -1,0 +1,126 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap1_5.tex
+% Nội dung cho Phần 1.5: Đạo đức và Trách nhiệm trong NLP
+
+\section{Đạo đức và Trách nhiệm trong NLP (Ethics \& Responsible AI)}
+\label{sec:dao_duc_trach_nhiem}
+
+Khi các mô hình NLP ngày càng trở nên mạnh mẽ và được tích hợp sâu rộng vào xã hội -- từ việc quyết định hồ sơ xin việc, duyệt đơn vay vốn, đến việc định hình dư luận -- thì trách nhiệm của người tạo ra chúng cũng ngày càng lớn. Một mô hình NLP không chỉ là một công trình kỹ thuật; nó là một tác nhân có thể gây ra những ảnh hưởng thực tế, cả tích cực và tiêu cực, đến cuộc sống con người.
+
+Do đó, việc xem xét các khía cạnh về đạo đức và xây dựng AI có trách nhiệm không phải là một lựa chọn, mà là một \textbf{yêu cầu bắt buộc} đối với bất kỳ ai làm việc trong lĩnh vực này. Mục này sẽ thảo luận về những thách thức và phương pháp tiếp cận chính.
+
+\subsection{Các loại Thiên kiến (Bias) trong Dữ liệu và Mô hình}
+\label{ssec:thien_kien_bias}
+
+Thiên kiến là một trong những vấn đề đạo đức phổ biến và nguy hiểm nhất trong NLP. Mô hình học máy không tự "suy nghĩ" ra thiên kiến; chúng học và khuếch đại những thiên kiến đã tồn tại sẵn trong dữ liệu mà chúng được huấn luyện.
+
+\begin{tcolorbox}[
+    title={Nguyên tắc cốt lõi: ``Rác vào, Rác ra''},
+    colback=red!5!white,
+    colframe=red!75!black,
+    fonttitle=\bfseries
+]
+Mô hình NLP là tấm gương phản chiếu dữ liệu huấn luyện. Nếu dữ liệu chứa đựng các định kiến về giới tính, chủng tộc, hay văn hóa của xã hội, mô hình sẽ học và tái tạo lại những định kiến đó, thường với một quy mô lớn hơn rất nhiều. Đây còn được gọi là nguyên tắc "Garbage In, Garbage Out", nhưng trong bối cảnh đạo đức, nó trở thành "Bias In, Bias Out".
+\end{tcolorbox}
+
+Một số loại thiên kiến phổ biến bao gồm:
+\begin{itemize}
+    \item \textbf{Thiên kiến xã hội (Societal Bias):} Phản ánh các định kiến và khuôn mẫu trong xã hội.
+        \begin{itemize}
+            \item \textbf{Ví dụ:} Các mô hình word embedding cổ điển khi được huấn luyện trên kho văn bản lớn thường học được các liên kết như: "đàn ông" gần với "lập trình viên", trong khi "phụ nữ" gần với "nội trợ". Một hệ thống tuyển dụng dựa trên mô hình này có thể sẽ tự động đánh giá thấp hồ sơ của ứng viên nữ cho vị trí kỹ thuật.
+        \end{itemize}
+    \item \textbf{Thiên kiến chọn mẫu (Selection Bias):} Xảy ra khi dữ liệu được thu thập không đại diện cho thực tế.
+        \begin{itemize}
+            \item \textbf{Ví dụ:} Xây dựng một mô hình phân tích cảm xúc chỉ dựa trên các bài đánh giá sản phẩm công nghệ có thể sẽ hoạt động kém khi áp dụng cho các bình luận về phim ảnh, vì cách dùng từ và biểu đạt cảm xúc là khác nhau.
+        \end{itemize}
+    \item \textbf{Thiên kiến từ mô hình (Model Bias):} Bản thân kiến trúc hoặc quá trình tối ưu hóa của mô hình có thể vô tình tạo ra hoặc khuếch đại thiên kiến.
+        \begin{itemize}
+            \item \textbf{Ví dụ:} Một mô hình được tối ưu hóa để đạt độ chính xác cao nhất trên một bộ dữ liệu mất cân bằng (99\% email là không spam, 1\% là spam) có thể học được một chiến lược đơn giản là "luôn dự đoán không spam" để đạt độ chính xác 99\%, nhưng hoàn toàn vô dụng trong thực tế.
+        \end{itemize}
+\end{itemize}
+
+\subsection{Tính Công bằng, Minh bạch và Diễn giải được (Fairness, Transparency, Interpretability)}
+\label{ssec:fairness_transparency_interpretability}
+
+Để đối phó với thiên kiến và xây dựng các hệ thống đáng tin cậy, ba khái niệm sau đây là trụ cột chính:
+
+\paragraph{Tính Công bằng (Fairness)}
+Là nỗ lực đảm bảo rằng các quyết định của mô hình không gây bất lợi một cách có hệ thống cho các nhóm nhân khẩu học nhất định (dựa trên giới tính, chủng tộc, tuổi tác, v.v.). Đây là một khái niệm phức tạp, không có một định nghĩa toán học duy nhất nào là hoàn hảo cho mọi trường hợp.
+
+\paragraph{Tính Minh bạch (Transparency)}
+Đề cập đến khả năng hiểu được cơ chế hoạt động bên trong của mô hình. Các mô hình đơn giản như Hồi quy Logistic có tính minh bạch cao (chúng ta có thể xem các trọng số). Tuy nhiên, các mô hình ngôn ngữ lớn (LLMs) là những "hộp đen" (black boxes) gần như không thể minh bạch.
+
+\paragraph{Tính Diễn giải được (Interpretability / Explainable AI - XAI)}
+Khi không thể đạt được sự minh bạch hoàn toàn, chúng ta hướng tới tính diễn giải được: khả năng giải thích \textit{tại sao} mô hình lại đưa ra một dự đoán cụ thể. Hai kỹ thuật phổ biến để làm điều này là:
+\begin{itemize}
+    \item \textbf{LIME (Local Interpretable Model-agnostic Explanations):} Giải thích một dự đoán riêng lẻ bằng cách xây dựng một mô hình đơn giản, có thể diễn giải được (như một mô hình tuyến tính) chỉ hoạt động tốt "tại vùng lân cận" của dự đoán đó. Nó trả lời câu hỏi: "Những từ nào trong câu này đã đóng góp nhiều nhất vào quyết định của mô hình?".
+    \item \textbf{SHAP (SHapley Additive exPlanations):} Dựa trên lý thuyết trò chơi, SHAP tính toán sự đóng góp của mỗi đặc trưng (mỗi từ) vào đầu ra của mô hình một cách công bằng và nhất quán. Nó cung cấp một nền tảng lý thuyết vững chắc hơn cho việc diễn giải.
+\end{itemize}
+
+\subsection{Quyền riêng tư và An toàn Dữ liệu (Federated Learning, Differential Privacy)}
+\label{ssec:quyen_rieng_tu}
+
+Các mô hình NLP được huấn luyện trên lượng dữ liệu khổng lồ, thường được thu thập từ người dùng. Điều này làm dấy lên những lo ngại nghiêm trọng về quyền riêng tư.
+
+\paragraph{Vấn đề:} Các mô hình, đặc biệt là LLMs, có thể "ghi nhớ" và vô tình tiết lộ thông tin nhận dạng cá nhân (Personally Identifiable Information - PII) có trong dữ liệu huấn luyện, chẳng hạn như số điện thoại, địa chỉ email, hoặc thông tin y tế nhạy cảm.
+
+Hai kỹ thuật tiên tiến để giải quyết vấn đề này là:
+\begin{itemize}
+    \item \textbf{Học Liên kết (Federated Learning - FL):} Thay vì thu thập tất cả dữ liệu về một máy chủ trung tâm để huấn luyện, phương pháp này "gửi" mô hình đến các thiết bị của người dùng (ví dụ: điện thoại di động). Mô hình được huấn luyện cục bộ trên dữ liệu của người dùng, sau đó chỉ có các cập nhật (gradients) của mô hình được gửi về máy chủ để tổng hợp. Dữ liệu thô không bao giờ rời khỏi thiết bị của người dùng.
+    \item \textbf{Bảo toàn riêng tư vi phân (Differential Privacy - DP):} Cung cấp một sự đảm bảo toán học mạnh mẽ về quyền riêng tư. Ý tưởng cốt lõi là thêm một lượng nhiễu (noise) được kiểm soát cẩn thận vào dữ liệu hoặc kết quả của thuật toán, sao cho việc thêm hay bớt dữ liệu của một cá nhân bất kỳ trong tập dữ liệu gần như không làm thay đổi kết quả cuối cùng. Điều này khiến cho việc xác định thông tin của một cá nhân cụ thể trở nên bất khả thi.
+\end{itemize}
+
+\subsection{Mối nguy về Thông tin Sai lệch và Lạm dụng}
+\label{ssec:thong_tin_sai_lech}
+
+Sự ra đời của các mô hình sinh ngôn ngữ (Generative Models) có khả năng tạo ra văn bản chất lượng cao, mạch lạc và thuyết phục đã mở ra một "chiếc hộp Pandora" về các nguy cơ lạm dụng.
+\begin{itemize}
+    \item \textbf{Thông tin sai lệch (Misinformation \& Disinformation):} Các mô hình có thể được sử dụng để tạo ra hàng loạt tin tức giả, các bài đăng trên mạng xã hội, các bài đánh giá sản phẩm giả mạo với quy mô và tốc độ chưa từng có, gây ảnh hưởng đến dư luận, chính trị và xã hội.
+    \item \textbf{Lừa đảo và Tấn công mạng (Scams \& Phishing):} Tự động tạo ra các email lừa đảo tinh vi, được cá nhân hóa cao, khiến người dùng khó phân biệt hơn nhiều.
+    \item \textbf{Sáng tạo nội dung độc hại (Generation of Harmful Content):} Các mô hình có thể bị lợi dụng để tạo ra ngôn từ thù địch, tuyên truyền cực đoan, hoặc nội dung quấy rối.
+\end{itemize}
+
+Việc giải quyết những vấn đề này không chỉ nằm ở khía cạnh kỹ thuật (ví dụ: xây dựng các mô hình phát hiện văn bản do AI tạo ra) mà còn đòi hỏi sự chung tay của toàn xã hội, bao gồm việc xây dựng các chính sách quản lý, nâng cao nhận thức và giáo dục kỹ năng số cho cộng đồng.
+
+Kết thúc chương đầu tiên này, hy vọng bạn không chỉ nắm được "NLP là gì?" mà còn nhận thức được trách nhiệm to lớn đi kèm với sức mạnh của nó.
+
+\subsection{Tính Bền vững và Tấn công Giả mạo (Robustness \& Adversarial Attacks)}
+\label{ssec:robustness_adversarial_attacks}
+
+Ngoài các vấn đề về thiên kiến và quyền riêng tư, một khía cạnh quan trọng khác của AI có trách nhiệm là đảm bảo mô hình hoạt động một cách đáng tin cậy trong thế giới thực. Một mô hình có thể đạt độ chính xác 99\% trên bộ dữ liệu kiểm thử sạch (clean test set), nhưng lại có thể thất bại thảm hại khi đối mặt với dữ liệu thực tế vốn luôn nhiễu và không hoàn hảo. Đây là bài toán về \textbf{tính bền vững (robustness)}.
+
+Đáng lo ngại hơn, các mô hình NLP, đặc biệt là các mô hình học sâu, lại rất dễ bị tổn thương trước các \textbf{tấn công giả mạo (adversarial attacks)} -- những thay đổi nhỏ, thường không thể nhận biết bởi con người, được thiết kế một cách có chủ đích để đánh lừa mô hình.
+
+\begin{tcolorbox}[
+    title={Sự Mong manh của các Mô hình "Thông minh"},
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    fonttitle=\bfseries
+]
+Một tấn công giả mạo có thể thay đổi dự đoán của mô hình một cách hoàn toàn. Ví dụ, một mô hình phân tích cảm xúc có thể phân loại câu "Bộ phim này thật tuyệt vời" là \texttt{TÍCH CỰC}. Kẻ tấn công có thể chỉ cần thêm một vài ký tự vô hình hoặc thay một từ bằng một từ đồng nghĩa được chọn lọc cẩn thận để biến nó thành câu "Bộ phim này thật \textit{xuất chúng}", và mô hình đột ngột thay đổi dự đoán thành \texttt{TIÊU CỰC}. Đối với con người, ý nghĩa không thay đổi, nhưng đối với mô hình, kết quả đã bị đảo ngược.
+\end{tcolorbox}
+
+Các kỹ thuật tấn công phổ biến bao gồm:
+\begin{itemize}
+    \item \textbf{Tấn công cấp độ ký tự (Character-level):} Thay thế, chèn, hoặc xóa các ký tự. Ví dụ: thay chữ "o" bằng số "0", hoặc chèn các ký tự không thể in ra (non-printable characters). \textit{DeepWordBug} \cite{gao2018black} hay \textit{HotFlip} \cite{ebrahimi2017hotflip} thực hiện các kỹ thuật này.
+    \item \textbf{Tấn công cấp độ từ (Word-level):} Thay thế các từ bằng từ đồng nghĩa của chúng. Thách thức ở đây là tìm ra từ đồng nghĩa nào sẽ đánh lừa mô hình mà không làm thay đổi ý nghĩa của câu đối với con người. \textit{TextFooler} \cite{jin2020bert} là một ví dụ kinh điển, nó xác định các từ quan trọng nhất trong câu và thay thế chúng một cách chiến lược.
+    \item \textbf{Tấn công cấp độ câu (Sentence-level):} Diễn giải (paraphrase) lại toàn bộ câu để giữ nguyên ý nghĩa nhưng sử dụng cấu trúc và từ vựng khác, nhằm mục đích tìm ra một phiên bản mà mô hình không thể hiểu đúng.
+\end{itemize}
+
+Việc một mô hình dễ bị tấn công cho thấy nó không thực sự "hiểu" ngôn ngữ, mà chỉ đang dựa vào các quy luật và mẫu thống kê bề mặt. Để phòng thủ, các nhà nghiên cứu đã phát triển nhiều kỹ thuật, trong đó phổ biến nhất là:
+\begin{itemize}
+    \item \textbf{Huấn luyện Giả mạo (Adversarial Training):} Đây là phương pháp phòng thủ trực tiếp và hiệu quả nhất. Trong quá trình huấn luyện, chúng ta chủ động tạo ra các mẫu dữ liệu giả mạo và đưa chúng vào tập huấn luyện cùng với nhãn đúng. Điều này giống như việc "tiêm vắc-xin" cho mô hình, giúp nó học cách miễn nhiễm với các loại tấn công tương tự trong tương lai.
+    \item \textbf{Phát hiện Dữ liệu Giả mạo (Adversarial Detection):} Xây dựng một mô hình phụ để xác định xem một đầu vào có phải là một mẫu giả mạo hay không trước khi đưa nó vào mô hình chính.
+\end{itemize}
+
+Việc xây dựng các mô hình bền vững không chỉ là một thách thức kỹ thuật mà còn là một yêu cầu về mặt đạo đức, đặc biệt khi NLP được triển khai trong các hệ thống có tính rủi ro cao như lọc nội dung độc hại, phát hiện tin giả, hay các ứng dụng an ninh mạng.
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG 1}
+\end{center}
+
+\textit{Kết thúc chương mở đầu này, bạn đã có trong tay một tấm bản đồ toàn diện về thế giới NLP. Chúng ta đã cùng nhau định nghĩa lĩnh vực, khám phá các nền tảng ngôn ngữ học và toán học, vạch ra các bài toán cốt lõi, và quan trọng nhất, thiết lập một la bàn đạo đức cho hành trình phía trước. Giờ đây, khi đã hiểu rõ "cái gì" và "tại sao", đã đến lúc chúng ta đi sâu vào kỹ thuật đầu tiên: làm thế nào để biến văn bản thành các con số có thể tính toán được. Chương tiếp theo sẽ giới thiệu các phương pháp biểu diễn văn bản kinh điển, khởi đầu cho kỷ nguyên thống kê của NLP.}

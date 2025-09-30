@@ -1,0 +1,46 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters3/chap3_4.tex
+
+\section{Các Framework Phục vụ Chuyên dụng cho Production}
+\label{sec:specialized_serving_frameworks}
+FastAPI và Docker là rất tốt, nhưng khi phục vụ các LLM quy mô lớn với yêu cầu về thông lượng (throughput) cao và độ trễ (latency) thấp, chúng ta cần các công cụ chuyên dụng hơn.
+
+\paragraph{Vấn đề của việc Phục vụ LLM}
+Một trong những thách thức lớn nhất là quản lý bộ nhớ của \textbf{KV Cache}. Trong quá trình sinh văn bản tự hồi quy, các giá trị Key và Value của các token đã được sinh ra sẽ được lưu lại (cache) để không phải tính toán lại ở các bước sau. KV Cache này chiếm một lượng VRAM khổng lồ và việc quản lý nó cho các yêu cầu theo batch một cách hiệu quả là rất khó.
+
+\subsubsection{vLLM: Tối ưu hóa cho Thông lượng}
+\begin{itemize}
+    \item \textbf{Mục đích chính:} Một thư viện phục vụ LLM cực kỳ nhanh, được tối ưu hóa cho thông lượng cao.
+    \item \textbf{Phát kiến cốt lõi: PagedAttention.} Lấy cảm hứng từ cơ chế phân trang (paging) trong các hệ điều hành, PagedAttention quản lý KV Cache trong các "trang" (pages) bộ nhớ không liền kề.
+    \item \textbf{Lợi ích của PagedAttention:}
+        \begin{itemize}
+            \item \textbf{Giảm lãng phí bộ nhớ:} Loại bỏ gần như hoàn toàn sự phân mảnh bộ nhớ bên trong và lãng phí do phải cấp phát bộ nhớ dự phòng.
+            \item \textbf{Batching hiệu quả hơn:} Cho phép các thuật toán batching thông minh hơn, có thể xử lý nhiều chuỗi hơn cùng lúc.
+        \end{itemize}
+    \item \textbf{Kết quả:} vLLM có thể đạt được thông lượng cao hơn nhiều lần (lên đến 24x) so với các cách triển khai tiêu chuẩn (như của Hugging Face) mà không cần thay đổi mô hình.
+\end{itemize}
+
+\subsubsection{BentoML: Chuẩn hóa Vòng đời Phục vụ}
+\begin{itemize}
+    \item \textbf{Mục đích chính:} Cung cấp một framework toàn diện để \textbf{đóng gói, quản lý, và triển khai} các dịch vụ AI một cách tiêu chuẩn hóa và có thể tái sử dụng.
+    \item \textbf{Triết lý:} Tách biệt logic nghiệp vụ (business logic) khỏi logic phục vụ mô hình (model serving logic).
+    \item \textbf{Các thành phần:}
+        \begin{itemize}
+            \item \textbf{Bentos:} Một định dạng đóng gói tiêu chuẩn ("build target") chứa mã nguồn, các mô hình, các file phụ thuộc, và cấu hình. Một "Bento" có thể được build thành một container Docker hoặc triển khai lên các nền tảng serverless.
+            \item \textbf{Runners:} Một lớp trừu tượng để chạy các mô hình, có khả năng tối ưu hóa cho các loại phần cứng khác nhau.
+            \item \textbf{Adapters:} Xử lý việc chuyển đổi giữa dữ liệu thô (HTTP requests) và các định dạng mà mô hình có thể hiểu (tensor, DataFrame).
+        \end{itemize}
+    \item \textbf{Khi nào dùng?} Khi bạn cần xây dựng các dịch vụ AI phức tạp, có thể bao gồm nhiều mô hình, và muốn có một quy trình tiêu chuẩn để quản lý và triển khai chúng.
+\end{itemize}
+
+\subsubsection{NVIDIA Triton Inference Server}
+\begin{itemize}
+    \item \textbf{Mục đích chính:} Cung cấp một máy chủ suy luận (inference server) hiệu năng cao, được tối ưu hóa cho phần cứng NVIDIA.
+    \item \textbf{Điểm mạnh:}
+        \begin{itemize}
+            \item \textbf{Đa framework:} Hỗ trợ phục vụ các mô hình từ nhiều framework khác nhau (TensorFlow, PyTorch, ONNX, TensorRT) trong cùng một máy chủ.
+            \item \textbf{Dynamic Batching:} Tự động gộp các yêu cầu riêng lẻ đến theo thời gian thực thành các batch để tối đa hóa hiệu suất của GPU.
+            \item \textbf{Tối ưu hóa cho GPU:} Tận dụng tối đa các tính năng của GPU NVIDIA.
+        \end{itemize}
+    \item \textbf{Khi nào dùng?} Trong các môi trường production có yêu cầu rất cao về hiệu năng và độ trễ, và sử dụng chủ yếu là GPU NVIDIA.
+\end{itemize}

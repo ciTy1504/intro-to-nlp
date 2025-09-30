@@ -1,0 +1,159 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap2_2.tex
+% Nội dung cho Phần 2.2: Mô hình Ngôn ngữ Thống kê
+
+\section{Mô hình Ngôn ngữ Thống kê (N-gram, Smoothing)}
+\label{sec:statistical_lm}
+
+Trong mục trước, chúng ta đã học cách biểu diễn văn bản như một "túi từ" không có trật tự. Bây giờ, chúng ta sẽ đưa trật tự từ trở lại và giới thiệu một trong những ý tưởng mạnh mẽ nhất của NLP thống kê: \textbf{Mô hình Ngôn ngữ (Language Model - LM)}.
+
+\begin{definition}{Mô hình Ngôn ngữ (LM)}{def:lm}
+    Một Mô hình Ngôn ngữ là một mô hình xác suất có khả năng gán một giá trị xác suất cho một chuỗi các từ bất kỳ. Nói cách khác, một LM có thể trả lời câu hỏi: "Xác suất để một chuỗi từ $W = w_1, w_2, \dots, w_n$ xuất hiện trong một ngôn ngữ là bao nhiêu?", ký hiệu là $P(W)$.
+\end{definition}
+
+Một LM tốt sẽ gán xác suất cao cho những câu "tự nhiên", đúng ngữ pháp (ví dụ: "tôi thích học NLP") và gán xác suất rất thấp cho những câu vô nghĩa, sai ngữ pháp (ví dụ: "thích tôi học NLP NLP").
+
+\textbf{Ứng dụng của Mô hình Ngôn ngữ:}
+LM là trái tim của rất nhiều ứng dụng NLP, đặc biệt là các ứng dụng sinh ngôn ngữ:
+\begin{itemize}
+    \item \textbf{Dịch máy:} Chọn câu dịch có xác suất cao nhất trong ngôn ngữ đích.
+    \item \textbf{Nhận dạng giọng nói:} Phân biệt giữa hai câu phát âm gần giống nhau (ví dụ: "I saw a van" và "ice Havana") bằng cách chọn câu có xác suất ngôn ngữ cao hơn.
+    \item \textbf{Kiểm tra chính tả và ngữ pháp:} Gợi ý sửa lỗi "I \underline{is} a student" thành "I \underline{am} a student" vì câu sau có xác suất cao hơn nhiều.
+    \item \textbf{Gợi ý từ tiếp theo (Predictive Text):} Dự đoán từ có khả năng xuất hiện tiếp theo nhất dựa trên các từ đã gõ.
+\end{itemize}
+
+\subsection{Mô hình N-gram: Học từ Lịch sử Gần nhất}
+\label{ssec:ngram}
+
+\subsubsection{Thách thức của việc tính toán xác suất chuỗi}
+Để tính xác suất của một chuỗi từ $P(W) = P(w_1, w_2, \dots, w_n)$, chúng ta có thể sử dụng quy tắc chuỗi (chain rule) trong xác suất:
+$$ P(w_1, w_2, \dots, w_n) = P(w_1) \times P(w_2|w_1) \times P(w_3|w_1, w_2) \times \dots \times P(w_n|w_1, \dots, w_{n-1}) $$
+$$ P(W) = \prod_{i=1}^{n} P(w_i | w_1, \dots, w_{i-1}) $$
+
+Tuy nhiên, việc tính toán trực tiếp công thức này là \textbf{bất khả thi} trong thực tế. Để tính $P(w_n|w_1, \dots, w_{n-1})$, chúng ta cần phải thống kê được tần suất của chuỗi $w_1, \dots, w_{n-1}, w_n$ đã xuất hiện trong kho dữ liệu huấn luyện. Với các câu dài, chuỗi này gần như chắc chắn \textbf{chưa từng xuất hiện bao giờ}, dẫn đến vấn đề \textit{dữ liệu thưa thớt (sparsity)} nghiêm trọng.
+
+\subsubsection{Giả định Markov và N-gram}
+Để giải quyết vấn đề này, các mô hình N-gram đưa ra một giả định đơn giản hóa, gọi là \textbf{Giả định Markov (Markov Assumption)}:
+
+\begin{tcolorbox}[
+    title=Giả định Markov,
+    colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
+]
+Xác suất của từ tiếp theo không phụ thuộc vào toàn bộ lịch sử các từ trước đó, mà chỉ phụ thuộc vào một vài từ đứng ngay trước nó. Cụ thể, nó chỉ phụ thuộc vào $N-1$ từ gần nhất.
+\end{tcolorbox}
+
+Dựa trên giả định này, xác suất của từ $w_i$ được xấp xỉ như sau:
+$$ P(w_i | w_1, \dots, w_{i-1}) \approx P(w_i | w_{i-N+1}, \dots, w_{i-1}) $$
+
+Một chuỗi gồm $N$ từ được gọi là một \textbf{N-gram}. Dựa trên giá trị của $N$, chúng ta có các mô hình cụ thể:
+\begin{itemize}
+    \item \textbf{Unigram (N=1):} Xác suất của một từ không phụ thuộc vào bất kỳ từ nào trước đó. $P(w_i|w_1, \dots, w_{i-1}) \approx P(w_i)$. Mô hình này tương đương với Bag-of-Words.
+    \item \textbf{Bigram (N=2):} Xác suất của một từ chỉ phụ thuộc vào từ đứng ngay trước nó. $P(w_i|w_1, \dots, w_{i-1}) \approx P(w_i|w_{i-1})$.
+    \item \textbf{Trigram (N=3):} Xác suất của một từ phụ thuộc vào hai từ đứng ngay trước nó. $P(w_i|w_1, \dots, w_{i-1}) \approx P(w_i|w_{i-2}, w_{i-1})$.
+\end{itemize}
+
+\subsubsection{Ước lượng xác suất N-gram}
+Xác suất của một N-gram có thể được ước lượng dễ dàng từ một kho văn bản huấn luyện bằng phương pháp Ước lượng Hợp lý Cực đại (MLE):
+$$ P(w_i | w_{i-N+1}, \dots, w_{i-1}) = \frac{\text{Count}(w_{i-N+1}, \dots, w_{i-1}, w_i)}{\text{Count}(w_{i-N+1}, \dots, w_{i-1})} $$
+Nói cách khác, xác suất của một bigram $P(w_i|w_{i-1})$ là số lần chuỗi "$w_{i-1} w_i$" xuất hiện, chia cho số lần tiền tố "$w_{i-1}$" xuất hiện.
+
+\begin{example}{Xây dựng và sử dụng mô hình Bigram}{ex:bigram_model}
+    Giả sử chúng ta có một kho văn bản rất nhỏ sau khi đã thêm các ký hiệu bắt đầu (`<s>`) và kết thúc (`</s>`) câu:
+    \begin{itemize}
+        \item `<s> tôi thích học NLP </s>`
+        \item `<s> tôi thích AI </s>`
+        \item `<s> học NLP rất vui </s>`
+    \end{itemize}
+
+    \textbf{1. Đếm tần suất Bigram:}
+    \begin{center}
+    \begin{tabular}{|l|c||l|c|}
+        \hline
+        \textbf{Bigram} & \textbf{Count} & \textbf{Bigram} & \textbf{Count} \\
+        \hline
+        `(<s>, tôi)` & 2 & `(học, NLP)` & 2 \\
+        `(tôi, thích)` & 2 & `(NLP, </s>)` & 1 \\
+        `(thích, học)` & 1 & `(NLP, rất)` & 1 \\
+        `(thích, AI)` & 1 & `(rất, vui)` & 1 \\
+        `(AI, </s>)` & 1 & `(vui, </s>)` & 1 \\
+        `(<s>, học)` & 1 & & \\
+        \hline
+    \end{tabular}
+    \end{center}
+
+    \textbf{2. Đếm tần suất Unigram (tiền tố):}
+    `Count(<s>) = 3`, `Count(tôi) = 2`, `Count(thích) = 2`, `Count(học) = 2`, `Count(NLP) = 2`, ...
+
+    \textbf{3. Tính xác suất Bigram:}
+    \begin{itemize}
+        \item $P(\text{tôi} | \text{<s>}) = \frac{\text{Count(<s>, tôi)}}{\text{Count(<s>)}} = \frac{2}{3}$
+        \item $P(\text{học} | \text{thích}) = \frac{\text{Count(thích, học)}}{\text{Count(thích)}} = \frac{1}{2}$
+        \item $P(\text{AI} | \text{thích}) = \frac{\text{Count(thích, AI)}}{\text{Count(thích)}} = \frac{1}{2}$
+        \item $P(\text{rất} | \text{NLP}) = \frac{\text{Count(NLP, rất)}}{\text{Count(NLP)}} = \frac{1}{2}$
+    \end{itemize}
+
+    \textbf{4. Tính xác suất cho một câu mới:}
+    Hãy tính xác suất của câu "tôi thích NLP":
+    $P(\text{<s> tôi thích NLP </s>}) = P(\text{tôi}|\text{<s>}) \times P(\text{thích}|\text{tôi}) \times P(\text{NLP}|\text{thích}) \times P(\text{</s>}|\text{NLP})$
+
+    Tuy nhiên, hãy nhìn vào bảng tần suất. Bigram `(thích, NLP)` chưa từng xuất hiện! `Count(thích, NLP) = 0`.
+    Điều này dẫn đến $P(\text{NLP}|\text{thích}) = 0$.
+    Và kết quả là $P(\text{<s> tôi thích NLP </s>}) = 0$.
+
+    Mô hình của chúng ta đã gán xác suất bằng 0 cho một câu hoàn toàn hợp lý. Đây chính là \textbf{vấn đề xác suất zero}.
+\end{example}
+
+\subsection{Làm mịn (Smoothing): Giải quyết vấn đề Xác suất Zero}
+\label{ssec:smoothing}
+
+Vấn đề xác suất zero xảy ra vì kho văn bản huấn luyện của chúng ta luôn có giới hạn và không thể chứa tất cả các N-gram có thể có trong một ngôn ngữ. Việc gán xác suất bằng 0 cho một N-gram chưa từng thấy là rất nguy hiểm, vì nó sẽ khiến xác suất của cả câu bằng 0.
+
+\textbf{Làm mịn (Smoothing)} là một tập hợp các kỹ thuật được thiết kế để "vay mượn" một phần khối lượng xác suất từ các N-gram đã thấy và phân phối lại nó cho các N-gram chưa từng thấy.
+
+\subsubsection{Cộng Laplace (Laplace Add-One Smoothing)}
+Đây là kỹ thuật làm mịn đơn giản nhất và trực quan nhất. Ý tưởng là: Hãy giả vờ rằng chúng ta đã thấy tất cả các N-gram có thể có ít nhất một lần.
+
+\begin{definition}{Làm mịn cộng Laplace}{def:laplace}
+    Khi tính toán xác suất, chúng ta cộng 1 vào tử số (số đếm N-gram) và cộng $V$ (kích thước từ vựng) vào mẫu số (số đếm tiền tố).
+    $$ P_{\text{Laplace}}(w_i | w_{i-1}) = \frac{\text{Count}(w_{i-1}, w_i) + 1}{\text{Count}(w_{i-1}) + V} $$
+\end{definition}
+
+\begin{example}{Áp dụng làm mịn Laplace}{ex:laplace_example}
+    Quay trở lại ví dụ Bigram. Giả sử từ vựng của chúng ta gồm 6 từ: `tôi, thích, học, NLP, AI, rất, vui` cộng với `<s>, </s>`, vậy $V=9$.
+    Chúng ta muốn tính lại $P(\text{NLP}|\text{thích})$.
+    \begin{itemize}
+        \item `Count(thích, NLP) = 0`
+        \item `Count(thích) = 2`
+    \end{itemize}
+    
+    $$ P_{\text{Laplace}}(\text{NLP} | \text{thích}) = \frac{0 + 1}{2 + 9} = \frac{1}{11} $$
+    
+    Xác suất bây giờ đã khác 0! Tuy nhiên, hãy xem điều gì xảy ra với các xác suất khác:
+    $$ P_{\text{Laplace}}(\text{học} | \text{thích}) = \frac{1 + 1}{2 + 9} = \frac{2}{11} $$
+    
+    \textbf{Vấn đề của Laplace Smoothing:} Nó hoạt động, nhưng nó thường "cho đi" quá nhiều khối lượng xác suất. Trong các từ vựng lớn, nó làm thay đổi đáng kể xác suất của các N-gram đã thấy, khiến mô hình kém chính xác hơn.
+\end{example}
+
+\subsubsection{Các kỹ thuật làm mịn tiên tiến hơn}
+Do nhược điểm của Laplace, nhiều kỹ thuật phức tạp hơn đã được phát triển. Dưới đây là ý tưởng chính của một số phương pháp phổ biến:
+
+\paragraph{Làm mịn Add-k (Add-k Smoothing)}
+Một sự tổng quát hóa của Laplace, thay vì cộng 1, chúng ta cộng một hằng số nhỏ $k$ (ví dụ: $k=0.1$).
+$$ P_{\text{Add-k}}(w_i | w_{i-1}) = \frac{\text{Count}(w_{i-1}, w_i) + k}{\text{Count}(w_{i-1}) + kV} $$
+Điều này giúp giảm bớt việc "cho đi" quá nhiều xác suất, nhưng việc chọn $k$ tối ưu cũng là một thách thức.
+
+\paragraph{Good-Turing Smoothing}
+Ý tưởng cốt lõi là sử dụng số lượng các N-gram chỉ xuất hiện một lần (`Count=1`) để ước tính tổng xác suất của các N-gram chưa từng thấy (`Count=0`). Nó dựa trên một quan sát thông minh: tần suất của những thứ bạn chưa thấy có thể được ước tính bằng tần suất của những thứ bạn chỉ thấy một lần.
+
+\paragraph{Kneser-Ney Smoothing}
+Đây được coi là kỹ thuật làm mịn \textbf{hiện đại và hiệu quả nhất} cho các mô hình N-gram. Nó rất phức tạp nhưng ý tưởng chính là: xác suất của một N-gram chưa thấy không nên được tính dựa trên tần suất của tiền tố, mà nên dựa trên \textit{số lượng các ngữ cảnh khác nhau mà từ cuối cùng của N-gram đó đã xuất hiện}. Nó trả lời câu hỏi "Từ 'San Francisco' có khả năng đi sau từ 'I live in' như thế nào?". Kneser-Ney sẽ ưu tiên các từ như 'Francisco' (vốn thường đi sau các từ khác như 'San') hơn là các từ phổ biến nhưng ít đa dạng về ngữ cảnh.
+
+\subsection{Tổng kết và Hạn chế của N-gram}
+Mô hình N-gram là một công cụ mạnh mẽ, tương đối đơn giản và đã thống trị các ứng dụng NLP trong nhiều năm. Tuy nhiên, chúng có những hạn chế cố hữu:
+\begin{itemize}
+    \item \textbf{Vấn đề thưa thớt (Sparsity):} Mặc dù có các kỹ thuật làm mịn, vấn đề này vẫn tồn tại, đặc biệt với N > 3. Việc lưu trữ tất cả các N-gram cũng rất tốn bộ nhớ.
+    \item \textbf{Không nắm bắt được phụ thuộc tầm xa:} Một mô hình trigram không thể nắm bắt được mối liên hệ giữa chủ ngữ và động từ trong câu "The man who I saw yesterday in the park \underline{is} my friend." Nó chỉ nhìn thấy "in the park \underline{is}" và sẽ gặp khó khăn.
+    \item \textbf{Không có khái niệm về ngữ nghĩa:} Giống như BoW, N-gram không hiểu rằng "mèo" và "hổ" đều là động vật.
+\end{itemize}
+
+Những hạn chế này chính là động lực thúc đẩy sự ra đời của các mô hình dựa trên mạng nơ-ron và word embeddings, những chủ đề chúng ta sẽ khám phá trong phần tiếp theo của chương này và các chương sau.

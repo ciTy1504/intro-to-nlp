@@ -1,0 +1,110 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters4/chap4_3.tex
+
+\section{Recipe 3: Fine-tuning một LLM cho Tác vụ Phân loại}
+\label{sec:recipe_classification_finetuning}
+
+\textbf{Mục tiêu:} Fine-tune một LLM lớn (ví dụ: Llama 2 7B) cho một tác vụ phân loại văn bản một cách hiệu quả về bộ nhớ bằng cách sử dụng QLoRA.
+
+\textbf{Thành phần chính:}
+\begin{itemize}
+    \item \textbf{`transformers`:} Sử dụng `AutoModelForSequenceClassification` và `Trainer` API.
+    \item \textbf{`datasets`:} Để tải và xử lý bộ dữ liệu.
+    \item \textbf{`peft`:} Để áp dụng cấu hình LoRA.
+    \item \textbf{`bitsandbytes`:} Để lượng tử hóa mô hình sang 4-bit.
+\end{itemize}
+
+\textbf{Các bước thực hiện:}
+\begin{enumerate}
+    \item \textbf{Tải dữ liệu và tokenizer:} Tải một bộ dữ liệu phân loại và tokenizer tương ứng.
+    \item \textbf{Tiền xử lý dữ liệu:} Tokenize văn bản.
+    \item \textbf{Tải mô hình cơ sở đã được lượng tử hóa:} Tải LLM với tùy chọn `load\_in\_4bit=True`.
+    \item \textbf{Áp dụng cấu hình PEFT (LoRA):} Bọc mô hình cơ sở bằng một `PeftModel`.
+    \item \textbf{Thiết lập `Trainer`:} Định nghĩa `TrainingArguments` và `Trainer`, truyền vào hàm `compute\_metrics`.
+    \item \textbf{Huấn luyện:} Bắt đầu quá trình fine-tuning.
+\end{enumerate}
+
+\textbf{Mã nguồn:}
+
+\begin{example}{Fine-tuning một LLM cho Tác vụ Phân loại}{ex:finetune_classificationclassification}
+    \begin{minted}{python}
+    # Bước 1: Cài đặt
+    # pip install transformers datasets accelerate evaluate peft bitsandbytes
+    import torch
+    from datasets import load_dataset
+    from transformers import (
+        AutoModelForSequenceClassification,
+        AutoTokenizer,
+        TrainingArguments,
+        Trainer,
+        BitsAndBytesConfig
+    )
+    from peft import LoraConfig, get_peft_model
+    import numpy as np
+    import evaluate
+    
+    # Bước 2: Tải dữ liệu và tokenizer
+    dataset = load_dataset("yelp_review_full")
+    model_id = "meta-llama/Llama-2-7b-hf" # Cần quyền truy cập
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer.pad_token = tokenizer.eos_token # Llama không có pad token
+    
+    def tokenize_function(examples):
+        return tokenizer(examples["text"], padding="max_length", truncation=True)
+    
+    tokenized_datasets = dataset.map(tokenize_function, batched=True)
+    # Giảm kích thước để chạy demo nhanh
+    small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
+    small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
+    
+    # Bước 3: Tải mô hình cơ sở đã lượng tử hóa
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.float16,
+    )
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_id,
+        num_labels=5, # Yelp review có 5 sao
+        quantization_config=bnb_config,
+        device_map="auto"
+    )
+    model.config.pad_token_id = model.config.eos_token_id
+    
+    # Bước 4: Áp dụng cấu hình PEFT (LoRA)
+    lora_config = LoraConfig(r=8, lora_alpha=16, lora_dropout=0.05, task_type="SEQ_CLS")
+    peft_model = get_peft_model(model, lora_config)
+    peft_model.print_trainable_parameters()
+    
+    # Bước 5: Thiết lập Trainer
+    metric = evaluate.load("accuracy")
+    def compute_metrics(eval_preds):
+        logits, labels = eval_preds
+        predictions = np.argmax(logits, axis=-1)
+        return metric.compute(predictions=predictions, references=labels)
+    
+    training_args = TrainingArguments(
+        output_dir="llama-7b-lora-classification",
+        learning_rate=2e-4,
+        per_device_train_batch_size=4,
+        per_device_eval_batch_size=4,
+        num_train_epochs=1,
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
+        load_best_model_at_end=True,
+    )
+    
+    trainer = Trainer(
+        model=peft_model,
+        args=training_args,
+        train_dataset=small_train_dataset,
+        eval_dataset=small_eval_dataset,
+        compute_metrics=compute_metrics,
+        tokenizer=tokenizer,
+    )
+    
+    # Bước 6: Huấn luyện
+    trainer.train()
+    \end{minted}
+\end{example}
+\textbf{Kết quả mong đợi:} Một mô hình LLM lớn được fine-tune hiệu quả trên một GPU tiêu dùng. Chỉ có các trọng số LoRA (vài MB) được lưu lại, thay vì toàn bộ mô hình (vài chục GB).

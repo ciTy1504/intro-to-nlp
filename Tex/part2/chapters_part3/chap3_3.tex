@@ -1,0 +1,81 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters3/chap3_3.tex
+
+\section{Đóng gói và Phục vụ Mô hình}
+\label{sec:packaging_serving}
+Sau khi đã có một mô hình đã được tối ưu hóa, làm thế nào để biến nó thành một dịch vụ mà các ứng dụng khác có thể sử dụng?
+
+\subsection{Xây dựng API với FastAPI}
+\label{ssec:fastapi}
+\begin{itemize}
+    \item \textbf{Vấn đề:} Chúng ta cần một cách để "gói" mô hình của mình lại và cung cấp một giao diện web (API) để nhận đầu vào và trả về dự đoán.
+    \item \textbf{FastAPI là gì?} Là một framework web Python hiện đại, hiệu năng cao, được thiết kế đặc biệt để xây dựng các API.
+    \item \textbf{Tại sao lại phổ biến cho ML?}
+        \begin{itemize}
+            \item \textbf{Hiệu năng cao:} Dựa trên Starlette (cho phần web) và Pydantic (cho phần xác thực dữ liệu), FastAPI có hiệu năng tương đương với NodeJS và Go.
+            \item \textbf{Hỗ trợ bất đồng bộ (Async):} Rất quan trọng để xử lý nhiều yêu cầu cùng lúc một cách hiệu quả.
+            \item \textbf{Tự động tạo tài liệu (Docs):} Tự động tạo ra các trang tài liệu API tương tác (Swagger UI và ReDoc), giúp việc kiểm thử và tích hợp trở nên cực kỳ dễ dàng.
+        \end{itemize}
+\end{itemize}
+\begin{example}{Một API phân loại văn bản đơn giản với FastAPI}{ex:fastapi_example}
+    \begin{minted}{python}
+    # File: main.py
+    from fastapi import FastAPI
+    from pydantic import BaseModel
+    from transformers import pipeline
+
+    # Khởi tạo ứng dụng FastAPI
+    app = FastAPI()
+
+    # Tải mô hình (nên thực hiện một lần khi khởi động)
+    classifier = pipeline("sentiment-analysis")
+
+    # Định nghĩa cấu trúc dữ liệu đầu vào
+    class TextInput(BaseModel):
+        text: str
+
+    # Định nghĩa API endpoint
+    @app.post("/predict/")
+    def predict_sentiment(item: TextInput):
+        # Lấy văn bản từ request
+        text_to_analyze = item.text
+        # Thực hiện dự đoán
+        result = classifier(text_to_analyze)
+        # Trả về kết quả
+        return result[0]
+
+    # Để chạy: uvicorn main:app --reload
+    \end{minted}
+\end{example}
+
+\subsection{Container hóa với Docker}
+\label{ssec:docker}
+\begin{itemize}
+    \item \textbf{Vấn đề:} Ứng dụng FastAPI của bạn chạy tốt trên máy của bạn, nhưng khi triển khai lên một máy chủ khác, nó có thể bị lỗi do thiếu thư viện, sai phiên bản Python, hoặc các vấn đề môi trường khác.
+    \item \textbf{Docker là gì?} Là một nền tảng cho phép bạn "đóng gói" ứng dụng của mình và tất cả các thành phần phụ thuộc của nó (thư viện, file hệ thống, biến môi trường) vào một đơn vị tiêu chuẩn, có thể di động, gọi là \textbf{container}.
+    \item \textbf{Lợi ích:} "Build once, run anywhere." Một container sẽ chạy giống hệt nhau trên máy tính cá nhân, máy chủ nội bộ, hay trên đám mây. Nó giải quyết triệt để vấn đề "nó chạy được trên máy của tôi mà!".
+\end{itemize}
+\begin{tcolorbox}[title=Một Dockerfile đơn giản cho ứng dụng FastAPI, colback=black!5!white, colframe=black!80!white]
+    \begin{minted}{docker}
+    # File: Dockerfile
+
+    # 1. Sử dụng một image Python chính thức làm nền
+    FROM python:3.9-slim
+
+    # 2. Đặt thư mục làm việc bên trong container
+    WORKDIR /app
+
+    # 3. Sao chép file requirements vào trước để tận dụng cache
+    COPY requirements.txt .
+
+    # 4. Cài đặt các thư viện phụ thuộc
+    RUN pip install --no-cache-dir -r requirements.txt
+
+    # 5. Sao chép toàn bộ mã nguồn của ứng dụng vào
+    COPY . .
+tcolorbox
+    # 6. Lệnh sẽ được chạy khi container khởi động
+    CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+    \end{minted}
+\end{tcolorbox}
+Với file này, bạn có thể xây dựng một image (`docker build`) và chạy ứng dụng của mình (`docker run`) ở bất cứ đâu có Docker.

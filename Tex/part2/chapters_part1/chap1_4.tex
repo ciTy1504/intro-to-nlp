@@ -1,0 +1,122 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters1/chap1_4.tex
+
+\section{Kỹ thuật Tăng cường Dữ liệu (Data Augmentation)}
+\label{sec:data_augmentation}
+
+\begin{tcolorbox}[
+    title=Vấn đề: "Cơn đói" Dữ liệu,
+    colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
+]
+Các mô hình học sâu, đặc biệt là các mô hình Transformer lớn, rất "đói" dữ liệu. Khi được fine-tune trên một bộ dữ liệu nhỏ, chúng có nguy cơ cao bị \textbf{quá khớp (overfitting)} -- tức là chúng "học thuộc lòng" các ví dụ trong tập huấn luyện thay vì học quy luật tổng quát, dẫn đến hiệu năng kém trên dữ liệu mới.
+\end{tcolorbox}
+
+\textbf{Tăng cường Dữ liệu (Data Augmentation)} là quá trình tạo ra các mẫu dữ liệu huấn luyện mới, "giả" nhưng hợp lý, từ các mẫu dữ liệu hiện có. Mục tiêu là làm tăng kích thước và sự đa dạng của bộ dữ liệu huấn luyện, giúp mô hình trở nên mạnh mẽ hơn (more robust) và có khả năng tổng quát hóa tốt hơn.
+
+Điều quan trọng là các phép biến đổi phải \textbf{giữ nguyên nhãn (label-preserving)}. Ví dụ, nếu bạn thay đổi một câu có cảm xúc "Tích cực", câu mới được tạo ra cũng phải giữ nguyên cảm xúc "Tích cực".
+
+Chúng ta sẽ khám phá một số kỹ thuật tăng cường dữ liệu phổ biến, từ đơn giản đến phức tạp.
+
+\subsection{EDA: Các Phép toán Thay thế Đơn giản}
+\label{ssec:eda}
+EDA (Easy Data Augmentation - Wei \& Zou, 2019) là một bộ bốn kỹ thuật đơn giản nhưng lại hiệu quả một cách đáng ngạc nhiên.
+
+\begin{itemize}
+    \item \textbf{Synonym Replacement (SR) - Thay thế bằng Từ đồng nghĩa:}
+        \begin{itemize}
+            \item \textbf{Cơ chế:} Chọn ngẫu nhiên $n$ từ trong câu (không phải là stop words) và thay thế mỗi từ bằng một từ đồng nghĩa của nó, thường được lấy từ một kho từ vựng như WordNet.
+            \item \textbf{Ví dụ:} "Bộ phim này rất \textbf{tuyệt vời} và \textbf{hấp dẫn}." $\rightarrow$ "Bộ phim này rất \textbf{xuất sắc} và \textbf{lôi cuốn}."
+        \end{itemize}
+    \item \textbf{Random Insertion (RI) - Chèn ngẫu nhiên:}
+        \begin{itemize}
+            \item \textbf{Cơ chế:} Tìm các từ đồng nghĩa của một vài từ ngẫu nhiên trong câu, sau đó chèn các từ đồng nghĩa đó vào các vị trí ngẫu nhiên trong câu.
+            \item \textbf{Ví dụ:} "Bộ phim này rất tuyệt vời." $\rightarrow$ "Bộ phim \textbf{xuất sắc} này rất tuyệt vời."
+        \end{itemize}
+    \item \textbf{Random Swap (RS) - Hoán đổi ngẫu nhiên:}
+        \begin{itemize}
+            \item \textbf{Cơ chế:} Chọn ngẫu nhiên hai từ trong câu và hoán đổi vị trí của chúng.
+            \item \textbf{Ví dụ:} "Bộ phim \textbf{này} rất \textbf{tuyệt vời}." $\rightarrow$ "Bộ phim \textbf{tuyệt vời} rất \textbf{này}."
+        \end{itemize}
+    \item \textbf{Random Deletion (RD) - Xóa ngẫu nhiên:}
+        \begin{itemize}
+            \item \textbf{Cơ chế:} Xóa ngẫu nhiên mỗi từ trong câu với một xác suất $p$ nào đó.
+            \item \textbf{Ví dụ:} "Bộ phim này rất tuyệt vời và hấp dẫn." $\rightarrow$ "Bộ phim này tuyệt vời và hấp dẫn."
+        \end{itemize}
+\end{itemize}
+\textbf{Lưu ý:} Các kỹ thuật EDA có thể tạo ra các câu không tự nhiên hoặc sai ngữ pháp (đặc biệt là RS và RI). Tuy nhiên, việc đưa một ít "nhiễu" này vào quá trình huấn luyện đôi khi lại giúp mô hình trở nên mạnh mẽ hơn. Chúng rất dễ triển khai và là một điểm khởi đầu tốt.
+
+\subsection{Back-Translation: Tận dụng Sức mạnh của Dịch máy}
+\label{ssec:back_translation}
+Đây là một trong những kỹ thuật tăng cường dữ liệu chất lượng cao và phổ biến nhất.
+
+\subsubsection{Trực giác cốt lõi}
+Nếu chúng ta dịch một câu từ ngôn ngữ A sang ngôn ngữ B, rồi lại dịch ngược kết quả từ B trở lại A, chúng ta thường sẽ nhận được một câu có cùng ý nghĩa với câu gốc, nhưng được diễn đạt bằng các từ ngữ và cấu trúc câu khác.
+
+\begin{tcolorbox}[
+    title=Quy trình Back-Translation,
+    colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
+]
+Câu gốc (Tiếng Việt) $\xrightarrow{\text{Dịch máy (Vi } \rightarrow \text{ En)}}$ Câu trung gian (Tiếng Anh) $\xrightarrow{\text{Dịch máy (En } \rightarrow \text{ Vi)}}$ Câu mới (Tiếng Việt)
+\end{tcolorbox}
+
+\begin{example}{Minh họa Back-Translation}{ex:back_translation_example}
+    \begin{itemize}
+        \item \textbf{Câu gốc (Vi):} "Tôi nghĩ rằng đây là một ý tưởng cực kỳ thông minh."
+        \item \textbf{Dịch sang Anh:} "I think that this is an extremely intelligent idea."
+        \item \textbf{Dịch ngược về Việt:} "Tôi cho rằng đây là một ý tưởng vô cùng thông minh."
+    \end{itemize}
+    Câu mới được tạo ra có cùng nhãn với câu gốc nhưng lại là một mẫu dữ liệu huấn luyện mới, giúp mô hình học cách khái quát hóa qua các cách diễn đạt khác nhau.
+\end{example}
+
+\subsubsection{Ưu điểm và Nhược điểm}
+\begin{itemize}
+    \item \textbf{Ưu điểm:}
+        \begin{itemize}
+            \item Thường tạo ra các câu có chất lượng ngữ pháp và ngữ nghĩa cao hơn nhiều so với các phương pháp EDA.
+            \item Có khả năng tạo ra sự đa dạng lớn về cả từ vựng và cấu trúc câu.
+        \end{itemize}
+    \item \textbf{Nhược điểm:}
+        \begin{itemize}
+            \item Yêu cầu phải có các mô hình dịch máy chất lượng cao.
+            \item Chi phí tính toán cao hơn vì phải gọi đến các mô hình dịch.
+            \item Có nguy cơ ý nghĩa bị thay đổi ("lost in translation") nếu các mô hình dịch không đủ tốt.
+        \end{itemize}
+\end{itemize}
+
+\subsection{Tăng cường Dữ liệu dựa trên LLM}
+\label{ssec:llm_based_augmentation}
+Với sự ra đời của các LLM mạnh mẽ, chúng ta có thể thực hiện các phép tăng cường dữ liệu tinh vi hơn nhiều.
+
+\subsubsection{Diễn giải lại (Paraphrasing)}
+Đây là một phiên bản nâng cao của Back-Translation. Thay vì đi qua một ngôn ngữ khác, chúng ta có thể yêu cầu trực tiếp một LLM:
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black, sharp corners]
+\textbf{Prompt:} \\
+Hãy viết lại câu sau đây theo 5 cách khác nhau, nhưng vẫn giữ nguyên ý nghĩa cốt lõi. \\
+Câu gốc: "Sản phẩm này có chất lượng tuyệt vời so với giá tiền."
+\end{tcolorbox}
+LLM có thể sinh ra các phiên bản như: "Chất lượng của sản phẩm này vượt xa mong đợi so với mức giá.", "Đây là một món hời, chất lượng rất tốt.", v.v.
+
+\subsubsection{Tạo dữ liệu theo ngữ cảnh}
+Chúng ta có thể yêu cầu LLM tạo ra các ví dụ phù hợp với một kịch bản cụ thể, đặc biệt hữu ích để xử lý các "trường hợp rìa" (edge cases) mà mô hình thường làm sai.
+
+\begin{example}{Tạo dữ liệu cho các trường hợp phủ định}{ex:llm_augmentation_negation}
+    Giả sử phân tích lỗi cho thấy mô hình phân tích cảm xúc của chúng ta thường sai ở các câu có yếu tố phủ định. Chúng ta có thể dùng prompt:
+    \begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black, sharp corners]
+    \textbf{Prompt:} \\
+    Dưới đây là một câu có cảm xúc Tích cực. Hãy viết lại nó để biến nó thành một câu có cảm xúc Tiêu cực bằng cách sử dụng các từ ngữ phủ định hoặc mỉa mai, nhưng vẫn giữ chủ đề chính.
+
+    \textbf{Câu gốc (Tích cực):} "Dịch vụ khách hàng của họ rất nhanh và hiệu quả."
+
+    \textbf{Câu mới (Tiêu cực):}
+    \end{tcolorbox}
+    \textbf{Đầu ra có thể có của LLM:} `"Đừng mong đợi dịch vụ khách hàng của họ sẽ nhanh và hiệu quả."` hoặc `"Nhanh và hiệu quả' không phải là những từ tôi sẽ dùng để mô tả dịch vụ khách hàng của họ."`
+\end{example}
+Cách tiếp cận này cho phép chúng ta tạo ra dữ liệu một cách có chủ đích để vá các "điểm yếu" cụ thể của mô hình.
+
+\subsection{Lựa chọn Kỹ thuật Tăng cường}
+\begin{itemize}
+    \item \textbf{Bắt đầu đơn giản:} Luôn bắt đầu với EDA. Nó nhanh, miễn phí và có thể mang lại những cải thiện bất ngờ.
+    \item \textbf{Khi cần chất lượng cao:} Back-Translation là một lựa chọn mạnh mẽ nếu bạn có quyền truy cập vào các API dịch tốt.
+    \item \textbf{Khi cần sự kiểm soát và tinh vi:} Tận dụng LLM để diễn giải lại hoặc tạo ra dữ liệu cho các trường hợp cụ thể là hướng đi hiện đại và mạnh mẽ nhất.
+    \item \textbf{Thận trọng:} Không phải lúc nào tăng cường dữ liệu cũng giúp ích. Nếu các mẫu dữ liệu mới được tạo ra có chất lượng thấp hoặc làm thay đổi nhãn, chúng có thể làm hại mô hình. Luôn đánh giá hiệu năng trên một tập validation riêng biệt để kiểm tra xem việc tăng cường có thực sự hiệu quả hay không.
+\end{itemize}

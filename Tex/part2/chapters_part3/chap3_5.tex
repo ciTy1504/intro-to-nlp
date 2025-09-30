@@ -1,0 +1,63 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters3/chap3_5.tex
+
+\section{Vòng đời MLOps cho LLM}
+\label{sec:llmops_lifecycle}
+Triển khai mô hình không phải là điểm kết thúc. Để một ứng dụng AI thành công trong dài hạn, nó cần phải được giám sát, bảo trì, và cải tiến liên tục. Đây là vòng đời MLOps.
+
+\subsection{Giám sát mô hình (Model Monitoring)}
+\label{ssec:model_monitoring}
+Sau khi triển khai, chúng ta cần theo dõi hai loại vấn đề chính:
+
+\paragraph{1. Giám sát Hệ thống (System Monitoring)}
+\begin{itemize}
+    \item \textbf{Mục tiêu:} Đảm bảo dịch vụ API đang hoạt động ổn định.
+    \item \textbf{Các metric cần theo dõi:}
+        \begin{itemize}
+            \item \textbf{Độ trễ (Latency):} Thời gian để xử lý một yêu cầu.
+            \item \textbf{Thông lượng (Throughput):} Số lượng yêu cầu được xử lý mỗi giây.
+            \item \textbf{Tỷ lệ lỗi (Error Rate):} Tỷ lệ các yêu cầu trả về lỗi (ví dụ: HTTP 500).
+            \item \textbf{Sử dụng tài nguyên:} Mức sử dụng CPU, GPU, RAM.
+        \end{itemize}
+\end{itemize}
+
+\paragraph{2. Giám sát Chất lượng Mô hình (Model Quality Monitoring)}
+\begin{itemize}
+    \item \textbf{Mục tiêu:} Đảm bảo mô hình vẫn đang đưa ra các dự đoán tốt trong thế giới thực.
+    \item \textbf{Thách thức:} Chúng ta thường không có "nhãn thật" ngay lập tức để so sánh.
+    \item \textbf{Phát hiện Trôi dạt Dữ liệu (Data Drift):}
+        \begin{itemize}
+            \item \textbf{Vấn đề:} Phân phối của dữ liệu trong môi trường production (live data) bắt đầu khác biệt so với phân phối của dữ liệu đã được dùng để huấn luyện mô hình. Ví dụ, một mô hình phân tích cảm xúc được huấn luyện trên các bình luận về phim ảnh có thể hoạt động kém đi khi người dùng bắt đầu bình luận về các sự kiện chính trị.
+            \item \textbf{Cách phát hiện:} So sánh các thuộc tính thống kê giữa dữ liệu live và dữ liệu huấn luyện. Đối với văn bản, chúng ta có thể so sánh \textbf{phân phối của các vector embedding}. Nếu embedding của dữ liệu live bắt đầu trôi dạt ra xa khỏi embedding của dữ liệu huấn luyện, đó là một dấu hiệu mạnh mẽ của data drift.
+        \end{itemize}
+    \item \textbf{Phát hiện Trôi dạt Khái niệm (Concept Drift):}
+        \begin{itemize}
+            \item \textbf{Vấn đề:} Mối quan hệ giữa đầu vào và đầu ra thay đổi. Ví dụ, ý nghĩa của từ "corona" đã thay đổi hoàn toàn sau năm 2020.
+            \item \textbf{Cách phát hiện:} Thường khó phát hiện hơn và yêu cầu phải có một luồng phản hồi từ người dùng hoặc gán nhãn lại một phần dữ liệu live.
+        \end{itemize}
+\end{itemize}
+
+\subsection{Quy trình Tái huấn luyện và Cập nhật Mô hình}
+\label{ssec:retraining_pipeline}
+Khi việc giám sát cho thấy hiệu năng của mô hình đang suy giảm, chúng ta cần một quy trình để cập nhật nó.
+\begin{itemize}
+    \item \textbf{Thu thập Dữ liệu mới và Phản hồi:} Thiết lập một "vòng lặp phản hồi" (feedback loop) để thu thập dữ liệu mới từ môi trường production, đặc biệt là các trường hợp mà mô hình dự đoán sai.
+    \item \textbf{Gán nhãn lại (Re-labeling):} Gán nhãn cho bộ dữ liệu mới này.
+    \item \textbf{Tái huấn luyện (Re-training):} Huấn luyện lại mô hình trên một bộ dữ liệu kết hợp giữa dữ liệu cũ và dữ liệu mới.
+    \item \textbf{Đánh giá và So sánh:} Đánh giá mô hình mới trên một tập kiểm tra được giữ riêng. Chỉ triển khai mô hình mới nếu nó thực sự hoạt động tốt hơn mô hình cũ.
+    \item \textbf{Triển khai theo chiến lược an toàn:}
+        \begin{itemize}
+            \item \textbf{Shadow Deployment:} Triển khai mô hình mới song song với mô hình cũ, chỉ để ghi lại dự đoán của nó mà không ảnh hưởng đến người dùng, nhằm so sánh hiệu năng.
+            \item \textbf{Canary Release / A/B Testing:} Dần dần chuyển một phần nhỏ traffic của người dùng sang mô hình mới và theo dõi chặt chẽ các metric kinh doanh trước khi chuyển toàn bộ.
+        \end{itemize}
+\end{itemize}
+Vòng đời MLOps này biến việc phát triển mô hình từ một dự án một lần thành một quy trình liên tục, đảm bảo rằng ứng dụng AI của bạn luôn được cải tiến và thích ứng với thế giới đang thay đổi.
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG 3}
+\end{center}
+\textit{Chương 3 đã đưa chúng ta vào hành trình từ một mô hình đã được huấn luyện đến một dịch vụ AI hoàn chỉnh, hoạt động trong môi trường production. Chúng ta đã học cách tối ưu hóa, đóng gói, phục vụ và giám sát các mô hình ngôn ngữ lớn. Việc trang bị các kỹ năng MLOps này là cực kỳ quan trọng, đảm bảo rằng các sản phẩm AI không chỉ thông minh mà còn mạnh mẽ, có khả năng mở rộng và bền vững. Giờ đây, bạn đã sẵn sàng để kết hợp tất cả các kiến thức đã học và áp dụng chúng vào việc xây dựng các ứng dụng cụ thể trong chương cuối cùng của giáo trình.}

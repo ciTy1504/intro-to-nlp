@@ -1,0 +1,133 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap6_6.tex (đã chuyển sang chương 6)
+% Nội dung cho Phần 6.6: Các Kỹ thuật Biểu diễn Nâng cao cho Truy xuất
+
+
+\section{Các Kỹ thuật Biểu diễn Nâng cao cho Truy xuất}
+\label{sec:advanced_representation_retrieval}
+
+\subsection{Biểu diễn Đa ngôn ngữ (Cross-lingual Embeddings)}
+\label{ssec:cross_lingual_embeddings}
+
+\subsubsection*{Vấn đề}
+Các mô hình như Word2Vec hay GloVe khi huấn luyện riêng biệt trên từng ngôn ngữ sẽ tạo ra các không gian vector độc lập, không có mối liên hệ.  
+Ví dụ: vector của từ \textit{"máy tính"} (tiếng Việt) và \textit{"computer"} (tiếng Anh) có thể nằm ở vị trí hoàn toàn ngẫu nhiên trong hai không gian khác nhau, dù ý nghĩa giống nhau.
+
+\subsubsection*{Mục tiêu}
+\textbf{Biểu diễn đa ngôn ngữ} tìm cách xây dựng một \textbf{không gian vector chung (shared vector space)}, trong đó các từ/câu có nghĩa tương đương ở các ngôn ngữ khác nhau sẽ được ánh xạ gần nhau. Điều này cho phép:
+\begin{itemize}
+    \item Tìm kiếm thông tin đa ngôn ngữ (cross-lingual information retrieval).
+    \item Phân loại tài liệu nhiều ngôn ngữ với một mô hình duy nhất.
+    \item Dịch máy hoặc gợi ý từ/câu dựa trên ngữ nghĩa thay vì chỉ dựa vào từ vựng.
+\end{itemize}
+
+\begin{tcolorbox}[
+    title={Một "Ngôn ngữ chung" của các Vector},
+    colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries
+]
+Hãy tưởng tượng một không gian nơi vector của \textit{"mèo"} (vi), \textit{"cat"} (en), \textit{"neko"} (ja) và \textit{"gato"} (es) đều hội tụ về cùng một vùng lân cận. Đây là sức mạnh của biểu diễn đa ngôn ngữ — tạo ra một “cầu nối” toán học giữa các ngôn ngữ tự nhiên.
+\end{tcolorbox}
+
+\subsubsection*{Các hướng tiếp cận chính}
+\begin{enumerate}
+    \item \textbf{Mapping-based (Học ma trận ánh xạ)}  
+    Huấn luyện một ma trận $W$ sao cho khi nhân với embedding của ngôn ngữ nguồn, ta nhận được embedding “khớp” với ngôn ngữ đích:  
+    \[
+    W \cdot E_{\text{src}} \approx E_{\text{tgt}}
+    \]
+    - \textbf{MUSE} (Lample et al.): Tìm $W$ bằng cách tối ưu khoảng cách giữa các cặp từ song ngữ. Có thể:
+        - \textit{Giám sát}: Dùng từ điển song ngữ nhỏ.
+        - \textit{Phi giám sát}: Sử dụng huấn luyện đối nghịch (adversarial training) để khớp phân phối embedding.
+    
+    \item \textbf{Joint training (Huấn luyện chung nhiều ngôn ngữ)}  
+    Huấn luyện một encoder duy nhất trên dữ liệu song song nhiều ngôn ngữ để ép embedding về chung một không gian.
+    - \textbf{LASER}: Sử dụng BiLSTM encoder + max-pooling, huấn luyện trên hơn 90 ngôn ngữ.
+    - \textbf{LaBSE}: Thay BiLSTM bằng Transformer (BERT), tối ưu độ tương đồng cosine giữa cặp câu dịch chuẩn và giảm độ tương đồng với cặp câu ngẫu nhiên.
+    
+    \item \textbf{Multilingual Language Models}  
+    Huấn luyện mô hình ngôn ngữ đa ngôn ngữ trực tiếp:
+    - \textbf{mBERT}, \textbf{XLM-R}: Học embedding từ pretraining masked language modeling trên nhiều ngôn ngữ.
+    - \textbf{mT5}, \textbf{BLOOMZ}: Mô hình sinh đa ngôn ngữ, có thể dùng embedding tầng encoder.
+\end{enumerate}
+
+\subsubsection*{Thách thức}
+\begin{itemize}
+    \item \textbf{Polysemy}: Từ đa nghĩa có thể gây nhầm lẫn nếu không có ngữ cảnh.
+    \item \textbf{Resource imbalance}: Một số ngôn ngữ có ít dữ liệu song song → khó huấn luyện tốt.
+    \item \textbf{Domain shift}: Khác biệt miền dữ liệu (ví dụ: tin tức vs hội thoại) làm giảm chất lượng ánh xạ.
+\end{itemize}
+
+\subsubsection*{Ứng dụng minh hoạ}
+\begin{itemize}
+    \item Tìm kiếm học thuật: Gõ từ khoá tiếng Việt nhưng vẫn tìm được bài báo tiếng Anh/Nhật.
+    \item Phân tích cảm xúc đa ngôn ngữ: Một mô hình duy nhất cho nhiều ngôn ngữ.
+    \item Dịch máy zero-shot: Mô hình chưa từng thấy cặp ngôn ngữ nhưng vẫn dịch được nhờ embedding chung.
+\end{itemize}
+
+
+\subsection{Biểu diễn Thưa và Tối ưu cho Truy xuất (Sparse \& Retriever-specific Embeddings)}
+\label{ssec:sparse_retriever_embeddings}
+
+\subsubsection*{Bối cảnh}
+Trong tìm kiếm thông tin (Information Retrieval – IR), có hai trường phái chính:
+\begin{itemize}
+    \item \textbf{Sparse retrieval} (ví dụ: TF-IDF, BM25): Biểu diễn tài liệu và truy vấn như vector thưa với số chiều bằng kích thước từ vựng. Nhanh, dễ lập chỉ mục, nhưng yếu về ngữ nghĩa – chỉ khớp chính xác từ khóa.
+    \item \textbf{Dense retrieval} (ví dụ: BERT embeddings): Biểu diễn tài liệu và truy vấn bằng vector dày đặc, có khả năng nắm bắt ý nghĩa, nhưng tìm kiếm trên hàng triệu vector tốn tài nguyên (phải dùng ANN – Approximate Nearest Neighbor).
+\end{itemize}
+
+\subsubsection*{Vấn đề}
+Dense embeddings tuy mạnh về ngữ nghĩa nhưng:
+\begin{enumerate}
+    \item Bỏ lỡ các khớp từ khóa chính xác (\textit{exact match}), đặc biệt quan trọng với các tên riêng, thuật ngữ kỹ thuật.
+    \item Chi phí lưu trữ và tìm kiếm cao khi số tài liệu rất lớn.
+\end{enumerate}
+
+\subsubsection*{Mục tiêu}
+Tạo ra các \textbf{retriever-specific embeddings} kết hợp được:
+\begin{itemize}
+    \item Sức mạnh khớp từ khóa của sparse retrieval.
+    \item Hiểu ngữ nghĩa sâu của dense retrieval.
+\end{itemize}
+
+\subsubsection*{Các phương pháp tiêu biểu}
+\paragraph{SPLADE (SPARse Lexical AnD Expansion model)}
+\begin{itemize}
+    \item Huấn luyện một Transformer (BERT/DistilBERT) để đầu ra là vector thưa có số chiều bằng kích thước từ vựng.
+    \item Mỗi chiều tương ứng với một token trong từ vựng, giá trị là mức độ quan trọng (\textit{term weight}).
+    \item Hỗ trợ \textbf{term expansion}: gán trọng số cho cả từ không xuất hiện trong văn bản nhưng có liên quan ngữ nghĩa.
+    \item Hàm loss: thường là \textit{margin ranking loss} hoặc \textit{cross-entropy loss} trên cặp truy vấn–tài liệu (relevant vs non-relevant).
+    \item Ưu điểm: tương thích với \textbf{inverted index}, tốc độ truy xuất gần như BM25, nhưng giàu ngữ nghĩa hơn.
+\end{itemize}
+
+\paragraph{ColBERT (Contextualized Late Interaction over BERT)}
+\begin{itemize}
+    \item Thay vì nén cả tài liệu thành một vector, ColBERT tạo embedding dày đặc cho từng token.
+    \item Khi truy vấn, với mỗi token trong câu hỏi, tính độ tương đồng tối đa với tất cả token embedding của tài liệu.
+    \item Hàm loss: tối đa hoá độ tương đồng giữa truy vấn và tài liệu liên quan, đồng thời giảm độ tương đồng với tài liệu không liên quan.
+    \item Ưu điểm: giữ được chi tiết cấp từ, cho độ chính xác cao hơn dense retriever thuần.
+    \item Nhược điểm: tốn bộ nhớ và chậm hơn do số lượng embedding lớn.
+\end{itemize}
+
+\subsubsection*{Kết hợp trong hệ thống RAG}
+\begin{itemize}
+    \item \textbf{SPLADE}: tốt để mở rộng tập ứng viên (candidate set) nhờ độ phủ cao và khả năng truy xuất nhanh.
+    \item \textbf{ColBERT}: tốt để rerank tập ứng viên nhỏ, nhờ giữ được ngữ cảnh chi tiết.
+    \item Chiến lược phổ biến: SPLADE \(\rightarrow\) lấy top-1000 tài liệu \(\rightarrow\) ColBERT rerank top-50 \(\rightarrow\) đưa vào LLM.
+\end{itemize}
+
+\subsubsection*{Thách thức}
+\begin{itemize}
+    \item Tối ưu tốc độ khi kết hợp nhiều tầng retriever.
+    \item Cân bằng giữa recall (độ phủ) và precision (độ chính xác).
+    \item Chi phí lưu trữ embedding lớn với mô hình late-interaction.
+\end{itemize}
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG 6}
+\end{center}
+
+\textit{Chúng ta đã đi đến cuối hành trình khám phá các hệ thống AI tiên tiến. Chương này đã mở rộng tầm nhìn của chúng ta vượt ra ngoài một LLM đơn lẻ, cho thấy cách kết hợp nó với các nguồn kiến thức bên ngoài (RAG), các phương thức khác (Multimodality), và các công cụ (Agentic Systems) để tạo ra các giải pháp mạnh mẽ. Chúng ta cũng đã tìm hiểu các kỹ thuật tối ưu hóa để đưa những mô hình này vào thực tế và suy ngẫm về khái niệm "Mô hình Thế giới". Chúng ta đã xây dựng nên những hệ thống AI vô cùng phức tạp và mạnh mẽ. Nhưng một câu hỏi tối quan trọng vẫn còn đó: Làm thế nào để chúng ta đo lường và so sánh chúng một cách khoa học? Liệu mô hình A có thực sự tốt hơn mô hình B không, và dựa trên tiêu chí nào? Chương cuối cùng của Phần 1 sẽ đi sâu vào lý thuyết và thực hành của việc đánh giá, cung cấp cho chúng ta những công cụ cần thiết để định lượng sự tiến bộ và hiểu rõ những giới hạn của các mô hình này.}

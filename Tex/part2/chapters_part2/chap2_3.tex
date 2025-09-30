@@ -1,0 +1,130 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters2/chap2_3.tex
+
+\section{Theo dõi và Quản lý Thí nghiệm}
+\label{sec:experiment_tracking}
+
+Khi bạn bắt đầu một dự án NLP, bạn sẽ không chỉ huấn luyện mô hình một lần. Bạn sẽ thử nghiệm với:
+\begin{itemize}
+    \item Các siêu tham số khác nhau (tốc độ học, kích thước batch, số epoch).
+    \item Các mô hình nền tảng khác nhau (BERT vs. RoBERTa vs. Llama).
+    \item Các phiên bản dữ liệu khác nhau (sau khi thêm dữ liệu tăng cường, sau khi làm sạch).
+    \item Các kỹ thuật fine-tuning khác nhau (Full vs. LoRA).
+\end{itemize}
+
+Nếu chỉ dựa vào việc ghi chép thủ công hoặc đặt tên file một cách lộn xộn (ví dụ: `model\_final.pt`, `model\_final\_v2.pt`, `model\_final\_really\_final.pt`), bạn sẽ nhanh chóng lạc vào một mớ hỗn độn.
+
+\begin{tcolorbox}[
+    title=Vấn đề: "Mớ hỗn độn của Thí nghiệm",
+    colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
+]
+Làm thế nào để so sánh hiệu năng giữa lần chạy tuần trước và lần chạy hôm nay? Siêu tham số nào đã tạo ra mô hình tốt nhất? Bộ dữ liệu nào đã được sử dụng cho phiên bản mô hình đang chạy trên production? Nếu không có một hệ thống theo dõi, việc trả lời những câu hỏi này là gần như không thể, làm cản trở sự tiến bộ và tính tái lập.
+\end{tcolorbox}
+
+Các công cụ Theo dõi và Quản lý Thí nghiệm (Experiment Tracking and Management) ra đời để giải quyết vấn đề này. Chúng hoạt động như một "cuốn sổ tay phòng thí nghiệm" tự động cho các dự án học máy. Chúng ta sẽ tìm hiểu hai công cụ phổ biến nhất: Weights \& Biases và MLflow.
+
+\subsection{Weights \& Biases (W\&B): Một Nền tảng Toàn diện và Trực quan}
+\label{ssec:wandb}
+Weights \& Biases (thường được gọi là `wandb`) là một nền tảng MLOps dựa trên đám mây, cung cấp một bộ công cụ cực kỳ mạnh mẽ và thân thiện với người dùng để theo dõi, trực quan hóa, và so sánh các thử nghiệm.
+
+\begin{center}
+    \includegraphics[width=0.9\textwidth]{wandb_dashboard.png}
+    \captionof{figure}{Một trang tổng quan (dashboard) điển hình trong Weights \& Biases, cho phép so sánh nhiều lần chạy thí nghiệm một cách trực quan.}
+    \label{fig:wandb_dashboard}
+\end{center}
+
+\subsubsection{Các tính năng chính}
+\begin{itemize}
+    \item \textbf{Theo dõi Tự động (Automatic Logging):}
+        \begin{itemize}
+            \item `wandb` tích hợp liền mạch với hầu hết các framework học máy phổ biến, bao gồm cả `Trainer` API của Hugging Face.
+            \item Nó có thể tự động ghi lại mọi thứ: các siêu tham số, các metric hệ thống (mức sử dụng GPU/CPU, nhiệt độ), các metric đánh giá (loss, F1, accuracy) theo từng bước, và cả các file trọng số của mô hình.
+        \end{itemize}
+    \item \textbf{Trực quan hóa Dữ liệu (Powerful Visualization):}
+        \begin{itemize}
+            \item Cung cấp các biểu đồ động, cho phép bạn theo dõi sự thay đổi của loss và các metric khác theo thời gian thực.
+            \item Dễ dàng tạo các trang tổng quan tùy chỉnh để so sánh hiệu năng của hàng chục lần chạy trên các biểu đồ khác nhau, giúp bạn nhanh chóng phát hiện ra các mẫu và các siêu tham số tốt nhất.
+        \end{itemize}
+    \item \textbf{Lưu trữ và Quản lý Hiện vật (Artifacts):}
+        \begin{itemize}
+            \item `wandb` Artifacts là một hệ thống quản lý phiên bản cho các "hiện vật" của pipeline học máy, như các bộ dữ liệu, các mô hình đã được huấn luyện, và các bảng đánh giá.
+            \item Nó giúp bạn theo dõi toàn bộ "dòng dõi" (lineage) của một mô hình: nó được huấn luyện từ bộ dữ liệu nào, bởi lần chạy thí nghiệm nào.
+        \end{itemize}
+    \item \textbf{Báo cáo và Cộng tác (Reports):}
+        \begin{itemize}
+            \item Cho phép bạn viết các báo cáo tương tác, kết hợp văn bản, biểu đồ động, và các kết quả thí nghiệm để chia sẻ những phát hiện của mình với đồng nghiệp.
+        \end{itemize}
+\end{itemize}
+
+\subsubsection{Tích hợp với Hugging Face `Trainer`}
+Việc tích hợp `wandb` vào một quy trình huấn luyện sử dụng `Trainer` là cực kỳ đơn giản.
+\begin{enumerate}
+    \item Cài đặt thư viện: `pip install wandb`
+    \item Đăng nhập: Chạy `wandb login` trong terminal và dán API key của bạn.
+    \item Kích hoạt trong `TrainingArguments`:
+\end{enumerate}
+
+\begin{example}{Huấn luyện với WandB}{ex:wandb_trainer}
+    \begin{minted}{python}
+    # 1. Đặt biến môi trường để kích hoạt wandb
+    import os
+    os.environ["WANDB_PROJECT"] = "my-first-nlp-project" # Đặt tên dự án
+    
+    # 2. Bật báo cáo trong TrainingArguments
+    training_args = TrainingArguments(
+        output_dir="./results",
+        num_train_epochs=3,
+        # ... các tham số khác
+        report_to="wandb",  # Bật tính năng báo cáo đến wandb
+        run_name="bert-finetune-run-1", # (Tùy chọn) Đặt tên cho lần chạy này
+    )
+    
+    # 3. Huấn luyện như bình thường
+    trainer = Trainer(...)
+    trainer.train()
+    \end{minted}
+\end{example}
+Chỉ với những thay đổi nhỏ này, `Trainer` sẽ tự động gửi tất cả thông tin liên quan lên trang tổng quan `wandb` của bạn.
+
+\subsection{MLflow: Một Lựa chọn Mã nguồn mở và Linh hoạt}
+\label{ssec:mlflow}
+MLflow là một nền tảng mã nguồn mở được tạo ra bởi Databricks để quản lý vòng đời MLOps. Nó có cách tiếp cận theo module và có thể được tự host (self-hosted), mang lại sự linh hoạt và kiểm soát cao hơn.
+
+\subsubsection{Các thành phần chính}
+MLflow bao gồm bốn thành phần chính:
+\begin{itemize}
+    \item \textbf{MLflow Tracking:} Thành phần cốt lõi, tương tự như `wandb`. Nó cung cấp một API và giao diện người dùng để ghi lại và truy vấn các tham số, mã nguồn, metric, và các hiện vật của các lần chạy thí nghiệm.
+    \item \textbf{MLflow Projects:} Cung cấp một định dạng chuẩn để đóng gói mã nguồn của bạn, giúp nó có thể được tái tạo và chạy một cách đáng tin cậy trên các nền tảng khác nhau.
+    \item \textbf{MLflow Models:} Cung cấp một định dạng chuẩn để đóng gói các mô hình, giúp việc triển khai chúng trên nhiều nền tảng phục vụ (serving platforms) trở nên dễ dàng hơn.
+    \item \textbf{MLflow Model Registry:} Một kho lưu trữ tập trung để quản lý vòng đời của các mô hình, bao gồm quản lý phiên bản, chuyển đổi giai đoạn (staging, production, archived), và chú thích.
+\end{itemize}
+
+\subsubsection{So sánh W\&B và MLflow}
+\begin{tcolorbox}[
+    title=Weights \& Biases vs. MLflow,
+    colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
+]
+\begin{tabular}{p{0.45\linewidth} | p{0.45\linewidth}}
+    \textbf{Weights \& Biases (W\&B)} & \textbf{MLflow} \\
+    \hline
+    \textbf{Mô hình:} Chủ yếu là một dịch vụ SaaS (Software-as-a-Service) được quản lý, nhưng cũng có các tùy chọn tự host. & \textbf{Mô hình:} Hoàn toàn mã nguồn mở, thường được tự host. \\
+    \hline
+    \textbf{Điểm mạnh:} & \textbf{Điểm mạnh:} \\
+    - Giao diện người dùng cực kỳ bóng bẩy, trực quan và tương tác cao. & - Hoàn toàn miễn phí và mã nguồn mở. \\
+    - Tích hợp tự động sâu và liền mạch. & - Kiểm soát hoàn toàn dữ liệu và cơ sở hạ tầng. \\
+    - Các tính năng cộng tác và báo cáo rất mạnh mẽ. & - Tích hợp chặt chẽ với hệ sinh thái Databricks/Spark. \\
+    - Thiết lập rất nhanh chóng. & - Có Model Registry mạnh mẽ cho quản lý vòng đời. \\
+    \hline
+    \textbf{Điểm yếu:} & \textbf{Điểm yếu:} \\
+    - Phiên bản miễn phí có giới hạn. Phiên bản trả phí có thể tốn kém. & - Giao diện người dùng kém trực quan và ít tính năng hơn. \\
+    - Dữ liệu được lưu trữ trên máy chủ của W\&B (trừ khi tự host). & - Yêu cầu nhiều công sức hơn để thiết lập và bảo trì. \\
+\end{tabular}
+\end{tcolorbox}
+
+\textbf{Lựa chọn nào cho bạn?}
+\begin{itemize}
+    \item \textbf{Đối với các nhà nghiên cứu, cá nhân, hoặc các đội nhóm nhỏ muốn bắt đầu nhanh chóng và có một trải nghiệm người dùng tốt nhất}, \textbf{W\&B} thường là lựa chọn hàng đầu.
+    \item \textbf{Đối với các doanh nghiệp lớn có yêu cầu nghiêm ngặt về bảo mật dữ liệu, muốn kiểm soát hoàn toàn cơ sở hạ tầng, hoặc đã đầu tư sâu vào hệ sinh thái Databricks}, \textbf{MLflow} là một lựa chọn rất phù hợp.
+\end{itemize}
+
+Việc áp dụng một công cụ theo dõi thí nghiệm ngay từ đầu là một trong những khoản đầu tư tốt nhất bạn có thể làm cho sự thành công và tính bền vững của dự án NLP của mình.

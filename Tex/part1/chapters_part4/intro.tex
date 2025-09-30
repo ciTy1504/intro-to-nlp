@@ -1,0 +1,8 @@
+\chapter{KỶ NGUYÊN TRANSFORMER VÀ CÁC MÔ HÌNH NGÔN NGỮ LỚN (LLMs)}
+\label{chap:transformer_llms}
+
+Chào mừng bạn đến với chương quan trọng nhất của NLP hiện đại. Nếu như các kiến trúc RNN/LSTM trong chương trước đã giải quyết vấn đề "trí nhớ" trong xử lý chuỗi, chúng vẫn còn một điểm yếu cố hữu: \textbf{tính tuần tự (sequentiality)}. Việc phải xử lý các từ lần lượt, từng từ một, đã ngăn cản việc song song hóa quá trình huấn luyện và gây khó khăn cho việc nắm bắt các phụ thuộc tầm rất xa.
+
+Năm 2017, một bài báo có tiêu đề mang tính tuyên ngôn -- \textbf{"Attention Is All You Need"} -- từ các nhà nghiên cứu tại Google đã thay đổi hoàn toàn cuộc chơi. Họ đã giới thiệu một kiến trúc mới, gọi là \textbf{Transformer}, hoàn toàn loại bỏ các vòng lặp hồi tiếp và chỉ dựa vào một cơ chế duy nhất: \textbf{sự chú ý (attention)}.
+
+Kiến trúc Transformer không chỉ đạt được hiệu năng vượt trội trên các bài toán dịch máy mà còn, quan trọng hơn, mở ra khả năng huấn luyện các mô hình trên một quy mô chưa từng có, khai sinh ra Kỷ nguyên của các Mô hình Ngôn ngữ Lớn (Large Language Models - LLMs) mà chúng ta biết ngày nay.

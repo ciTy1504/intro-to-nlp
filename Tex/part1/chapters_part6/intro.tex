@@ -1,0 +1,13 @@
+\chapter{CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO}
+\label{chap:advanced_architectures}
+
+Sau khi đã nắm vững các kiến trúc LLM nền tảng và cách tinh chỉnh chúng, chúng ta sẽ bước vào một lĩnh vực cao hơn: làm thế nào để xây dựng các \textbf{hệ thống (systems)} hoàn chỉnh, có khả năng kết hợp LLM với các nguồn kiến thức bên ngoài.
+
+Một trong những hạn chế lớn nhất của LLM là:
+\begin{enumerate}
+    \item \textbf{Kiến thức bị giới hạn (Knowledge Cutoff):} Kiến thức của chúng bị đóng băng tại thời điểm huấn luyện và không thể tự cập nhật thông tin mới.
+    \item \textbf{Ảo giác (Hallucination):} Chúng có xu hướng bịa đặt thông tin một cách tự tin khi không biết câu trả lời.
+    \item \textbf{Thiếu khả năng truy cập dữ liệu riêng tư:} Chúng không thể trả lời các câu hỏi về các tài liệu nội bộ của một công ty hay dữ liệu cá nhân của người dùng.
+\end{enumerate}
+
+Để giải quyết những vấn đề này, một kiến trúc đã nổi lên như một tiêu chuẩn vàng trong ngành: \textbf{Tìm kiếm và Sinh Tăng cường (Retrieval-Augmented Generation - RAG)}.

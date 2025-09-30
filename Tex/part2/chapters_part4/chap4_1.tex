@@ -1,0 +1,74 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters4/chap4_1.tex
+
+\section{Xây dựng Hệ thống Tìm kiếm Ngữ nghĩa}
+\label{sec:semantic_search}
+
+\textbf{Mục tiêu:} Xây dựng một hệ thống đơn giản có khả năng tìm kiếm các câu hoặc đoạn văn bản tương đồng về mặt ý nghĩa, thay vì chỉ khớp từ khóa. Đây là khối xây dựng cơ bản cho RAG và nhiều ứng dụng khác.
+
+\textbf{Thành phần chính:}
+\begin{itemize}
+    \item \textbf{\texttt{sentence-transformers}:} Thư viện dựa trên \texttt{transformers}, cung cấp các mô hình embedding chất lượng cao cho câu/đoạn văn.
+    \item \textbf{\texttt{chromadb}:} Cơ sở dữ liệu vector mã nguồn mở, cho phép lưu trữ và tìm kiếm embedding hiệu quả.
+\end{itemize}
+
+\textbf{Các bước thực hiện:}
+\begin{enumerate}
+    \item \textbf{Chuẩn bị dữ liệu:} Danh sách các câu/đoạn văn bản để lập chỉ mục.
+    \item \textbf{Tải mô hình embedding:} Chọn và tải một mô hình từ \texttt{sentence-transformers}.
+    \item \textbf{Lập chỉ mục (Indexing):} Chuyển đổi văn bản thành vector embedding và lưu vào ChromaDB.
+    \item \textbf{Truy vấn (Querying):} Nhúng câu truy vấn và tìm kiếm các vector tương tự trong ChromaDB.
+\end{enumerate}
+
+\textbf{Mã nguồn:}
+
+% Lệnh bash
+\noindent
+\colorbox{gray!20}{\texttt{pip install sentence-transformers chromadb}}
+
+% Code Python
+\begin{example}{Xây dựng hệ thống tìm kiếm ngữ nghĩa với Sentence-Transformers và ChromaDB}{ex:semantic_search}
+    \begin{minted}{python}
+    from sentence_transformers import SentenceTransformer
+    import chromadb
+    
+    # Bước 1: Chuẩn bị dữ liệu và tải mô hình
+    model = SentenceTransformer('all-MiniLM-L6-v2') 
+    
+    documents = [
+        "Trái Đất quay quanh Mặt Trời.",
+        "Hệ Mặt Trời có tám hành tinh.",
+        "Mặt Trăng là vệ tinh tự nhiên của Trái Đất.",
+        "Python là một ngôn ngữ lập trình phổ biến.",
+        "Học sâu là một nhánh của học máy."
+    ]
+    
+    # Bước 2: Lập chỉ mục (Embed và Store)
+    client = chromadb.Client()
+    collection = client.create_collection("semantic_search_demo")
+    
+    embeddings = model.encode(documents)
+    collection.add(
+        embeddings=embeddings.tolist(),
+        documents=documents,
+        ids=[f"doc_{i}" for i in range(len(documents))]
+    )
+    print("Đã lập chỉ mục xong!")
+    
+    # Bước 3: Truy vấn
+    query = "Các thiên thể trong vũ trụ"
+    print(f"\nTruy vấn: '{query}'")
+    
+    query_embedding = model.encode(query).tolist()
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=3
+    )
+    
+    print("Các kết quả tìm kiếm tương tự nhất:")
+    for doc in results['documents'][0]:
+        print(f"- {doc}")
+    \end{minted}
+\end{example}
+
+\textbf{Kết quả mong đợi:} Hệ thống sẽ trả về 3 câu đầu tiên về thiên văn học vì chúng tương đồng về mặt ngữ nghĩa với truy vấn, mặc dù không có nhiều từ khóa trùng lặp. Nó sẽ bỏ qua 2 câu về lập trình và học máy.

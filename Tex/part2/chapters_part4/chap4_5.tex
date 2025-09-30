@@ -1,0 +1,93 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters4/chap4_5.tex
+
+\section{Recipe 5: Xây dựng một Agent đơn giản với khả năng sử dụng công cụ}
+\label{sec:recipe_agent}
+
+\textbf{Mục tiêu:} Xây dựng một Tác tử (Agent) có thể trả lời các câu hỏi về các sự kiện gần đây hoặc các chủ đề chuyên sâu bằng cách tự động quyết định khi nào cần tìm kiếm thông tin trên Wikipedia.
+
+\textbf{Thành phần chính:}
+\begin{itemize}
+    \item \textbf{`LangChain`:} Cung cấp các công cụ để xây dựng các agent.
+    \item \textbf{LLM:} Bộ não ra quyết định của agent.
+    \item \textbf{Công cụ (Tool):} Một API hoặc thư viện để tương tác với thế giới bên ngoài (trong trường hợp này là Wikipedia).
+\end{itemize}
+
+\textbf{Các bước thực hiện:}
+\begin{enumerate}
+    \item \textbf{Thiết lập Môi trường:} Cài đặt thư viện và API keys.
+    \item \textbf{Định nghĩa Công cụ:} Tạo một hoặc nhiều công cụ mà agent có thể sử dụng.
+    \item \textbf{Khởi tạo LLM và Agent:} Chọn một LLM và sử dụng các hàm của LangChain để "trang bị" công cụ cho nó.
+    \item \textbf{Thực thi Agent:} Đưa ra một câu hỏi và quan sát vòng lặp `Thought-Action-Observation`.
+\end{enumerate}
+
+\textbf{Mã nguồn:}
+\begin{example}{Xây dựng Agent Tra cứu Wikipedia}{ex:simple_agent}
+    \begin{minted}{python}
+    # Bước 1: Cài đặt
+    # pip install langchain langchain-openai wikipedia
+    import os
+    # os.environ["OPENAI_API_KEY"] = "sk-..."
+    
+    from langchain_openai import ChatOpenAI
+    from langchain.agents import tool, AgentExecutor, create_react_agent
+    from langchain import hub # Để tải prompt ReAct có sẵn
+    
+    # Bước 2: Định nghĩa Công cụ
+    @tool
+    def search_wikipedia(query: str) -> str:
+        """
+        Searches Wikipedia to find information about a given query.
+        Use this tool for questions about current events, facts, or specific entities.
+        """
+        from wikipedia import summary
+        try:
+            return summary(query, sentences=2)
+        except Exception as e:
+            return f"Error searching Wikipedia: {e}"
+    
+    tools = [search_wikipedia]
+    
+    # Bước 3: Khởi tạo LLM và Agent
+    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    
+    # Tải một prompt ReAct đã được thiết kế sẵn từ LangChain Hub
+    prompt = hub.pull("hwchase17/react")
+    
+    # Tạo agent, kết hợp llm, tools, và prompt
+    agent = create_react_agent(llm, tools, prompt)
+    
+    # Tạo executor để chạy agent
+    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+    
+    # Bước 4: Thực thi Agent
+    query = "What is the main idea behind the LLaVA model?"
+    result = agent_executor.invoke({"input": query})
+    
+    print("\nFinal Answer:")
+    print(result["output"])
+    \end{minted}
+\end{example}
+\textbf{Kết quả mong đợi (`verbose=True`):} Bạn sẽ thấy log của agent, thể hiện rõ các bước suy nghĩ của nó:
+\begin{verbatim}
+> Entering new AgentExecutor chain...
+Thought: The user is asking about the LLaVA model. I don't have detailed,
+up-to-the-minute information on specific models in my internal knowledge.
+I should use the Wikipedia search tool to get a summary.
+Action: search_wikipedia
+Action Input: "LLaVA model"
+Observation: LLaVA (Large Language and Vision Assistant) is a large
+multimodal model (LMM) created by researchers from the University of
+Wisconsin-Madison, Microsoft Research, and Columbia University. It combines a
+vision encoder with a large language model (LLM) to enable multimodal
+chat capabilities, demonstrating impressive performance on various benchmarks.
+Thought: I now have the main idea of the LLaVA model. It combines a vision
+encoder and an LLM for multimodal chat. I can now formulate the final answer.
+Action: finish
+Final Answer: The main idea behind the LLaVA model is to combine a vision
+encoder with a large language model (LLM) to create a powerful multimodal
+assistant capable of understanding and discussing images in a conversational
+manner.
+
+> Finished chain.
+\end{verbatim}

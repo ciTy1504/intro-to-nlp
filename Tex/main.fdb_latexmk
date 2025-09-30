@@ -1,0 +1,18 @@
+# Fdb version 4
+["pdflatex"] 1759216180.42312 "d:/HUST/AI/Doc/intro-to-nlp/Tex/main.tex" "main.pdf" "main" 1759216180.79836 2
+  "C:/Program Files/MyDevEnvs/MiKTeX/fonts/tfm/public/cm/cmr10.tfm" 1136765053 1296 45809c5a464d5f32c8f98ba97c1bb47f ""
+  "C:/Program Files/MyDevEnvs/MiKTeX/tex/latex/base/bk11.clo" 1749467999 8303 2071da3acba2d0a95d86972f99c305b1 ""
+  "C:/Program Files/MyDevEnvs/MiKTeX/tex/latex/base/book.cls" 1749467999 23268 0045640547c14751e547e94fe4a0e0a8 ""
+  "C:/Program Files/MyDevEnvs/MiKTeX/tex/latex/fontspec/fontspec.sty" 1715414856 3755 4872b99d810c024f9c09bb1c62ffee3b ""
+  "C:/Program Files/MyDevEnvs/MiKTeX/tex/latex/l3backend/l3backend-pdftex.def" 1751005717 30351 a2b09edc6c93a742566b222c33d0278e ""
+  "C:/Program Files/MyDevEnvs/MiKTeX/tex/latex/l3kernel/expl3.sty" 1755079871 6558 773e78b2bed3fca0525bb56baa46bce5 ""
+  "C:/Program Files/MyDevEnvs/MiKTeX/tex/latex/l3packages/xparse/xparse.sty" 1724854269 9783 ab4bee47700c04aadedb8da27591b0ab ""
+  "C:/Users/bong1/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1759216168 13252086 f551ff532388667d73692d6d72fa7675 ""
+  "d:/HUST/AI/Doc/intro-to-nlp/Tex/main.tex" 1759216179 14574 5587c1520a6a6d3b4f07bcef2f0322c2 ""
+  "main.aux" 1759215776 154002 ed32318eb53d6c738a506f9886f8d238 "pdflatex"
+  "main.tex" 1759216179 14574 5587c1520a6a6d3b4f07bcef2f0322c2 ""
+  (generated)
+  "main.aux"
+  "main.log"
+  "main.pdf"
+  (rewritten before read)

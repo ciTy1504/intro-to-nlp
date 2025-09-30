@@ -1,0 +1,112 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap5_4.tex
+% Nội dung cho Chương 5, Phần 4
+
+\section{Tinh chỉnh theo chỉ dẫn (Instruction Tuning)}
+\label{sec:instruction_tuning}
+
+\subsection{Vấn đề của các LLM cơ sở (Base LLMs)}
+\label{ssec:base_llm_problem}
+
+Một mô hình ngôn ngữ cơ sở (base model) được huấn luyện trước trên mục tiêu Causal Language Modeling (dự đoán từ tiếp theo) có một kiến thức khổng lồ. Tuy nhiên, nó có một hạn chế lớn về mặt tương tác: nó được huấn luyện để \textbf{bắt chước văn phong của dữ liệu pre-training}, chứ không phải để \textbf{tuân theo mệnh lệnh của người dùng}.
+
+\begin{example}{Hành vi của một Base LLM}{ex:base_llm_behavior}
+    Nếu bạn đưa cho một base LLM (như GPT-3 gốc) một prompt:
+
+    \textbf{Prompt:} `Dịch câu sau sang tiếng Pháp: "Hello, how are you?"`
+
+    Mô hình có thể sẽ tiếp tục prompt này theo cách nó thường thấy trên Internet, ví dụ:
+
+    \textbf{Đầu ra có thể có của Base LLM:}
+    `Dịch câu sau sang tiếng Đức: "Good morning."`
+    `Dịch câu sau sang tiếng Tây Ban Nha: "Thank you."`
+    `Liệt kê 10 thành phố lớn nhất thế giới.`
+
+    Nó hiểu rằng đây là một mẫu câu hỏi trong một bài kiểm tra hoặc một trang web học ngôn ngữ, và nó chỉ đơn giản là "hoàn thành" cái mẫu đó, thay vì thực sự thực hiện yêu cầu dịch. Nó thiếu khả năng "hiểu ý định" (intent understanding).
+\end{example}
+
+Để biến một base LLM thành một trợ lý hữu ích, chúng ta cần dạy cho nó một kỹ năng mới: \textbf{tuân theo chỉ dẫn (instruction following)}. Đây chính là mục tiêu của Tinh chỉnh theo chỉ dẫn.
+
+\subsection{Tư duy cốt lõi và Cơ chế hoạt động}
+\label{ssec:instruction_tuning_mechanism}
+
+\begin{tcolorbox}[
+    title=Triết lý của Instruction Tuning,
+    colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
+]
+Chúng ta sẽ tiếp tục tinh chỉnh (fine-tune) mô hình ngôn ngữ cơ sở trên một bộ dữ liệu lớn, đa dạng bao gồm các cặp \textbf{(Chỉ dẫn, Kết quả mong muốn)}. Bằng cách cho mô hình xem hàng ngàn ví dụ về cách thực hiện các mệnh lệnh, nó sẽ học được một siêu-kỹ năng tổng quát: "Khi người dùng đưa ra một chỉ dẫn, nhiệm vụ của tôi là thực hiện nó một cách hữu ích và trực tiếp, thay vì chỉ hoàn thành câu."
+\end{tcolorbox}
+
+Về mặt kỹ thuật, Instruction Tuning là một quá trình fine-tuning có giám sát. Mô hình được huấn luyện để tối thiểu hóa hàm mất mát (thường là Cross-Entropy) trên phần "kết quả mong muốn" của các ví dụ. Quá trình này điều chỉnh các trọng số của mô hình để nó có xu hướng sinh ra các câu trả lời tuân theo chỉ dẫn.
+
+\subsection{Xây dựng Bộ dữ liệu Chỉ dẫn: Chìa khóa thành công}
+\label{ssec:instruction_dataset_building}
+
+Chất lượng và sự đa dạng của bộ dữ liệu chỉ dẫn là yếu tố \textbf{quyết định tuyệt đối} đến thành công của quá trình này. Một bộ dữ liệu tốt phải bao quát một loạt các khía cạnh.
+
+\subsubsection{Các thành phần của một mẫu dữ liệu}
+Một mẫu dữ liệu chỉ dẫn lý tưởng thường có ba phần:
+\begin{enumerate}
+    \item \textbf{Chỉ dẫn (Instruction):} Một mô tả rõ ràng về tác vụ cần thực hiện.
+    \item \textbf{Đầu vào (Input) (tùy chọn):} Ngữ cảnh hoặc dữ liệu cụ thể để thực hiện chỉ dẫn.
+    \item \textbf{Đầu ra (Output) / Kết quả (Response):} Câu trả lời mong muốn mà mô hình nên tạo ra.
+\end{enumerate}
+
+\begin{example}{Các loại mẫu dữ liệu chỉ dẫn}{ex:instruction_data_examples}
+    \textbf{1. Mẫu không có đầu vào (Input-free):}
+    \begin{itemize}
+        \item \textbf{Instruction:} "Viết một bài thơ haiku về mùa thu."
+        \item \textbf{Output:} "Lá vàng rơi nhẹ, \\ Heo may se sắt se lòng, \\ Chờ đông lạnh về."
+    \end{itemize}
+
+    \textbf{2. Mẫu có đầu vào (With Input):}
+    \begin{itemize}
+        \item \textbf{Instruction:} "Tóm tắt đoạn văn sau thành một câu."
+        \item \textbf{Input:} "[Một đoạn văn dài về lịch sử của Trí tuệ Nhân tạo...]"
+        \item \textbf{Output:} "Trí tuệ Nhân tạo đã phát triển qua nhiều giai đoạn, từ logic biểu tượng đến học sâu, với Transformer là kiến trúc thống trị hiện nay."
+    \end{itemize}
+\end{example}
+
+\subsubsection{Yêu cầu về sự đa dạng}
+Để mô hình có khả năng tổng quát hóa, bộ dữ liệu phải cực kỳ đa dạng:
+\begin{itemize}
+    \item \textbf{Đa dạng về Tác vụ:} Bao gồm tất cả các loại tác vụ NLP có thể tưởng tượng được: tóm tắt, dịch thuật, hỏi-đáp (mở, đóng), phân loại, trích xuất thông tin, viết sáng tạo, viết lại văn bản, suy luận logic, giải toán, sinh mã nguồn, v.v.
+    \item \textbf{Đa dạng về Ngôn ngữ:} Bao gồm các chỉ dẫn được diễn đạt theo nhiều cách khác nhau (ví dụ: "Tóm tắt đoạn sau", "Cho tôi một bản tóm tắt", "Nội dung chính của đoạn này là gì?").
+    \item \textbf{Đa dạng về Độ dài và Độ phức tạp:} Từ các chỉ dẫn ngắn gọn đến các yêu cầu phức tạp, nhiều bước.
+\end{itemize}
+
+\subsubsection{Các phương pháp xây dựng bộ dữ liệu}
+\paragraph{1. Sử dụng các bộ dữ liệu học thuật hiện có}
+Các nhà nghiên cứu đã tổng hợp hàng trăm bộ dữ liệu NLP công khai (như SQuAD cho hỏi-đáp, MNLI cho suy luận) và biến đổi chúng thành định dạng (instruction, input, output). Đây là nguồn dữ liệu chất lượng cao nhưng có thể không đa dạng về mặt diễn đạt.
+
+\paragraph{2. Thu thập thủ công bởi con người (Human Annotation)}
+Đây là phương pháp tốn kém nhưng cho chất lượng cao nhất. Con người được yêu cầu viết ra các chỉ dẫn sáng tạo và các câu trả lời tương ứng. Bộ dữ liệu \textbf{Alpaca} nổi tiếng của Stanford \cite{alpaca} được tạo ra theo một cách tương tự, nhưng thông minh hơn.
+
+\paragraph{3. Tự sinh dữ liệu bằng LLM (Self-Instruct)}
+Kỹ thuật này, được tiên phong bởi bài báo \textbf{Self-Instruct} \cite{wang2022selfinstruct}, là một bước đột phá giúp giảm chi phí tạo dữ liệu.
+\begin{enumerate}
+    \item \textbf{Bước 1 (Tạo hạt giống):} Bắt đầu với một vài ví dụ chỉ dẫn được viết thủ công.
+    \item \textbf{Bước 2 (Sinh chỉ dẫn):} Đưa các ví dụ này vào một LLM mạnh (như GPT-3.5) và yêu cầu nó sinh ra thêm các chỉ dẫn mới, đa dạng về tác vụ.
+    \item \textbf{Bước 3 (Sinh đầu vào/đầu ra):} Với mỗi chỉ dẫn mới, lại yêu cầu LLM sinh ra một cặp (Input, Output) phù hợp.
+    \item \textbf{Bước 4 (Lọc và Tinh chỉnh):} Lọc bỏ các chỉ dẫn chất lượng thấp, trùng lặp, hoặc không thể thực hiện.
+\end{enumerate}
+Bằng cách lặp lại quy trình này, người ta có thể tạo ra một bộ dữ liệu hàng chục nghìn mẫu chỉ dẫn từ một vài hạt giống ban đầu. Bộ dữ liệu Alpaca (52,000 mẫu) đã được tạo ra bằng cách sử dụng kỹ thuật này trên mô hình text-davinci-003 của OpenAI.
+
+\subsection{Vai trò và Tác động của Instruction Tuning}
+\label{ssec:instruction_tuning_impact}
+
+Instruction Tuning có một tác động sâu sắc, làm thay đổi cơ bản hành vi của LLM.
+
+\subsubsection{Tăng cường khả năng tuân theo mệnh lệnh và ''Tính hữu ích''}
+Đây là tác động rõ ràng nhất. Sau khi được tinh chỉnh, mô hình học được cách trở thành một "trợ lý". Nó hiểu rằng khi người dùng đưa ra một prompt, đó là một yêu cầu cần được thực hiện, chứ không phải một chuỗi cần được hoàn thành. Điều này làm cho mô hình trở nên \textbf{hữu ích (helpful)} hơn rất nhiều.
+
+\subsubsection{Cải thiện khả năng Tổng quát hóa Zero-shot}
+Một kết quả đáng ngạc nhiên là Instruction Tuning trên một tập hợp các tác vụ đa dạng sẽ cải thiện đáng kể hiệu năng của mô hình trên các \textbf{tác vụ hoàn toàn mới, chưa từng thấy (unseen tasks)} ở dạng zero-shot.
+\begin{itemize}
+    \item \textbf{Lý do:} Bằng cách học cách tuân theo hàng ngàn loại chỉ dẫn khác nhau, mô hình không chỉ học cách làm từng tác vụ riêng lẻ, mà còn học được một "meta-skill" về cách "học để học" từ chỉ dẫn. Nó học được cách suy luận ra ý định đằng sau một chỉ dẫn mới và thực hiện nó một cách hợp lý.
+\end{itemize}
+
+\subsubsection{Cầu nối đến sự Căn chỉnh (Alignment)}
+Instruction Tuning là bước đầu tiên và thiết yếu trong một quy trình lớn hơn gọi là \textbf{căn chỉnh (alignment)} -- làm cho hành vi của LLM phù hợp với các giá trị và mục tiêu của con người. Bằng cách dạy mô hình tuân theo chỉ dẫn, chúng ta đã đặt nền móng để sau này có thể dạy nó tuân theo các chỉ dẫn phức tạp hơn, chẳng hạn như "Hãy trả lời một cách trung thực" hoặc "Đừng đưa ra các nội dung độc hại".
+
+Tóm lại, Instruction Tuning là một bước chuyển đổi, biến một mô hình ngôn ngữ thô thành một nền tảng có khả năng tương tác và thực thi, mở đường cho các ứng dụng thực tế và là tiền đề cho các kỹ thuật căn chỉnh phức tạp hơn mà chúng ta sẽ khám phá trong phần tiếp theo.

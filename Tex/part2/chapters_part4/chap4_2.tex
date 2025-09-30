@@ -1,0 +1,85 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters4/chap4_2.tex
+
+\section{Xây dựng Hệ thống Hỏi-Đáp trên Tài liệu (RAG)}
+\label{sec:recipe_rag}
+
+\textbf{Mục tiêu:} Xây dựng một hệ thống Hỏi-Đáp có thể trả lời các câu hỏi dựa trên nội dung của một tài liệu cụ thể. Phần này xây dựng trực tiếp dựa trên phần tìm kiếm ngữ nghĩa trước đó.
+
+\textbf{Thành phần chính:}
+\begin{itemize}
+    \item \textbf{\texttt{LangChain} / \texttt{LlamaIndex}:} Các framework cấp cao giúp đơn giản hoá việc xây dựng ứng dụng dựa trên LLM, đặc biệt là RAG. Ở đây dùng \texttt{LangChain}.
+    \item \textbf{Retriever:} Thành phần tìm kiếm ngữ nghĩa (giống phần trước).
+    \item \textbf{LLM (Generator):} Một mô hình ngôn ngữ lớn (ví dụ \texttt{gpt-3.5-turbo} qua API hoặc mô hình mã nguồn mở) để sinh câu trả lời cuối cùng.
+\end{itemize}
+
+\textbf{Các bước thực hiện:}
+\begin{enumerate}
+    \item \textbf{Tải và Phân mảnh Dữ liệu:} Tải tài liệu dài và chia thành các \textit{chunk} nhỏ.
+    \item \textbf{Thiết lập Vector Store:} Dùng mô hình embedding và cơ sở dữ liệu vector để lập chỉ mục các \textit{chunk}.
+    \item \textbf{Thiết lập LLM:} Khởi tạo LLM sẽ sử dụng.
+    \item \textbf{Xây dựng Chuỗi RAG (RAG Chain):} Kết nối Retriever và LLM qua một \texttt{PromptTemplate}.
+    \item \textbf{Hỏi đáp:} Đặt câu hỏi và nhận câu trả lời.
+\end{enumerate}
+
+\textbf{Mã nguồn:}
+
+% Code Python trong example
+\begin{example}{RAG cơ bản với LangChain + Chroma}{ex:rag_basic}
+    \begin{minted}{python}
+    # Bước 1: Cài đặt
+    #pip install langchain langchain-openai langchain-community sentence-transformers chromadb
+    import os
+    # os.environ["OPENAI_API_KEY"] = "sk-..."
+    
+    from langchain_community.document_loaders import WebBaseLoader
+    from langchain_community.vectorstores import Chroma
+    from langchain_community.embeddings import SentenceTransformerEmbeddings
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+    from langchain_openai import ChatOpenAI
+    from langchain.prompts import PromptTemplate
+    from langchain.schema.runnable import RunnablePassthrough
+    from langchain.schema.output_parser import StrOutputParser
+    
+    # Bước 2: Tải và phân mảnh dữ liệu
+    loader = WebBaseLoader(web_path="https://en.wikipedia.org/wiki/Large_language_model")
+    docs = loader.load()
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    splits = text_splitter.split_documents(docs)
+    
+    # Bước 3: Thiết lập Vector Store (Retriever)
+    embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+    vectorstore = Chroma.from_documents(documents=splits, embedding=embedding_function)
+    retriever = vectorstore.as_retriever()
+    
+    # Bước 4: Thiết lập LLM và Prompt Template
+    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+    
+    template = """Sử dụng các đoạn ngữ cảnh sau đây để trả lời câu hỏi.
+    Nếu bạn không biết câu trả lời, hãy nói rằng bạn không biết.
+    
+    Ngữ cảnh: {context}
+    
+    Câu hỏi: {question}
+    
+    Câu trả lời hữu ích:"""
+    rag_prompt = PromptTemplate.from_template(template)
+    
+    # Bước 55: Xây dựng Chuỗi RAG
+    rag_chain = (
+        {"context": retriever, "question": RunnablePassthrough()}
+        | rag_prompt
+        | llm
+        | StrOutputParser()
+    )
+    
+    # Bước 6: Hỏi đáp
+    query = "What is the Transformer architecture?"
+    answer = rag_chain.invoke(query)
+    
+    print(f"Câu hỏi: {query}\n")
+    print(f"Câu trả lời: {answer}")
+    \end{minted}
+\end{example}
+
+\textbf{Kết quả mong đợi:} Mô hình trả lời đúng về kiến trúc Transformer dựa trên thông tin truy xuất từ Wikipedia, thay vì chỉ dựa trên kiến thức nội tại.

@@ -1,0 +1,179 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap4_3.tex
+% Nội dung cho Chương 4, Phần 3
+
+\section{Các Kỹ thuật Tokenization Hiện đại}
+\label{sec:modern_tokenization}
+
+Trước khi một mô hình Transformer có thể xử lý văn bản, văn bản đó phải được chuyển đổi thành một chuỗi các số nguyên, mỗi số đại diện cho một "token" trong từ vựng của mô hình. Quá trình chia một chuỗi văn bản thô thành các token này được gọi là \textbf{tokenization}.
+
+Lựa chọn tokenizer không phải là một quyết định tầm thường. Nó ảnh hưởng trực tiếp đến:
+\begin{itemize}
+    \item \textbf{Kích thước từ vựng (Vocabulary Size):} Ảnh hưởng đến kích thước của ma trận embedding và lớp softmax cuối cùng.
+    \item \textbf{Độ dài chuỗi (Sequence Length):} Ảnh hưởng đến chi phí tính toán và bộ nhớ.
+    \item \textbf{Khả năng xử lý từ hiếm và từ OOV (Out-of-Vocabulary):} Một trong những thách thức lớn nhất.
+\end{itemize}
+
+Các phương pháp tokenization đơn giản như tách từ theo khoảng trắng hoặc theo quy tắc sẽ tạo ra một từ vựng khổng lồ và không thể xử lý các từ mới, từ ghép, hay lỗi chính tả. Để giải quyết vấn đề này, các mô hình ngôn ngữ lớn hiện đại đều sử dụng các thuật toán tokenization dựa trên \textbf{subword (dưới từ)}.
+
+\begin{tcolorbox}[
+    title=Triết lý của Subword Tokenization,
+    colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries
+]
+Ý tưởng cốt lõi là: các từ phức tạp hoặc hiếm có thể được phân rã thành các đơn vị con (subwords) có ý nghĩa và thường xuyên xuất hiện hơn. Bằng cách này, mô hình có thể hiểu và xử lý bất kỳ từ nào, ngay cả những từ chưa từng thấy, bằng cách tổ hợp các subword mà nó đã biết.
+\end{tcolorbox}
+\begin{tcolorbox}[
+    title={Subword có phải là Hình vị (Morpheme) không?},
+    colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
+]
+Các subword được tạo ra bởi các thuật toán thống kê (như `re`, `play`, `ing` trong `replaying`) thường trùng khớp một cách đáng ngạc nhiên với các hình vị (morphemes) -- các đơn vị ngôn ngữ nhỏ nhất có ý nghĩa.
+\begin{itemize}
+    \item \textbf{Tại sao có sự trùng khớp?} Bởi vì các hình vị (tiền tố, hậu tố, gốc từ) xuất hiện lặp đi lặp lại trong nhiều từ khác nhau. Các thuật toán như BPE/WordPiece, vốn được thiết kế để tìm các chuỗi con xuất hiện thường xuyên, sẽ tự động "khám phá" ra các hình vị này một cách tự nhiên mà không cần bất kỳ kiến thức ngôn ngữ học nào.
+    \item \textbf{Nhưng chúng không hoàn toàn giống nhau.} Các thuật toán này hoàn toàn dựa trên thống kê. Đôi khi chúng có thể tạo ra các subword không có ý nghĩa về mặt ngôn ngữ học (ví dụ: `to`, `ken`, `ization` thay vì `token`, `ization`) nếu sự phân chia đó phổ biến hơn trong kho văn bản.
+\end{itemize}
+Do đó, có thể nói rằng các tokenizer subword học được một \textbf{sự xấp xỉ dựa trên dữ liệu (data-driven approximation)} của hình thái học ngôn ngữ.
+\end{tcolorbox}
+Ví dụ, từ ``tokenization'' có thể được chia thành các subword như \texttt{token} và \texttt{\#\#ization}. 
+Từ ``hugging'' có thể được chia thành \texttt{hug} và \texttt{\#\#ging}. 
+Dấu \texttt{\#\#} (hoặc một ký hiệu đặc biệt khác) cho biết đây là một phần tiếp nối của một từ.
+
+Ba thuật toán subword tokenization chính được sử dụng trong các LLM hiện đại là BPE, WordPiece, và SentencePiece.
+
+\subsection{Byte-Pair Encoding (BPE)}
+\label{ssec:bpe}
+
+BPE ban đầu là một thuật toán nén dữ liệu, sau đó được Sennrich và các cộng sự (2015) \cite{sennrich2015neural} điều chỉnh cho NLP. Đây là thuật toán nền tảng cho GPT và nhiều mô hình khác.
+
+\subsubsection{Cơ chế hoạt động: Gộp từ dưới lên (Bottom-up Merging)}
+BPE hoạt động theo một quy trình lặp đi lặp lại rất trực quan: \textbf{tìm cặp token liền kề xuất hiện thường xuyên nhất trong kho văn bản và gộp chúng lại thành một token mới}.
+
+\paragraph{Bước 1: Chuẩn bị kho văn bản và Từ vựng ban đầu}
+\begin{enumerate}
+    \item \textbf{Tiền xử lý:} Lấy một kho văn bản lớn (corpus).
+    \item \textbf{Tách từ:} Tách kho văn bản thành các từ, thường theo khoảng trắng. Thống kê tần suất của mỗi từ.
+    \item \textbf{Phân rã thành ký tự:} Tách mỗi từ thành một chuỗi các ký tự. Thêm một ký hiệu kết thúc từ đặc biệt (ví dụ: `</w>`) vào cuối mỗi từ. Điều này giúp mô hình biết được ranh giới của từ gốc. Ví dụ: từ "học" có tần suất 5 lần sẽ trở thành `('h', 'ọ', 'c', '</w>') : 5`.
+    \item \textbf{Từ vựng ban đầu:} Từ vựng ban đầu bao gồm tất cả các ký tự đơn lẻ xuất hiện trong kho văn bản.
+\end{enumerate}
+
+\paragraph{Bước 2: Học các quy tắc gộp (Learn Merges)}
+Lặp lại một số lần định trước (ví dụ: 30,000 lần), mỗi lần lặp thực hiện:
+\begin{enumerate}
+    \item \textbf{Tìm cặp phổ biến nhất:} Duyệt qua toàn bộ kho văn bản (đã được tách thành ký tự) và tìm ra cặp ký tự/token liền kề nào có tần suất xuất hiện cao nhất.
+    \item \textbf{Gộp cặp:} Gộp cặp đó lại thành một token mới.
+    \item \textbf{Thêm vào từ vựng:} Thêm token mới này vào từ vựng.
+    \item \textbf{Cập nhật kho văn bản:} Thay thế tất cả các lần xuất hiện của cặp đã gộp trong kho văn bản bằng token mới.
+\end{enumerate}
+
+\begin{example}{Minh họa quá trình học BPE}{ex:bpe_learning}
+    Giả sử kho văn bản của chúng ta sau khi tiền xử lý có dạng:
+    `{ ('h', 'ọ', 'c', '</w>'): 5, ('đ', 'ọ', 'c', '</w>'): 3, ('h', 'ỏ', 'i', '</w>'): 4 }`
+
+    \textbf{Từ vựng ban đầu:} `{h, ọ, c, </w>, đ, ỏ, i}`
+    
+    \textbf{Lần lặp 1:}
+    \begin{itemize}
+        \item Cặp `(ọ, c)` xuất hiện trong "học" (5 lần) và "đọc" (3 lần). Tổng cộng 8 lần. Đây là cặp phổ biến nhất.
+        \item \textbf{Gộp:} `(ọ, c)` $\rightarrow$ `ọc`
+        \item \textbf{Từ vựng mới:} `{..., ọc}`
+        \item \textbf{Cập nhật kho văn bản:} `{ ('h', 'ọc', '</w>'): 5, ('đ', 'ọc', '</w>'): 3, ('h', 'ỏ', 'i', '</w>'): 4 }`
+    \end{itemize}
+
+    \textbf{Lần lặp 2:}
+    \begin{itemize}
+        \item Cặp `(h, ọc)` xuất hiện 5 lần. Cặp `(ọc, </w>)` xuất hiện 8 lần. Cặp `(đ, ọc)` xuất hiện 3 lần... Cặp `(ọc, </w>)` là phổ biến nhất.
+        \item \textbf{Gộp:} `(ọc, </w>)` $\rightarrow$ `ọc</w>`
+        \item \textbf{Từ vựng mới:} `{..., ọc, ọc</w>}`
+        \item \textbf{Cập nhật kho văn bản:} `{ ('h', 'ọc</w>'): 5, ('đ', 'ọc</w>'): 3, ('h', 'ỏ', 'i', '</w>'): 4 }`
+    \end{itemize}
+    
+    Quá trình này tiếp tục. Cuối cùng, từ vựng sẽ chứa các token từ các ký tự đơn lẻ (`h`, `i`, ...), các subword phổ biến (`ọc`, `ọc</w>`), và có thể cả các từ hoàn chỉnh nếu chúng đủ phổ biến (`học</w>`).
+\end{example}
+
+\paragraph{Bước 3: Tokenize một câu mới}
+Sau khi đã học được một từ vựng và một danh sách các quy tắc gộp theo thứ tự ưu tiên, để tokenize một câu mới:
+\begin{enumerate}
+    \item Tách câu thành các ký tự.
+    \item Áp dụng các quy tắc gộp đã học theo đúng thứ tự ưu tiên cho đến khi không thể gộp được nữa.
+\end{enumerate}
+\subsubsection{Cải tiến quan trọng: Byte-Level BPE (BBPE)}
+Các mô hình hiện đại như GPT-2/3/4 và Llama không áp dụng BPE trên các ký tự Unicode mà trên các \textbf{byte}.
+\begin{itemize}
+    \item \textbf{Cơ chế:} Thay vì xem xét các ký tự (`a`, `b`, `á`, `à`, ...), BBPE hoạt động trên chuỗi các byte UTF-8 cấu thành nên các ký tự đó.
+    \item \textbf{Từ vựng ban đầu cực nhỏ:} Toàn bộ các ký tự trên thế giới có thể được biểu diễn chỉ bằng 256 byte. Do đó, từ vựng ban đầu của BBPE chỉ có 256 token.
+    \item \textbf{Lợi ích vượt trội:}
+        \begin{enumerate}
+            \item \textbf{Không bao giờ có token "Unknown":} Bất kỳ chuỗi văn bản nào, dù là ngôn ngữ lạ, emoji (��), hay nhiễu ngẫu nhiên, đều có thể được biểu diễn bằng một chuỗi các byte. Mô hình sẽ không bao giờ gặp một ký tự "out-of-vocabulary" ở cấp độ cơ bản nhất.
+            \item \textbf{Không cần xử lý Unicode phức tạp:} Mô hình không cần quan tâm đến các quy tắc chuẩn hóa Unicode khác nhau, vì nó chỉ làm việc với byte.
+            \item \textbf{Hiệu quả cho đa ngôn ngữ:} Cùng một tokenizer có thể xử lý hiệu quả nhiều ngôn ngữ mà không cần phải có một từ vựng ban đầu khổng lồ chứa tất cả các ký tự có thể có.
+        \end{enumerate}
+\end{itemize}
+BBPE là một lựa chọn thiết kế thanh lịch và mạnh mẽ, đã trở thành tiêu chuẩn cho nhiều LLM hàng đầu hiện nay.
+\subsection{WordPiece}
+\label{ssec:wordpiece}
+
+WordPiece là một thuật toán tương tự BPE, được phát triển tại Google và sử dụng trong các mô hình như BERT và RoBERTa \cite{wu2016google}.
+
+\subsubsection{Sự khác biệt chính với BPE: Tiêu chí gộp}
+Sự khác biệt cốt lõi nằm ở cách nó quyết định cặp nào sẽ được gộp.
+\begin{itemize}
+    \item \textbf{BPE} gộp cặp có \textbf{tần suất cao nhất}.
+    \item \textbf{WordPiece} gộp cặp có khả năng \textbf{tối đa hóa "khả năng hợp lý" (likelihood)} của dữ liệu huấn luyện nếu chúng ta xem việc tokenization là một mô hình ngôn ngữ.
+\end{itemize}
+
+\paragraph{Cơ chế hoạt động}
+WordPiece cũng bắt đầu với một từ vựng gồm các ký tự đơn lẻ. Ở mỗi bước, nó xem xét việc gộp hai token liền kề (ví dụ `A` và `B` thành `AB`) và tính toán xem sự thay đổi này làm tăng "khả năng hợp lý" của toàn bộ kho văn bản lên bao nhiêu.
+$$ \text{score}(A, B) = \frac{\text{count}(AB)}{\text{count}(A) \times \text{count}(B)} $$
+Nó sẽ chọn cặp có điểm số (score) cao nhất để gộp. Tiêu chí này ưu tiên các cặp mà các thành phần của nó ít có khả năng xuất hiện độc lập, tức là chúng "thực sự thuộc về nhau".
+
+Trong thực tế, WordPiece thường tạo ra các token có dạng \texttt{\#\#} ở đầu (ví dụ \texttt{\#\#ization}) để biểu thị các subword không phải là bắt đầu của một từ.
+
+\subsection{SentencePiece}
+\label{ssec:sentencepiece}
+
+Được phát triển bởi Google, SentencePiece \cite{kudo2018sentencepiece} không phải là một thuật toán tokenization mới, mà là một \textbf{thư viện phần mềm} cung cấp một cách triển khai hiệu quả của cả BPE và một thuật toán khác gọi là \textbf{Unigram Language Model}, đồng thời giải quyết một số vấn đề thực tiễn.
+
+\subsubsection{Các cải tiến chính}
+\paragraph{1. Hoạt động trực tiếp trên văn bản thô}
+BPE và WordPiece đều yêu cầu văn bản phải được tiền xử lý và tách từ theo khoảng trắng trước. Điều này tạo ra một vấn đề: làm thế nào để xử lý khoảng trắng? Khoảng trắng có phải là một token không? Điều này đặc biệt phức tạp với các ngôn ngữ không dùng khoảng trắng như tiếng Nhật hay tiếng Trung.
+
+SentencePiece giải quyết vấn đề này bằng cách coi khoảng trắng chỉ là một ký tự bình thường. Nó hoạt động trực tiếp trên chuỗi Unicode thô. Ký tự khoảng trắng được thay thế bằng một meta-symbol đặc biệt, ví dụ `\_` (dấu gạch dưới).
+\begin{itemize}
+    \item \textbf{Ví dụ:} `Hello World` $\rightarrow$ `\_Hello \_World`
+    \item \textbf{Lợi ích:} Toàn bộ quá trình tokenization và de-tokenization là hoàn toàn có thể đảo ngược (fully reversible) mà không có bất kỳ sự mơ hồ nào về khoảng trắng.
+\end{itemize}
+
+\paragraph{2. Tokenization xác suất và Subword Regularization}
+Ngoài BPE, SentencePiece còn triển khai mô hình Unigram, mang đến một cách tiếp cận linh hoạt hơn. Không giống như BPE và WordPiece chỉ có một cách duy nhất để tokenize một chuỗi, mô hình Unigram có thể tạo ra \textbf{nhiều cách tokenization khác nhau cho cùng một chuỗi}, mỗi cách có một xác suất.
+
+\begin{itemize}
+    \item \textbf{Cơ chế học (Top-down):} Ngược lại với BPE, mô hình Unigram bắt đầu với một từ vựng rất lớn (ví dụ, tất cả các subword có thể có từ thuật toán Suffix Array). Sau đó, nó sử dụng thuật toán EM (Expectation-Maximization) để lặp đi lặp lại việc ước tính xác suất của mỗi token và loại bỏ các token làm giảm ít nhất "khả năng hợp lý" (likelihood) của toàn bộ kho văn bản, cho đến khi từ vựng đạt kích thước mong muốn.
+    
+    \item \textbf{Cơ chế tokenize:}
+        \begin{itemize}
+            \item \textbf{Chế độ tốt nhất (Best):} Sử dụng thuật toán Viterbi để tìm ra chuỗi token có xác suất cao nhất. Ví dụ, `Hello World` có thể được tokenize thành \_Hello`, `\_World`.
+            \item \textbf{Chế độ lấy mẫu (Sampling):} Lấy mẫu một cách tokenization từ phân phối xác suất. Ví dụ, cùng câu `Hello World` có thể được tokenize thành `\_H`, `ell`, `o`, `\_W`, `or`, `ld` trong một lần khác.
+        \end{itemize}
+    
+    \item \textbf{Lợi ích (Subword Regularization):} Việc sử dụng chế độ lấy mẫu trong quá trình huấn luyện mô hình ngôn ngữ được gọi là \textbf{subword regularization}. Bằng cách cho mô hình thấy nhiều cách phân rã khác nhau của cùng một từ, kỹ thuật này hoạt động như một dạng data augmentation, giúp mô hình trở nên mạnh mẽ hơn trước sự nhiễu và các biến thể hình thái, từ đó cải thiện khả năng tổng quát hóa.
+\end{itemize}
+
+\begin{tcolorbox}[
+    title={Tổng kết các Kỹ thuật Tokenization Hiện đại},
+    colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
+]
+\begin{tabularx}{\linewidth}{|l|X|X|X|}
+    \hline
+    \textbf{Tiêu chí} & \textbf{BPE} & \textbf{WordPiece} & \textbf{SentencePiece (Unigram)} \\
+    \hline
+    \textbf{Chiến lược} & Bottom-up (gộp) & Bottom-up (gộp) & Top-down (loại bỏ) \\
+    \hline
+    \textbf{Tiêu chí gộp/giữ} & Tần suất cặp cao nhất & Tối đa hóa likelihood & Giữ lại token để tối đa hóa likelihood \\
+    \hline
+    \textbf{Đầu ra} & Duy nhất (deterministic) & Duy nhất (deterministic) & Có thể là xác suất (probabilistic) \\
+    \hline
+    \textbf{Xử lý khoảng trắng} & Yêu cầu tiền xử lý & Yêu cầu tiền xử lý & Coi là ký tự bình thường (\texttt{\_}) \\
+    \hline
+    \textbf{Sử dụng bởi} & GPT, RoBERTa, Llama 2 & BERT, DistilBERT & T5, ALBERT, Llama 1 \\
+    \hline
+\end{tabularx}
+\end{tcolorbox}

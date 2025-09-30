@@ -1,0 +1,87 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap7_3.tex
+% Nội dung cho Chương 7, Phần 3
+
+\section{Thách thức trong Đánh giá LLM}
+\label{sec:llm_evaluation_challenges}
+
+Mặc dù chúng ta đã có một bộ các metric và benchmark ngày càng tinh vi, việc đánh giá các Mô hình Ngôn ngữ Lớn vẫn là một bài toán mở với vô vàn thách thức. Việc chỉ nhìn vào một con số duy nhất trên một bảng xếp hạng (leaderboard) có thể rất sai lầm và không phản ánh được hiệu năng thực sự của mô hình trong thế giới thực.
+
+Mục này sẽ đi sâu vào những thách thức cố hữu và những cạm bẫy tiềm ẩn trong quá trình đánh giá LLM hiện nay.
+
+\subsection{Nhiễm bẩn Dữ liệu (Data Contamination)}
+\label{ssec:data_contamination}
+
+\begin{tcolorbox}[
+    title=Vấn đề cốt lõi,
+    colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
+]
+"Chúng ta đang kiểm tra khả năng suy luận của mô hình, hay đang kiểm tra khả năng ghi nhớ của nó?"
+\end{tcolorbox}
+
+\paragraph{Định nghĩa}
+Nhiễm bẩn dữ liệu xảy ra khi dữ liệu của bộ \textbf{kiểm tra (test set)} hoặc bộ \textbf{phát triển (dev set)} của một benchmark vô tình xuất hiện trong bộ \textbf{dữ liệu huấn luyện (training set)} của mô hình.
+
+\paragraph{Nguyên nhân}
+\begin{itemize}
+    \item \textbf{Dữ liệu Pre-training khổng lồ:} Các LLM được huấn luyện trên một phần lớn của Internet (ví dụ: Common Crawl). Rất có khả năng các bộ dữ liệu benchmark phổ biến (vốn cũng thường được đăng tải công khai trên các trang như GitHub, arXiv) đã nằm sẵn trong kho dữ liệu pre-training khổng lồ này.
+    \item \textbf{Sự trùng lặp không chủ ý:} Ngay cả khi không có sự trùng lặp trực tiếp, các câu hỏi và câu trả lời trong benchmark có thể có các phiên bản diễn giải lại (paraphrased versions) hoặc các thảo luận về chúng nằm trên các trang web như Stack Overflow hay Reddit, và mô hình đã học được chúng.
+\end{itemize}
+
+\paragraph{Hậu quả}
+\begin{itemize}
+    \item \textbf{Điểm số bị thổi phồng một cách giả tạo:} Khi mô hình gặp một câu hỏi trong benchmark mà nó đã "nhìn thấy" trong quá trình huấn luyện, nó không cần phải suy luận. Nó chỉ đơn giản là "nhớ" lại và đưa ra câu trả lời. Điều này làm cho điểm số của mô hình cao hơn nhiều so với năng lực thực sự của nó.
+    \item \textbf{Mất đi tính giá trị của benchmark:} Nếu một benchmark bị nhiễm bẩn nặng, nó không còn là một thước đo đáng tin cậy cho khả năng tổng quát hóa nữa.
+\end{itemize}
+
+\paragraph{Hướng giải quyết}
+Đây là một vấn đề rất khó giải quyết triệt để. Các hướng tiếp cận bao gồm:
+\begin{itemize}
+    \item \textbf{Lọc dữ liệu cẩn thận:} Cố gắng loại bỏ các dữ liệu từ các benchmark đã biết khỏi tập pre-training.
+    \item \textbf{Phát triển các benchmark mới liên tục:} Tạo ra các bộ dữ liệu mới, được giữ kín cho đến khi công bố.
+    \item \textbf{Các phương pháp phát hiện nhiễm bẩn:} Phát triển các kỹ thuật để ước tính mức độ một mô hình đã "học thuộc lòng" một benchmark.
+\end{itemize}
+
+\subsection{Đánh giá bởi Con người vs. Đánh giá Tự động (Human vs. Auto Evaluation)}
+\label{ssec:human_vs_auto_eval}
+
+\subsubsection{Hạn chế của Đánh giá Tự động (Auto-Eval)}
+Như đã thảo luận ở mục \ref{sec:classic_metrics}, các metric tự động như BLEU, ROUGE có những hạn chế nghiêm trọng:
+\begin{itemize}
+    \item \textbf{Hời hợt:} Chúng chỉ dựa trên sự trùng lặp bề mặt của từ hoặc N-gram.
+    \item \textbf{Không hiểu ngữ nghĩa:} Chúng không thể đánh giá sự sáng tạo, tính mạch lạc, hay sự chính xác về mặt factual. Một câu trả lời có thể sai hoàn toàn về mặt thông tin nhưng vẫn đạt điểm ROUGE cao nếu nó sử dụng lại các từ trong tài liệu tham khảo.
+    \item \textbf{Không đo lường được các khía cạnh tinh tế:} Không thể đo lường được "tính hữu ích", "sự thú vị", hay "mức độ an toàn" của một câu trả lời.
+\end{itemize}
+
+\subsubsection{Ưu điểm và Thách thức của Đánh giá bởi Con người (Human-Eval)}
+\begin{itemize}
+    \item \textbf{Tiêu chuẩn vàng:} Đánh giá của con người là tiêu chuẩn vàng vì con người có thể hiểu được các khía cạnh tinh tế mà các metric tự động bỏ qua.
+    \item \textbf{Thách thức:}
+        \begin{itemize}
+            \item \textbf{Tốn kém và chậm:} Cần phải thuê và huấn luyện một đội ngũ những người đánh giá chuyên nghiệp.
+            \item \textbf{Thiếu nhất quán:} Những người đánh giá khác nhau có thể có những sở thích và tiêu chuẩn khác nhau, dẫn đến sự không nhất quán trong kết quả (low inter-annotator agreement).
+            \item \textbf{Thiên vị (Bias):} Người đánh giá có thể bị ảnh hưởng bởi các yếu tố như độ dài của câu trả lời (thiên vị cho câu trả lời dài hơn) hoặc văn phong của mô hình.
+        \end{itemize}
+\end{itemize}
+Do đó, thực tế tốt nhất thường là sử dụng kết hợp cả hai: dùng các metric tự động để theo dõi nhanh trong quá trình phát triển và dùng đánh giá của con người một cách định kỳ cho các mốc quan trọng.
+
+\subsection{Định luật Goodhart và "Dạy cho Bài kiểm tra" (Goodhart's Law \& ''Teaching to the Test'')}
+\label{ssec:goodharts_law}
+
+\begin{tcolorbox}[
+    title=Định luật Goodhart,
+    colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries
+]
+"When a measure becomes a target, it ceases to be a good measure." \\ (Khi một thước đo trở thành một mục tiêu, nó sẽ không còn là một thước đo tốt nữa.)
+\end{tcolorbox}
+
+\paragraph{Ý nghĩa trong bối cảnh LLM}
+\begin{itemize}
+    \item Khi một benchmark cụ thể (ví dụ: MMLU) trở nên quá quan trọng và trở thành mục tiêu tối thượng của các phòng thí nghiệm AI, các nhà phát triển sẽ bắt đầu \textbf{tối ưu hóa mô hình một cách trực tiếp cho benchmark đó (over-optimizing)}.
+    \item Họ có thể vô tình hoặc cố ý đưa các dữ liệu có văn phong tương tự như benchmark vào quá trình huấn luyện, hoặc tinh chỉnh các siêu tham số của mô hình để nó hoạt động tốt nhất trên một phân phối dữ liệu rất hẹp của benchmark đó.
+    \item \textbf{Hậu quả:} Mô hình đạt được điểm số rất cao trên benchmark, nhưng sự cải thiện này không thực sự chuyển thành sự cải thiện về khả năng suy luận tổng quát trong các tình huống thực tế. Mô hình chỉ đơn giản là đã học cách "làm bài kiểm tra" rất giỏi.
+\end{itemize}
+
+Điều này tạo ra một cuộc chạy đua vũ trang, nơi các bảng xếp hạng có thể không còn phản ánh đúng sự tiến bộ thực sự của ngành, và chúng ta cần phải liên tục phát triển các phương pháp đánh giá mới và đa dạng hơn để tránh rơi vào cái bẫy của Định luật Goodhart.
+
+Những thách thức này cho thấy rằng việc đánh giá LLM không chỉ là một vấn đề kỹ thuật, mà còn là một vấn đề khoa học sâu sắc, đòi hỏi sự cẩn trọng, tư duy phản biện, và một cách tiếp cận đa diện.

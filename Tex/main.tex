@@ -1,0 +1,352 @@
+% !TEX program = xelatex
+
+\documentclass[11pt, a4paper, twoside]{book}
+
+% ==============================================================================
+% 1. HỖ TRỢ TIẾNG VIỆT VÀ FONT CHỮ
+% ==============================================================================
+\usepackage{fontspec}
+
+\setmainfont{Times New Roman}       % font chữ chính (serif)
+\setsansfont{Arial}                 % font không chân (sans-serif)
+\setmonofont{Courier New}           % font mono (code, terminal)
+
+% Gói hỗ trợ tiếng Việt
+\usepackage[vietnamese]{babel}
+
+
+% ==============================================================================
+% 2. CÁC GÓI TOÁN HỌC VÀ KHOA HỌC
+% ==============================================================================
+\usepackage{amsmath, amssymb, amsfonts, amsthm, caption, tabularx, csquotes}
+
+% ==============================================================================
+% 3. BỐ CỤC VÀ ĐỊNH DẠNG TRANG
+% ==============================================================================
+\usepackage[
+    a4paper,
+    top=2.5cm,
+    bottom=2.5cm,
+    left=3cm,
+    right=2.5cm,
+    headsep=1cm,
+    footskip=1cm,
+    twoside
+]{geometry}
+\usepackage{enumitem}
+\setlist{nosep}
+\usepackage{graphicx}
+\graphicspath{{images/}} 
+\usepackage[dvipsnames]{xcolor} 
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=MidnightBlue,
+    filecolor=magenta,      
+    urlcolor=RoyalBlue,
+    citecolor=ForestGreen,
+    pdftitle={Giáo trình NLP Toàn tập},
+    pdfauthor={Tên tác giả},
+}
+\usepackage{booktabs}
+% ==============================================================================
+% 4. TÙY BIẾN TIÊU ĐỀ
+% ==============================================================================
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyfoot[C]{Công Thái Học (ngu)}
+\usepackage{titlesec}
+\titleformat{\part}[display]
+  {\normalfont\Huge\bfseries\centering}
+  {\partname~\thepart}
+  {20pt}
+  {\Huge}
+\titlespacing*{\part}{0pt}{50pt}{40pt}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries}
+  {\chaptertitlename~\thechapter}
+  {20pt}
+  {\huge\bfseries}
+\titlespacing*{\chapter}{0pt}{40pt}{30pt}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{MidnightBlue}}
+  {\thesection.}
+  {1em}
+  {}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{OliveGreen}}
+  {\thesubsection.}
+  {1em}
+  {}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{Brown}}
+  {\thesubsubsection.}
+  {1em}
+  {}
+
+% ==============================================================================
+% 5. CODE & BOX
+% ==============================================================================
+\usepackage{minted}
+\setminted{
+    frame=lines,
+    framesep=2mm,
+    numbersep=0pt
+    baselinestretch=1.2,
+    fontsize=\small,
+    linenos,
+    breaklines,
+    breakanywhere
+}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{skins}
+
+\newtcbtheorem{definition}{Định nghĩa}{
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    fonttitle=\bfseries,
+    breakable
+}{def}
+\newtcbtheorem{example}{Ví dụ}{
+    colback=green!5!white,
+    colframe=green!50!black,
+    fonttitle=\bfseries,
+    before skip=0.5em,   
+    after skip=0.5em,   
+    boxsep=1mm,          
+    breakable
+}{ex}
+\newtcbtheorem[
+    auto counter, 
+    number within=chapter,
+    list inside=rcp
+]{recipe}{Recipe \thetcbcounter}{
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    fonttitle=\bfseries,
+    title={Recipe \thechapter.\arabic{tcbcounter}:}
+}{rcp}
+
+% ==============================================================================
+% 6. LỆNH PHỤ
+% ==============================================================================
+\newcommand{\newtag}{\textcolor{red}{\textnormal{\bfseries\small [MỚI & SỬA ĐỔI]}}}
+\newcommand{\reftag}{\textcolor{blue}{\textnormal{\bfseries\small [THAM KHẢO]}}}
+
+% ==============================================================================
+% 7. THÔNG TIN SÁCH
+% ==============================================================================
+\title{GIÁO TRÌNH NLP TOÀN TẬP \\ \large}
+\author{Đinh Công Thái}
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\mainmatter
+
+\input{preface}
+\part{BÁCH KHOA TOÀN THƯ VỀ LÝ THUYẾT NLP}
+
+\textit{Chào mừng bạn đến với nền tảng lý thuyết của Xử lý Ngôn ngữ Tự nhiên. Mục tiêu của Phần 1 là cung cấp một cái nhìn toàn diện, sâu sắc và có hệ thống về TẤT CẢ các khái niệm, kiến trúc và thuật toán lý thuyết đã định hình nên ngành NLP. Chúng ta sẽ bắt đầu từ những nguyên lý ngôn ngữ học cơ bản, đi qua kỷ nguyên thống kê, khám phá các kiến trúc mạng nơ-ron kinh điển, và cuối cùng là làm chủ kiến trúc Transformer - nền tảng của các mô hình ngôn ngữ lớn hiện đại. Mỗi chương là một khối kiến thức độc lập nhưng có sự kết nối chặt chẽ, cùng nhau xây dựng nên một nền tảng vững chắc để bạn có thể hiểu "tại sao" và "như thế nào" các công nghệ NLP hoạt động. Hãy bắt đầu hành trình khám phá này.}
+
+% \input{part1/chapters_part1/intro}
+% \input{part1/chapters_part1/chap1_1}
+% \input{part1/chapters_part1/chap1_2}
+% \input{part1/chapters_part1/chap1_3}
+% \input{part1/chapters_part1/chap1_4}
+% \input{part1/chapters_part1/chap1_5}
+
+% \input{part1/chapters_part2/intro}
+% \input{part1/chapters_part2/chap2_1}
+% \input{part1/chapters_part2/chap2_2}
+% \input{part1/chapters_part2/chap2_3}
+% \input{part1/chapters_part2/chap2_4}
+
+% \input{part1/chapters_part3/intro}
+% \input{part1/chapters_part3/chap3_1}
+% \input{part1/chapters_part3/chap3_2}
+% \input{part1/chapters_part3/chap3_3}
+% \input{part1/chapters_part3/chap3_4}
+% \input{part1/chapters_part3/chap3_5}
+% \input{part1/chapters_part3/chap3_6}
+% \input{part1/chapters_part3/chap3_7}
+% \input{part1/chapters_part3/chap3_8}
+
+% \input{part1/chapters_part4/intro}
+% \input{part1/chapters_part4/chap4_1}
+% \input{part1/chapters_part4/chap4_2}
+% \input{part1/chapters_part4/chap4_3}
+% \input{part1/chapters_part4/chap4_4}
+% \input{part1/chapters_part4/chap4_5}
+
+% \input{part1/chapters_part5/intro}
+% \input{part1/chapters_part5/chap5_1}
+% \input{part1/chapters_part5/chap5_2}
+% \input{part1/chapters_part5/chap5_3}
+% \input{part1/chapters_part5/chap5_4}
+% \input{part1/chapters_part5/chap5_5}
+
+% \input{part1/chapters_part6/intro}
+% \input{part1/chapters_part6/chap6_1}
+% \input{part1/chapters_part6/chap6_2}
+% \input{part1/chapters_part6/chap6_3}
+% \input{part1/chapters_part6/chap6_4}
+% \input{part1/chapters_part6/chap6_5}
+% \input{part1/chapters_part6/chap6_6}
+
+% \input{part1/chapters_part7/intro}
+% \input{part1/chapters_part7/chap7_1}
+% \input{part1/chapters_part7/chap7_2}
+% \input{part1/chapters_part7/chap7_3}
+% \input{part1/chapters_part7/chap7_4}
+
+
+\clearpage
+\thispagestyle{empty}
+
+\begin{center}
+    \vspace*{4cm}
+    {\Huge \textbf{KẾT THÚC PHẦN 1}} \\[1.5cm]
+
+    \rule{0.8\textwidth}{0.4pt} \\[0.8cm]
+
+    \parbox{0.9\textwidth}{
+        \centering
+        \textit{
+        Phần 1 của giáo trình đã cung cấp cho bạn một nền tảng lý thuyết toàn diện, 
+        từ những nguyên lý ngôn ngữ học cơ bản, các mô hình thống kê, 
+        các kiến trúc nơ-ron kinh điển, cho đến sự thống trị của Transformer 
+        và các kỹ thuật tiên tiến để tinh chỉnh, căn chỉnh, và đánh giá các 
+        Mô hình Ngôn ngữ Lớn. Với nền tảng này, bạn đã sẵn sàng để bước sang 
+        Phần 2, nơi chúng ta sẽ biến những lý thuyết này thành các kỹ năng và 
+        quy trình thực chiến để xây dựng các ứng dụng NLP thực tế.
+        }
+    } \\[1cm]
+
+    \rule{0.8\textwidth}{0.4pt} \\[2cm]
+\end{center}
+
+\noindent
+\textbf{Tóm lược nội dung Phần 1:}
+\begin{itemize}
+    \item \textbf{Chương 1 – Nhập môn và Nguyên lý nền tảng:} 
+    Định nghĩa NLP, mối quan hệ với AI, các kỷ nguyên phát triển, 
+    kiến thức ngôn ngữ học, toán học, và các vấn đề đạo đức trong NLP.
+    \item \textbf{Chương 2 – Biểu diễn văn bản và Mô hình thống kê:} 
+    Các kỹ thuật BoW, TF-IDF, N-gram, smoothing, 
+    mô hình phân loại, học chuỗi, và LDA.
+    \item \textbf{Chương 3 – Các kiến trúc mạng nơ-ron kinh điển:} 
+    Word embeddings (Word2Vec, GloVe, FastText), 
+    autoencoder, RNN/LSTM/GRU, seq2seq với attention, 
+    CNN cho NLP, contextualized embeddings, và các mô hình sinh pre-Transformer.
+    \item \textbf{Chương 4 – Kỷ nguyên Transformer và LLMs:} 
+    Kiến trúc Transformer gốc, phân loại LLMs, tokenization hiện đại, 
+    biến thể cho ngữ cảnh dài, MoE.
+    \item \textbf{Chương 5 – Tinh chỉnh và Căn chỉnh mô hình:} 
+    Fine-tuning, PEFT (LoRA, QLoRA, Adapter), prompt engineering, 
+    instruction tuning, RLHF và các kỹ thuật alignment khác.
+    \item \textbf{Chương 6 – Hệ thống và Kiến trúc nâng cao:} 
+    RAG, tối ưu hóa mô hình (distillation, quantization, pruning), 
+    mô hình đa phương thức, hệ thống tác tử, world models, 
+    và biểu diễn nâng cao cho truy xuất.
+    \item \textbf{Chương 7 – Đánh giá và Benchmark:} 
+    Các metric kinh điển (perplexity, F1, BLEU, ROUGE), 
+    benchmark (GLUE, SuperGLUE, đánh giá emergent abilities), 
+    thách thức trong đánh giá, và xu hướng “LLM-as-a-Judge”.
+\end{itemize}
+
+\part{CẨM NANG KỸ THUẬT NLP THỰC CHIẾN}
+\setcounter{chapter}{0}
+\textit{Chào mừng bạn đến với Phần 2: Cẩm nang kỹ thuật NLP thực chiến. Mục tiêu của Phần này là trang bị cho bạn những kỹ năng, công cụ và quy trình cần thiết để xây dựng, đánh giá và triển khai các ứng dụng NLP trong thực tế. Nếu Phần 1 tập trung vào việc trả lời ``tại sao'' và ``như thế nào'' của lý thuyết, thì Phần 2 sẽ hướng dẫn bạn từng bước thực hành: từ thu thập và xử lý dữ liệu, huấn luyện và đánh giá mô hình, tối ưu hóa và triển khai, cho đến việc áp dụng các công thức (recipes) để giải quyết các bài toán phổ biến. Mỗi chương là một hướng dẫn chi tiết, đi từ cơ bản đến nâng cao, giúp bạn hiểu rõ quy trình thực tế và tự tin áp dụng các kỹ thuật NLP trong các dự án thật sự. Hãy sẵn sàng để chuyển từ lý thuyết sang thực chiến.}
+
+% \input{part2/chapters_part1/intro}
+% \input{part2/chapters_part1/chap1_1}
+% \input{part2/chapters_part1/chap1_2}
+% \input{part2/chapters_part1/chap1_3}
+% \input{part2/chapters_part1/chap1_4}
+% \input{part2/chapters_part1/chap1_5}
+
+% \input{part2/chapters_part2/intro}
+% \input{part2/chapters_part2/chap2_1}
+% \input{part2/chapters_part2/chap2_2}
+% \input{part2/chapters_part2/chap2_3}
+% \input{part2/chapters_part2/chap2_4}
+
+% \input{part2/chapters_part3/intro}
+% \input{part2/chapters_part3/chap3_1}
+% \input{part2/chapters_part3/chap3_2}
+% \input{part2/chapters_part3/chap3_3}
+% \input{part2/chapters_part3/chap3_4}
+% \input{part2/chapters_part3/chap3_5}
+
+% \input{part2/chapters_part4/intro}
+% \input{part2/chapters_part4/chap4_1}
+% \input{part2/chapters_part4/chap4_2}
+% \input{part2/chapters_part4/chap4_3}
+% \input{part2/chapters_part4/chap4_4}
+% \input{part2/chapters_part4/chap4_5}
+% \input{part2/chapters_part4/chap4_6}
+
+
+\clearpage
+\thispagestyle{empty}
+
+\begin{center}
+    \vspace*{4cm}
+    {\Huge \textbf{KẾT THÚC PHẦN 2}} \\[1.5cm]
+
+    \rule{0.8\textwidth}{0.4pt} \\[0.8cm]
+
+    \parbox{0.9\textwidth}{
+        \centering
+        \textit{
+        Phần 2 đã đưa bạn vào một hành trình thực chiến, biến những lý thuyết phức tạp 
+        thành các kỹ năng và sản phẩm cụ thể. Từ những bước đầu tiên trong việc 
+        xử lý dữ liệu đến việc huấn luyện và triển khai các mô hình ngôn ngữ lớn, 
+        bạn đã được trang bị một bộ công cụ toàn diện để giải quyết các bài toán 
+        NLP trong thế giới thực. Phần này không chỉ dạy bạn cách sử dụng các thư viện, 
+        mà còn rèn luyện một tư duy MLOps bền vững. Với kiến thức từ cả hai phần, 
+        bạn đã có đủ hành trang để tự tin bước đi trên con đường của một chuyên gia NLP.
+        }
+    } \\[1cm]
+
+    \rule{0.8\textwidth}{0.4pt} \\[2cm]
+\end{center}
+
+\noindent
+\textbf{Tóm lược nội dung Phần 2:}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Chương 1 – Quy trình làm việc và Công cụ Xử lý Dữ liệu:} 
+    Phác thảo vòng đời dự án NLP tinh gọn, các kỹ thuật thu thập dữ liệu (APIs, Web Scraping), 
+    làm sạch và gán nhãn (Pandas, Polars, Label Studio, Snorkel, LLM-based), 
+    tăng cường dữ liệu, và quản lý phiên bản với DVC.
+    
+    \item \textbf{Chương 2 – Huấn luyện và Đánh giá Mô hình:} 
+    Làm chủ hệ sinh thái Hugging Face (`transformers`, `datasets`, `accelerate`, `evaluate`), 
+    xây dựng các hàm đánh giá thực tế (`compute\_metrics`), theo dõi thí nghiệm 
+    (Weights \& Biases, MLflow), và huấn luyện phân tán với DeepSpeed.
+    
+    \item \textbf{Chương 3 – Tối ưu hóa, Triển khai và Vận hành (MLOps):} 
+    Tìm hiểu về Cơ sở dữ liệu Vector, các thư viện tối ưu hóa (`bitsandbytes`, `peft`, ONNX),
+    đóng gói và phục vụ mô hình (FastAPI, Docker), các framework chuyên dụng (vLLM, BentoML), 
+    và vòng đời MLOps hoàn chỉnh (giám sát, tái huấn luyện).
+    
+    \item \textbf{Chương 4 – Công thức Xây dựng các Ứng dụng Phổ biến (Recipes):} 
+    Hướng dẫn từng bước để xây dựng các ứng dụng thực tế: Tìm kiếm Ngữ nghĩa, 
+    Hệ thống RAG, Fine-tuning cho Phân loại và NER, xây dựng Tác tử đơn giản, 
+    và Trích xuất Thông tin có Cấu trúc.
+\end{itemize}
+
+\bibliographystyle{plain} 
+\bibliography{references}
+
+\input{ending}
+\end{document}

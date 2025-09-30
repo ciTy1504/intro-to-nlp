@@ -1,0 +1,73 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters3/chap3_2.tex
+
+\section{Tối ưu hóa Mô hình với các Thư viện Sẵn có}
+\label{sec:model_optimization_libraries}
+Như đã thảo luận trong Phần 1 (mục \ref{sec:model_optimization}), các kỹ thuật như Lượng tử hóa và PEFT là rất quan trọng. Trong phần này, chúng ta sẽ xem xét các thư viện cụ thể giúp bạn áp dụng các kỹ thuật này một cách dễ dàng.
+
+\paragraph{bitsandbytes}
+\begin{itemize}
+    \item \textbf{Mục đích chính:} \textbf{Lượng tử hóa (Quantization)}.
+    \item \textbf{Tính năng nổi bật:} Cung cấp các kernel CUDA được tối ưu hóa cao để thực hiện các phép toán trên các định dạng số có độ chính xác thấp. Nó là thư viện đứng sau thành công của \textbf{QLoRA}, cho phép lượng tử hóa 8-bit và 4-bit (bao gồm cả định dạng NF4) một cách hiệu quả.
+    \item \textbf{Cách sử dụng (với `transformers`):} Việc lượng tử hóa một mô hình khi tải về trở nên cực kỳ đơn giản.
+    \begin{example}{Tải mô hình với lượng tử hóa 4-bit}{ex:load_llama_4bit}
+    \begin{minted}{python}
+    from transformers import AutoModelForCausalLM
+    import torch
+
+    model_id = "meta-llama/Llama-2-7b-hf"
+
+    # Tải mô hình với lượng tử hóa 4-bit
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        load_in_4bit=True,
+        device_map="auto", # Tự động phân bổ các lớp lên GPU/CPU
+    )
+    \end{minted}
+    \end{example}
+    `bitsandbytes` giúp giảm đáng kể yêu cầu VRAM, là một công cụ không thể thiếu để làm việc với các LLM lớn trên phần cứng hạn chế.
+\end{itemize}
+
+\paragraph{PEFT (Parameter-Efficient Fine-Tuning)}
+\begin{itemize}
+    \item \textbf{Mục đích chính:} Triển khai các kỹ thuật \textbf{PEFT}.
+    \item \textbf{Tính năng nổi bật:} Là một thư viện của Hugging Face, cung cấp các cách triển khai tiêu chuẩn cho nhiều phương pháp PEFT, nổi bật nhất là \textbf{LoRA} (và do đó là QLoRA), Prompt-Tuning, Prefix-Tuning, và Adapter-tuning.
+    \item \textbf{Cách sử dụng (LoRA với `transformers`):}
+    \begin{example}{Sử dụng LoRA với PEFT}{ex:lora_peft}
+    \begin{minted}{python}
+    from peft import LoraConfig, get_peft_model
+    from transformers import AutoModelForCausalLM
+
+    # Tải mô hình gốc
+    model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf")
+
+    # Định nghĩa cấu hình LoRA
+    config = LoraConfig(
+        r=8, # Thứ hạng (rank)
+        lora_alpha=32,
+        target_modules=["q_proj", "v_proj"], # Áp dụng LoRA vào lớp nào
+        lora_dropout=0.05,
+        task_type="CAUSAL_LM",
+    )
+
+    # Bọc mô hình gốc bằng PEFT
+    peft_model = get_peft_model(model, config)
+
+    # Bây giờ, khi huấn luyện `peft_model`, chỉ các tham số LoRA
+    # mới được cập nhật.
+    peft_model.print_trainable_parameters()
+    # Output: trainable params: 4,194,304 || all params: 6,742,609,920 || trainable%: 0.0622
+    \end{minted}
+    \end{example}
+\end{itemize}
+
+\paragraph{ONNX (Open Neural Network Exchange)}
+\begin{itemize}
+    \item \textbf{Mục đích chính:} \textbf{Khả chuyển (Portability)} và \textbf{Tăng tốc Suy luận (Inference Acceleration)}.
+    \item \textbf{Bản chất:} ONNX không phải là một thư viện tối ưu hóa trực tiếp, mà là một \textbf{định dạng file trung gian, tiêu chuẩn mở}. Bạn có thể "export" một mô hình từ một framework (như PyTorch) sang định dạng ONNX.
+    \item \textbf{Lợi ích:}
+        \begin{itemize}
+            \item \textbf{Khả chuyển:} Một mô hình ONNX có thể được chạy trên nhiều nền tảng phần cứng và phần mềm khác nhau (web, mobile, server) bằng cách sử dụng một \textbf{ONNX Runtime}.
+            \item \textbf{Tăng tốc:} Các ONNX Runtime (ví dụ: ONNX Runtime của Microsoft) thường được tối ưu hóa cao độ. Chúng có thể áp dụng các kỹ thuật như "graph fusion" (gộp nhiều phép toán nhỏ thành một phép toán lớn) và lượng tử hóa để chạy mô hình nhanh hơn đáng kể so với môi trường PyTorch gốc.
+        \end{itemize}
+\end{itemize}

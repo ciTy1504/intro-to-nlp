@@ -1,0 +1,120 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap1_4.tex
+% Nội dung cho Phần 1.4: Các Kiến thức Toán học Cần trang bị
+
+\section{Các Kiến thức Toán học Cần trang bị}
+\label{sec:kien_thuc_toan_hoc}
+
+NLP hiện đại, đặc biệt là trong kỷ nguyên Học sâu, có nền tảng vững chắc là toán học. Các mô hình phức tạp như Transformer về bản chất là những hàm số khổng lồ, và quá trình "học" của chúng chính là một bài toán tối ưu hóa.
+
+Mục này không nhằm mục đích dạy lại toàn bộ các môn toán. Thay vào đó, nó đóng vai trò là một danh mục tham khảo, một bản đồ chỉ ra những khái niệm toán học nào là \textbf{thiết yếu} và giải thích \textbf{tại sao} chúng lại quan trọng trong NLP. Việc nắm vững những kiến thức này sẽ giúp bạn đi từ một người "sử dụng" thư viện thành một người thực sự "hiểu" và có khả năng "xây dựng" các mô hình.
+
+\subsection{Đại số Tuyến tính: Vector, Ma trận, Tensor, SVD}
+\label{ssec:dai_so_tuyen_tinh}
+Đại số Tuyến tính là ngôn ngữ của dữ liệu trong Học sâu. Mọi thứ trong NLP, từ một từ đơn lẻ đến cả một kho tài liệu, đều sẽ được biểu diễn dưới dạng các đối tượng của Đại số Tuyến tính.
+
+\paragraph{Vector}
+Một vector là một mảng số một chiều. Trong NLP, vector không chỉ là một dãy số, mà nó là \textbf{biểu diễn ngữ nghĩa} của một đối tượng.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Một từ, một câu, hay một tài liệu hoàn chỉnh đều có thể được "nhúng" (embed) vào một không gian vector nhiều chiều. Vector này, hay còn gọi là \textbf{embedding}, nắm bắt các đặc tính ngữ nghĩa của đối tượng. Các từ có nghĩa tương tự nhau (ví dụ: "vua" và "nữ hoàng") sẽ có các vector biểu diễn nằm gần nhau trong không gian. Đây là nền tảng của Word2Vec, GloVe, và mọi mô hình ngôn ngữ hiện đại.
+    \item \textbf{Ký hiệu:} Một vector $v$ trong không gian $d$ chiều được ký hiệu là $v \in \mathbb{R}^d$.
+\end{itemize}
+
+\paragraph{Ma trận (Matrix)}
+Một ma trận là một mảng số hai chiều.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Ma trận có vô số ứng dụng:
+        \begin{enumerate}
+            \item \textbf{Tập hợp các vector từ:} Một ma trận có thể biểu diễn toàn bộ từ vựng, trong đó mỗi hàng là vector embedding của một từ.
+            \item \textbf{Trọng số của mạng nơ-ron:} Mỗi lớp (layer) trong một mạng nơ-ron thực chất là một ma trận trọng số. Quá trình học chính là điều chỉnh các giá trị trong ma trận này.
+            \item \textbf{Ma trận chú ý (Attention Matrix):} Trong kiến trúc Transformer, ma trận chú ý lưu trữ điểm số thể hiện mức độ "quan tâm" của một từ đến các từ khác trong câu.
+        \end{enumerate}
+\end{itemize}
+
+\paragraph{Tensor}
+Tensor là sự tổng quát hóa của vector và ma trận lên nhiều chiều hơn. Một vector là tensor bậc 1, một ma trận là tensor bậc 2.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Các framework Học sâu như PyTorch và TensorFlow đều hoạt động dựa trên tensor. Khi xử lý dữ liệu theo lô (batch), chúng ta thường làm việc với các tensor bậc 3. Ví dụ, một lô 32 câu, mỗi câu dài 50 từ, mỗi từ được biểu diễn bằng vector 256 chiều sẽ tạo thành một tensor có kích thước `(32, 50, 256)`.
+\end{itemize}
+
+\paragraph{Phân tích Giá trị suy biến (Singular Value Decomposition - SVD)}
+Là một kỹ thuật phân rã một ma trận thành ba ma trận khác.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Trong các mô hình NLP cổ điển hơn, SVD được dùng trong Phân tích Ngữ nghĩa Tiềm ẩn (Latent Semantic Analysis - LSA) để giảm chiều dữ liệu và tìm ra các "chủ đề" ẩn trong kho văn bản. Mặc dù ít được dùng trực tiếp trong các mô hình hiện đại, các ý tưởng về phân rã ma trận vẫn là nền tảng quan trọng.
+\end{itemize}
+
+\subsection{Giải tích: Đạo hàm, Gradient, Chain Rule}
+\label{ssec:giai_tich}
+Nếu Đại số Tuyến tính là cách chúng ta biểu diễn dữ liệu, thì Giải tích là cách chúng ta khiến các mô hình "học" từ dữ liệu đó. Cốt lõi của việc huấn luyện mạng nơ-ron là tối ưu hóa một \textbf{hàm mất mát (loss function)}, $\mathcal{L}$, để đo lường mức độ "tệ" của dự đoán từ mô hình so với kết quả thực tế. Giải tích cung cấp bộ công cụ để thực hiện việc tối ưu hóa này.
+
+\paragraph{Hàm Mất mát (Loss Function)}
+Là một hàm số tính toán một giá trị vô hướng (scalar) biểu thị "sai số" hoặc "chi phí" của mô hình trên một tập dữ liệu. Mục tiêu của việc huấn luyện là tìm bộ tham số (trọng số) $\theta$ của mô hình sao cho giá trị của hàm mất mát là nhỏ nhất.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Việc lựa chọn hàm mất mát phụ thuộc vào tác vụ. Ví dụ, hàm Cross-Entropy (xem Mục \ref{ssec:ly_thuyet_thong_tin}) thường được dùng cho các bài toán phân loại. Quá trình học chính là việc tìm kiếm $\theta^* = \arg\min_{\theta} \mathcal{L}(\theta)$.
+\end{itemize}
+
+\paragraph{Đạo hàm (Derivative)}
+Đo lường tốc độ thay đổi của một hàm số.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Cho biết việc thay đổi một trọng số nhỏ trong mạng nơ-ron sẽ ảnh hưởng đến hàm mất mát tổng thể như thế nào.
+\end{itemize}
+
+\paragraph{Gradient}
+Là một vector chứa tất cả các đạo hàm riêng (partial derivatives) của hàm mất mát $\mathcal{L}$ theo từng tham số $\theta_i$ trong mô hình, ký hiệu là $\nabla_{\theta}\mathcal{L}(\theta)$.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Gradient chỉ ra hướng mà tại đó hàm mất mát \textbf{tăng nhanh nhất}. Để tối ưu hóa mô hình (giảm thiểu mất mát), thuật toán \textbf{Gradient Descent} sẽ cập nhật các trọng số theo hướng \textit{ngược lại} với gradient: $\theta \leftarrow \theta - \eta \nabla_{\theta}\mathcal{L}(\theta)$, trong đó $\eta$ là tốc độ học (learning rate).
+\end{itemize}
+
+\paragraph{Quy tắc chuỗi (Chain Rule)}
+Là một công thức để tính đạo hàm của một hàm hợp.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Mạng nơ-ron sâu là một chuỗi các hàm số lồng vào nhau rất phức tạp. Quy tắc chuỗi là nền tảng toán học của thuật toán \textbf{lan truyền ngược (Backpropagation)} \cite{rumelhart1986learning}, cho phép chúng ta tính toán gradient của hàm mất mát theo từng tham số một cách hiệu quả, từ lớp cuối cùng ngược về lớp đầu tiên. Đây là một trong những khái niệm quan trọng nhất của Học sâu.
+\end{itemize}
+
+\subsection{Xác suất và Thống kê: Định lý Bayes, MLE}
+\label{ssec:xac_suat_thong_ke}
+Ngôn ngữ tự nhiên vốn dĩ không chắc chắn và đầy mơ hồ. Xác suất và Thống kê cung cấp một bộ khung để mô hình hóa sự không chắc chắn này.
+
+\paragraph{Định lý Bayes (Bayes' Theorem)}
+Mô tả xác suất của một sự kiện, dựa trên kiến thức có trước về các điều kiện có thể liên quan đến sự kiện đó.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Là nền tảng của các mô hình sinh (generative models) và là trái tim của bộ phân loại \textbf{Naive Bayes}, một thuật toán phân loại văn bản kinh điển và hiệu quả.
+\end{itemize}
+
+\paragraph{Ước lượng Hợp lý Cực đại (Maximum Likelihood Estimation - MLE)}
+Là một phương pháp ước tính các tham số của một mô hình thống kê.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Ý tưởng cốt lõi của MLE là: "Hãy tìm bộ tham số (trọng số của mô hình) sao cho dữ liệu quan sát được là có khả năng xảy ra cao nhất". Việc huấn luyện hầu hết các mô hình học có giám sát bằng cách tối thiểu hóa một hàm mất mát (như Cross-Entropy) về mặt toán học tương đương với việc thực hiện MLE.
+\end{itemize}
+
+\subsection{Lý thuyết Thông tin: Entropy, Cross-Entropy, KL Divergence}
+\label{ssec:ly_thuyet_thong_tin}
+Lý thuyết Thông tin \cite{shannon1948mathematical}, một nhánh của toán học ứng dụng, cung cấp các công cụ để định lượng thông tin. Trong NLP, nó đặc biệt hữu ích để định nghĩa các hàm mất mát.
+
+\paragraph{Entropy}
+Đo lường mức độ "bất ngờ" hay "không chắc chắn" trung bình của một biến ngẫu nhiên. Một phân phối đều (mọi kết quả có xác suất như nhau) có entropy cao nhất.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Là một khái niệm nền tảng để hiểu các hàm mất mát.
+    \item \textbf{Công thức:}
+        \begin{equation}
+            H(X) = -\sum_{i=1}^{n} p(x_i) \log_2 p(x_i)
+            \label{eq:entropy}
+        \end{equation}
+\end{itemize}
+
+\paragraph{Cross-Entropy (Entropy chéo)}
+Đo lường "khoảng cách" giữa hai phân phối xác suất, $p$ (phân phối thật) và $q$ (phân phối dự đoán).
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Đây là \textbf{hàm mất mát phổ biến nhất} cho các bài toán phân loại \cite{goodfellow2016deep}. Trong một bài toán như vậy, chúng ta có phân phối xác suất "thật" $p$ (ví dụ: nhãn đúng là 1, các nhãn khác là 0) và phân phối xác suất "dự đoán" $q$ từ mô hình (đầu ra của lớp softmax). Mục tiêu của việc huấn luyện là tối thiểu hóa Cross-Entropy, tức là làm cho phân phối dự đoán $q$ càng giống phân phối thật $p$ càng tốt.
+    \item \textbf{Công thức:}
+        \begin{equation}
+            H(p, q) = -\sum_{i=1}^{n} p(x_i) \log_2 q(x_i)
+            \label{eq:cross_entropy}
+        \end{equation}
+\end{itemize}
+
+\paragraph{Phân kỳ Kullback-Leibler (KL Divergence)}
+Cũng là một thước đo khoảng cách giữa hai phân phối xác suất $p$ và $q$. Nó có mối quan hệ chặt chẽ với Cross-Entropy: $H(p, q) = H(p) + D_{KL}(p || q)$.
+\begin{itemize}
+    \item \textbf{Vai trò trong NLP:} Được sử dụng rộng rãi trong các mô hình sinh (generative models) như Variational Autoencoders (VAEs) và trong việc so sánh sự khác biệt giữa các mô hình ngôn ngữ.
+\end{itemize}

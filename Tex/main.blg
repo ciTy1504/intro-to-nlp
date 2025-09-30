@@ -1,0 +1,55 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+Reallocating 'name_of_file' (item size: 1) to 6 items.
+The style file: plain.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+Database file #1: references.bib
+Warning--can't use both volume and number fields in fedus2022switch
+Warning--can't use both volume and number fields in jin2020bert
+Warning--empty booktitle in lee2020biobert
+Warning--can't use both volume and number fields in lee2020biobert
+Warning--empty journal in radford2018improving
+Warning--can't use both volume and number fields in raffel2020exploring
+You've used 108 entries,
+            2118 wiz_defined-function locations,
+            1016 strings with 27393 characters,
+and the built_in function-call counts, 47221 in all, are:
+= -- 4377
+> -- 2990
+< -- 48
++ -- 1183
+- -- 1070
+* -- 3414
+:= -- 7638
+add.period$ -- 328
+call.type$ -- 108
+change.case$ -- 844
+chr.to.int$ -- 0
+cite$ -- 114
+duplicate$ -- 1740
+empty$ -- 3253
+format.name$ -- 1070
+if$ -- 9877
+int.to.chr$ -- 0
+int.to.str$ -- 108
+missing$ -- 108
+newline$ -- 544
+num.names$ -- 216
+pop$ -- 1034
+preamble$ -- 1
+purify$ -- 739
+quote$ -- 0
+skip$ -- 1372
+stack$ -- 0
+substring$ -- 2356
+swap$ -- 588
+text.length$ -- 48
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 426
+warning$ -- 6
+while$ -- 363
+width$ -- 111
+write$ -- 1147
+(There were 6 warnings)

@@ -1,0 +1,107 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap3_8.tex
+% Nội dung cho Phần 3.8: Các Mô hình Sinh Tiền-Transformer
+
+\section{Các Mô hình Sinh Tiền-Transformer (Pre-Transformer Generative Models)}
+\label{sec:pre_transformer_generative}
+
+Trước khi Transformer định hình lại toàn bộ lĩnh vực NLP, cộng đồng nghiên cứu đã dành nhiều nỗ lực để xây dựng các \textbf{mô hình sinh} (generative models) cho văn bản. Khác với các mô hình phân loại hay dịch máy vốn chỉ cần \textit{hiểu} hoặc \textit{chuyển đổi} ngôn ngữ, mô hình sinh có mục tiêu tham vọng hơn: \textbf{sáng tạo ngôn ngữ mới}, ví dụ như viết một đoạn hội thoại, một bài thơ, hay một câu nhận xét sản phẩm mà vẫn mạch lạc và hợp lý.
+
+Trong giai đoạn 2015–2017, hai hướng tiếp cận chính cho bài toán sinh văn bản nổi bật: \textbf{Variational Autoencoders (VAEs)} và \textbf{Generative Adversarial Networks (GANs)}. Việc tìm hiểu chúng mang lại giá trị lịch sử và giúp ta thấy rõ những thách thức cố hữu trong việc sinh dữ liệu rời rạc như văn bản.
+
+\subsection{Variational Autoencoder (VAE) cho Văn bản}
+\label{ssec:vae_for_text}
+
+\paragraph{Ý tưởng cốt lõi.}  
+Khác với Autoencoder thường (đã trình bày ở Mục~\ref{ssec:autoencoders}), \textbf{VAE} (Kingma \& Welling, 2013) \cite{kingma2013auto} coi không gian ẩn là một \textit{phân phối xác suất}. Thay vì ánh xạ đầu vào $x$ thành một vector điểm $\mathbf{z}$, Encoder ánh xạ thành $q_\phi(z|x) \sim \mathcal{N}(\mu, \sigma^2)$, từ đó lấy mẫu $z$ và giải mã bằng Decoder.
+
+\paragraph{Hàm mất mát ELBO.}  
+Mục tiêu huấn luyện là cực đại hoá cận dưới hợp lý hóa bằng chứng:
+\[
+\mathcal{L}_{VAE}(x) = \mathbb{E}_{q_\phi(z|x)} \left[ \log p_\theta(x|z) \right] - KL\left(q_\phi(z|x)\;||\;p(z)\right)
+\]
+Trong đó $KL(\cdot||\cdot)$ đo khoảng cách giữa phân phối hậu nghiệm xấp xỉ và tiên nghiệm $p(z)$ (thường là Gaussian chuẩn).
+
+\begin{tcolorbox}[title={Ưu điểm của VAE cho văn bản}, colback=purple!5!white, colframe=purple!75!black, fonttitle=\bfseries]
+\begin{itemize}
+    \item \textbf{Khả năng sinh}: lấy mẫu $z$ từ $\mathcal{N}(0,I)$ và giải mã ra văn bản mới.  
+    \item \textbf{Nội suy không gian ẩn}: kết hợp hai vector $z_1, z_2$ để sinh ra văn bản trung gian.  
+    \item \textbf{Ứng dụng}: sinh câu đa dạng (Bowman et al., 2016), style transfer.  
+\end{itemize}
+\end{tcolorbox}
+
+\paragraph{Thách thức: Posterior Collapse.}  
+Decoder mạnh (LSTM/GRU) dễ dàng \textbf{lờ $z$}, chỉ dự đoán từ tiếp theo dựa vào lịch sử ⇒ khiến không gian ẩn mất ý nghĩa. Đây là một vấn đề được chỉ ra trong các công trình đầu tiên áp dụng VAE cho văn bản \cite{bowman2015generating}.
+
+\textbf{Giải pháp:}
+\begin{itemize}
+    \item KL-annealing (tăng dần trọng số KL).  
+    \item Free-bits (ép mỗi chiều KL có đóng góp tối thiểu).  
+    \item $\beta$-VAE (điều chỉnh trade-off giữa likelihood và KL).  
+\end{itemize}
+
+\subsection{Generative Adversarial Networks (GANs) cho Văn bản}
+\label{ssec:gan_for_text}
+
+\paragraph{Ý tưởng cơ bản.}  
+GAN (Goodfellow et al., 2014) \cite{goodfellow2014generative} là một trò chơi đối kháng:
+\begin{itemize}
+    \item \textbf{Generator $G$}: sinh văn bản giả từ vector nhiễu $z$.  
+    \item \textbf{Discriminator $D$}: phân biệt văn bản thật từ dữ liệu và văn bản giả từ $G$.  
+\end{itemize}
+
+\paragraph{Vấn đề rời rạc.}  
+Khác ảnh (dữ liệu liên tục), văn bản là \textbf{chuỗi rời rạc}. Việc chọn từ (qua \texttt{argmax}) không khả vi, gradient từ $D$ không truyền ngược về $G$.  
+
+\textbf{Các hướng giải quyết:}
+\begin{itemize}
+    \item \textbf{Học tăng cường}:  
+        - SeqGAN (2017): dùng policy gradient.  
+        - MaliGAN (2017): cải thiện reward shaping.  
+        - LeakGAN (2018): cho $D$ “rò rỉ” trạng thái cho $G$.  
+    \item \textbf{Xấp xỉ liên tục}:  
+        - Gumbel-Softmax để làm trơn \texttt{argmax}.  
+        - RelGAN (2019): training ổn định hơn.  
+\end{itemize}
+
+\paragraph{Hạn chế thực tiễn.}  
+GAN cho văn bản huấn luyện khó và thiếu ổn định, nên chỉ dừng lại ở mức nghiên cứu, chưa có ứng dụng rộng như GAN trong ảnh.
+
+\subsection{So sánh VAE và GAN trong Sinh Văn bản}
+\label{ssec:vae_gan_compare}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{3cm}|p{5cm}|p{5cm}|}
+\hline
+\textbf{Tiêu chí} & \textbf{VAE} & \textbf{GAN} \\ \hline
+Nguyên lý & Xác suất, tối ưu ELBO (likelihood-based) & Đối kháng, min-max game \\ \hline
+Đầu ra & Đa dạng, có thể nội suy latent & Có thể sắc nét, nhưng không ổn định \\ \hline
+Thách thức & Posterior collapse & Không khả vi, gradient vanishing \\ \hline
+Ứng dụng chính & Sinh câu, style transfer & Chủ yếu học thuật, ít thực tiễn \\ \hline
+\end{tabular}
+\caption{So sánh VAE và GAN trong sinh văn bản trước Transformer.}
+\label{tab:vae_gan_compare}
+\end{table}
+
+\subsection{Chuyển tiếp sang Kỷ nguyên Transformer}
+\label{ssec:transition_to_transformer}
+
+VAE và GAN đặt nền móng cho ý tưởng sinh văn bản, nhưng gặp giới hạn về độ ổn định và khả năng mở rộng. Sự ra đời của \textbf{Transformer} (Vaswani et al., 2017) đã thay đổi toàn bộ cục diện:
+\begin{itemize}
+    \item Self-attention mô hình hóa phụ thuộc dài tốt hơn RNN.  
+    \item Huấn luyện likelihood trực tiếp (mô hình ngôn ngữ) ổn định hơn GAN.  
+    \item Kiến trúc dễ mở rộng quy mô lớn, tạo tiền đề cho GPT và các LLM sau này.  
+\end{itemize}
+
+Do đó, các mô hình sinh tiền-Transformer (VAE, GAN) nên được coi là \textbf{bước đệm lịch sử}, giúp rút ra nhiều bài học quan trọng trước khi cộng đồng chuyển sang các mô hình ngôn ngữ sinh hiện đại dựa trên Transformer.
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG 3}
+\end{center}
+
+\textit{Trong chương này, chúng ta đã khám phá một "vườn thú" các kiến trúc mạng nơ-ron đã định hình nên kỷ nguyên học sâu của NLP. Từ khả năng ghi nhớ của RNN/LSTM, đến sức mạnh trích xuất đặc trưng của CNN, và khả năng học trên các cấu trúc phức tạp của GNN. Quan trọng nhất, chúng ta đã chứng kiến sự ra đời của cơ chế Chú ý (Attention) trong mô hình Seq2Seq. Cơ chế Chú ý, ban đầu chỉ là một thành phần bổ trợ, đã tỏ ra mạnh mẽ đến mức nó đặt ra một câu hỏi mang tính cách mạng: Liệu chúng ta có thể xây dựng một kiến trúc hoàn toàn từ bỏ các vòng lặp hồi tiếp và chỉ dựa vào sự chú ý không? Câu trả lời cho câu hỏi này sẽ mở ra chương tiếp theo và cũng là kỷ nguyên hiện đại của NLP: Kỷ nguyên Transformer.}

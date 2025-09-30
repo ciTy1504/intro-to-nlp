@@ -1,0 +1,107 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters4/chap4_6.tex
+
+\section{Recipe 6: Trích xuất Thông tin có Cấu trúc từ Văn bản}
+\label{sec:recipe_structured_extraction}
+
+\textbf{Mục tiêu:} Trích xuất thông tin từ một đoạn văn bản tự do và trả về dưới dạng một đối tượng JSON có cấu trúc được định nghĩa trước.
+
+\textbf{Thành phần chính:}
+\begin{itemize}
+    \item \textbf{LLM hỗ trợ Function Calling:} Các mô hình của OpenAI (GPT-3.5/4) hoặc các mô hình mã nguồn mở hỗ trợ chế độ này.
+    \item \textbf{Định nghĩa Cấu trúc (Schema):} Một định nghĩa rõ ràng về cấu trúc JSON mong muốn, bao gồm tên các trường, kiểu dữ liệu, và mô tả.
+\end{itemize}
+
+\textbf{Các bước thực hiện:}
+\begin{enumerate}
+    \item \textbf{Định nghĩa "Công cụ":} Mô tả cấu trúc dữ liệu bạn muốn trích xuất dưới dạng một "function signature".
+    \item \textbf{Gọi LLM:} Gửi văn bản đầu vào và định nghĩa công cụ đến API của LLM.
+    \item \textbf{Phân tích Kết quả:} LLM sẽ trả về một đối tượng JSON tuân thủ theo schema bạn đã định nghĩa.
+\end{enumerate}
+
+\textbf{Mã nguồn:}
+\begin{example}{Trích xuất Thông tin với OpenAI Function Calling}{ex:function_calling}
+    \begin{minted}{python}
+    # Bước 1: Cài đặt
+    # pip install openai
+    import os
+    import json
+    from openai import OpenAI
+    
+    # os.environ["OPENAI_API_KEY"] = "sk-..."
+    client = OpenAI()
+    
+    # Bước 2: Định nghĩa "Công cụ" (cấu trúc JSON mong muốn)
+    extraction_tool = {
+        "type": "function",
+        "function": {
+            "name": "extract_user_info",
+            "description": "Extracts user information from a given text.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The full name of the user."
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "The email address of the user."
+                    },
+                    "order_id": {
+                        "type": "string",
+                        "description": "The ID of the user's order."
+                    }
+                },
+                "required": ["name", "email", "order_id"]
+            }
+        }
+    }
+    
+    # Văn bản đầu vào
+    text_input = """
+    Chào bạn, tôi là Trần Văn An, email của tôi là an.tran@example.com.
+    Tôi muốn hỏi về tình trạng của đơn hàng #A123-456. Cảm ơn!
+    """
+    
+    # Bước 3: Gọi LLM với công cụ đã định nghĩa
+    response = client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that extracts structured information."},
+            {"role": "user", "content": text_input}
+        ],
+        tools=[extraction_tool],
+        tool_choice={"type": "function", "function": {"name": "extract_user_info"}} # Buộc mô hình phải dùng công cụ này
+    )
+    
+    # Bước 4: Phân tích kết quả
+    tool_call = response.choices[0].message.tool_calls[0]
+    if tool_call.function.name == "extract_user_info":
+        arguments = json.loads(tool_call.function.arguments)
+        print("Thông tin đã được trích xuất:")
+        print(json.dumps(arguments, indent=2, ensure_ascii=False))
+    
+    \end{minted}
+\end{example}
+\textbf{Kết quả mong đợi:}
+\begin{minted}{json}
+Thông tin đã được trích xuất:
+{
+  "name": "Trần Văn An",
+  "email": "an.tran@example.com",
+  "order_id": "A123-456"
+}
+\end{minted}
+
+\textbf{Lưu ý:} Với các mô hình không hỗ trợ Function Calling, có thể đạt được kết quả tương tự bằng cách sử dụng các thư viện như `Instructor` kết hợp với `Pydantic` để định nghĩa schema và thêm các hướng dẫn chi tiết vào prompt.
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG 4}
+\end{center}
+
+\textit{Chương 4 đã là một chuyến du hành thực tiễn qua các ứng dụng phổ biến nhất của NLP hiện đại. Bằng cách làm theo các "công thức" chi tiết, bạn đã học được cách kết hợp các thư viện, kiến trúc và kỹ thuật khác nhau để xây dựng các hệ thống hoàn chỉnh. Đây là bước cuối cùng trong việc chuyển hóa kiến thức lý thuyết thành năng lực thực hành. Giờ đây, bạn không chỉ hiểu về NLP, mà còn có đủ công cụ và sự tự tin để bắt đầu xây dựng các giải pháp của riêng mình.}

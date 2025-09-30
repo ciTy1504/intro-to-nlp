@@ -1,0 +1,148 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap1_3.tex
+% Nội dung cho Phần 1.3: Các Bài toán Cốt lõi trong NLP
+
+\section{Các Bài toán Cốt lõi trong NLP}
+\label{sec:bai_toan_cot_loi}
+
+Sau khi đã có nền tảng về các cấp độ phân tích ngôn ngữ, chúng ta sẽ chính thức ánh xạ chúng vào các bài toán (tasks) cụ thể trong NLP. Việc hiểu rõ các bài toán này là cực kỳ quan trọng, vì chúng là những "viên gạch" cơ bản để xây dựng nên các ứng dụng NLP phức tạp hơn. Các bài toán này thường được nhóm lại theo cấp độ phân tích, từ từ, đến câu, và cuối cùng là các ứng dụng hoàn chỉnh.
+
+\subsection{Phân tích cấp độ từ}
+\label{ssec:phan_tich_tu}
+
+Đây là nhóm các bài toán cơ bản nhất, xử lý và gán thông tin cho từng từ (token) riêng lẻ trong văn bản. Kết quả của các bài toán này thường là đầu vào cho các tác vụ phức tạp hơn.
+
+\paragraph{Gán nhãn Từ loại (Part-of-Speech - POS Tagging)}
+Là quá trình gán một nhãn từ loại (danh từ, động từ, tính từ, v.v.) cho mỗi từ trong một câu, dựa vào định nghĩa và ngữ cảnh của nó.
+\begin{itemize}
+    \item \textbf{Mục tiêu:} Giải quyết sự mơ hồ của từ. Ví dụ, từ "câu" trong "câu cá" là động từ, nhưng trong "câu văn" lại là danh từ.
+    \item \textbf{Ví dụ đầu vào:} `Tôi thích đọc sách.`
+    \item \textbf{Ví dụ đầu ra:} `Tôi/P thích/V đọc/V sách/N ./CH` (P: Đại từ, V: Động từ, N: Danh từ, CH: Dấu câu).
+    \item \textbf{Tầm quan trọng:} Là một bước tiền xử lý nền tảng cho rất nhiều bài toán khác như phân tích cú pháp, nhận dạng thực thể, trích xuất thông tin.
+\end{itemize}
+
+\paragraph{Đưa từ về dạng gốc (Lemmatization và Stemming)}
+Cả hai kỹ thuật này đều nhằm mục đích quy chuẩn hóa các dạng biến thể của một từ về một dạng chung.
+\begin{itemize}
+    \item \textbf{Stemming (Rút gọn về gốc từ):} Một phương pháp đơn giản, dựa trên quy tắc để cắt bỏ các hậu tố của từ. Nó nhanh nhưng đôi khi không chính xác về mặt ngôn ngữ.
+        \begin{itemize}
+            \item \textbf{Ví dụ (tiếng Anh):} "studies", "studying" $\rightarrow$ "studi".
+        \end{itemize}
+    \item \textbf{Lemmatization (Đưa về dạng từ điển):} Một phương pháp phức tạp hơn, sử dụng từ điển và phân tích hình thái để đưa từ về dạng nguyên thể (lemma) của nó.
+        \begin{itemize}
+            \item \textbf{Ví dụ (tiếng Anh):} "studies", "studying" $\rightarrow$ "study"; "better" $\rightarrow$ "good".
+            \item \textbf{Ví dụ (tiếng Việt):} "đi học", "đi làm" có thể được chuẩn hóa về động từ "đi".
+        \end{itemize}
+    \item \textbf{Lựa chọn:} Lemmatization thường được ưu tiên hơn vì kết quả có ý nghĩa ngôn ngữ học, tuy nhiên nó chậm hơn và đòi hỏi nhiều tài nguyên hơn Stemming.
+\end{itemize}
+
+\paragraph{Phân tích Hình thái học (Morphological Analysis)}
+Là bài toán phân tích một từ thành các hình vị (morphemes) cấu tạo nên nó. Bài toán này đặc biệt quan trọng đối với các ngôn ngữ chắp dính (agglutinative languages) như tiếng Thổ Nhĩ Kỳ, Phần Lan, nơi một từ có thể chứa rất nhiều thông tin ngữ pháp.
+\begin{itemize}
+    \item \textbf{Ví dụ (tiếng Anh):} `unhappiness` $\rightarrow$ `un-` (phủ định) + `happy` (gốc) + `-ness` (danh từ hóa).
+    \item \textbf{Tầm quan trọng:} Giúp các mô hình hiểu được cấu trúc bên trong của từ, đặc biệt hữu ích khi gặp các từ hiếm hoặc chưa từng thấy (Out-of-Vocabulary - OOV).
+\end{itemize}
+
+\subsection{Phân tích cấp độ câu}
+\label{ssec:phan_tich_cau}
+
+Sau khi đã xử lý các từ riêng lẻ, bước tiếp theo là hiểu cách chúng kết hợp với nhau để tạo thành một câu có cấu trúc.
+
+\paragraph{Phân tích cú pháp (Parsing)}
+Đây là bài toán xác định cấu trúc ngữ pháp của một câu. Như đã đề cập ở mục \ref{ssec:constituency_dependency}, có hai loại phân tích cú pháp chính:
+\begin{itemize}
+    \item \textbf{Phân tích cú pháp Thành phần (Constituency Parsing):}
+        \begin{itemize}
+            \item \textbf{Mục tiêu:} Xây dựng một cây cú pháp thành phần, nhóm các từ thành các cụm từ có cấp bậc.
+            \item \textbf{Đầu ra:} Một cấu trúc cây lồng nhau, ví dụ: \texttt{(S (NP (N Tôi)) (VP (V thích) (NP (N sách))))}.
+        \end{itemize}
+    \item \textbf{Phân tích cú pháp Phụ thuộc (Dependency Parsing):}
+        \begin{itemize}
+            \item \textbf{Mục tiêu:} Xác định các mối quan hệ phụ thuộc (ai làm gì ai, cái gì bổ nghĩa cho cái gì) giữa các từ.
+            \item \textbf{Đầu ra:} Một tập các cặp (từ quản lý, quan hệ, từ phụ thuộc), ví dụ: \texttt{(thích, nsubj, Tôi)}, \texttt{(thích, obj, sách)}.
+        \end{itemize}
+\end{itemize}
+Phân tích cú pháp là một trong những bài toán lâu đời và thách thức nhất trong NLP, là chìa khóa để "hiểu sâu" cấu trúc của một câu.
+
+\subsection{Phân tích ngữ nghĩa}
+\label{ssec:phan_tich_ngu_nghia}
+
+Vượt ra ngoài cấu trúc, các bài toán ở cấp độ này cố gắng nắm bắt \textbf{ý nghĩa} của văn bản.
+
+\paragraph{Nhận dạng Thực thể Tên (Named Entity Recognition - NER)}
+Là bài toán tìm và phân loại các thực thể có tên trong văn bản thành các danh mục được định trước như Tên người (PER), Tổ chức (ORG), Địa điểm (LOC), Ngày tháng (DATE), v.v.
+\begin{itemize}
+    \item \textbf{Ví dụ đầu vào:} `Apple được thành lập bởi Steve Jobs tại Cupertino vào năm 1976.`
+    \item \textbf{Ví dụ đầu ra:} `[Apple/ORG] được thành lập bởi [Steve Jobs/PER] tại [Cupertino/LOC] vào năm [1976/DATE].`
+    \item \textbf{Tầm quan trọng:} Một tác vụ nền tảng cho việc trích xuất thông tin, xây dựng đồ thị tri thức và hệ thống hỏi đáp.
+\end{itemize}
+
+\paragraph{Phân biệt Ý của Từ (Word Sense Disambiguation - WSD)}
+Là bài toán xác định xem một từ đa nghĩa đang được sử dụng với ý nghĩa nào trong một ngữ cảnh cụ thể.
+\begin{itemize}
+    \item \textbf{Ví dụ:} Trong câu "Ngân hàng nhà nước vừa hạ lãi suất", từ "ngân hàng" có nghĩa là một tổ chức tài chính, chứ không phải "bờ sông" (bờ, bank).
+    \item \textbf{Thách thức:} Đây là một bài toán rất khó và lâu đời. Tuy nhiên, sự ra đời của các mô hình ngôn ngữ dựa trên ngữ cảnh (contextualized embeddings) như BERT đã ngầm giải quyết một phần lớn bài toán này.
+\end{itemize}
+
+\paragraph{Gán nhãn Vai nghĩa (Semantic Role Labeling - SRL)}
+Là bài toán xác định "ai đã làm gì, cho ai, ở đâu, khi nào, và như thế nào" xung quanh một động từ chính (vị ngữ) trong câu.
+\begin{itemize}
+    \item \textbf{Mục tiêu:} Phân tích cấu trúc sự kiện (event structure) của câu.
+    \item \textbf{Ví dụ đầu vào:} `Hôm qua, An đã tặng Hoa một cuốn sách ở thư viện.`
+    \item \textbf{Vị ngữ:} `tặng`
+    \item \textbf{Ví dụ đầu ra:}
+        \begin{itemize}
+            \item \texttt{AGENT} (Tác nhân): `An`
+            \item \texttt{THEME} (Đối thể): `một cuốn sách`
+            \item \texttt{RECIPIENT} (Người nhận): `Hoa`
+            \item \texttt{TIME} (Thời gian): `Hôm qua`
+            \item \texttt{LOCATION} (Địa điểm): `ở thư viện`
+        \end{itemize}
+    \item \textbf{Tầm quan trọng:} Giúp biến đổi văn bản phi cấu trúc thành thông tin có cấu trúc, rất hữu ích cho các hệ thống hỏi đáp và tóm tắt.
+\end{itemize}
+
+\paragraph{Trích xuất Quan hệ (Relation Extraction)}
+Là bài toán xác định các mối quan hệ ngữ nghĩa giữa các thực thể đã được nhận dạng trong văn bản.
+\begin{itemize}
+    \item \textbf{Mục tiêu:} Xây dựng các bộ ba (triples) có dạng `(Thực thể 1, Quan hệ, Thực thể 2)`.
+    \item \textbf{Ví dụ đầu vào:} `Apple được thành lập bởi Steve Jobs.`
+    \item \textbf{Thực thể đã nhận dạng:} `[Apple/ORG]`, `[Steve Jobs/PER]`
+    \item \textbf{Ví dụ đầu ra:} `(Steve Jobs, FounderOf, Apple)`
+    \item \textbf{Tầm quan trọng:} Là bước cốt lõi để tự động xây dựng và bổ sung các cơ sở tri thức và đồ thị tri thức từ văn bản.
+\end{itemize}
+
+\subsection{Các bài toán Ứng dụng}
+\label{ssec:bai_toan_ung_dung}
+
+Đây là nhóm các bài toán ở cấp độ cao nhất, thường kết hợp kết quả từ nhiều bài toán cốt lõi ở trên để tạo ra các sản phẩm hữu ích cho người dùng cuối.
+
+\begin{example}{Tổng quan các bài toán ứng dụng phổ biến}{ex:ung_dung_pho_bien}
+    \begin{itemize}
+        \item \textbf{Phân loại văn bản (Text Classification):} Gán một hoặc nhiều nhãn cho một đoạn văn bản. Đây là một trong những bài toán phổ biến nhất.
+            \begin{itemize}
+                \item \textit{Ví dụ:} Phân tích cảm xúc (Tích cực/Tiêu cực/Trung tính), Phân loại chủ đề tin tức (Thể thao/Chính trị/Giải trí), Phát hiện spam.
+            \end{itemize}
+        \item \textbf{Dịch máy (Machine Translation - MT):} Tự động dịch văn bản từ ngôn ngữ nguồn sang ngôn ngữ đích.
+            \begin{itemize}
+                \item \textit{Ví dụ:} Google Translate.
+            \end{itemize}
+        \item \textbf{Tóm tắt văn bản (Text Summarization):} Tạo ra một phiên bản ngắn gọn, súc tích nhưng vẫn chứa đựng những thông tin quan trọng nhất của một văn bản dài.
+            \begin{itemize}
+                \item \textit{Ví dụ:} Tóm tắt một bài báo dài thành 3 gạch đầu dòng chính.
+            \end{itemize}
+        \item \textbf{Hỏi đáp (Question Answering - QA):} Cung cấp một câu trả lời chính xác cho một câu hỏi do người dùng đặt ra.
+            \begin{itemize}
+                \item \textit{Ví dụ:} Tìm kiếm câu trả lời trong một đoạn văn bản cho trước (Extractive QA) hoặc tự sinh ra câu trả lời (Generative QA).
+            \end{itemize}
+        \item \textbf{Hệ thống Đối thoại (Dialogue Systems / Chatbots):} Xây dựng các tác tử (agents) có khả năng trò chuyện với con người một cách tự nhiên.
+            \begin{itemize}
+                \item \textit{Ví dụ:} Chatbot hỗ trợ khách hàng, trợ lý ảo.
+            \end{itemize}
+            \item \textbf{Suy luận Ngôn ngữ Tự nhiên (Natural Language Inference - NLI):} Xác định mối quan hệ logic (kéo theo, mâu thuẫn, hoặc trung lập) giữa một cặp câu (tiền đề và giả thuyết).
+            \begin{itemize}
+                \item \textit{Ví dụ:} Tiền đề: "Một người đàn ông đang chơi guitar." Giả thuyết: "Có người đang tạo ra âm nhạc." $\rightarrow$ Mối quan hệ: Kéo theo (Entailment).
+            \end{itemize}
+    \end{itemize}
+\end{example}
+
+Bản đồ các bài toán này cho thấy một lộ trình rõ ràng trong việc xử lý ngôn ngữ: từ việc hiểu các thành phần nhỏ nhất, đến việc lắp ráp chúng thành cấu trúc có ý nghĩa, và cuối cùng là sử dụng sự hiểu biết đó để thực hiện các nhiệm vụ phức tạp, mang lại giá trị thực tiễn. Trong các chương sau, chúng ta sẽ lần lượt tìm hiểu các mô hình và kỹ thuật để giải quyết từng bài toán này.

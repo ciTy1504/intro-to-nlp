@@ -1,0 +1,193 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap2_1.tex
+% Nội dung cho Phần 2.1: Biểu diễn Dựa trên Tần suất
+
+
+\section{Biểu diễn Dựa trên Tần suất (Bag-of-Words, TF-IDF)}
+\label{sec:frequency_representation}
+
+Phương pháp tiếp cận đầu tiên và trực quan nhất để biểu diễn văn bản là dựa trên một giả định đơn giản: \textit{tần suất xuất hiện của các từ trong một tài liệu phản ánh nội dung chính của tài liệu đó}. Hai kỹ thuật tiêu biểu nhất cho trường phái này là Bag-of-Words và TF-IDF.
+
+\subsection{Túi từ (Bag-of-Words - BoW)}
+\label{ssec:bow}
+
+\subsubsection{Tư duy cốt lõi}
+
+Mô hình Bag-of-Words (BoW) là một trong những phương pháp biểu diễn văn bản đơn giản nhưng mạnh mẽ nhất. Tư duy cốt lõi của nó là \textbf{hoàn toàn bỏ qua trật tự từ và cấu trúc ngữ pháp, và chỉ quan tâm đến việc từ nào xuất hiện và xuất hiện bao nhiêu lần} trong một tài liệu.
+
+Hãy tưởng tượng bạn lấy tất cả các từ trong một câu, cho chúng vào một chiếc túi, xáo trộn lên và rồi thống kê số lượng của từng từ. Chiếc túi đó chính là "Bag-of-Words". Kết quả của quá trình này là một vector số, trong đó mỗi chiều của vector tương ứng với một từ trong từ vựng và giá trị của chiều đó là tần suất xuất hiện của từ.
+
+\subsubsection{Quy trình xây dựng mô hình BoW}
+Để xây dựng biểu diễn BoW cho một tập hợp các tài liệu (corpus), chúng ta thực hiện ba bước chính:
+
+\paragraph{Bước 1: Tokenization (Tách từ)}
+Tách các câu trong tài liệu thành các từ riêng lẻ (tokens). Đây là bước cơ bản để có được đơn vị cần đếm. Ví dụ, câu "NLP rất thú vị" được tách thành `['NLP', 'rất', 'thú vị']`.
+
+\paragraph{Bước 2: Xây dựng Từ vựng (Vocabulary Building)}
+Tập hợp tất cả các từ độc nhất từ toàn bộ kho tài liệu để tạo ra một bộ từ vựng. Thứ tự của các từ trong từ vựng này sẽ quyết định thứ tự các chiều trong vector biểu diễn cuối cùng.
+Ví dụ, nếu từ vựng là `['NLP', 'rất', 'thú vị', 'học', 'thích']`, thì từ 'NLP' sẽ tương ứng với chiều thứ nhất, 'rất' với chiều thứ hai, v.v.
+
+\paragraph{Bước 3: Vector hóa (Vectorization)}
+Đối với mỗi tài liệu, tạo ra một vector có số chiều bằng kích thước của từ vựng. Với mỗi từ trong từ vựng, ta đếm số lần nó xuất hiện trong tài liệu và điền con số đó vào chiều tương ứng của vector. Nếu một từ trong từ vựng không xuất hiện trong tài liệu, giá trị ở chiều đó sẽ là 0.
+
+\begin{example}{Xây dựng biểu diễn BoW}{ex:bow_example}
+    Giả sử chúng ta có một kho tài liệu nhỏ (corpus) gồm 2 câu:
+    \begin{itemize}
+        \item \textbf{Câu 1:} "Tôi thích học NLP."
+        \item \textbf{Câu 2:} "Học NLP rất rất thú vị."
+    \end{itemize}
+    
+    \textbf{Bước 1 \& 2: Tokenization và Xây dựng Từ vựng} \\
+    Sau khi tách từ và loại bỏ dấu câu, chúng ta có các từ: `tôi`, `thích`, `học`, `nlp`, `học`, `nlp`, `rất`, `thú vị`.
+    Từ vựng độc nhất (sắp xếp theo alphabet) sẽ là:
+    \texttt{['học', 'NLP', 'rất', 'thích', 'thú vị', 'tôi']}
+    Kích thước từ vựng là 6.
+    
+    \textbf{Bước 3: Vector hóa} \\
+    Bây giờ, chúng ta biểu diễn mỗi câu bằng một vector 6 chiều:
+    \begin{itemize}
+        \item \textbf{Câu 1:} "tôi thích học nlp"
+            \begin{itemize}
+                \item `học`: 1 lần
+                \item `NLP`: 1 lần
+                \item `rất`: 0 lần
+                \item `thích`: 1 lần
+                \item `thú vị`: 0 lần
+                \item `tôi`: 1 lần
+            \end{itemize}
+            \(\rightarrow\) Vector biểu diễn: \textbf{[1, 1, 0, 1, 0, 1]}
+        
+        \item \textbf{Câu 2:} "học nlp rất rất thú vị"
+            \begin{itemize}
+                \item `học`: 1 lần
+                \item `NLP`: 1 lần
+                \item `rất`: 2 lần
+                \item `thích`: 0 lần
+                \item `thú vị`: 1 lần
+                \item `tôi`: 0 lần
+            \end{itemize}
+            \(\rightarrow\) Vector biểu diễn: \textbf{[1, 1, 2, 0, 1, 0]}
+    \end{itemize}
+\end{example}
+\subsubsection{Ưu điểm và Nhược điểm của BoW}
+Mô hình BoW, mặc dù đơn giản, lại là nền tảng cho nhiều hệ thống phân loại văn bản kinh điển.
+\begin{tcolorbox}[
+    title=Đánh giá mô hình Bag-of-Words,
+    colback=blue!5!white, colframe=blue!50!black, fonttitle=\bfseries,
+    breakable
+]
+\textbf{Ưu điểm:}
+\begin{itemize}
+    \item \textbf{Đơn giản và trực quan:} Rất dễ hiểu và dễ triển khai.
+    \item \textbf{Hiệu quả tính toán:} Việc tạo và sử dụng các vector BoW tương đối nhanh.
+    \item \textbf{Hoạt động tốt cho các tác vụ phân loại chủ đề:} Nếu hai tài liệu có các bộ từ vựng tương tự nhau, chúng có khả năng cùng một chủ đề. BoW nắm bắt rất tốt điều này.
+\end{itemize}
+\textbf{Nhược điểm:}
+\begin{itemize}
+    \item \textbf{Mất thông tin về trật tự từ:} Câu "chó cắn người" và "người cắn chó" có cùng biểu diễn BoW, nhưng ý nghĩa hoàn toàn trái ngược. Đây là nhược điểm lớn nhất.
+    \item \textbf{Không nắm bắt được ngữ nghĩa:} BoW không hiểu rằng "tốt" và "tuyệt vời" là những từ gần nghĩa. Đối với nó, đây là hai chiều hoàn toàn khác biệt trong không gian vector.
+    \item \textbf{Vấn đề về kích thước từ vựng và độ thưa thớt (Sparsity):} Với một kho dữ liệu lớn, kích thước từ vựng có thể lên tới hàng trăm nghìn từ. Điều này tạo ra các vector có số chiều rất lớn, và hầu hết các giá trị trong vector đều là 0 (vì một tài liệu chỉ chứa một phần nhỏ của từ vựng). Các vector thưa thớt này gây khó khăn cho nhiều thuật toán học máy.
+\end{itemize}
+\end{tcolorbox}
+
+
+\subsection{TF-IDF: Trọng số hóa tầm quan trọng của từ}
+\label{ssec:tfidf}
+
+Một trong những vấn đề của BoW là nó coi mọi từ có vai trò như nhau. Một từ xuất hiện nhiều lần (như "là", "thì", "của", "và" - gọi là các stop words) có thể lấn át các từ mang ý nghĩa quan trọng nhưng xuất hiện ít hơn. TF-IDF (Term Frequency - Inverse Document Frequency) \cite{sparck1972statistical} ra đời để giải quyết vấn đề này.
+
+\subsubsection{Tư duy cốt lõi}
+
+Tư duy của TF-IDF là: \textbf{Một từ càng quan trọng đối với một tài liệu nếu nó xuất hiện nhiều lần trong tài liệu đó (tính quan trọng cục bộ), nhưng lại xuất hiện ít trong các tài liệu khác của toàn bộ kho dữ liệu (tính độc nhất). }
+
+TF-IDF tính toán một trọng số cho mỗi từ trong mỗi tài liệu, thay vì chỉ đếm tần suất. Trọng số này được cấu thành từ hai thành phần: TF và IDF.
+
+\subsubsection{Các thành phần của TF-IDF}
+
+\paragraph{Term Frequency (TF) - Tần suất của Từ}
+TF đo lường tần suất xuất hiện của một từ $t$ trong một tài liệu $d$. Có nhiều cách tính TF, nhưng cách đơn giản nhất là đếm số lần xuất hiện.
+$$ \text{TF}(t, d) = \text{số lần từ } t \text{ xuất hiện trong tài liệu } d $$
+Để tránh việc các tài liệu dài có lợi thế, người ta thường chuẩn hóa TF, ví dụ bằng cách chia cho tổng số từ trong tài liệu.
+
+\paragraph{Inverse Document Frequency (IDF) - Tần suất Nghịch của Tài liệu}
+IDF đo lường mức độ "hiếm" hay "độc nhất" của một từ trên toàn bộ kho tài liệu. Nếu một từ xuất hiện trong rất nhiều tài liệu, IDF của nó sẽ thấp và ngược lại.
+$$ \text{IDF}(t, D) = \log\left(\frac{N}{|\{d \in D : t \in d\}|}\right) $$
+Trong đó:
+\begin{itemize}
+    \item $N$ là tổng số tài liệu trong kho dữ liệu $D$.
+    \item $|\{d \in D : t \in d\}|$ là số tài liệu có chứa từ $t$.
+    \item Logarit được dùng để "làm mịn" giá trị, tránh việc các từ cực hiếm có trọng số quá lớn. Để tránh chia cho 0, trong thực tế mẫu số thường được cộng thêm 1.
+\end{itemize}
+
+\paragraph{Trọng số TF-IDF}
+Trọng số cuối cùng của từ $t$ trong tài liệu $d$ là tích của TF và IDF.
+
+\begin{equation}
+    \text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \text{IDF}(t, D)
+    \label{eq:tfidf}
+\end{equation}
+
+\begin{example}{Tính toán trọng số TF-IDF}{ex:tfidf_example}
+    Chúng ta tiếp tục với kho tài liệu ở ví dụ \ref{ex:bow_example}:
+    \begin{itemize}
+        \item \textbf{Câu 1 (d1):} "Tôi thích học NLP."
+        \item \textbf{Câu 2 (d2):} "Học NLP rất rất thú vị."
+        \item \textbf{Từ vựng:} `['học', 'NLP', 'rất', 'thích', 'thú vị', 'tôi']`
+        \item \textbf{Tổng số tài liệu N = 2}
+    \end{itemize}
+
+    \textbf{1. Tính TF (dùng số đếm thô):}
+    \begin{center}
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Từ (t)} & \textbf{TF(t, d1)} & \textbf{TF(t, d2)} \\
+        \hline
+        `học` & 1 & 1 \\
+        `NLP` & 1 & 1 \\
+        `rất` & 0 & 2 \\
+        `thích` & 1 & 0 \\
+        `thú vị` & 0 & 1 \\
+        `tôi` & 1 & 0 \\
+        \hline
+    \end{tabular}
+    \end{center}
+
+    \textbf{2. Tính IDF:}
+    \begin{itemize}
+        \item `học`: xuất hiện trong 2 tài liệu \(\rightarrow\) IDF = $\log(2/2) = 0$
+        \item `NLP`: xuất hiện trong 2 tài liệu \(\rightarrow\) IDF = $\log(2/2) = 0$
+        \item `rất`: xuất hiện trong 1 tài liệu \(\rightarrow\) IDF = $\log(2/1) \approx 0.693$
+        \item `thích`: xuất hiện trong 1 tài liệu \(\rightarrow\) IDF = $\log(2/1) \approx 0.693$
+        \item `thú vị`: xuất hiện trong 1 tài liệu \(\rightarrow\) IDF = $\log(2/1) \approx 0.693$
+        \item `tôi`: xuất hiện trong 1 tài liệu \(\rightarrow\) IDF = $\log(2/1) \approx 0.693$
+    \end{itemize}
+    
+    \textbf{3. Tính TF-IDF = TF * IDF:}
+    \begin{center}
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Từ (t)} & \textbf{TF-IDF(t, d1)} & \textbf{TF-IDF(t, d2)} \\
+        \hline
+        `học` & 1 * 0 = 0 & 1 * 0 = 0 \\
+        `NLP` & 1 * 0 = 0 & 1 * 0 = 0 \\
+        `rất` & 0 * 0.693 = 0 & 2 * 0.693 = 1.386 \\
+        `thích` & 1 * 0.693 = 0.693 & 0 * 0.693 = 0 \\
+        `thú vị` & 0 * 0.693 = 0 & 1 * 0.693 = 0.693 \\
+        `tôi` & 1 * 0.693 = 0.693 & 0 * 0.693 = 0 \\
+        \hline
+    \end{tabular}
+    \end{center}
+    
+    \textbf{Kết quả Vector TF-IDF:}
+    \begin{itemize}
+        \item \textbf{Câu 1 (d1):} `[0, 0, 0, 0.693, 0, 0.693]`
+        \item \textbf{Câu 2 (d2):} `[0, 0, 1.386, 0, 0.693, 0]`
+    \end{itemize}
+    
+    \textbf{Nhận xét quan trọng:} Các từ `học` và `NLP` xuất hiện trong cả hai câu, bị coi là "thông tin chung" và có trọng số TF-IDF bằng 0. Ngược lại, các từ `thích`, `tôi` trở thành đặc trưng của Câu 1, trong khi `rất`, `thú vị` là đặc trưng của Câu 2. Đây chính là sức mạnh của TF-IDF.
+\end{example}
+
+\subsubsection{Tổng kết về TF-IDF}
+TF-IDF là một bước tiến lớn so với BoW. Nó vẫn giữ được sự đơn giản trong tính toán nhưng thông minh hơn trong việc trọng số hóa các từ. Nó đã và đang được sử dụng rộng rãi trong các hệ thống tìm kiếm thông tin (information retrieval) và phân loại văn bản.
+
+Tuy nhiên, TF-IDF vẫn kế thừa các nhược điểm cố hữu của họ phương pháp dựa trên túi từ: nó vẫn \textbf{bỏ qua trật tự từ và không hiểu được ngữ nghĩa}. Những hạn chế này chính là động lực để cộng đồng NLP phát triển các phương pháp biểu diễn phức tạp và mạnh mẽ hơn, mà chúng ta sẽ khám phá trong phần tiếp theo: Word Embeddings.
