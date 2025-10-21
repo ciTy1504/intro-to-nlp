@@ -1,0 +1,30 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{requests}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{bs4}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{BeautifulSoup}
+
+    \PYG{c+c1}{\PYGZsh{} URL của trang web cần cào}
+    \PYG{n}{url} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}https://en.wikipedia.org/wiki/Natural\PYGZus{}language\PYGZus{}processing\PYGZdq{}}
+
+    \PYG{k}{try}\PYG{p}{:}
+        \PYG{c+c1}{\PYGZsh{} 1. Tải nội dung HTML của trang}
+        \PYG{n}{response} \PYG{o}{=} \PYG{n}{requests}\PYG{o}{.}\PYG{n}{get}\PYG{p}{(}\PYG{n}{url}\PYG{p}{)}
+        \PYG{n}{response}\PYG{o}{.}\PYG{n}{raise\PYGZus{}for\PYGZus{}status}\PYG{p}{()}
+
+        \PYG{c+c1}{\PYGZsh{} 2. Tạo một đối tượng BeautifulSoup để phân tích HTML}
+        \PYG{n}{soup} \PYG{o}{=} \PYG{n}{BeautifulSoup}\PYG{p}{(}\PYG{n}{response}\PYG{o}{.}\PYG{n}{content}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}html.parser\PYGZsq{}}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} 3. Tìm phần tử HTML chứa tiêu đề}
+        \PYG{c+c1}{\PYGZsh{} Bằng cách \PYGZdq{}Inspect Element\PYGZdq{} trên trình duyệt, ta thấy tiêu đề}
+        \PYG{c+c1}{\PYGZsh{} nằm trong một thẻ \PYGZlt{}h1\PYGZgt{} với class \PYGZdq{}firstHeading\PYGZdq{}.}
+        \PYG{n}{title\PYGZus{}element} \PYG{o}{=} \PYG{n}{soup}\PYG{o}{.}\PYG{n}{find}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}h1\PYGZsq{}}\PYG{p}{,} \PYG{n}{class\PYGZus{}}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}firstHeading\PYGZsq{}}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} 4. Trích xuất nội dung văn bản từ phần tử}
+        \PYG{k}{if} \PYG{n}{title\PYGZus{}element}\PYG{p}{:}
+            \PYG{n}{title\PYGZus{}text} \PYG{o}{=} \PYG{n}{title\PYGZus{}element}\PYG{o}{.}\PYG{n}{get\PYGZus{}text}\PYG{p}{()}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}Tiêu đề của trang là: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{title\PYGZus{}text}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Không tìm thấy tiêu đề.\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{k}{except} \PYG{n}{requests}\PYG{o}{.}\PYG{n}{exceptions}\PYG{o}{.}\PYG{n}{RequestException} \PYG{k}{as} \PYG{n}{e}\PYG{p}{:}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}Lỗi khi tải trang: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{e}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

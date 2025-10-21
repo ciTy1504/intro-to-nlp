@@ -1,0 +1,141 @@
+\documentclass[11pt, a4paper, twoside]{book}
+\usepackage{fontspec}
+
+\setmainfont{Times New Roman}       % font chữ chính (serif)
+\setsansfont{Arial}                 % font không chân (sans-serif)
+\setmonofont{Courier New}           % font mono (code, terminal)
+
+% Gói hỗ trợ tiếng Việt
+\usepackage[vietnamese]{babel}
+
+
+% ==============================================================================
+% 2. CÁC GÓI TOÁN HỌC VÀ KHOA HỌC
+% ==============================================================================
+\usepackage{amsmath, amssymb, amsfonts, amsthm, caption, tabularx, csquotes}
+
+% ==============================================================================
+% 3. BỐ CỤC VÀ ĐỊNH DẠNG TRANG
+% ==============================================================================
+\usepackage[
+a4paper,
+top=2.5cm,
+bottom=2.5cm,
+left=3cm,
+right=2.5cm,
+headsep=1cm,
+footskip=1cm,
+twoside
+]{geometry}
+\usepackage{enumitem}
+\setlist{nosep}
+\usepackage{graphicx}
+\graphicspath{{images/}} 
+\usepackage[dvipsnames]{xcolor} 
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=MidnightBlue,
+	filecolor=magenta,      
+	urlcolor=RoyalBlue,
+	citecolor=ForestGreen,
+	pdftitle={Giáo trình NLP Toàn tập},
+	pdfauthor={Tên tác giả},
+}
+\usepackage{booktabs}
+% ==============================================================================
+% 4. TÙY BIẾN TIÊU ĐỀ
+% ==============================================================================
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyfoot[C]{Công Thái Học (ngu)}
+\usepackage{titlesec}
+\titleformat{\part}[display]
+{\normalfont\Huge\bfseries\centering}
+{\partname~\thepart}
+{20pt}
+{\Huge}
+\titlespacing*{\part}{0pt}{50pt}{40pt}
+
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries}
+{\chaptertitlename~\thechapter}
+{20pt}
+{\huge\bfseries}
+\titlespacing*{\chapter}{0pt}{40pt}{30pt}
+
+\titleformat{\section}
+{\normalfont\Large\bfseries\color{MidnightBlue}}
+{\thesection.}
+{1em}
+{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{OliveGreen}}
+{\thesubsection.}
+{1em}
+{}
+\titleformat{\subsubsection}
+{\normalfont\normalsize\bfseries\color{Brown}}
+{\thesubsubsection.}
+{1em}
+{}
+
+% ==============================================================================
+% 5. CODE & BOX
+% ==============================================================================
+\usepackage{minted}
+\setminted{
+	frame=lines,
+	framesep=2mm,
+	numbersep=0pt,
+	baselinestretch=1.2,
+	fontsize=\small,
+	linenos,
+	breaklines,
+	breakanywhere
+}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{skins}
+
+\newtcbtheorem{definition}{Định nghĩa}{
+	colback=blue!5!white,
+	colframe=blue!75!black,
+	fonttitle=\bfseries,
+	breakable
+}{def}
+\newtcbtheorem{example}{Ví dụ}{
+	colback=green!5!white,
+	colframe=green!50!black,
+	fonttitle=\bfseries,
+	before skip=0.5em,   
+	after skip=0.5em,   
+	boxsep=1mm,          
+	breakable
+}{ex}
+\newtcbtheorem[
+auto counter, 
+number within=chapter,
+list inside=rcp
+]{recipe}{Recipe \thetcbcounter}{
+	colback=orange!5!white,
+	colframe=orange!75!black,
+	fonttitle=\bfseries,
+	title={Recipe \thechapter.\arabic{tcbcounter}:}
+}{rcp}
+
+% ==============================================================================
+% 6. LỆNH PHỤ
+% ==============================================================================
+\newcommand{\newtag}{\textcolor{red}{\textnormal{\bfseries\small [MỚI & SỬA ĐỔI]}}}
+\newcommand{\reftag}{\textcolor{blue}{\textnormal{\bfseries\small [THAM KHẢO]}}}
+
+% ==============================================================================
+% 7. THÔNG TIN SÁCH
+% ==============================================================================
+\title{GIÁO TRÌNH NLP TOÀN TẬP \\ \large}
+\author{Đinh Công Thái}
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

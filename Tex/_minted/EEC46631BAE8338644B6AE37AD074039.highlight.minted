@@ -1,0 +1,8 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{err}{Thô}\PYG{k+kc}{n}\PYG{err}{g}\PYG{+w}{ }\PYG{k+kc}{t}\PYG{err}{i}\PYG{k+kc}{n}\PYG{+w}{ }\PYG{err}{đã}\PYG{+w}{ }\PYG{err}{được}\PYG{+w}{ }\PYG{k+kc}{tr}\PYG{err}{ích}\PYG{+w}{ }\PYG{err}{xuấ}\PYG{k+kc}{t}\PYG{p}{:}
+\PYG{p}{\PYGZob{}}
+\PYG{+w}{  }\PYG{n+nt}{\PYGZdq{}name\PYGZdq{}}\PYG{p}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}Trần Văn An\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{  }\PYG{n+nt}{\PYGZdq{}email\PYGZdq{}}\PYG{p}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}an.tran@example.com\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{  }\PYG{n+nt}{\PYGZdq{}order\PYGZus{}id\PYGZdq{}}\PYG{p}{:}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}A123\PYGZhy{}456\PYGZdq{}}
+\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

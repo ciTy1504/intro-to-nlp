@@ -1,0 +1,7 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+            \PYG{n}{training\PYGZus{}args} \PYG{o}{=} \PYG{n}{TrainingArguments}\PYG{p}{(}
+                \PYG{n}{output\PYGZus{}dir}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}./results\PYGZdq{}}\PYG{p}{,}
+                \PYG{c+c1}{\PYGZsh{} ...}
+                \PYG{n}{deepspeed}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}path/to/your/ds\PYGZus{}config.json\PYGZdq{}}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{} Chỉ định file config}
+            \PYG{p}{)}
+\end{MintedVerbatim}

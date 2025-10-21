@@ -1,0 +1,36 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{evaluate}
+
+    \PYG{c+c1}{\PYGZsh{} Tải metric seqeval}
+    \PYG{n}{seqeval\PYGZus{}metric} \PYG{o}{=} \PYG{n}{evaluate}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}seqeval\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Giả sử chúng ta có mapping từ ID sang nhãn}
+    \PYG{n}{label\PYGZus{}names} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}O\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}B\PYGZhy{}PER\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}I\PYGZhy{}PER\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}B\PYGZhy{}LOC\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}I\PYGZhy{}LOC\PYGZsq{}}\PYG{p}{]}
+
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{compute\PYGZus{}metrics\PYGZus{}ner}\PYG{p}{(}\PYG{n}{eval\PYGZus{}preds}\PYG{p}{):}
+        \PYG{n}{logits}\PYG{p}{,} \PYG{n}{labels} \PYG{o}{=} \PYG{n}{eval\PYGZus{}preds}
+        \PYG{n}{predictions} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{argmax}\PYG{p}{(}\PYG{n}{logits}\PYG{p}{,} \PYG{n}{axis}\PYG{o}{=\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} Chuyển đổi ID trở lại thành nhãn chuỗi}
+        \PYG{c+c1}{\PYGZsh{} Bỏ qua các nhãn padding (thường có ID là \PYGZhy{}100)}
+        \PYG{n}{true\PYGZus{}labels} \PYG{o}{=} \PYG{p}{[}
+            \PYG{p}{[}\PYG{n}{label\PYGZus{}names}\PYG{p}{[}\PYG{n}{l}\PYG{p}{]} \PYG{k}{for} \PYG{n}{l} \PYG{o+ow}{in} \PYG{n}{label} \PYG{k}{if} \PYG{n}{l} \PYG{o}{!=} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{100}\PYG{p}{]}
+            \PYG{k}{for} \PYG{n}{label} \PYG{o+ow}{in} \PYG{n}{labels}
+        \PYG{p}{]}
+        \PYG{n}{true\PYGZus{}predictions} \PYG{o}{=} \PYG{p}{[}
+            \PYG{p}{[}\PYG{n}{label\PYGZus{}names}\PYG{p}{[}\PYG{n}{p}\PYG{p}{]} \PYG{k}{for} \PYG{n}{p}\PYG{p}{,} \PYG{n}{l} \PYG{o+ow}{in} \PYG{n+nb}{zip}\PYG{p}{(}\PYG{n}{prediction}\PYG{p}{,} \PYG{n}{label}\PYG{p}{)} \PYG{k}{if} \PYG{n}{l} \PYG{o}{!=} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{100}\PYG{p}{]}
+            \PYG{k}{for} \PYG{n}{prediction}\PYG{p}{,} \PYG{n}{label} \PYG{o+ow}{in} \PYG{n+nb}{zip}\PYG{p}{(}\PYG{n}{predictions}\PYG{p}{,} \PYG{n}{labels}\PYG{p}{)}
+        \PYG{p}{]}
+
+        \PYG{c+c1}{\PYGZsh{} Tính toán metric}
+        \PYG{n}{results} \PYG{o}{=} \PYG{n}{seqeval\PYGZus{}metric}\PYG{o}{.}\PYG{n}{compute}\PYG{p}{(}\PYG{n}{predictions}\PYG{o}{=}\PYG{n}{true\PYGZus{}predictions}\PYG{p}{,} \PYG{n}{references}\PYG{o}{=}\PYG{n}{true\PYGZus{}labels}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} Trả về các metric chính}
+        \PYG{k}{return} \PYG{p}{\PYGZob{}}
+            \PYG{l+s+s2}{\PYGZdq{}precision\PYGZdq{}}\PYG{p}{:} \PYG{n}{results}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}overall\PYGZus{}precision\PYGZdq{}}\PYG{p}{],}
+            \PYG{l+s+s2}{\PYGZdq{}recall\PYGZdq{}}\PYG{p}{:} \PYG{n}{results}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}overall\PYGZus{}recall\PYGZdq{}}\PYG{p}{],}
+            \PYG{l+s+s2}{\PYGZdq{}f1\PYGZdq{}}\PYG{p}{:} \PYG{n}{results}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}overall\PYGZus{}f1\PYGZdq{}}\PYG{p}{],}
+            \PYG{l+s+s2}{\PYGZdq{}accuracy\PYGZdq{}}\PYG{p}{:} \PYG{n}{results}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}overall\PYGZus{}accuracy\PYGZdq{}}\PYG{p}{],}
+        \PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

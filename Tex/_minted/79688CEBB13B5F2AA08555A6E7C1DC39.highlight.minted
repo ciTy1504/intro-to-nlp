@@ -1,0 +1,28 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{datasets}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{load\PYGZus{}dataset}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{AutoTokenizer}
+
+    \PYG{c+c1}{\PYGZsh{} Tải bộ dữ liệu GLUE, tác vụ MRPC}
+    \PYG{n}{raw\PYGZus{}datasets} \PYG{o}{=} \PYG{n}{load\PYGZus{}dataset}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}glue\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}mrpc\PYGZdq{}}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{} \PYGZgt{}\PYGZgt{}\PYGZgt{} raw\PYGZus{}datasets}
+    \PYG{c+c1}{\PYGZsh{} DatasetDict(\PYGZob{}}
+    \PYG{c+c1}{\PYGZsh{}     train: Dataset(\PYGZob{}}
+    \PYG{c+c1}{\PYGZsh{}         features: [\PYGZsq{}sentence1\PYGZsq{}, \PYGZsq{}sentence2\PYGZsq{}, \PYGZsq{}label\PYGZsq{}, \PYGZsq{}idx\PYGZsq{}],}
+    \PYG{c+c1}{\PYGZsh{}         num\PYGZus{}rows: 3668}
+    \PYG{c+c1}{\PYGZsh{}     \PYGZcb{})}
+    \PYG{c+c1}{\PYGZsh{}     ...}
+    \PYG{c+c1}{\PYGZsh{} \PYGZcb{})}
+
+    \PYG{c+c1}{\PYGZsh{} Tải tokenizer tương ứng với một checkpoint}
+    \PYG{n}{checkpoint} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}bert\PYGZhy{}base\PYGZhy{}uncased\PYGZdq{}}
+    \PYG{n}{tokenizer} \PYG{o}{=} \PYG{n}{AutoTokenizer}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{n}{checkpoint}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Viết một hàm để tokenize dữ liệu}
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{tokenize\PYGZus{}function}\PYG{p}{(}\PYG{n}{example}\PYG{p}{):}
+        \PYG{k}{return} \PYG{n}{tokenizer}\PYG{p}{(}\PYG{n}{example}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}sentence1\PYGZdq{}}\PYG{p}{],} \PYG{n}{example}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}sentence2\PYGZdq{}}\PYG{p}{],} \PYG{n}{truncation}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Áp dụng hàm này lên toàn bộ bộ dữ liệu}
+    \PYG{c+c1}{\PYGZsh{} batched=True xử lý nhiều mẫu cùng lúc để tăng tốc}
+    \PYG{n}{tokenized\PYGZus{}datasets} \PYG{o}{=} \PYG{n}{raw\PYGZus{}datasets}\PYG{o}{.}\PYG{n}{map}\PYG{p}{(}\PYG{n}{tokenize\PYGZus{}function}\PYG{p}{,} \PYG{n}{batched}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{tokenized\PYGZus{}datasets}\PYG{p}{)}
+\end{MintedVerbatim}

@@ -1,0 +1,54 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{c+c1}{\PYGZsh{} Bước 1: Cài đặt}
+    \PYG{c+c1}{\PYGZsh{}pip install langchain langchain\PYGZhy{}openai langchain\PYGZhy{}community sentence\PYGZhy{}transformers chromadb}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{os}
+    \PYG{c+c1}{\PYGZsh{} os.environ[\PYGZdq{}OPENAI\PYGZus{}API\PYGZus{}KEY\PYGZdq{}] = \PYGZdq{}sk\PYGZhy{}...\PYGZdq{}}
+
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain\PYGZus{}community.document\PYGZus{}loaders}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{WebBaseLoader}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain\PYGZus{}community.vectorstores}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{Chroma}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain\PYGZus{}community.embeddings}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{SentenceTransformerEmbeddings}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain\PYGZus{}text\PYGZus{}splitters}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{RecursiveCharacterTextSplitter}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain\PYGZus{}openai}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{ChatOpenAI}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain.prompts}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{PromptTemplate}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain.schema.runnable}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{RunnablePassthrough}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain.schema.output\PYGZus{}parser}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{StrOutputParser}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 2: Tải và phân mảnh dữ liệu}
+    \PYG{n}{loader} \PYG{o}{=} \PYG{n}{WebBaseLoader}\PYG{p}{(}\PYG{n}{web\PYGZus{}path}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}https://en.wikipedia.org/wiki/Large\PYGZus{}language\PYGZus{}model\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{docs} \PYG{o}{=} \PYG{n}{loader}\PYG{o}{.}\PYG{n}{load}\PYG{p}{()}
+    \PYG{n}{text\PYGZus{}splitter} \PYG{o}{=} \PYG{n}{RecursiveCharacterTextSplitter}\PYG{p}{(}\PYG{n}{chunk\PYGZus{}size}\PYG{o}{=}\PYG{l+m+mi}{500}\PYG{p}{,} \PYG{n}{chunk\PYGZus{}overlap}\PYG{o}{=}\PYG{l+m+mi}{50}\PYG{p}{)}
+    \PYG{n}{splits} \PYG{o}{=} \PYG{n}{text\PYGZus{}splitter}\PYG{o}{.}\PYG{n}{split\PYGZus{}documents}\PYG{p}{(}\PYG{n}{docs}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 3: Thiết lập Vector Store (Retriever)}
+    \PYG{n}{embedding\PYGZus{}function} \PYG{o}{=} \PYG{n}{SentenceTransformerEmbeddings}\PYG{p}{(}\PYG{n}{model\PYGZus{}name}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}all\PYGZhy{}MiniLM\PYGZhy{}L6\PYGZhy{}v2\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{vectorstore} \PYG{o}{=} \PYG{n}{Chroma}\PYG{o}{.}\PYG{n}{from\PYGZus{}documents}\PYG{p}{(}\PYG{n}{documents}\PYG{o}{=}\PYG{n}{splits}\PYG{p}{,} \PYG{n}{embedding}\PYG{o}{=}\PYG{n}{embedding\PYGZus{}function}\PYG{p}{)}
+    \PYG{n}{retriever} \PYG{o}{=} \PYG{n}{vectorstore}\PYG{o}{.}\PYG{n}{as\PYGZus{}retriever}\PYG{p}{()}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 4: Thiết lập LLM và Prompt Template}
+    \PYG{n}{llm} \PYG{o}{=} \PYG{n}{ChatOpenAI}\PYG{p}{(}\PYG{n}{model\PYGZus{}name}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}gpt\PYGZhy{}3.5\PYGZhy{}turbo\PYGZdq{}}\PYG{p}{,} \PYG{n}{temperature}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{)}
+
+    \PYG{n}{template} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Sử dụng các đoạn ngữ cảnh sau đây để trả lời câu hỏi.}
+\PYG{l+s+s2}{    Nếu bạn không biết câu trả lời, hãy nói rằng bạn không biết.}
+
+\PYG{l+s+s2}{    Ngữ cảnh: }\PYG{l+s+si}{\PYGZob{}context\PYGZcb{}}
+
+\PYG{l+s+s2}{    Câu hỏi: }\PYG{l+s+si}{\PYGZob{}question\PYGZcb{}}
+
+\PYG{l+s+s2}{    Câu trả lời hữu ích:\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{rag\PYGZus{}prompt} \PYG{o}{=} \PYG{n}{PromptTemplate}\PYG{o}{.}\PYG{n}{from\PYGZus{}template}\PYG{p}{(}\PYG{n}{template}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 55: Xây dựng Chuỗi RAG}
+    \PYG{n}{rag\PYGZus{}chain} \PYG{o}{=} \PYG{p}{(}
+        \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}context\PYGZdq{}}\PYG{p}{:} \PYG{n}{retriever}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}question\PYGZdq{}}\PYG{p}{:} \PYG{n}{RunnablePassthrough}\PYG{p}{()\PYGZcb{}}
+        \PYG{o}{|} \PYG{n}{rag\PYGZus{}prompt}
+        \PYG{o}{|} \PYG{n}{llm}
+        \PYG{o}{|} \PYG{n}{StrOutputParser}\PYG{p}{()}
+    \PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 6: Hỏi đáp}
+    \PYG{n}{query} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}What is the Transformer architecture?\PYGZdq{}}
+    \PYG{n}{answer} \PYG{o}{=} \PYG{n}{rag\PYGZus{}chain}\PYG{o}{.}\PYG{n}{invoke}\PYG{p}{(}\PYG{n}{query}\PYG{p}{)}
+
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}Câu hỏi: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{query}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}Câu trả lời: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{answer}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

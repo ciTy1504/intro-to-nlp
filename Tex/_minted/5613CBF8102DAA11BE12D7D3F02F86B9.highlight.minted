@@ -1,0 +1,18 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{c+c1}{\PYGZsh{} 1. Đặt biến môi trường để kích hoạt wandb}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{os}
+    \PYG{n}{os}\PYG{o}{.}\PYG{n}{environ}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}WANDB\PYGZus{}PROJECT\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}my\PYGZhy{}first\PYGZhy{}nlp\PYGZhy{}project\PYGZdq{}} \PYG{c+c1}{\PYGZsh{} Đặt tên dự án}
+
+    \PYG{c+c1}{\PYGZsh{} 2. Bật báo cáo trong TrainingArguments}
+    \PYG{n}{training\PYGZus{}args} \PYG{o}{=} \PYG{n}{TrainingArguments}\PYG{p}{(}
+        \PYG{n}{output\PYGZus{}dir}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}./results\PYGZdq{}}\PYG{p}{,}
+        \PYG{n}{num\PYGZus{}train\PYGZus{}epochs}\PYG{o}{=}\PYG{l+m+mi}{3}\PYG{p}{,}
+        \PYG{c+c1}{\PYGZsh{} ... các tham số khác}
+        \PYG{n}{report\PYGZus{}to}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}wandb\PYGZdq{}}\PYG{p}{,}  \PYG{c+c1}{\PYGZsh{} Bật tính năng báo cáo đến wandb}
+        \PYG{n}{run\PYGZus{}name}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}bert\PYGZhy{}finetune\PYGZhy{}run\PYGZhy{}1\PYGZdq{}}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{} (Tùy chọn) Đặt tên cho lần chạy này}
+    \PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} 3. Huấn luyện như bình thường}
+    \PYG{n}{trainer} \PYG{o}{=} \PYG{n}{Trainer}\PYG{p}{(}\PYG{o}{...}\PYG{p}{)}
+    \PYG{n}{trainer}\PYG{o}{.}\PYG{n}{train}\PYG{p}{()}
+\end{MintedVerbatim}

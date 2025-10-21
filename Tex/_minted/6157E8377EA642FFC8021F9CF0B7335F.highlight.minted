@@ -1,0 +1,13 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{AutoModelForCausalLM}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{torch}
+
+    \PYG{n}{model\PYGZus{}id} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}meta\PYGZhy{}llama/Llama\PYGZhy{}2\PYGZhy{}7b\PYGZhy{}hf\PYGZdq{}}
+
+    \PYG{c+c1}{\PYGZsh{} Tải mô hình với lượng tử hóa 4\PYGZhy{}bit}
+    \PYG{n}{model} \PYG{o}{=} \PYG{n}{AutoModelForCausalLM}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}
+        \PYG{n}{model\PYGZus{}id}\PYG{p}{,}
+        \PYG{n}{load\PYGZus{}in\PYGZus{}4bit}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,}
+        \PYG{n}{device\PYGZus{}map}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}auto\PYGZdq{}}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{} Tự động phân bổ các lớp lên GPU/CPU}
+    \PYG{p}{)}
+\end{MintedVerbatim}

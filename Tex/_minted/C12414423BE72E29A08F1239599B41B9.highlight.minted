@@ -1,0 +1,44 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{c+c1}{\PYGZsh{} Bước 1: Cài đặt}
+    \PYG{c+c1}{\PYGZsh{} pip install langchain langchain\PYGZhy{}openai wikipedia}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{os}
+    \PYG{c+c1}{\PYGZsh{} os.environ[\PYGZdq{}OPENAI\PYGZus{}API\PYGZus{}KEY\PYGZdq{}] = \PYGZdq{}sk\PYGZhy{}...\PYGZdq{}}
+
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain\PYGZus{}openai}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{ChatOpenAI}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain.agents}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{tool}\PYG{p}{,} \PYG{n}{AgentExecutor}\PYG{p}{,} \PYG{n}{create\PYGZus{}react\PYGZus{}agent}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{langchain}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{hub} \PYG{c+c1}{\PYGZsh{} Để tải prompt ReAct có sẵn}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 2: Định nghĩa Công cụ}
+    \PYG{n+nd}{@tool}
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{search\PYGZus{}wikipedia}\PYG{p}{(}\PYG{n}{query}\PYG{p}{:} \PYG{n+nb}{str}\PYG{p}{)} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n+nb}{str}\PYG{p}{:}
+\PYG{+w}{        }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        Searches Wikipedia to find information about a given query.}
+\PYG{l+s+sd}{        Use this tool for questions about current events, facts, or specific entities.}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{wikipedia}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{summary}
+        \PYG{k}{try}\PYG{p}{:}
+            \PYG{k}{return} \PYG{n}{summary}\PYG{p}{(}\PYG{n}{query}\PYG{p}{,} \PYG{n}{sentences}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+        \PYG{k}{except} \PYG{n+ne}{Exception} \PYG{k}{as} \PYG{n}{e}\PYG{p}{:}
+            \PYG{k}{return} \PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}Error searching Wikipedia: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{e}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}
+
+    \PYG{n}{tools} \PYG{o}{=} \PYG{p}{[}\PYG{n}{search\PYGZus{}wikipedia}\PYG{p}{]}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 3: Khởi tạo LLM và Agent}
+    \PYG{n}{llm} \PYG{o}{=} \PYG{n}{ChatOpenAI}\PYG{p}{(}\PYG{n}{model}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}gpt\PYGZhy{}3.5\PYGZhy{}turbo\PYGZdq{}}\PYG{p}{,} \PYG{n}{temperature}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Tải một prompt ReAct đã được thiết kế sẵn từ LangChain Hub}
+    \PYG{n}{prompt} \PYG{o}{=} \PYG{n}{hub}\PYG{o}{.}\PYG{n}{pull}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}hwchase17/react\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Tạo agent, kết hợp llm, tools, và prompt}
+    \PYG{n}{agent} \PYG{o}{=} \PYG{n}{create\PYGZus{}react\PYGZus{}agent}\PYG{p}{(}\PYG{n}{llm}\PYG{p}{,} \PYG{n}{tools}\PYG{p}{,} \PYG{n}{prompt}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Tạo executor để chạy agent}
+    \PYG{n}{agent\PYGZus{}executor} \PYG{o}{=} \PYG{n}{AgentExecutor}\PYG{p}{(}\PYG{n}{agent}\PYG{o}{=}\PYG{n}{agent}\PYG{p}{,} \PYG{n}{tools}\PYG{o}{=}\PYG{n}{tools}\PYG{p}{,} \PYG{n}{verbose}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 4: Thực thi Agent}
+    \PYG{n}{query} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}What is the main idea behind the LLaVA model?\PYGZdq{}}
+    \PYG{n}{result} \PYG{o}{=} \PYG{n}{agent\PYGZus{}executor}\PYG{o}{.}\PYG{n}{invoke}\PYG{p}{(\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}input\PYGZdq{}}\PYG{p}{:} \PYG{n}{query}\PYG{p}{\PYGZcb{})}
+
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s2}{Final Answer:\PYGZdq{}}\PYG{p}{)}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}output\PYGZdq{}}\PYG{p}{])}
+\end{MintedVerbatim}

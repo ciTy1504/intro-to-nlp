@@ -1,0 +1,24 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{peft}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{LoraConfig}\PYG{p}{,} \PYG{n}{get\PYGZus{}peft\PYGZus{}model}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{AutoModelForCausalLM}
+
+    \PYG{c+c1}{\PYGZsh{} Tải mô hình gốc}
+    \PYG{n}{model} \PYG{o}{=} \PYG{n}{AutoModelForCausalLM}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}meta\PYGZhy{}llama/Llama\PYGZhy{}2\PYGZhy{}7b\PYGZhy{}hf\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Định nghĩa cấu hình LoRA}
+    \PYG{n}{config} \PYG{o}{=} \PYG{n}{LoraConfig}\PYG{p}{(}
+        \PYG{n}{r}\PYG{o}{=}\PYG{l+m+mi}{8}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{} Thứ hạng (rank)}
+        \PYG{n}{lora\PYGZus{}alpha}\PYG{o}{=}\PYG{l+m+mi}{32}\PYG{p}{,}
+        \PYG{n}{target\PYGZus{}modules}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}q\PYGZus{}proj\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}v\PYGZus{}proj\PYGZdq{}}\PYG{p}{],} \PYG{c+c1}{\PYGZsh{} Áp dụng LoRA vào lớp nào}
+        \PYG{n}{lora\PYGZus{}dropout}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{,}
+        \PYG{n}{task\PYGZus{}type}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}CAUSAL\PYGZus{}LM\PYGZdq{}}\PYG{p}{,}
+    \PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bọc mô hình gốc bằng PEFT}
+    \PYG{n}{peft\PYGZus{}model} \PYG{o}{=} \PYG{n}{get\PYGZus{}peft\PYGZus{}model}\PYG{p}{(}\PYG{n}{model}\PYG{p}{,} \PYG{n}{config}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bây giờ, khi huấn luyện `peft\PYGZus{}model`, chỉ các tham số LoRA}
+    \PYG{c+c1}{\PYGZsh{} mới được cập nhật.}
+    \PYG{n}{peft\PYGZus{}model}\PYG{o}{.}\PYG{n}{print\PYGZus{}trainable\PYGZus{}parameters}\PYG{p}{()}
+    \PYG{c+c1}{\PYGZsh{} Output: trainable params: 4,194,304 || all params: 6,742,609,920 || trainable\PYGZpc{}: 0.0622}
+\end{MintedVerbatim}

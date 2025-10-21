@@ -1,0 +1,12 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{pipeline}
+
+    \PYG{c+c1}{\PYGZsh{} Tải một mô hình đã được fine\PYGZhy{}tune cho phân tích cảm xúc}
+    \PYG{c+c1}{\PYGZsh{} Lần đầu chạy, pipeline sẽ tự động tải mô hình từ Hub}
+    \PYG{n}{classifier} \PYG{o}{=} \PYG{n}{pipeline}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}sentiment\PYGZhy{}analysis\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Sử dụng mô hình}
+    \PYG{n}{result} \PYG{o}{=} \PYG{n}{classifier}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Hugging Face is democratizing NLP!\PYGZdq{}}\PYG{p}{)}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{result}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{} Output: [\PYGZob{}\PYGZsq{}label\PYGZsq{}: \PYGZsq{}POSITIVE\PYGZsq{}, \PYGZsq{}score\PYGZsq{}: 0.9998...\PYGZcb{}]}
+\end{MintedVerbatim}

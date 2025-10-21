@@ -1,0 +1,28 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{c+c1}{\PYGZsh{} File: main.py}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{fastapi}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{FastAPI}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{pydantic}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{BaseModel}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{pipeline}
+
+    \PYG{c+c1}{\PYGZsh{} Khởi tạo ứng dụng FastAPI}
+    \PYG{n}{app} \PYG{o}{=} \PYG{n}{FastAPI}\PYG{p}{()}
+
+    \PYG{c+c1}{\PYGZsh{} Tải mô hình (nên thực hiện một lần khi khởi động)}
+    \PYG{n}{classifier} \PYG{o}{=} \PYG{n}{pipeline}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}sentiment\PYGZhy{}analysis\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Định nghĩa cấu trúc dữ liệu đầu vào}
+    \PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{TextInput}\PYG{p}{(}\PYG{n}{BaseModel}\PYG{p}{):}
+        \PYG{n}{text}\PYG{p}{:} \PYG{n+nb}{str}
+
+    \PYG{c+c1}{\PYGZsh{} Định nghĩa API endpoint}
+    \PYG{n+nd}{@app}\PYG{o}{.}\PYG{n}{post}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}/predict/\PYGZdq{}}\PYG{p}{)}
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{predict\PYGZus{}sentiment}\PYG{p}{(}\PYG{n}{item}\PYG{p}{:} \PYG{n}{TextInput}\PYG{p}{):}
+        \PYG{c+c1}{\PYGZsh{} Lấy văn bản từ request}
+        \PYG{n}{text\PYGZus{}to\PYGZus{}analyze} \PYG{o}{=} \PYG{n}{item}\PYG{o}{.}\PYG{n}{text}
+        \PYG{c+c1}{\PYGZsh{} Thực hiện dự đoán}
+        \PYG{n}{result} \PYG{o}{=} \PYG{n}{classifier}\PYG{p}{(}\PYG{n}{text\PYGZus{}to\PYGZus{}analyze}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{} Trả về kết quả}
+        \PYG{k}{return} \PYG{n}{result}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+
+    \PYG{c+c1}{\PYGZsh{} Để chạy: uvicorn main:app \PYGZhy{}\PYGZhy{}reload}
+\end{MintedVerbatim}

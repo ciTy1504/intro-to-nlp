@@ -1,0 +1,4 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Cài đặt các thư viện chính bằng pip}
+pip\PYG{+w}{ }install\PYG{+w}{ }transformers\PYG{+w}{ }datasets\PYG{+w}{ }accelerate\PYG{+w}{ }evaluate
+\end{MintedVerbatim}

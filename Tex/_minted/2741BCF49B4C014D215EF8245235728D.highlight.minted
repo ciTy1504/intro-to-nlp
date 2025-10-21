@@ -1,0 +1,62 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{c+c1}{\PYGZsh{} Bước 1: Cài đặt}
+    \PYG{c+c1}{\PYGZsh{} pip install openai}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{os}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{json}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{openai}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{OpenAI}
+
+    \PYG{c+c1}{\PYGZsh{} os.environ[\PYGZdq{}OPENAI\PYGZus{}API\PYGZus{}KEY\PYGZdq{}] = \PYGZdq{}sk\PYGZhy{}...\PYGZdq{}}
+    \PYG{n}{client} \PYG{o}{=} \PYG{n}{OpenAI}\PYG{p}{()}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 2: Định nghĩa \PYGZdq{}Công cụ\PYGZdq{} (cấu trúc JSON mong muốn)}
+    \PYG{n}{extraction\PYGZus{}tool} \PYG{o}{=} \PYG{p}{\PYGZob{}}
+        \PYG{l+s+s2}{\PYGZdq{}type\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}function\PYGZdq{}}\PYG{p}{,}
+        \PYG{l+s+s2}{\PYGZdq{}function\PYGZdq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}
+            \PYG{l+s+s2}{\PYGZdq{}name\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}extract\PYGZus{}user\PYGZus{}info\PYGZdq{}}\PYG{p}{,}
+            \PYG{l+s+s2}{\PYGZdq{}description\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}Extracts user information from a given text.\PYGZdq{}}\PYG{p}{,}
+            \PYG{l+s+s2}{\PYGZdq{}parameters\PYGZdq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}
+                \PYG{l+s+s2}{\PYGZdq{}type\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}object\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}properties\PYGZdq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}
+                    \PYG{l+s+s2}{\PYGZdq{}name\PYGZdq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}
+                        \PYG{l+s+s2}{\PYGZdq{}type\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}string\PYGZdq{}}\PYG{p}{,}
+                        \PYG{l+s+s2}{\PYGZdq{}description\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}The full name of the user.\PYGZdq{}}
+                    \PYG{p}{\PYGZcb{},}
+                    \PYG{l+s+s2}{\PYGZdq{}email\PYGZdq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}
+                        \PYG{l+s+s2}{\PYGZdq{}type\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}string\PYGZdq{}}\PYG{p}{,}
+                        \PYG{l+s+s2}{\PYGZdq{}description\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}The email address of the user.\PYGZdq{}}
+                    \PYG{p}{\PYGZcb{},}
+                    \PYG{l+s+s2}{\PYGZdq{}order\PYGZus{}id\PYGZdq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}
+                        \PYG{l+s+s2}{\PYGZdq{}type\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}string\PYGZdq{}}\PYG{p}{,}
+                        \PYG{l+s+s2}{\PYGZdq{}description\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}The ID of the user\PYGZsq{}s order.\PYGZdq{}}
+                    \PYG{p}{\PYGZcb{}}
+                \PYG{p}{\PYGZcb{},}
+                \PYG{l+s+s2}{\PYGZdq{}required\PYGZdq{}}\PYG{p}{:} \PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}name\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}email\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}order\PYGZus{}id\PYGZdq{}}\PYG{p}{]}
+            \PYG{p}{\PYGZcb{}}
+        \PYG{p}{\PYGZcb{}}
+    \PYG{p}{\PYGZcb{}}
+
+    \PYG{c+c1}{\PYGZsh{} Văn bản đầu vào}
+    \PYG{n}{text\PYGZus{}input} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+s2}{    Chào bạn, tôi là Trần Văn An, email của tôi là an.tran@example.com.}
+\PYG{l+s+s2}{    Tôi muốn hỏi về tình trạng của đơn hàng \PYGZsh{}A123\PYGZhy{}456. Cảm ơn!}
+\PYG{l+s+s2}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 3: Gọi LLM với công cụ đã định nghĩa}
+    \PYG{n}{response} \PYG{o}{=} \PYG{n}{client}\PYG{o}{.}\PYG{n}{chat}\PYG{o}{.}\PYG{n}{completions}\PYG{o}{.}\PYG{n}{create}\PYG{p}{(}
+        \PYG{n}{model}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}gpt\PYGZhy{}4\PYGZhy{}turbo\PYGZdq{}}\PYG{p}{,}
+        \PYG{n}{messages}\PYG{o}{=}\PYG{p}{[}
+            \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}role\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}system\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}content\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}You are a helpful assistant that extracts structured information.\PYGZdq{}}\PYG{p}{\PYGZcb{},}
+            \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}role\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}user\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}content\PYGZdq{}}\PYG{p}{:} \PYG{n}{text\PYGZus{}input}\PYG{p}{\PYGZcb{}}
+        \PYG{p}{],}
+        \PYG{n}{tools}\PYG{o}{=}\PYG{p}{[}\PYG{n}{extraction\PYGZus{}tool}\PYG{p}{],}
+        \PYG{n}{tool\PYGZus{}choice}\PYG{o}{=}\PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}type\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}function\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}function\PYGZdq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}name\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}extract\PYGZus{}user\PYGZus{}info\PYGZdq{}}\PYG{p}{\PYGZcb{}\PYGZcb{}} \PYG{c+c1}{\PYGZsh{} Buộc mô hình phải dùng công cụ này}
+    \PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 4: Phân tích kết quả}
+    \PYG{n}{tool\PYGZus{}call} \PYG{o}{=} \PYG{n}{response}\PYG{o}{.}\PYG{n}{choices}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{message}\PYG{o}{.}\PYG{n}{tool\PYGZus{}calls}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{k}{if} \PYG{n}{tool\PYGZus{}call}\PYG{o}{.}\PYG{n}{function}\PYG{o}{.}\PYG{n}{name} \PYG{o}{==} \PYG{l+s+s2}{\PYGZdq{}extract\PYGZus{}user\PYGZus{}info\PYGZdq{}}\PYG{p}{:}
+        \PYG{n}{arguments} \PYG{o}{=} \PYG{n}{json}\PYG{o}{.}\PYG{n}{loads}\PYG{p}{(}\PYG{n}{tool\PYGZus{}call}\PYG{o}{.}\PYG{n}{function}\PYG{o}{.}\PYG{n}{arguments}\PYG{p}{)}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Thông tin đã được trích xuất:\PYGZdq{}}\PYG{p}{)}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{json}\PYG{o}{.}\PYG{n}{dumps}\PYG{p}{(}\PYG{n}{arguments}\PYG{p}{,} \PYG{n}{indent}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{ensure\PYGZus{}ascii}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{))}
+
+\end{MintedVerbatim}

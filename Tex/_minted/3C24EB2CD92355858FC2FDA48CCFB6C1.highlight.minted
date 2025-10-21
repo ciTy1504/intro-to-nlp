@@ -1,0 +1,24 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{requests}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{json}
+
+    \PYG{c+c1}{\PYGZsh{} Địa chỉ của API endpoint}
+    \PYG{n}{url} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}https://catfact.ninja/fact\PYGZdq{}}
+
+    \PYG{k}{try}\PYG{p}{:}
+        \PYG{c+c1}{\PYGZsh{} Gửi một yêu cầu GET đến API}
+        \PYG{n}{response} \PYG{o}{=} \PYG{n}{requests}\PYG{o}{.}\PYG{n}{get}\PYG{p}{(}\PYG{n}{url}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} Kiểm tra xem yêu cầu có thành công không (status code 200)}
+        \PYG{n}{response}\PYG{o}{.}\PYG{n}{raise\PYGZus{}for\PYGZus{}status}\PYG{p}{()}
+
+        \PYG{c+c1}{\PYGZsh{} Phân tích dữ liệu JSON trả về}
+        \PYG{n}{data} \PYG{o}{=} \PYG{n}{response}\PYG{o}{.}\PYG{n}{json}\PYG{p}{()}
+        \PYG{n}{fact} \PYG{o}{=} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}fact\PYGZsq{}}\PYG{p}{]}
+
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}Sự thật về loài mèo: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{fact}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{k}{except} \PYG{n}{requests}\PYG{o}{.}\PYG{n}{exceptions}\PYG{o}{.}\PYG{n}{RequestException} \PYG{k}{as} \PYG{n}{e}\PYG{p}{:}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}Lỗi khi gọi API: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{e}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\end{MintedVerbatim}

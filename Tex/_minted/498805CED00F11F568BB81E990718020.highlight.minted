@@ -1,0 +1,62 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{c+c1}{\PYGZsh{} ... (cài đặt và import tương tự các recipe trước) ...}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{datasets}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{load\PYGZus{}dataset}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{AutoTokenizer}\PYG{p}{,} \PYG{n}{AutoModelForTokenClassification}\PYG{p}{,} \PYG{n}{Trainer}\PYG{p}{,} \PYG{n}{TrainingArguments}\PYG{p}{,} \PYG{n}{DataCollatorForTokenClassification}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{evaluate}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 1: Tải dữ liệu}
+    \PYG{n}{raw\PYGZus{}datasets} \PYG{o}{=} \PYG{n}{load\PYGZus{}dataset}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}conll2003\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{label\PYGZus{}names} \PYG{o}{=} \PYG{n}{raw\PYGZus{}datasets}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}train\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{features}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}ner\PYGZus{}tags\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{feature}\PYG{o}{.}\PYG{n}{names}
+
+    \PYG{n}{model\PYGZus{}checkpoint} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}roberta\PYGZhy{}base\PYGZdq{}}
+    \PYG{n}{tokenizer} \PYG{o}{=} \PYG{n}{AutoTokenizer}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{n}{model\PYGZus{}checkpoint}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 2: Hàm tiền xử lý và căn chỉnh nhãn}
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{tokenize\PYGZus{}and\PYGZus{}align\PYGZus{}labels}\PYG{p}{(}\PYG{n}{examples}\PYG{p}{):}
+        \PYG{n}{tokenized\PYGZus{}inputs} \PYG{o}{=} \PYG{n}{tokenizer}\PYG{p}{(}\PYG{n}{examples}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}tokens\PYGZdq{}}\PYG{p}{],} \PYG{n}{truncation}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,} \PYG{n}{is\PYGZus{}split\PYGZus{}into\PYGZus{}words}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+        \PYG{n}{labels} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{k}{for} \PYG{n}{i}\PYG{p}{,} \PYG{n}{label} \PYG{o+ow}{in} \PYG{n+nb}{enumerate}\PYG{p}{(}\PYG{n}{examples}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}ner\PYGZus{}tags\PYGZdq{}}\PYG{p}{]):}
+            \PYG{n}{word\PYGZus{}ids} \PYG{o}{=} \PYG{n}{tokenized\PYGZus{}inputs}\PYG{o}{.}\PYG{n}{word\PYGZus{}ids}\PYG{p}{(}\PYG{n}{batch\PYGZus{}index}\PYG{o}{=}\PYG{n}{i}\PYG{p}{)}
+            \PYG{n}{previous\PYGZus{}word\PYGZus{}idx} \PYG{o}{=} \PYG{k+kc}{None}
+            \PYG{n}{label\PYGZus{}ids} \PYG{o}{=} \PYG{p}{[]}
+            \PYG{k}{for} \PYG{n}{word\PYGZus{}idx} \PYG{o+ow}{in} \PYG{n}{word\PYGZus{}ids}\PYG{p}{:}
+                \PYG{k}{if} \PYG{n}{word\PYGZus{}idx} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:} \PYG{c+c1}{\PYGZsh{} Special tokens like [CLS], [SEP]}
+                    \PYG{n}{label\PYGZus{}ids}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{100}\PYG{p}{)}
+                \PYG{k}{elif} \PYG{n}{word\PYGZus{}idx} \PYG{o}{!=} \PYG{n}{previous\PYGZus{}word\PYGZus{}idx}\PYG{p}{:} \PYG{c+c1}{\PYGZsh{} First token of a new word}
+                    \PYG{n}{label\PYGZus{}ids}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{label}\PYG{p}{[}\PYG{n}{word\PYGZus{}idx}\PYG{p}{])}
+                \PYG{k}{else}\PYG{p}{:} \PYG{c+c1}{\PYGZsh{} Subsequent tokens of the same word}
+                    \PYG{n}{label\PYGZus{}ids}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{100}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} Chỉ gán nhãn cho subword đầu tiên}
+                \PYG{n}{previous\PYGZus{}word\PYGZus{}idx} \PYG{o}{=} \PYG{n}{word\PYGZus{}idx}
+            \PYG{n}{labels}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{label\PYGZus{}ids}\PYG{p}{)}
+        \PYG{n}{tokenized\PYGZus{}inputs}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}labels\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{labels}
+        \PYG{k}{return} \PYG{n}{tokenized\PYGZus{}inputs}
+
+    \PYG{n}{tokenized\PYGZus{}datasets} \PYG{o}{=} \PYG{n}{raw\PYGZus{}datasets}\PYG{o}{.}\PYG{n}{map}\PYG{p}{(}\PYG{n}{tokenize\PYGZus{}and\PYGZus{}align\PYGZus{}labels}\PYG{p}{,} \PYG{n}{batched}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 3 \PYGZam{} 4 \PYGZam{} 5: Tải mô hình, thiết lập Trainer và Huấn luyện}
+    \PYG{n}{data\PYGZus{}collator} \PYG{o}{=} \PYG{n}{DataCollatorForTokenClassification}\PYG{p}{(}\PYG{n}{tokenizer}\PYG{o}{=}\PYG{n}{tokenizer}\PYG{p}{)}
+    \PYG{n}{seqeval} \PYG{o}{=} \PYG{n}{evaluate}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}seqeval\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{compute\PYGZus{}metrics}\PYG{p}{(}\PYG{n}{p}\PYG{p}{):}
+        \PYG{n}{predictions}\PYG{p}{,} \PYG{n}{labels} \PYG{o}{=} \PYG{n}{p}
+        \PYG{n}{predictions} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{argmax}\PYG{p}{(}\PYG{n}{predictions}\PYG{p}{,} \PYG{n}{axis}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{} (Phần decode và tính toán tương tự ví dụ seqeval ở Chương 2.2)}
+        \PYG{c+c1}{\PYGZsh{} ...}
+        \PYG{k}{return} \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}precision\PYGZdq{}}\PYG{p}{:} \PYG{o}{...}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}recall\PYGZdq{}}\PYG{p}{:} \PYG{o}{...}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}f1\PYGZdq{}}\PYG{p}{:} \PYG{o}{...}\PYG{p}{\PYGZcb{}} \PYG{c+c1}{\PYGZsh{} Kết quả từ seqeval}
+
+    \PYG{n}{model} \PYG{o}{=} \PYG{n}{AutoModelForTokenClassification}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}
+        \PYG{n}{model\PYGZus{}checkpoint}\PYG{p}{,} \PYG{n}{num\PYGZus{}labels}\PYG{o}{=}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{label\PYGZus{}names}\PYG{p}{),}
+    \PYG{p}{)}
+
+    \PYG{n}{args} \PYG{o}{=} \PYG{n}{TrainingArguments}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}roberta\PYGZhy{}ner\PYGZdq{}}\PYG{p}{,} \PYG{n}{evaluation\PYGZus{}strategy}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}epoch\PYGZdq{}}\PYG{p}{,} \PYG{n}{learning\PYGZus{}rate}\PYG{o}{=}\PYG{l+m+mf}{2e\PYGZhy{}5}\PYG{p}{)}
+    \PYG{n}{trainer} \PYG{o}{=} \PYG{n}{Trainer}\PYG{p}{(}
+        \PYG{n}{model}\PYG{p}{,} \PYG{n}{args}\PYG{p}{,}
+        \PYG{n}{train\PYGZus{}dataset}\PYG{o}{=}\PYG{n}{tokenized\PYGZus{}datasets}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}train\PYGZdq{}}\PYG{p}{],}
+        \PYG{n}{eval\PYGZus{}dataset}\PYG{o}{=}\PYG{n}{tokenized\PYGZus{}datasets}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}validation\PYGZdq{}}\PYG{p}{],}
+        \PYG{n}{data\PYGZus{}collator}\PYG{o}{=}\PYG{n}{data\PYGZus{}collator}\PYG{p}{,}
+        \PYG{n}{tokenizer}\PYG{o}{=}\PYG{n}{tokenizer}\PYG{p}{,}
+        \PYG{n}{compute\PYGZus{}metrics}\PYG{o}{=}\PYG{n}{compute\PYGZus{}metrics}
+    \PYG{p}{)}
+    \PYG{n}{trainer}\PYG{o}{.}\PYG{n}{train}\PYG{p}{()}
+\end{MintedVerbatim}

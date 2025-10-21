@@ -1,0 +1,30 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{evaluate}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{AutoTokenizer} \PYG{c+c1}{\PYGZsh{} Cần tokenizer để decode}
+
+    \PYG{c+c1}{\PYGZsh{} Giả sử tokenizer đã được định nghĩa ở ngoài}
+    \PYG{n}{tokenizer} \PYG{o}{=} \PYG{n}{AutoTokenizer}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}t5\PYGZhy{}small\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{rouge\PYGZus{}metric} \PYG{o}{=} \PYG{n}{evaluate}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}rouge\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{compute\PYGZus{}metrics\PYGZus{}summarization}\PYG{p}{(}\PYG{n}{eval\PYGZus{}preds}\PYG{p}{):}
+        \PYG{n}{predictions}\PYG{p}{,} \PYG{n}{labels} \PYG{o}{=} \PYG{n}{eval\PYGZus{}preds}
+
+        \PYG{c+c1}{\PYGZsh{} Decode các token ID thành văn bản}
+        \PYG{c+c1}{\PYGZsh{} Bỏ qua các token padding}
+        \PYG{n}{decoded\PYGZus{}preds} \PYG{o}{=} \PYG{n}{tokenizer}\PYG{o}{.}\PYG{n}{batch\PYGZus{}decode}\PYG{p}{(}\PYG{n}{predictions}\PYG{p}{,} \PYG{n}{skip\PYGZus{}special\PYGZus{}tokens}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} Thay thế các token padding (\PYGZhy{}100) trong nhãn bằng pad\PYGZus{}token\PYGZus{}id}
+        \PYG{c+c1}{\PYGZsh{} để chúng cũng có thể được decode đúng cách}
+        \PYG{n}{labels} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{where}\PYG{p}{(}\PYG{n}{labels} \PYG{o}{!=} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{100}\PYG{p}{,} \PYG{n}{labels}\PYG{p}{,} \PYG{n}{tokenizer}\PYG{o}{.}\PYG{n}{pad\PYGZus{}token\PYGZus{}id}\PYG{p}{)}
+        \PYG{n}{decoded\PYGZus{}labels} \PYG{o}{=} \PYG{n}{tokenizer}\PYG{o}{.}\PYG{n}{batch\PYGZus{}decode}\PYG{p}{(}\PYG{n}{labels}\PYG{p}{,} \PYG{n}{skip\PYGZus{}special\PYGZus{}tokens}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} Tính ROUGE score}
+        \PYG{n}{result} \PYG{o}{=} \PYG{n}{rouge\PYGZus{}metric}\PYG{o}{.}\PYG{n}{compute}\PYG{p}{(}\PYG{n}{predictions}\PYG{o}{=}\PYG{n}{decoded\PYGZus{}preds}\PYG{p}{,} \PYG{n}{references}\PYG{o}{=}\PYG{n}{decoded\PYGZus{}labels}\PYG{p}{,} \PYG{n}{use\PYGZus{}stemmer}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} Trích xuất các điểm số chính}
+        \PYG{n}{prediction\PYGZus{}lens} \PYG{o}{=} \PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{count\PYGZus{}nonzero}\PYG{p}{(}\PYG{n}{pred} \PYG{o}{!=} \PYG{n}{tokenizer}\PYG{o}{.}\PYG{n}{pad\PYGZus{}token\PYGZus{}id}\PYG{p}{)} \PYG{k}{for} \PYG{n}{pred} \PYG{o+ow}{in} \PYG{n}{predictions}\PYG{p}{]}
+        \PYG{n}{result}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}gen\PYGZus{}len\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{prediction\PYGZus{}lens}\PYG{p}{)}
+
+        \PYG{k}{return} \PYG{p}{\PYGZob{}}\PYG{n}{k}\PYG{p}{:} \PYG{n+nb}{round}\PYG{p}{(}\PYG{n}{v}\PYG{p}{,} \PYG{l+m+mi}{4}\PYG{p}{)} \PYG{k}{for} \PYG{n}{k}\PYG{p}{,} \PYG{n}{v} \PYG{o+ow}{in} \PYG{n}{result}\PYG{o}{.}\PYG{n}{items}\PYG{p}{()\PYGZcb{}}
+\end{MintedVerbatim}

@@ -1,0 +1,79 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{c+c1}{\PYGZsh{} Bước 1: Cài đặt}
+    \PYG{c+c1}{\PYGZsh{} pip install transformers datasets accelerate evaluate peft bitsandbytes}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{torch}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{datasets}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{load\PYGZus{}dataset}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+        \PYG{n}{AutoModelForSequenceClassification}\PYG{p}{,}
+        \PYG{n}{AutoTokenizer}\PYG{p}{,}
+        \PYG{n}{TrainingArguments}\PYG{p}{,}
+        \PYG{n}{Trainer}\PYG{p}{,}
+        \PYG{n}{BitsAndBytesConfig}
+    \PYG{p}{)}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{peft}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{LoraConfig}\PYG{p}{,} \PYG{n}{get\PYGZus{}peft\PYGZus{}model}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{evaluate}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 2: Tải dữ liệu và tokenizer}
+    \PYG{n}{dataset} \PYG{o}{=} \PYG{n}{load\PYGZus{}dataset}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}yelp\PYGZus{}review\PYGZus{}full\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{model\PYGZus{}id} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}meta\PYGZhy{}llama/Llama\PYGZhy{}2\PYGZhy{}7b\PYGZhy{}hf\PYGZdq{}} \PYG{c+c1}{\PYGZsh{} Cần quyền truy cập}
+    \PYG{n}{tokenizer} \PYG{o}{=} \PYG{n}{AutoTokenizer}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{n}{model\PYGZus{}id}\PYG{p}{)}
+    \PYG{n}{tokenizer}\PYG{o}{.}\PYG{n}{pad\PYGZus{}token} \PYG{o}{=} \PYG{n}{tokenizer}\PYG{o}{.}\PYG{n}{eos\PYGZus{}token} \PYG{c+c1}{\PYGZsh{} Llama không có pad token}
+
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{tokenize\PYGZus{}function}\PYG{p}{(}\PYG{n}{examples}\PYG{p}{):}
+        \PYG{k}{return} \PYG{n}{tokenizer}\PYG{p}{(}\PYG{n}{examples}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{],} \PYG{n}{padding}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}max\PYGZus{}length\PYGZdq{}}\PYG{p}{,} \PYG{n}{truncation}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+    \PYG{n}{tokenized\PYGZus{}datasets} \PYG{o}{=} \PYG{n}{dataset}\PYG{o}{.}\PYG{n}{map}\PYG{p}{(}\PYG{n}{tokenize\PYGZus{}function}\PYG{p}{,} \PYG{n}{batched}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{} Giảm kích thước để chạy demo nhanh}
+    \PYG{n}{small\PYGZus{}train\PYGZus{}dataset} \PYG{o}{=} \PYG{n}{tokenized\PYGZus{}datasets}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}train\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{shuffle}\PYG{p}{(}\PYG{n}{seed}\PYG{o}{=}\PYG{l+m+mi}{42}\PYG{p}{)}\PYG{o}{.}\PYG{n}{select}\PYG{p}{(}\PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1000}\PYG{p}{))}
+    \PYG{n}{small\PYGZus{}eval\PYGZus{}dataset} \PYG{o}{=} \PYG{n}{tokenized\PYGZus{}datasets}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}test\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{shuffle}\PYG{p}{(}\PYG{n}{seed}\PYG{o}{=}\PYG{l+m+mi}{42}\PYG{p}{)}\PYG{o}{.}\PYG{n}{select}\PYG{p}{(}\PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1000}\PYG{p}{))}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 3: Tải mô hình cơ sở đã lượng tử hóa}
+    \PYG{n}{bnb\PYGZus{}config} \PYG{o}{=} \PYG{n}{BitsAndBytesConfig}\PYG{p}{(}
+        \PYG{n}{load\PYGZus{}in\PYGZus{}4bit}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,}
+        \PYG{n}{bnb\PYGZus{}4bit\PYGZus{}quant\PYGZus{}type}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}nf4\PYGZdq{}}\PYG{p}{,}
+        \PYG{n}{bnb\PYGZus{}4bit\PYGZus{}compute\PYGZus{}dtype}\PYG{o}{=}\PYG{n}{torch}\PYG{o}{.}\PYG{n}{float16}\PYG{p}{,}
+    \PYG{p}{)}
+    \PYG{n}{model} \PYG{o}{=} \PYG{n}{AutoModelForSequenceClassification}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}
+        \PYG{n}{model\PYGZus{}id}\PYG{p}{,}
+        \PYG{n}{num\PYGZus{}labels}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{} Yelp review có 5 sao}
+        \PYG{n}{quantization\PYGZus{}config}\PYG{o}{=}\PYG{n}{bnb\PYGZus{}config}\PYG{p}{,}
+        \PYG{n}{device\PYGZus{}map}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}auto\PYGZdq{}}
+    \PYG{p}{)}
+    \PYG{n}{model}\PYG{o}{.}\PYG{n}{config}\PYG{o}{.}\PYG{n}{pad\PYGZus{}token\PYGZus{}id} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{config}\PYG{o}{.}\PYG{n}{eos\PYGZus{}token\PYGZus{}id}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 4: Áp dụng cấu hình PEFT (LoRA)}
+    \PYG{n}{lora\PYGZus{}config} \PYG{o}{=} \PYG{n}{LoraConfig}\PYG{p}{(}\PYG{n}{r}\PYG{o}{=}\PYG{l+m+mi}{8}\PYG{p}{,} \PYG{n}{lora\PYGZus{}alpha}\PYG{o}{=}\PYG{l+m+mi}{16}\PYG{p}{,} \PYG{n}{lora\PYGZus{}dropout}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{,} \PYG{n}{task\PYGZus{}type}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}SEQ\PYGZus{}CLS\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{peft\PYGZus{}model} \PYG{o}{=} \PYG{n}{get\PYGZus{}peft\PYGZus{}model}\PYG{p}{(}\PYG{n}{model}\PYG{p}{,} \PYG{n}{lora\PYGZus{}config}\PYG{p}{)}
+    \PYG{n}{peft\PYGZus{}model}\PYG{o}{.}\PYG{n}{print\PYGZus{}trainable\PYGZus{}parameters}\PYG{p}{()}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 5: Thiết lập Trainer}
+    \PYG{n}{metric} \PYG{o}{=} \PYG{n}{evaluate}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}accuracy\PYGZdq{}}\PYG{p}{)}
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{compute\PYGZus{}metrics}\PYG{p}{(}\PYG{n}{eval\PYGZus{}preds}\PYG{p}{):}
+        \PYG{n}{logits}\PYG{p}{,} \PYG{n}{labels} \PYG{o}{=} \PYG{n}{eval\PYGZus{}preds}
+        \PYG{n}{predictions} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{argmax}\PYG{p}{(}\PYG{n}{logits}\PYG{p}{,} \PYG{n}{axis}\PYG{o}{=\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)}
+        \PYG{k}{return} \PYG{n}{metric}\PYG{o}{.}\PYG{n}{compute}\PYG{p}{(}\PYG{n}{predictions}\PYG{o}{=}\PYG{n}{predictions}\PYG{p}{,} \PYG{n}{references}\PYG{o}{=}\PYG{n}{labels}\PYG{p}{)}
+
+    \PYG{n}{training\PYGZus{}args} \PYG{o}{=} \PYG{n}{TrainingArguments}\PYG{p}{(}
+        \PYG{n}{output\PYGZus{}dir}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}llama\PYGZhy{}7b\PYGZhy{}lora\PYGZhy{}classification\PYGZdq{}}\PYG{p}{,}
+        \PYG{n}{learning\PYGZus{}rate}\PYG{o}{=}\PYG{l+m+mf}{2e\PYGZhy{}4}\PYG{p}{,}
+        \PYG{n}{per\PYGZus{}device\PYGZus{}train\PYGZus{}batch\PYGZus{}size}\PYG{o}{=}\PYG{l+m+mi}{4}\PYG{p}{,}
+        \PYG{n}{per\PYGZus{}device\PYGZus{}eval\PYGZus{}batch\PYGZus{}size}\PYG{o}{=}\PYG{l+m+mi}{4}\PYG{p}{,}
+        \PYG{n}{num\PYGZus{}train\PYGZus{}epochs}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,}
+        \PYG{n}{evaluation\PYGZus{}strategy}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}epoch\PYGZdq{}}\PYG{p}{,}
+        \PYG{n}{save\PYGZus{}strategy}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}epoch\PYGZdq{}}\PYG{p}{,}
+        \PYG{n}{load\PYGZus{}best\PYGZus{}model\PYGZus{}at\PYGZus{}end}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,}
+    \PYG{p}{)}
+
+    \PYG{n}{trainer} \PYG{o}{=} \PYG{n}{Trainer}\PYG{p}{(}
+        \PYG{n}{model}\PYG{o}{=}\PYG{n}{peft\PYGZus{}model}\PYG{p}{,}
+        \PYG{n}{args}\PYG{o}{=}\PYG{n}{training\PYGZus{}args}\PYG{p}{,}
+        \PYG{n}{train\PYGZus{}dataset}\PYG{o}{=}\PYG{n}{small\PYGZus{}train\PYGZus{}dataset}\PYG{p}{,}
+        \PYG{n}{eval\PYGZus{}dataset}\PYG{o}{=}\PYG{n}{small\PYGZus{}eval\PYGZus{}dataset}\PYG{p}{,}
+        \PYG{n}{compute\PYGZus{}metrics}\PYG{o}{=}\PYG{n}{compute\PYGZus{}metrics}\PYG{p}{,}
+        \PYG{n}{tokenizer}\PYG{o}{=}\PYG{n}{tokenizer}\PYG{p}{,}
+    \PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 6: Huấn luyện}
+    \PYG{n}{trainer}\PYG{o}{.}\PYG{n}{train}\PYG{p}{()}
+\end{MintedVerbatim}

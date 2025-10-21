@@ -1,8 +1,652 @@
 \babel@toc {vietnamese}{}\relax 
 \contentsline {chapter}{Lời nói đầu}{1}{chapter*.2}%
 \contentsline {part}{I\hspace {1em}BÁCH KHOA TOÀN THƯ VỀ LÝ THUYẾT NLP}{3}{part.1}%
-\contentsline {part}{II\hspace {1em}CẨM NANG KỸ THUẬT NLP THỰC CHIẾN}{7}{part.2}%
-\contentsline {chapter}{Lời kết}{19}{chapter*.4}%
-\contentsline {paragraph}{Phần 1}{19}{chapter*.4}%
-\contentsline {paragraph}{Phần 2}{19}{chapter*.4}%
-\contentsline {paragraph}{Cuối cùng, đừng quên trách nhiệm.}{19}{chapter*.4}%
+\contentsline {chapter}{\numberline {1}NHẬP MÔN \& CÁC NGUYÊN LÝ NỀN TẢNG}{7}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Định nghĩa và Phạm vi}{7}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Xử lý Ngôn ngữ Tự nhiên (NLP) là gì?}{7}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Mối quan hệ với Trí tuệ Nhân tạo, Học máy và Ngôn ngữ học}{8}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}Tổng quan các Kỷ nguyên Phát triển (Luật lệ \(\rightarrow \) Thống kê \(\rightarrow \) Học sâu \(\rightarrow \) Transformer)}{9}{subsection.1.1.3}%
+\contentsline {paragraph}{Kỷ nguyên 1: Dựa trên Luật lệ (Symbolic NLP, những năm 1950 -- 1980)}{9}{subsection.1.1.3}%
+\contentsline {paragraph}{Kỷ nguyên 2: Dựa trên Thống kê (Statistical NLP, những năm 1990 -- 2010)}{9}{subsection.1.1.3}%
+\contentsline {paragraph}{Kỷ nguyên 3: Dựa trên Học sâu (Deep Learning, khoảng 2013 -- 2017)}{10}{subsection.1.1.3}%
+\contentsline {paragraph}{Kỷ nguyên 4: Kỷ nguyên Transformer (The Transformer Era, 2017 -- Hiện tại)}{10}{subsection.1.1.3}%
+\contentsline {section}{\numberline {1.2}Nền tảng Ngôn ngữ học cho NLP}{10}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Các cấp độ phân tích ngôn ngữ: Hình thái học, Cú pháp, Ngữ nghĩa, Ngữ dụng}{11}{subsection.1.2.1}%
+\contentsline {paragraph}{1. Hình thái học (Morphology)}{11}{subsection.1.2.1}%
+\contentsline {paragraph}{2. Cú pháp (Syntax)}{11}{subsection.1.2.1}%
+\contentsline {paragraph}{3. Ngữ nghĩa (Semantics)}{11}{subsection.1.2.1}%
+\contentsline {paragraph}{4. Ngữ dụng (Pragmatics)}{11}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Ngữ pháp hình thức (Formal Grammars): Ngữ pháp phi ngữ cảnh (CFG)}{12}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Các lý thuyết cú pháp chính: Cú pháp thành phần (Constituency) và Cú pháp phụ thuộc (Dependency)}{13}{subsection.1.2.3}%
+\contentsline {paragraph}{1. Cú pháp thành phần (Constituency Syntax)}{13}{subsection.1.2.3}%
+\contentsline {paragraph}{2. Cú pháp phụ thuộc (Dependency Syntax)}{13}{subsection.1.2.3}%
+\contentsline {section}{\numberline {1.3}Các Bài toán Cốt lõi trong NLP}{14}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Phân tích cấp độ từ}{14}{subsection.1.3.1}%
+\contentsline {paragraph}{Gán nhãn Từ loại (Part-of-Speech - POS Tagging)}{14}{subsection.1.3.1}%
+\contentsline {paragraph}{Đưa từ về dạng gốc (Lemmatization và Stemming)}{14}{subsection.1.3.1}%
+\contentsline {paragraph}{Phân tích Hình thái học (Morphological Analysis)}{14}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Phân tích cấp độ câu}{14}{subsection.1.3.2}%
+\contentsline {paragraph}{Phân tích cú pháp (Parsing)}{14}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}Phân tích ngữ nghĩa}{15}{subsection.1.3.3}%
+\contentsline {paragraph}{Nhận dạng Thực thể Tên (Named Entity Recognition - NER)}{15}{subsection.1.3.3}%
+\contentsline {paragraph}{Phân biệt Ý của Từ (Word Sense Disambiguation - WSD)}{15}{subsection.1.3.3}%
+\contentsline {paragraph}{Gán nhãn Vai nghĩa (Semantic Role Labeling - SRL)}{15}{subsection.1.3.3}%
+\contentsline {paragraph}{Trích xuất Quan hệ (Relation Extraction)}{15}{subsection.1.3.3}%
+\contentsline {subsection}{\numberline {1.3.4}Các bài toán Ứng dụng}{16}{subsection.1.3.4}%
+\contentsline {section}{\numberline {1.4}Các Kiến thức Toán học Cần trang bị}{16}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}Đại số Tuyến tính: Vector, Ma trận, Tensor, SVD}{17}{subsection.1.4.1}%
+\contentsline {paragraph}{Vector}{17}{subsection.1.4.1}%
+\contentsline {paragraph}{Ma trận (Matrix)}{17}{subsection.1.4.1}%
+\contentsline {paragraph}{Tensor}{17}{Item.9}%
+\contentsline {paragraph}{Phân tích Giá trị suy biến (Singular Value Decomposition - SVD)}{17}{Item.9}%
+\contentsline {subsection}{\numberline {1.4.2}Giải tích: Đạo hàm, Gradient, Chain Rule}{17}{subsection.1.4.2}%
+\contentsline {paragraph}{Hàm Mất mát (Loss Function)}{17}{subsection.1.4.2}%
+\contentsline {paragraph}{Đạo hàm (Derivative)}{18}{subsection.1.4.2}%
+\contentsline {paragraph}{Gradient}{18}{subsection.1.4.2}%
+\contentsline {paragraph}{Quy tắc chuỗi (Chain Rule)}{18}{subsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.4.3}Xác suất và Thống kê: Định lý Bayes, MLE}{18}{subsection.1.4.3}%
+\contentsline {paragraph}{Định lý Bayes (Bayes' Theorem)}{18}{subsection.1.4.3}%
+\contentsline {paragraph}{Ước lượng Hợp lý Cực đại (Maximum Likelihood Estimation - MLE)}{18}{subsection.1.4.3}%
+\contentsline {subsection}{\numberline {1.4.4}Lý thuyết Thông tin: Entropy, Cross-Entropy, KL Divergence}{18}{subsection.1.4.4}%
+\contentsline {paragraph}{Entropy}{18}{subsection.1.4.4}%
+\contentsline {paragraph}{Cross-Entropy (Entropy chéo)}{18}{equation.1.1}%
+\contentsline {paragraph}{Phân kỳ Kullback-Leibler (KL Divergence)}{19}{equation.1.2}%
+\contentsline {section}{\numberline {1.5}Đạo đức và Trách nhiệm trong NLP (Ethics \& Responsible AI)}{19}{section.1.5}%
+\contentsline {subsection}{\numberline {1.5.1}Các loại Thiên kiến (Bias) trong Dữ liệu và Mô hình}{19}{subsection.1.5.1}%
+\contentsline {subsection}{\numberline {1.5.2}Tính Công bằng, Minh bạch và Diễn giải được (Fairness, Transparency, Interpretability)}{20}{subsection.1.5.2}%
+\contentsline {paragraph}{Tính Công bằng (Fairness)}{20}{subsection.1.5.2}%
+\contentsline {paragraph}{Tính Minh bạch (Transparency)}{20}{subsection.1.5.2}%
+\contentsline {paragraph}{Tính Diễn giải được (Interpretability / Explainable AI - XAI)}{20}{subsection.1.5.2}%
+\contentsline {subsection}{\numberline {1.5.3}Quyền riêng tư và An toàn Dữ liệu (Federated Learning, Differential Privacy)}{20}{subsection.1.5.3}%
+\contentsline {paragraph}{Vấn đề:}{20}{subsection.1.5.3}%
+\contentsline {subsection}{\numberline {1.5.4}Mối nguy về Thông tin Sai lệch và Lạm dụng}{21}{subsection.1.5.4}%
+\contentsline {subsection}{\numberline {1.5.5}Tính Bền vững và Tấn công Giả mạo (Robustness \& Adversarial Attacks)}{21}{subsection.1.5.5}%
+\contentsline {chapter}{\numberline {2}BIỂU DIỄN VĂN BẢN VÀ CÁC MÔ HÌNH THỐNG KÊ}{23}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Biểu diễn Dựa trên Tần suất (Bag-of-Words, TF-IDF)}{23}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Túi từ (Bag-of-Words - BoW)}{23}{subsection.2.1.1}%
+\contentsline {subsubsection}{Tư duy cốt lõi}{23}{subsection.2.1.1}%
+\contentsline {subsubsection}{Quy trình xây dựng mô hình BoW}{23}{subsection.2.1.1}%
+\contentsline {paragraph}{Bước 1: Tokenization (Tách từ)}{23}{subsection.2.1.1}%
+\contentsline {paragraph}{Bước 2: Xây dựng Từ vựng (Vocabulary Building)}{23}{subsection.2.1.1}%
+\contentsline {paragraph}{Bước 3: Vector hóa (Vectorization)}{24}{subsection.2.1.1}%
+\contentsline {subsubsection}{Ưu điểm và Nhược điểm của BoW}{24}{tcb@cnt@example.4}%
+\contentsline {subsection}{\numberline {2.1.2}TF-IDF: Trọng số hóa tầm quan trọng của từ}{25}{subsection.2.1.2}%
+\contentsline {subsubsection}{Tư duy cốt lõi}{25}{subsection.2.1.2}%
+\contentsline {subsubsection}{Các thành phần của TF-IDF}{25}{subsection.2.1.2}%
+\contentsline {paragraph}{Term Frequency (TF) - Tần suất của Từ}{25}{subsection.2.1.2}%
+\contentsline {paragraph}{Inverse Document Frequency (IDF) - Tần suất Nghịch của Tài liệu}{25}{subsection.2.1.2}%
+\contentsline {paragraph}{Trọng số TF-IDF}{25}{subsection.2.1.2}%
+\contentsline {subsubsection}{Tổng kết về TF-IDF}{26}{tcb@cnt@example.5}%
+\contentsline {section}{\numberline {2.2}Mô hình Ngôn ngữ Thống kê (N-gram, Smoothing)}{26}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Mô hình N-gram: Học từ Lịch sử Gần nhất}{27}{subsection.2.2.1}%
+\contentsline {subsubsection}{Thách thức của việc tính toán xác suất chuỗi}{27}{subsection.2.2.1}%
+\contentsline {subsubsection}{Giả định Markov và N-gram}{27}{subsection.2.2.1}%
+\contentsline {subsubsection}{Ước lượng xác suất N-gram}{28}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Làm mịn (Smoothing): Giải quyết vấn đề Xác suất Zero}{28}{subsection.2.2.2}%
+\contentsline {subsubsection}{Cộng Laplace (Laplace Add-One Smoothing)}{29}{subsection.2.2.2}%
+\contentsline {subsubsection}{Các kỹ thuật làm mịn tiên tiến hơn}{29}{tcb@cnt@example.7}%
+\contentsline {paragraph}{Làm mịn Add-k (Add-k Smoothing)}{29}{tcb@cnt@example.7}%
+\contentsline {paragraph}{Good-Turing Smoothing}{29}{tcb@cnt@example.7}%
+\contentsline {paragraph}{Kneser-Ney Smoothing}{30}{tcb@cnt@example.7}%
+\contentsline {subsection}{\numberline {2.2.3}Tổng kết và Hạn chế của N-gram}{30}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Các thuật toán Học máy Thống kê}{30}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Các mô hình Phân loại (Classification Models)}{30}{subsection.2.3.1}%
+\contentsline {subsubsection}{Naive Bayes}{30}{subsection.2.3.1}%
+\contentsline {paragraph}{Trực giác cốt lõi}{30}{subsection.2.3.1}%
+\contentsline {paragraph}{Giả định "Ngây thơ" (The "Naive" Assumption)}{31}{subsection.2.3.1}%
+\contentsline {paragraph}{Công thức cuối cùng}{31}{subsection.2.3.1}%
+\contentsline {subsubsection}{Hồi quy Logistic (Logistic Regression)}{31}{equation.2.2}%
+\contentsline {paragraph}{Trực giác cốt lõi}{32}{equation.2.2}%
+\contentsline {paragraph}{Cơ chế hoạt động}{32}{figure.2.1}%
+\contentsline {paragraph}{Huấn luyện bằng Gradient Descent}{32}{Item.11}%
+\contentsline {subsubsection}{Máy Vector Hỗ trợ (Support Vector Machines - SVMs)}{33}{Item.11}%
+\contentsline {paragraph}{Trực giác cốt lõi}{33}{Item.11}%
+\contentsline {paragraph}{The Kernel Trick}{34}{figure.2.2}%
+\contentsline {paragraph}{Huấn luyện và Hinge Loss}{34}{figure.2.2}%
+\contentsline {subsection}{\numberline {2.3.2}Các mô hình Học chuỗi (Sequence Labeling Models)}{34}{subsection.2.3.2}%
+\contentsline {subsubsection}{Mô hình Markov ẩn (Hidden Markov Models - HMMs)}{34}{subsection.2.3.2}%
+\contentsline {paragraph}{Trực giác cốt lõi}{34}{subsection.2.3.2}%
+\contentsline {subsubsection}{Trường Ngẫu nhiên Có điều kiện (Conditional Random Fields - CRFs)}{35}{figure.2.3}%
+\contentsline {paragraph}{Sự khác biệt chính với HMM}{35}{figure.2.3}%
+\contentsline {paragraph}{Trực giác cốt lõi của CRF}{35}{Item.15}%
+\contentsline {section}{\numberline {2.4}Mô hình hóa Chủ đề (Topic Modeling - LDA)}{36}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Tư duy cốt lõi và bài toán}{36}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Câu chuyện sinh dữ liệu của LDA (The Generative Story)}{36}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Huấn luyện và Suy luận trong LDA}{37}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Kết quả và Ứng dụng}{38}{subsection.2.4.4}%
+\contentsline {paragraph}{1. Các chủ đề của kho văn bản}{38}{subsection.2.4.4}%
+\contentsline {paragraph}{2. Biểu diễn tài liệu bằng chủ đề}{38}{tcb@cnt@example.8}%
+\contentsline {subsection}{\numberline {2.4.5}Ưu và Nhược điểm}{39}{subsection.2.4.5}%
+\contentsline {chapter}{\numberline {3}CÁC KIẾN TRÚC MẠNG NƠ-RON KINH ĐIỂN}{41}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Word Embeddings: Cuộc cách mạng Biểu diễn Đầu tiên}{41}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Lý thuyết Word2Vec: CBOW \& Skip-gram}{41}{subsection.3.1.1}%
+\contentsline {subsubsection}{Kiến trúc chung: Mạng Nơ-ron Nông}{42}{subsection.3.1.1}%
+\contentsline {paragraph}{Nhiệm vụ "giả" so với Mô hình Ngôn ngữ "thật"}{42}{subsection.3.1.1}%
+\contentsline {subsubsection}{Mô hình CBOW (Continuous Bag-of-Words)}{43}{figure.3.1}%
+\contentsline {paragraph}{Tư duy cốt lõi}{43}{figure.3.1}%
+\contentsline {paragraph}{Cơ chế hoạt động}{43}{figure.3.1}%
+\contentsline {paragraph}{Phân tích lựa chọn thiết kế của CBOW}{43}{Item.33}%
+\contentsline {subsubsection}{Mô hình Skip-gram}{44}{Item.33}%
+\contentsline {paragraph}{Tư duy cốt lõi}{44}{Item.33}%
+\contentsline {paragraph}{Cơ chế hoạt động}{44}{Item.33}%
+\contentsline {subsubsection}{Vì sao Word2Vec học được ngữ nghĩa và gần--xa theo cosine?}{44}{figure.3.2}%
+\contentsline {paragraph}{Nguyên lý phân bố (Distributional Hypothesis).}{44}{figure.3.2}%
+\contentsline {paragraph}{CBOW: gom ngữ cảnh để dự đoán từ.}{44}{figure.3.2}%
+\contentsline {paragraph}{Skip-gram với Negative Sampling (SGNS): kéo--đẩy cục bộ.}{45}{figure.3.2}%
+\contentsline {paragraph}{Vì sao cosine similarity?}{45}{figure.3.2}%
+\contentsline {paragraph}{Gần nghĩa, khác nghĩa, và trái nghĩa.}{45}{figure.3.2}%
+\contentsline {paragraph}{Liên hệ lý thuyết: SGNS và Phân rã Ma trận PMI}{45}{figure.3.2}%
+\contentsline {paragraph}{Hệ quả và giới hạn.}{46}{figure.3.2}%
+\contentsline {subsubsection}{Thách thức tính toán và các kỹ thuật tối ưu hóa}{46}{figure.3.2}%
+\contentsline {paragraph}{Subsampling và Cửa sổ ngữ cảnh động}{46}{figure.3.2}%
+\contentsline {paragraph}{Negative Sampling}{46}{figure.3.2}%
+\contentsline {paragraph}{Hierarchical Softmax}{47}{Item.40}%
+\contentsline {subsection}{\numberline {3.1.2}Lý thuyết GloVe: Ma trận Đồng xuất hiện}{47}{subsection.3.1.2}%
+\contentsline {paragraph}{Tư duy cốt lõi}{48}{subsection.3.1.2}%
+\contentsline {paragraph}{Tỉ lệ xác suất}{48}{subsection.3.1.2}%
+\contentsline {paragraph}{Từ Tỉ lệ đến Tích vô hướng: Cầu nối Toán học}{48}{subsection.3.1.2}%
+\contentsline {paragraph}{Cơ chế hoạt động}{49}{Item.45}%
+\contentsline {paragraph}{Điểm mạnh và hạn chế}{50}{Item.51}%
+\contentsline {subsection}{\numberline {3.1.3}Lý thuyết FastText: Biểu diễn Subword}{50}{subsection.3.1.3}%
+\contentsline {paragraph}{Tư duy cốt lõi}{50}{subsection.3.1.3}%
+\contentsline {paragraph}{Cơ chế hoạt động}{51}{subsection.3.1.3}%
+\contentsline {paragraph}{Ưu điểm nổi bật}{51}{Item.55}%
+\contentsline {paragraph}{Hạn chế}{52}{Item.55}%
+\contentsline {section}{\numberline {3.2}Autoencoders: Học Biểu diễn Phi giám sát}{52}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Trực giác và Kiến trúc}{52}{subsection.3.2.1}%
+\contentsline {paragraph}{Huấn luyện}{52}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Sức mạnh của "Nút cổ chai" và việc học biểu diễn}{53}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Ứng dụng và Các biến thể trong NLP}{54}{subsection.3.2.3}%
+\contentsline {section}{\numberline {3.3}Mạng Nơ-ron Hồi tiếp (RNNs, LSTMs, GRUs)}{55}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Mạng Nơ-ron Hồi tiếp Đơn giản (Vanilla RNN)}{55}{subsection.3.3.1}%
+\contentsline {subsubsection}{Tư duy cốt lõi: Vòng lặp của Trí nhớ}{55}{subsection.3.3.1}%
+\contentsline {subsubsection}{Kiến trúc và Dòng chảy Dữ liệu}{55}{figure.3.4}%
+\contentsline {subsubsection}{Huấn luyện RNN: Lan truyền ngược theo thời gian (BPTT)}{56}{equation.3.3}%
+\contentsline {subsubsection}{Vấn đề nan giải: Vanishing và Exploding Gradients}{56}{equation.3.3}%
+\contentsline {subsection}{\numberline {3.3.2}Long Short-Term Memory (LSTM)}{57}{subsection.3.3.2}%
+\contentsline {subsubsection}{Tư duy cốt lõi: Các Cổng và Trạng thái Ô nhớ}{57}{subsection.3.3.2}%
+\contentsline {paragraph}{1. Cổng Quên (Forget Gate - $f_t$)}{57}{figure.3.5}%
+\contentsline {paragraph}{2. Cổng Nạp (Input Gate - $i_t$)}{58}{figure.3.5}%
+\contentsline {paragraph}{3. Cập nhật Trạng thái Ô nhớ}{58}{Item.60}%
+\contentsline {paragraph}{4. Cổng Xuất (Output Gate - $o_t$)}{58}{Item.60}%
+\contentsline {paragraph}{Phân tích: Tại sao LSTM hoạt động?}{58}{Item.62}%
+\contentsline {subsection}{\numberline {3.3.3}Gated Recurrent Unit (GRU)}{59}{subsection.3.3.3}%
+\contentsline {paragraph}{Tư duy cốt lõi}{59}{subsection.3.3.3}%
+\contentsline {paragraph}{1. Cổng Cập nhật (Update Gate - $z_t$)}{59}{subsection.3.3.3}%
+\contentsline {paragraph}{2. Cổng Reset (Reset Gate - $r_t$)}{59}{subsection.3.3.3}%
+\contentsline {paragraph}{Tính toán Trạng thái}{59}{subsection.3.3.3}%
+\contentsline {paragraph}{Phân tích: Sự đánh đổi của GRU}{59}{Item.64}%
+\contentsline {section}{\numberline {3.4}Mô hình Chuỗi-sang-Chuỗi (Seq2Seq) và Cơ chế Chú ý (Attention)}{60}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Kiến trúc Encoder-Decoder của Seq2Seq}{60}{subsection.3.4.1}%
+\contentsline {subsubsection}{Bộ mã hóa (The Encoder)}{61}{figure.3.6}%
+\contentsline {paragraph}{Nhiệm vụ}{61}{figure.3.6}%
+\contentsline {paragraph}{Cấu tạo và Hoạt động}{61}{figure.3.6}%
+\contentsline {subsubsection}{Bộ giải mã (The Decoder)}{62}{figure.3.6}%
+\contentsline {paragraph}{Nhiệm vụ}{62}{figure.3.6}%
+\contentsline {paragraph}{Cấu tạo và Hoạt động}{62}{figure.3.6}%
+\contentsline {subsubsection}{Vấn đề của cái "Cổ chai" (The Bottleneck Problem)}{62}{Item.67}%
+\contentsline {subsubsection}{Huấn luyện mô hình Seq2Seq}{63}{Item.67}%
+\contentsline {subsubsection}{Huấn luyện và Suy luận: Teacher Forcing và Beam Search}{63}{Item.67}%
+\contentsline {paragraph}{Huấn luyện với Teacher Forcing}{63}{Item.67}%
+\contentsline {paragraph}{Suy luận với Beam Search}{63}{Item.67}%
+\contentsline {subsection}{\numberline {3.4.2}Cơ chế Chú ý (Attention Mechanism)}{63}{subsection.3.4.2}%
+\contentsline {subsubsection}{Trực giác cốt lõi: Dịch như con người}{64}{subsection.3.4.2}%
+\contentsline {subsubsection}{Cơ chế hoạt động chi tiết}{64}{subsection.3.4.2}%
+\contentsline {paragraph}{Bước 1: Tính điểm chú ý (Attention Scores)}{64}{figure.3.7}%
+\contentsline {paragraph}{Bước 2: Chuẩn hóa thành trọng số (Softmax)}{65}{figure.3.7}%
+\contentsline {paragraph}{Bước 3: Tính toán vector ngữ cảnh động (Context Vector)}{65}{figure.3.7}%
+\contentsline {paragraph}{Bước 4: Sử dụng vector ngữ cảnh để dự đoán}{65}{figure.3.7}%
+\contentsline {subsubsection}{Sức mạnh của Attention}{65}{figure.3.7}%
+\contentsline {section}{\numberline {3.5}Mạng Nơ-ron Tích chập (CNNs) cho NLP}{66}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Từ Ảnh 2D đến Văn bản 1D: Một sự tương đồng}{66}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Kiến trúc và Dòng chảy Dữ liệu}{67}{subsection.3.5.2}%
+\contentsline {subsubsection}{1. Lớp Nhúng (Embedding Layer)}{67}{subsection.3.5.2}%
+\contentsline {subsubsection}{2. Lớp Tích chập (Convolutional Layer)}{67}{subsection.3.5.2}%
+\contentsline {paragraph}{Trực giác cốt lõi}{67}{subsection.3.5.2}%
+\contentsline {paragraph}{Hoạt động}{68}{subsection.3.5.2}%
+\contentsline {subsubsection}{3. Lớp Gộp (Pooling Layer)}{68}{subsection.3.5.2}%
+\contentsline {paragraph}{Trực giác cốt lõi}{68}{subsection.3.5.2}%
+\contentsline {paragraph}{Hoạt động: Max-over-time Pooling}{69}{subsection.3.5.2}%
+\contentsline {paragraph}{Tại sao Max-Pooling lại hiệu quả?}{69}{subsection.3.5.2}%
+\contentsline {subsubsection}{4. Lớp Kết nối Đầy đủ, Phân loại, và Huấn luyện}{69}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Ưu và Nhược điểm của CNN cho NLP}{70}{subsection.3.5.3}%
+\contentsline {subsection}{\numberline {3.5.4}Các Kiến trúc CNN Nâng cao và Ứng dụng}{70}{subsection.3.5.4}%
+\contentsline {paragraph}{Mạng CNN Đa lớp (Stacked/Multi-layer CNNs)}{70}{subsection.3.5.4}%
+\contentsline {paragraph}{Mạng CNN ở Cấp độ Ký tự (Character-level CNNs)}{70}{subsection.3.5.4}%
+\contentsline {subsection}{\numberline {3.5.5}So sánh CNN và RNN cho NLP}{70}{subsection.3.5.5}%
+\contentsline {section}{\numberline {3.6}Contextualized Word Embeddings: Biểu diễn từ theo ngữ cảnh}{71}{section.3.6}%
+\contentsline {paragraph}{Ý tưởng cơ bản}{71}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}ELMo: Bước đệm tới Embeddings theo ngữ cảnh}{71}{subsection.3.6.1}%
+\contentsline {paragraph}{Vấn đề của embedding tĩnh}{71}{subsection.3.6.1}%
+\contentsline {paragraph}{Ý tưởng cốt lõi của ELMo}{71}{subsection.3.6.1}%
+\contentsline {subsubsection}{Kiến trúc và Pipeline}{71}{subsection.3.6.1}%
+\contentsline {subsubsection}{Mục tiêu huấn luyện (biLM Objective)}{72}{Item.72}%
+\contentsline {paragraph}{Ước lượng phân phối từ tiếp theo.}{72}{Item.72}%
+\contentsline {subsubsection}{Suy diễn (Inference) và sử dụng trong tác vụ downstream}{72}{Item.72}%
+\contentsline {subsubsection}{Tại sao ELMo hiệu quả?}{73}{Item.72}%
+\contentsline {subsubsection}{Hạn chế và so sánh với Transformer}{73}{Item.72}%
+\contentsline {subsubsection}{Gợi ý thực hành}{73}{Item.72}%
+\contentsline {subsubsection}{Ví dụ minh hoạ (giản lược)}{73}{Item.72}%
+\contentsline {subsubsection}{Tóm tắt công thức trọng tâm}{73}{Item.72}%
+\contentsline {subsection}{\numberline {3.6.2}ULMFiT: Công thức Vàng cho Học Chuyển giao trong NLP}{74}{subsection.3.6.2}%
+\contentsline {paragraph}{Tư duy cốt lõi: Quy trình 3 bước}{74}{subsection.3.6.2}%
+\contentsline {subsubsection}{Các kỹ thuật Tinh chỉnh then chốt}{75}{figure.3.9}%
+\contentsline {paragraph}{1. Tinh chỉnh phân biệt (Discriminative Fine-tuning)}{75}{figure.3.9}%
+\contentsline {paragraph}{2. Tốc độ học Tam giác Lệch (Slanted Triangular Learning Rates - STLR)}{75}{equation.3.4}%
+\contentsline {paragraph}{3. Mở băng Dần dần (Gradual Unfreezing)}{76}{equation.3.5}%
+\contentsline {subsubsection}{Di sản và Hạn chế}{76}{Item.78}%
+\contentsline {section}{\numberline {3.7}Các Kiến trúc Nơ-ron Khác}{76}{section.3.7}%
+\contentsline {subsection}{\numberline {3.7.1}Mạng Siamese (Siamese Networks) cho việc học sự tương đồng}{76}{subsection.3.7.1}%
+\contentsline {subsubsection}{Tư duy cốt lõi: Học một không gian biểu diễn tốt}{77}{subsection.3.7.1}%
+\contentsline {subsubsection}{Kiến trúc Mạng Siamese}{77}{subsection.3.7.1}%
+\contentsline {paragraph}{Hai nhánh, một bộ não}{77}{subsection.3.7.1}%
+\contentsline {subsubsection}{Hàm Mất mát Tương phản (Contrastive Loss)}{78}{figure.3.10}%
+\contentsline {paragraph}{Đầu vào huấn luyện}{78}{figure.3.10}%
+\contentsline {paragraph}{Công thức}{78}{figure.3.10}%
+\contentsline {paragraph}{Phân tích hàm mất mát}{78}{equation.3.6}%
+\contentsline {subsubsection}{Triplet Loss: Một sự thay thế nâng cao}{78}{Item.80}%
+\contentsline {subsubsection}{Tổng kết}{79}{equation.3.7}%
+\contentsline {subsection}{\numberline {3.7.2}Mạng Nơ-ron Đồ thị (Graph Neural Networks - GNNs) trong NLP}{79}{subsection.3.7.2}%
+\contentsline {subsubsection}{Nguyên lý Cốt lõi của GNN: Lan truyền Thông điệp (Message Passing)}{79}{subsection.3.7.2}%
+\contentsline {subsubsection}{Huấn luyện GNN}{80}{figure.3.11}%
+\contentsline {subsubsection}{Các Ứng dụng then chốt của GNN trong NLP}{80}{figure.3.11}%
+\contentsline {paragraph}{Làm việc với Đồ thị Tri thức và Mạng xã hội}{80}{figure.3.11}%
+\contentsline {paragraph}{Phân tích Cú pháp dựa trên Đồ thị (Graph-based Parsing)}{81}{figure.3.11}%
+\contentsline {paragraph}{Mô hình hóa Hội thoại (Dialogue Modeling)}{81}{figure.3.11}%
+\contentsline {subsubsection}{Các Kiến trúc Lai ghép: Kết hợp GNN và Transformer}{81}{figure.3.11}%
+\contentsline {subsubsection}{Thách thức và Hướng nghiên cứu Tương lai}{81}{figure.3.11}%
+\contentsline {section}{\numberline {3.8}Các Mô hình Sinh Tiền-Transformer (Pre-Transformer Generative Models)}{82}{section.3.8}%
+\contentsline {subsection}{\numberline {3.8.1}Variational Autoencoder (VAE) cho Văn bản}{82}{subsection.3.8.1}%
+\contentsline {paragraph}{Ý tưởng cốt lõi.}{82}{subsection.3.8.1}%
+\contentsline {paragraph}{Hàm mất mát ELBO.}{82}{subsection.3.8.1}%
+\contentsline {paragraph}{Thách thức: Posterior Collapse.}{82}{subsection.3.8.1}%
+\contentsline {subsection}{\numberline {3.8.2}Generative Adversarial Networks (GANs) cho Văn bản}{82}{subsection.3.8.2}%
+\contentsline {paragraph}{Ý tưởng cơ bản.}{82}{subsection.3.8.2}%
+\contentsline {paragraph}{Vấn đề rời rạc.}{83}{subsection.3.8.2}%
+\contentsline {paragraph}{Hạn chế thực tiễn.}{83}{subsection.3.8.2}%
+\contentsline {subsection}{\numberline {3.8.3}So sánh VAE và GAN trong Sinh Văn bản}{83}{subsection.3.8.3}%
+\contentsline {subsection}{\numberline {3.8.4}Chuyển tiếp sang Kỷ nguyên Transformer}{83}{subsection.3.8.4}%
+\contentsline {chapter}{\numberline {4}KỶ NGUYÊN TRANSFORMER VÀ CÁC MÔ HÌNH NGÔN NGỮ LỚN (LLMs)}{85}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Kiến trúc Transformer Gốc ("Attention Is All You Need")}{85}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Chi tiết cơ chế Self-Attention: Scaled Dot-Product và Multi-Head Attention}{85}{subsection.4.1.1}%
+\contentsline {paragraph}{Tư duy cốt lõi}{85}{subsection.4.1.1}%
+\contentsline {subsubsection}{Scaled Dot-Product Attention}{85}{subsection.4.1.1}%
+\contentsline {paragraph}{Cơ chế hoạt động chi tiết}{86}{subsection.4.1.1}%
+\contentsline {subsubsection}{Multi-Head Attention}{87}{figure.4.1}%
+\contentsline {paragraph}{Vấn đề của Single-Head Attention}{87}{figure.4.1}%
+\contentsline {paragraph}{Giải pháp: Nhiều "đầu" chú ý song song}{87}{figure.4.1}%
+\contentsline {subsection}{\numberline {4.1.2}Kiến trúc Encoder-Decoder và các thành phần phụ}{88}{subsection.4.1.2}%
+\contentsline {subsubsection}{The Encoder Stack}{88}{subsection.4.1.2}%
+\contentsline {subsubsection}{The Decoder Stack}{89}{Item.92}%
+\contentsline {subsubsection}{Huấn luyện và Tối ưu hóa}{90}{Item.95}%
+\contentsline {subsection}{\numberline {4.1.3}Positional Encoding: Thêm thông tin về vị trí}{90}{subsection.4.1.3}%
+\contentsline {subsubsection}{Absolute Positional Encoding (Sinusoidal)}{90}{subsection.4.1.3}%
+\contentsline {paragraph}{Tại sao lại dùng sin và cos?}{90}{subsection.4.1.3}%
+\contentsline {subsubsection}{Relative Positional Encoding}{90}{subsection.4.1.3}%
+\contentsline {subsubsection}{Rotary Position Embedding (RoPE)}{91}{subsection.4.1.3}%
+\contentsline {section}{\numberline {4.2}Phân loại Kiến trúc LLMs}{91}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Họ Mô hình chỉ Encoder (Encoder-Only): Bậc thầy của Sự Hiểu Ngôn ngữ}{91}{subsection.4.2.1}%
+\contentsline {subsubsection}{Kiến trúc và Mục tiêu Huấn luyện Nền tảng}{91}{subsection.4.2.1}%
+\contentsline {paragraph}{Kiến trúc và Tính hai chiều (Bidirectionality)}{91}{subsection.4.2.1}%
+\contentsline {paragraph}{Mục tiêu Huấn luyện: Masked Language Modeling (MLM)}{91}{subsection.4.2.1}%
+\contentsline {subsubsection}{Sự phát triển và các biến thể của Họ Encoder-Only}{92}{figure.4.3}%
+\contentsline {paragraph}{1. Gia đình BERT: Những người kế nhiệm trực tiếp}{92}{figure.4.3}%
+\contentsline {paragraph}{2. Các mô hình Biểu diễn Câu: Chuyên gia về Tìm kiếm Ngữ nghĩa}{92}{figure.4.3}%
+\contentsline {paragraph}{3. Các mô hình cho Miền chuyên biệt và Đa ngôn ngữ}{93}{figure.4.3}%
+\contentsline {paragraph}{4. Các Encoder Hiện đại, Gọn nhẹ và Hiệu quả}{93}{figure.4.3}%
+\contentsline {paragraph}{5. Các Encoder với Mục tiêu Huấn luyện khác MLM}{93}{figure.4.3}%
+\contentsline {subsection}{\numberline {4.2.2}Họ Mô hình chỉ Decoder (Decoder-Only): Bậc thầy của Sự Sáng tạo}{94}{subsection.4.2.2}%
+\contentsline {subsubsection}{Kiến trúc và Mục tiêu Huấn luyện Nền tảng}{94}{subsection.4.2.2}%
+\contentsline {paragraph}{Kiến trúc Tự hồi quy (Auto-regressive Architecture)}{94}{subsection.4.2.2}%
+\contentsline {paragraph}{Mục tiêu Huấn luyện: Causal Language Modeling (CLM)}{94}{subsection.4.2.2}%
+\contentsline {subsubsection}{Sự phát triển và các mô hình tiêu biểu}{95}{figure.4.4}%
+\contentsline {paragraph}{1. Gia đình GPT (OpenAI): Những người tiên phong và dẫn đầu}{95}{figure.4.4}%
+\contentsline {paragraph}{2. Làn sóng LLMs Mã nguồn mở và các đối thủ cạnh tranh}{96}{figure.4.4}%
+\contentsline {paragraph}{3. Các mô hình Decoder-Only chuyên biệt}{96}{figure.4.4}%
+\contentsline {subsection}{\numberline {4.2.3}Họ Mô hình Encoder-Decoder: Sự kết hợp của hai thế giới}{97}{subsection.4.2.3}%
+\contentsline {subsubsection}{Kiến trúc và Lợi thế Cốt lõi}{97}{subsection.4.2.3}%
+\contentsline {subsubsection}{Sự phát triển và các mô hình tiêu biểu}{98}{subsection.4.2.3}%
+\contentsline {paragraph}{1. Các mô hình Nền tảng và Đa ngôn ngữ}{98}{subsection.4.2.3}%
+\contentsline {paragraph}{2. Các biến thể với Mục tiêu Huấn luyện và Kiến trúc Sáng tạo}{98}{subsection.4.2.3}%
+\contentsline {paragraph}{3. Hướng tới sự Hợp nhất và Linh hoạt}{98}{subsection.4.2.3}%
+\contentsline {subsubsection}{Khi nào nên sử dụng Họ mô hình Encoder-Decoder?}{99}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}Các Kỹ thuật Tokenization Hiện đại}{99}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Byte-Pair Encoding (BPE)}{100}{subsection.4.3.1}%
+\contentsline {subsubsection}{Cơ chế hoạt động: Gộp từ dưới lên (Bottom-up Merging)}{100}{subsection.4.3.1}%
+\contentsline {paragraph}{Bước 1: Chuẩn bị kho văn bản và Từ vựng ban đầu}{100}{subsection.4.3.1}%
+\contentsline {paragraph}{Bước 2: Học các quy tắc gộp (Learn Merges)}{100}{Item.99}%
+\contentsline {paragraph}{Bước 3: Tokenize một câu mới}{101}{tcb@cnt@example.10}%
+\contentsline {subsubsection}{Cải tiến quan trọng: Byte-Level BPE (BBPE)}{101}{Item.105}%
+\contentsline {subsection}{\numberline {4.3.2}WordPiece}{101}{subsection.4.3.2}%
+\contentsline {subsubsection}{Sự khác biệt chính với BPE: Tiêu chí gộp}{102}{subsection.4.3.2}%
+\contentsline {paragraph}{Cơ chế hoạt động}{102}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}SentencePiece}{102}{subsection.4.3.3}%
+\contentsline {subsubsection}{Các cải tiến chính}{102}{subsection.4.3.3}%
+\contentsline {paragraph}{1. Hoạt động trực tiếp trên văn bản thô}{102}{subsection.4.3.3}%
+\contentsline {paragraph}{2. Tokenization xác suất và Subword Regularization}{102}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}Các Biến thể Transformer cho Ngữ cảnh dài (Long-Context Transformers)}{103}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Vấn đề của Sự chú ý Bậc hai (The Quadratic Bottleneck)}{103}{subsection.4.4.1}%
+\contentsline {subsubsection}{Giải pháp từ Kỹ thuật Tối ưu: FlashAttention}{103}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Lý thuyết về Chú ý Thưa thớt (Sparse Attention)}{104}{subsection.4.4.2}%
+\contentsline {subsubsection}{Trực giác cốt lõi}{104}{subsection.4.4.2}%
+\contentsline {subsubsection}{Longformer: Kết hợp Cửa sổ trượt và Chú ý Toàn cục}{104}{figure.4.5}%
+\contentsline {paragraph}{1. Chú ý Cửa sổ trượt (Sliding Window Attention)}{104}{figure.4.5}%
+\contentsline {paragraph}{2. Chú ý Cửa sổ trượt Giãn cách (Dilated Sliding Window)}{104}{figure.4.5}%
+\contentsline {paragraph}{3. Chú ý Toàn cục (Global Attention)}{105}{figure.4.5}%
+\contentsline {subsubsection}{BigBird: Thêm các Mẫu Chú ý Ngẫu nhiên}{105}{figure.4.5}%
+\contentsline {subsection}{\numberline {4.4.3}Các phương pháp khác: Thoát khỏi Self-Attention Bậc hai}{105}{subsection.4.4.3}%
+\contentsline {subsubsection}{Cải tiến Mã hóa Vị trí (Positional Encoding)}{105}{subsection.4.4.3}%
+\contentsline {paragraph}{ALiBi (Attention with Linear Biases)}{105}{subsection.4.4.3}%
+\contentsline {paragraph}{RoPE Scaling}{105}{subsection.4.4.3}%
+\contentsline {subsubsection}{Mô hình Trạng thái (State Space Models - SSMs) và Mamba}{106}{subsection.4.4.3}%
+\contentsline {paragraph}{Nguồn gốc từ Lý thuyết Điều khiển}{106}{subsection.4.4.3}%
+\contentsline {paragraph}{Thách thức và Giải pháp}{106}{subsection.4.4.3}%
+\contentsline {paragraph}{Mamba: SSMs có Chọn lọc (Selective SSMs)}{106}{subsection.4.4.3}%
+\contentsline {paragraph}{So sánh SSMs và RNNs truyền thống}{106}{subsection.4.4.3}%
+\contentsline {paragraph}{Ưu điểm của Mamba so với Transformer}{107}{Item.110}%
+\contentsline {subsubsection}{Các hướng tiếp cận khác}{107}{Item.110}%
+\contentsline {section}{\numberline {4.5}Lý thuyết về Mixture-of-Experts (MoE)}{107}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Kiến trúc và Nguyên lý hoạt động}{107}{subsection.4.5.1}%
+\contentsline {subsubsection}{Dòng chảy dữ liệu của một token}{108}{figure.4.6}%
+\contentsline {paragraph}{Bước 1: Định tuyến bởi Mạng cổng (Routing by the Gating Network)}{108}{figure.4.6}%
+\contentsline {paragraph}{Bước 2: Chọn các Chuyên gia "Top-K"}{108}{figure.4.6}%
+\contentsline {paragraph}{Bước 3: Xử lý bởi các Chuyên gia}{108}{figure.4.6}%
+\contentsline {paragraph}{Bước 4: Tổng hợp có trọng số}{108}{figure.4.6}%
+\contentsline {subsubsection}{Ví dụ: Mixtral 8x7B}{109}{figure.4.6}%
+\contentsline {subsection}{\numberline {4.5.2}Thách thức trong việc Huấn luyện MoE}{109}{subsection.4.5.2}%
+\contentsline {paragraph}{1. Thách thức về sự sụp đổ của việc định tuyến (Routing Collapse)}{109}{subsection.4.5.2}%
+\contentsline {paragraph}{Giải pháp: Hàm Mất mát Cân bằng Tải (Load Balancing Loss)}{109}{Item.114}%
+\contentsline {paragraph}{Giải pháp bổ sung: Noisy Top-K Gating}{110}{Item.114}%
+\contentsline {paragraph}{2. Thách thức về Triển khai và Cơ sở hạ tầng}{110}{Item.114}%
+\contentsline {subsection}{\numberline {4.5.3}Tổng kết về MoE}{110}{subsection.4.5.3}%
+\contentsline {chapter}{\numberline {5}LÝ THUYẾT VỀ TINH CHỈNH VÀ CĂN CHỈNH MÔ HÌNH}{111}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Các Phương pháp Tinh chỉnh (Fine-tuning)}{111}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Học Chuyển giao (Transfer Learning): Nền tảng Tư duy}{111}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}Tinh chỉnh Toàn bộ (Full Fine-tuning)}{112}{subsection.5.1.2}%
+\contentsline {subsubsection}{Cơ chế hoạt động}{112}{subsection.5.1.2}%
+\contentsline {subsubsection}{Chiến lược Tinh chỉnh Nâng cao}{113}{subsection.5.1.2}%
+\contentsline {paragraph}{Huấn luyện theo lớp phân biệt (Discriminative Layer-wise Training)}{113}{subsection.5.1.2}%
+\contentsline {paragraph}{Rã đông Dần dần (Gradual Unfreezing)}{113}{subsection.5.1.2}%
+\contentsline {subsubsection}{Ưu và Nhược điểm của Tinh chỉnh Toàn bộ}{113}{Item.119}%
+\contentsline {section}{\numberline {5.2}Kỹ thuật Tinh chỉnh Hiệu quả Tham số (PEFT)}{114}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Phân loại theo 5 nhóm lớn}{114}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Group 1 — Additive Methods (Phương pháp bổ sung)}{115}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Group 2 — Adapter-based Methods (Phương pháp dựa trên Adapter)}{116}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}Group 3 — Soft Prompts / Prefix-based Methods (Phương pháp dựa trên Prompt và Prefix mềm)}{117}{subsection.5.2.4}%
+\contentsline {subsection}{\numberline {5.2.5}Group 4 — Selective Tuning (Tinh chỉnh chọn lọc)}{118}{subsection.5.2.5}%
+\contentsline {subsection}{\numberline {5.2.6}Group 5 — Reparametrization-based / Low-rank Methods (Phương pháp tái tham số hoá và phân rã hạng thấp)}{119}{subsection.5.2.6}%
+\contentsline {subsection}{\numberline {5.2.7}Giao nhau giữa các nhóm — các phương pháp hybrid}{121}{subsection.5.2.7}%
+\contentsline {subsection}{\numberline {5.2.8}So sánh định lượng và hướng dẫn thực hành}{121}{subsection.5.2.8}%
+\contentsline {subsection}{\numberline {5.2.9}Một số ví dụ thực tế và mẹo triển khai}{122}{subsection.5.2.9}%
+\contentsline {subsection}{\numberline {5.2.10}Kết luận và hướng nghiên cứu tương lai}{123}{subsection.5.2.10}%
+\contentsline {section}{\numberline {5.3}Kỹ thuật Prompt Engineering và Học trong Ngữ cảnh (In-context Learning)}{123}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Các cấp độ của Học trong Ngữ cảnh: Zero-shot, One-shot, Few-shot}{123}{subsection.5.3.1}%
+\contentsline {subsubsection}{Zero-shot Learning (Học không cần ví dụ, n=0)}{123}{subsection.5.3.1}%
+\contentsline {subsubsection}{One-shot Learning (Học với một ví dụ, n=1)}{124}{subsection.5.3.1}%
+\contentsline {subsubsection}{Few-shot Learning (Học với vài ví dụ, n > 1)}{124}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Chuỗi Suy luận (Chain-of-Thought - CoT) Prompting}{124}{subsection.5.3.2}%
+\contentsline {subsubsection}{Vấn đề của Prompting Tiêu chuẩn}{125}{subsection.5.3.2}%
+\contentsline {subsubsection}{Giải pháp của CoT: ''Hãy suy nghĩ từng bước''}{125}{subsection.5.3.2}%
+\contentsline {paragraph}{Zero-shot-CoT}{125}{tcb@cnt@example.11}%
+\contentsline {subsection}{\numberline {5.3.3}Các kỹ thuật nâng cao dựa trên CoT}{125}{subsection.5.3.3}%
+\contentsline {subsubsection}{Tự Nhất quán (Self-Consistency)}{126}{subsection.5.3.3}%
+\contentsline {subsubsection}{Cây Suy tưởng (Tree of Thoughts - ToT)}{126}{Item.127}%
+\contentsline {section}{\numberline {5.4}Tinh chỉnh theo chỉ dẫn (Instruction Tuning)}{126}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Vấn đề của các LLM cơ sở (Base LLMs)}{126}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Tư duy cốt lõi và Cơ chế hoạt động}{127}{subsection.5.4.2}%
+\contentsline {subsection}{\numberline {5.4.3}Xây dựng Bộ dữ liệu Chỉ dẫn: Chìa khóa thành công}{127}{subsection.5.4.3}%
+\contentsline {subsubsection}{Các thành phần của một mẫu dữ liệu}{127}{subsection.5.4.3}%
+\contentsline {subsubsection}{Yêu cầu về sự đa dạng}{127}{tcb@cnt@example.13}%
+\contentsline {subsubsection}{Các phương pháp xây dựng bộ dữ liệu}{128}{tcb@cnt@example.13}%
+\contentsline {paragraph}{1. Sử dụng các bộ dữ liệu học thuật hiện có}{128}{tcb@cnt@example.13}%
+\contentsline {paragraph}{2. Thu thập thủ công bởi con người (Human Annotation)}{128}{tcb@cnt@example.13}%
+\contentsline {paragraph}{3. Tự sinh dữ liệu bằng LLM (Self-Instruct)}{128}{tcb@cnt@example.13}%
+\contentsline {subsection}{\numberline {5.4.4}Vai trò và Tác động của Instruction Tuning}{128}{subsection.5.4.4}%
+\contentsline {subsubsection}{Tăng cường khả năng tuân theo mệnh lệnh và ''Tính hữu ích''}{128}{subsection.5.4.4}%
+\contentsline {subsubsection}{Cải thiện khả năng Tổng quát hóa Zero-shot}{128}{subsection.5.4.4}%
+\contentsline {subsubsection}{Cầu nối đến sự Căn chỉnh (Alignment)}{129}{subsection.5.4.4}%
+\contentsline {section}{\numberline {5.5}Các phương pháp Căn chỉnh (Alignment) với Con người}{129}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}Mục tiêu Căn chỉnh: Bộ ba H (The 3 H's)}{129}{subsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.5.2}Học Tăng cường từ Phản hồi Con người (RLHF)}{129}{subsection.5.5.2}%
+\contentsline {paragraph}{Ghi chú:}{131}{Item.144}%
+\contentsline {subsection}{\numberline {5.5.3}Các phương pháp thay thế: Hướng tới sự Đơn giản và Ổn định}{131}{subsection.5.5.3}%
+\contentsline {subsubsection}{Direct Preference Optimization (DPO)}{132}{subsection.5.5.3}%
+\contentsline {subsubsection}{Constitutional AI (CAI)}{133}{subsection.5.5.3}%
+\contentsline {subsubsection}{Group Relative Policy Optimization (GRPO) \cite {verl2024, grpo2024}}{134}{Item.147}%
+\contentsline {chapter}{\numberline {6}CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO}{137}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Tìm kiếm và Sinh Tăng cường (Retrieval-Augmented Generation - RAG)}{137}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}Tại sao và Khi nào chúng ta cần RAG?}{137}{subsection.6.1.1}%
+\contentsline {paragraph}{Các vấn đề cố hữu của LLM}{137}{subsection.6.1.1}%
+\contentsline {paragraph}{Khi nào nên sử dụng RAG?}{138}{subsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.1.2}Kiến trúc RAG Cơ bản (The Naive RAG Pipeline)}{138}{subsection.6.1.2}%
+\contentsline {paragraph}{Giai đoạn 1: Lập chỉ mục (Offline)}{138}{subsection.6.1.2}%
+\contentsline {paragraph}{Giai đoạn 2: Truy vấn (Online)}{138}{Item.159}%
+\contentsline {subsection}{\numberline {6.1.3}Bài học từ các Công cụ Tìm kiếm: Kiến trúc Phân tầng của Google}{139}{subsection.6.1.3}%
+\contentsline {paragraph}{Kiến trúc Phân tầng (A Tiered Architecture)}{139}{subsection.6.1.3}%
+\contentsline {subsection}{\numberline {6.1.4}Tối ưu hóa Giai đoạn 1: Lập chỉ mục Thông minh (Smarter Indexing)}{140}{subsection.6.1.4}%
+\contentsline {subsubsection}{Chiến lược Phân mảnh Nâng cao (Advanced Chunking Strategies)}{140}{subsection.6.1.4}%
+\contentsline {subsubsection}{Kỹ thuật Small-to-Big và Sentence-Windowing}{140}{subsection.6.1.4}%
+\contentsline {subsubsection}{Tầm quan trọng của Metadata}{141}{Item.171}%
+\contentsline {subsection}{\numberline {6.1.5}Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{141}{subsection.6.1.5}%
+\contentsline {subsection}{\numberline {6.1.6}Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{141}{subsection.6.1.6}%
+\contentsline {subsubsection}{Tìm kiếm Lai (Hybrid Search): Giai đoạn Candidate Generation của RAG}{141}{subsection.6.1.6}%
+\contentsline {subsubsection}{Xếp hạng lại (Re-ranking) với Cross-Encoders}{141}{subsection.6.1.6}%
+\contentsline {subsection}{\numberline {6.1.7}Tối ưu hóa Giai đoạn 3: Tăng cường và Sinh (Smarter Augmentation \& Generation)}{142}{subsection.6.1.7}%
+\contentsline {subsubsection}{Nén Ngữ cảnh (Context Compression)}{142}{subsection.6.1.7}%
+\contentsline {subsubsection}{Kiểm soát việc Sinh: Buộc Trích dẫn và Chống Bịa đặt (Hallucination Guardrails)}{142}{subsection.6.1.7}%
+\contentsline {subsection}{\numberline {6.1.8}Các Mô hình RAG Nâng cao (Advanced RAG Patterns)}{142}{subsection.6.1.8}%
+\contentsline {subsection}{\numberline {6.1.9}Đánh giá và Triển khai Hệ thống RAG}{147}{subsection.6.1.9}%
+\contentsline {subsubsection}{Các chỉ số Đánh giá}{148}{subsection.6.1.9}%
+\contentsline {subsubsection}{Checklist khi đưa vào Vận hành (Production Checklist)}{148}{subsection.6.1.9}%
+\contentsline {section}{\numberline {6.2}Lý thuyết về Tối ưu hóa Mô hình}{148}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Chưng cất Tri thức (Knowledge Distillation)}{148}{subsection.6.2.1}%
+\contentsline {subsubsection}{Trực giác cốt lõi: Thầy dạy Trò}{148}{subsection.6.2.1}%
+\contentsline {subsubsection}{Cơ chế hoạt động}{149}{subsection.6.2.1}%
+\contentsline {subsection}{\numberline {6.2.2}Lượng tử hóa (Quantization)}{149}{subsection.6.2.2}%
+\contentsline {subsubsection}{Trực giác cốt lõi: Giảm độ chính xác của Số}{149}{subsection.6.2.2}%
+\contentsline {subsubsection}{Các phương pháp Lượng tử hóa}{150}{subsection.6.2.2}%
+\contentsline {paragraph}{Post-Training Quantization (PTQ) - Lượng tử hóa sau Huấn luyện}{150}{subsection.6.2.2}%
+\contentsline {paragraph}{Quantization-Aware Training (QAT) - Huấn luyện Nhận biết Lượng tử hóa}{150}{Item.176}%
+\contentsline {subsection}{\numberline {6.2.3}Cắt tỉa (Pruning)}{150}{subsection.6.2.3}%
+\contentsline {subsubsection}{Trực giác cốt lõi: Loại bỏ các Kết nối Thừa}{150}{subsection.6.2.3}%
+\contentsline {subsubsection}{Các phương pháp Cắt tỉa}{150}{subsection.6.2.3}%
+\contentsline {paragraph}{Cắt tỉa theo Độ lớn (Magnitude Pruning)}{150}{subsection.6.2.3}%
+\contentsline {paragraph}{Cắt tỉa có Cấu trúc vs. Không có Cấu trúc (Structured vs. Unstructured Pruning)}{151}{Item.182}%
+\contentsline {section}{\numberline {6.3}Mô hình Đa phương thức (Multimodal Models)}{151}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}Nền tảng: Xây dựng cầu nối giữa Ảnh và Chữ}{152}{subsection.6.3.1}%
+\contentsline {subsubsection}{Vision Transformer (ViT): "Đọc" ảnh như đọc một câu}{152}{subsection.6.3.1}%
+\contentsline {paragraph}{Vấn đề với CNN}{152}{subsection.6.3.1}%
+\contentsline {paragraph}{Giải pháp của ViT: Biến ảnh thành một chuỗi các "từ"}{152}{subsection.6.3.1}%
+\contentsline {paragraph}{Cơ chế hoạt động}{152}{subsection.6.3.1}%
+\contentsline {subsubsection}{CLIP: Học sự tương đồng giữa Ảnh và Chữ bằng Contrastive Learning}{153}{figure.6.4}%
+\contentsline {paragraph}{Vấn đề}{153}{figure.6.4}%
+\contentsline {paragraph}{Giải pháp của CLIP (Contrastive Language-Image Pre-training)}{153}{figure.6.4}%
+\contentsline {paragraph}{Cơ chế hoạt động}{153}{figure.6.4}%
+\contentsline {subsection}{\numberline {6.3.2}Ví dụ Kiến trúc: Kết hợp LLM với Thị giác}{154}{subsection.6.3.2}%
+\contentsline {subsubsection}{Flamingo: Thêm Cross-Attention vào một LLM đã đóng băng}{154}{subsection.6.3.2}%
+\contentsline {subsubsection}{LLaVA: Ánh xạ Trực tiếp vào Không gian Từ của LLM}{154}{subsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.3.3}Sinh Đa phương thức (Multimodal Generation)}{155}{subsection.6.3.3}%
+\contentsline {subsubsection}{Sinh Ảnh từ Văn bản (Text-to-Image)}{155}{subsection.6.3.3}%
+\contentsline {subsubsection}{Sinh Video từ Văn bản (Text-to-Video)}{156}{figure.6.6}%
+\contentsline {subsection}{\numberline {6.3.4}Kiểm soát Quá trình Sinh (Controlled Generation)}{157}{subsection.6.3.4}%
+\contentsline {subsubsection}{Các kỹ thuật kinh điển}{157}{subsection.6.3.4}%
+\contentsline {paragraph}{CTRL (Conditional Transformer Language Model)}{157}{subsection.6.3.4}%
+\contentsline {paragraph}{PPLM (Plug and Play Language Models)}{157}{subsection.6.3.4}%
+\contentsline {paragraph}{FUDGE (Future Discriminators for Generation)}{157}{subsection.6.3.4}%
+\contentsline {subsubsection}{Các kỹ thuật dựa trên Prompt}{157}{subsection.6.3.4}%
+\contentsline {paragraph}{Prompt Tuning}{157}{subsection.6.3.4}%
+\contentsline {paragraph}{Prefix Tuning}{158}{subsection.6.3.4}%
+\contentsline {paragraph}{LoRA (Low-Rank Adaptation) và Adapter Tuning}{158}{subsection.6.3.4}%
+\contentsline {paragraph}{In-Context Control}{158}{subsection.6.3.4}%
+\contentsline {subsubsection}{Các hướng mở rộng hiện đại}{158}{subsection.6.3.4}%
+\contentsline {subsection}{\numberline {6.3.5}Sinh Nhận biết Cấu trúc (Structure-aware Generation)}{158}{subsection.6.3.5}%
+\contentsline {subsubsection}{Sinh Văn bản từ Bảng (Table-to-text)}{158}{subsection.6.3.5}%
+\contentsline {subsubsection}{Sinh Văn bản từ Đồ thị (Graph-to-text)}{158}{Item.205}%
+\contentsline {subsubsection}{Sinh Văn bản từ CSDL (Data-to-text)}{159}{Item.208}%
+\contentsline {section}{\numberline {6.4}Hệ thống Tác tử (Agentic Systems) với LLMs}{159}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Vòng lặp Suy luận-Hành động: Khung sườn ReAct}{159}{subsection.6.4.1}%
+\contentsline {subsubsection}{Cơ chế hoạt động}{159}{subsection.6.4.1}%
+\contentsline {subsection}{\numberline {6.4.2}Lập kế hoạch và Sử dụng Công cụ (Planning \& Tool Use)}{160}{subsection.6.4.2}%
+\contentsline {subsubsection}{Lập kế hoạch (Planning)}{160}{subsection.6.4.2}%
+\contentsline {subsubsection}{Sử dụng Công cụ (Tool Use)}{160}{subsection.6.4.2}%
+\contentsline {subsection}{\numberline {6.4.3}Bộ nhớ cho Tác tử (Agent Memory)}{161}{subsection.6.4.3}%
+\contentsline {subsubsection}{Bộ nhớ Ngắn hạn (Short-term Memory)}{161}{subsection.6.4.3}%
+\contentsline {subsubsection}{Bộ nhớ Dài hạn (Long-term Memory)}{161}{subsection.6.4.3}%
+\contentsline {subsection}{\numberline {6.4.4}Tự sửa lỗi (Self-correction)}{161}{subsection.6.4.4}%
+\contentsline {section}{\numberline {6.5}Mô hình Thế giới (World Models) và Mô phỏng}{161}{section.6.5}%
+\contentsline {subsection}{\numberline {6.5.1}Khái niệm về khả năng LLM xây dựng mô hình nội tại}{162}{subsection.6.5.1}%
+\contentsline {subsubsection}{Các bằng chứng gián tiếp}{162}{tcb@cnt@definition.7}%
+\contentsline {paragraph}{Biểu diễn không gian và thời gian}{162}{tcb@cnt@definition.7}%
+\contentsline {paragraph}{Mô phỏng các thực thể}{162}{tcb@cnt@definition.7}%
+\contentsline {paragraph}{Mô hình Othello-GPT}{162}{tcb@cnt@definition.7}%
+\contentsline {subsection}{\numberline {6.5.2}Hướng nghiên cứu và Tiềm năng}{163}{subsection.6.5.2}%
+\contentsline {subsubsection}{Cải thiện khả năng Suy luận và Lập kế hoạch}{163}{subsection.6.5.2}%
+\contentsline {subsubsection}{Mô hình Thế giới Đa phương thức}{163}{subsection.6.5.2}%
+\contentsline {subsubsection}{Hướng tới Trí tuệ Nhân tạo Tổng quát (AGI)}{163}{subsection.6.5.2}%
+\contentsline {section}{\numberline {6.6}Các Kỹ thuật Biểu diễn Nâng cao cho Truy xuất}{164}{section.6.6}%
+\contentsline {subsection}{\numberline {6.6.1}Biểu diễn Đa ngôn ngữ (Cross-lingual Embeddings)}{164}{subsection.6.6.1}%
+\contentsline {subsection}{\numberline {6.6.2}Biểu diễn Thưa và Tối ưu cho Truy xuất (Sparse \& Retriever-specific Embeddings)}{165}{subsection.6.6.2}%
+\contentsline {paragraph}{SPLADE (SPARse Lexical AnD Expansion model)}{165}{Item.222}%
+\contentsline {paragraph}{ColBERT (Contextualized Late Interaction over BERT)}{165}{Item.222}%
+\contentsline {chapter}{\numberline {7}LÝ THUYẾT ĐÁNH GIÁ VÀ CÁC BENCHMARK}{167}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Các Metric kinh điển}{167}{section.7.1}%
+\contentsline {subsection}{\numberline {7.1.1}Perplexity: Đo lường chất lượng của Mô hình Ngôn ngữ}{167}{subsection.7.1.1}%
+\contentsline {subsection}{\numberline {7.1.2}Precision, Recall, và F1-Score: Nền tảng của các bài toán Phân loại}{167}{subsection.7.1.2}%
+\contentsline {subsubsection}{Các thành phần cơ bản}{167}{subsection.7.1.2}%
+\contentsline {subsubsection}{Định nghĩa các Metric}{168}{figure.7.1}%
+\contentsline {paragraph}{Precision (Độ chính xác)}{168}{figure.7.1}%
+\contentsline {paragraph}{Recall (Độ phủ, hay Độ nhạy)}{168}{figure.7.1}%
+\contentsline {paragraph}{F1-Score (Điểm F1)}{168}{figure.7.1}%
+\contentsline {subsection}{\numberline {7.1.3}BLEU: Đánh giá Dịch máy}{169}{subsection.7.1.3}%
+\contentsline {subsection}{\numberline {7.1.4}ROUGE: Đánh giá Tóm tắt Văn bản}{169}{subsection.7.1.4}%
+\contentsline {section}{\numberline {7.2}Các Benchmark Kinh điển và Hiện đại}{170}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}Kỷ nguyên Pre-LLM: GLUE và SuperGLUE}{170}{subsection.7.2.1}%
+\contentsline {subsubsection}{GLUE: Một Bài kiểm tra Năng lực Ngôn ngữ Tổng quát}{170}{subsection.7.2.1}%
+\contentsline {subsubsection}{SuperGLUE: Nâng cấp Độ khó}{170}{subsection.7.2.1}%
+\contentsline {subsection}{\numberline {7.2.2}Kỷ nguyên LLM: Đánh giá các Khả năng Nổi trội (Emergent Abilities)}{170}{subsection.7.2.2}%
+\contentsline {subsubsection}{MMLU: Bài kiểm tra Kiến thức Đa chuyên ngành}{171}{subsection.7.2.2}%
+\contentsline {subsubsection}{Big-Bench: Khám phá Giới hạn của LLMs}{171}{subsection.7.2.2}%
+\contentsline {subsubsection}{HumanEval: Đánh giá Năng lực Sinh mã nguồn}{171}{subsection.7.2.2}%
+\contentsline {section}{\numberline {7.3}Thách thức trong Đánh giá LLM}{172}{section.7.3}%
+\contentsline {subsection}{\numberline {7.3.1}Nhiễm bẩn Dữ liệu (Data Contamination)}{172}{subsection.7.3.1}%
+\contentsline {paragraph}{Định nghĩa}{172}{subsection.7.3.1}%
+\contentsline {paragraph}{Nguyên nhân}{172}{subsection.7.3.1}%
+\contentsline {paragraph}{Hậu quả}{173}{subsection.7.3.1}%
+\contentsline {paragraph}{Hướng giải quyết}{173}{subsection.7.3.1}%
+\contentsline {subsection}{\numberline {7.3.2}Đánh giá bởi Con người vs. Đánh giá Tự động (Human vs. Auto Evaluation)}{173}{subsection.7.3.2}%
+\contentsline {subsubsection}{Hạn chế của Đánh giá Tự động (Auto-Eval)}{173}{subsection.7.3.2}%
+\contentsline {subsubsection}{Ưu điểm và Thách thức của Đánh giá bởi Con người (Human-Eval)}{173}{subsection.7.3.2}%
+\contentsline {subsection}{\numberline {7.3.3}Định luật Goodhart và "Dạy cho Bài kiểm tra" (Goodhart's Law \& ''Teaching to the Test'')}{173}{subsection.7.3.3}%
+\contentsline {paragraph}{Ý nghĩa trong bối cảnh LLM}{174}{subsection.7.3.3}%
+\contentsline {section}{\numberline {7.4}Đánh giá dựa trên LLM (LLM-as-a-Judge)}{174}{section.7.4}%
+\contentsline {subsection}{\numberline {7.4.1}Nguyên lý và Cách tiếp cận}{174}{subsection.7.4.1}%
+\contentsline {subsubsection}{Đánh giá dựa trên Điểm số (Score-based Evaluation)}{174}{subsection.7.4.1}%
+\contentsline {subsubsection}{Đánh giá dựa trên So sánh Cặp (Pairwise Comparison)}{175}{subsection.7.4.1}%
+\contentsline {subsection}{\numberline {7.4.2}Ứng dụng và Tiềm năng}{175}{subsection.7.4.2}%
+\contentsline {subsection}{\numberline {7.4.3}Thách thức và Những điều cần Lưu ý}{176}{subsection.7.4.3}%
+\contentsline {paragraph}{Thiên vị của Giám khảo (Judge's Bias)}{176}{subsection.7.4.3}%
+\contentsline {paragraph}{Hạn chế về Kiến thức và Suy luận}{176}{subsection.7.4.3}%
+\contentsline {paragraph}{Sự cần thiết của việc Hiệu chỉnh (Calibration)}{176}{subsection.7.4.3}%
+\contentsline {part}{II\hspace {1em}CẨM NANG KỸ THUẬT NLP THỰC CHIẾN}{179}{part.2}%
+\contentsline {chapter}{\numberline {1}QUY TRÌNH LÀM VIỆC VÀ CÔNG CỤ XỬ LÝ DỮ LIỆU}{183}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Phác thảo Quy trình Dự án NLP Tinh gọn}{183}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Vòng lặp 0: Xác định Bài toán và Thiết lập Đường cơ sở (Baseline)}{184}{subsection.1.1.1}%
+\contentsline {subsubsection}{1. Hiểu rõ Mục tiêu (Problem Framing)}{184}{subsection.1.1.1}%
+\contentsline {subsubsection}{2. Định nghĩa Metric Thành công}{184}{subsection.1.1.1}%
+\contentsline {subsubsection}{3. Thiết lập một Đường cơ sở (Baseline) Đơn giản}{184}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Vòng lặp 1: Phát triển Mô hình (Model Development)}{185}{subsection.1.1.2}%
+\contentsline {subsubsection}{4. Thu thập và Chuẩn bị Dữ liệu}{185}{subsection.1.1.2}%
+\contentsline {subsubsection}{5. Huấn luyện Mô hình}{185}{subsection.1.1.2}%
+\contentsline {subsubsection}{6. Phân tích Lỗi (Error Analysis)}{185}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}Vòng lặp 2: Triển khai và Giám sát (Deployment \& Monitoring)}{186}{subsection.1.1.3}%
+\contentsline {subsubsection}{7. Đóng gói và Triển khai (Deployment)}{186}{subsection.1.1.3}%
+\contentsline {subsubsection}{8. Giám sát và Bảo trì (Monitoring \& Maintenance)}{186}{subsection.1.1.3}%
+\contentsline {section}{\numberline {1.2}Kỹ thuật Thu thập Dữ liệu}{186}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Sử dụng APIs: Cách tiếp cận "Lịch sự" và Đáng tin cậy}{186}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Web Scraping: Trích xuất Dữ liệu từ HTML}{187}{subsection.1.2.2}%
+\contentsline {subsubsection}{BeautifulSoup: Phân tích HTML một cách dễ dàng}{187}{Item.230}%
+\contentsline {subsubsection}{Scrapy: Một Framework Cào dữ liệu Toàn diện}{188}{tcb@cnt@example.16}%
+\contentsline {section}{\numberline {1.3}Làm sạch, Tiền xử lý và Gán nhãn Dữ liệu}{189}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Thao tác Dữ liệu quy mô lớn: Pandas, NumPy, và Polars}{189}{subsection.1.3.1}%
+\contentsline {paragraph}{NumPy}{189}{subsection.1.3.1}%
+\contentsline {paragraph}{Pandas}{189}{subsection.1.3.1}%
+\contentsline {paragraph}{Polars: Một sự thay thế Hiện đại và Nhanh hơn}{189}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Gán nhãn Dữ liệu: Từ Thủ công đến Tự động}{190}{subsection.1.3.2}%
+\contentsline {subsubsection}{Công cụ Gán nhãn Thủ công: Label Studio}{190}{subsection.1.3.2}%
+\contentsline {subsubsection}{Gán nhãn có Lập trình: Snorkel và Weak Supervision}{190}{figure.1.2}%
+\contentsline {subsubsection}{Sử dụng LLM để Sinh và Gán nhãn Dữ liệu}{191}{Item.234}%
+\contentsline {subsection}{\numberline {1.3.3}Xử lý Dữ liệu Mất cân bằng (Handling Imbalanced Data)}{191}{subsection.1.3.3}%
+\contentsline {section}{\numberline {1.4}Kỹ thuật Tăng cường Dữ liệu (Data Augmentation)}{192}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}EDA: Các Phép toán Thay thế Đơn giản}{192}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}Back-Translation: Tận dụng Sức mạnh của Dịch máy}{192}{subsection.1.4.2}%
+\contentsline {subsubsection}{Trực giác cốt lõi}{192}{subsection.1.4.2}%
+\contentsline {subsubsection}{Ưu điểm và Nhược điểm}{193}{tcb@cnt@example.17}%
+\contentsline {subsection}{\numberline {1.4.3}Tăng cường Dữ liệu dựa trên LLM}{193}{subsection.1.4.3}%
+\contentsline {subsubsection}{Diễn giải lại (Paraphrasing)}{193}{subsection.1.4.3}%
+\contentsline {subsubsection}{Tạo dữ liệu theo ngữ cảnh}{193}{subsection.1.4.3}%
+\contentsline {subsection}{\numberline {1.4.4}Lựa chọn Kỹ thuật Tăng cường}{194}{subsection.1.4.4}%
+\contentsline {section}{\numberline {1.5}Quản lý Dữ liệu và Phiên bản (Data Version Control - DVC)}{194}{section.1.5}%
+\contentsline {subsection}{\numberline {1.5.1}DVC là gì và Triết lý hoạt động}{195}{subsection.1.5.1}%
+\contentsline {subsubsection}{Cơ chế hoạt động}{195}{subsection.1.5.1}%
+\contentsline {subsection}{\numberline {1.5.2}DVC Pipelines: Tái lập toàn bộ Thử nghiệm}{196}{subsection.1.5.2}%
+\contentsline {subsection}{\numberline {1.5.3}Lợi ích của việc sử dụng DVC}{196}{subsection.1.5.3}%
+\contentsline {chapter}{\numberline {2}HUẤN LUYỆN VÀ ĐÁNH GIÁ MÔ HÌNH}{199}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Thiết lập Môi trường với Hệ sinh thái Hugging Face}{199}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Transformers: Trái tim của Hệ sinh thái}{200}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Datasets: Quản lý Dữ liệu Hiệu quả}{200}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Accelerate: Đơn giản hóa Huấn luyện Phân tán}{201}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Evaluate: Một Thư viện Metric Toàn diện}{201}{subsection.2.1.4}%
+\contentsline {section}{\numberline {2.2}Kỹ thuật Đánh giá Thực tế}{202}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Hàm \texttt {compute\_metrics}: Cầu nối giữa Mô hình và Metric}{202}{subsection.2.2.1}%
+\contentsline {paragraph}{Quy trình bên trong một hàm \texttt {compute\_metrics}}{202}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Đánh giá các Tác vụ Phức tạp hơn}{204}{subsection.2.2.2}%
+\contentsline {subsubsection}{Gán nhãn Chuỗi (NER) với `seqeval`}{204}{subsection.2.2.2}%
+\contentsline {subsubsection}{Sinh Văn bản (Tóm tắt, Dịch máy) với ROUGE và BLEU}{205}{tcb@cnt@example.23}%
+\contentsline {section}{\numberline {2.3}Theo dõi và Quản lý Thí nghiệm}{206}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Weights \& Biases (W\&B): Một Nền tảng Toàn diện và Trực quan}{206}{subsection.2.3.1}%
+\contentsline {subsubsection}{Các tính năng chính}{207}{figure.2.2}%
+\contentsline {subsubsection}{Tích hợp với Hugging Face `Trainer`}{207}{figure.2.2}%
+\contentsline {subsection}{\numberline {2.3.2}MLflow: Một Lựa chọn Mã nguồn mở và Linh hoạt}{208}{subsection.2.3.2}%
+\contentsline {subsubsection}{Các thành phần chính}{208}{subsection.2.3.2}%
+\contentsline {subsubsection}{So sánh W\&B và MLflow}{209}{subsection.2.3.2}%
+\contentsline {section}{\numberline {2.4}Huấn luyện Phân tán (Distributed Training)}{209}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Các Mô hình Song song (Parallelism Paradigms)}{209}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Sử dụng `accelerate` và `DeepSpeed` để Huấn luyện Mô hình lớn}{210}{subsection.2.4.2}%
+\contentsline {subsubsection}{Accelerate: Giao diện Tối giản}{210}{subsection.2.4.2}%
+\contentsline {subsubsection}{DeepSpeed: Cỗ máy Tối ưu hóa Toàn diện}{210}{Item.253}%
+\contentsline {paragraph}{Các Giai đoạn của ZeRO}{211}{Item.253}%
+\contentsline {paragraph}{Tích hợp DeepSpeed với `Trainer`}{211}{figure.2.3}%
+\contentsline {chapter}{\numberline {3}TỐI ƯU HÓA, TRIỂN KHAI VÀ VẬN HÀNH (MLOps)}{213}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Cơ sở dữ liệu Vector (Vector Databases)}{213}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Khái niệm và vai trò trong NLP hiện đại}{213}{subsection.3.1.1}%
+\contentsline {paragraph}{Vấn đề của Tìm kiếm Brute-force}{213}{subsection.3.1.1}%
+\contentsline {paragraph}{Giải pháp: Approximate Nearest Neighbor (ANN) Search}{213}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Các công cụ phổ biến}{214}{subsection.3.1.2}%
+\contentsline {section}{\numberline {3.2}Tối ưu hóa Mô hình với các Thư viện Sẵn có}{214}{section.3.2}%
+\contentsline {paragraph}{bitsandbytes}{214}{section.3.2}%
+\contentsline {paragraph}{PEFT (Parameter-Efficient Fine-Tuning)}{215}{tcb@cnt@example.26}%
+\contentsline {paragraph}{ONNX (Open Neural Network Exchange)}{216}{tcb@cnt@example.27}%
+\contentsline {section}{\numberline {3.3}Đóng gói và Phục vụ Mô hình}{216}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Xây dựng API với FastAPI}{216}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Container hóa với Docker}{217}{subsection.3.3.2}%
+\contentsline {section}{\numberline {3.4}Các Framework Phục vụ Chuyên dụng cho Production}{218}{section.3.4}%
+\contentsline {paragraph}{Vấn đề của việc Phục vụ LLM}{218}{section.3.4}%
+\contentsline {subsubsection}{vLLM: Tối ưu hóa cho Thông lượng}{218}{section.3.4}%
+\contentsline {subsubsection}{BentoML: Chuẩn hóa Vòng đời Phục vụ}{219}{section.3.4}%
+\contentsline {subsubsection}{NVIDIA Triton Inference Server}{219}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Vòng đời MLOps cho LLM}{219}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Giám sát mô hình (Model Monitoring)}{219}{subsection.3.5.1}%
+\contentsline {paragraph}{1. Giám sát Hệ thống (System Monitoring)}{219}{subsection.3.5.1}%
+\contentsline {paragraph}{2. Giám sát Chất lượng Mô hình (Model Quality Monitoring)}{219}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Quy trình Tái huấn luyện và Cập nhật Mô hình}{220}{subsection.3.5.2}%
+\contentsline {chapter}{\numberline {4}CÔNG THỨC XÂY DỰNG CÁC ỨNG DỤNG PHỔ BIẾN (RECIPES)}{221}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Xây dựng Hệ thống Tìm kiếm Ngữ nghĩa}{221}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Xây dựng Hệ thống Hỏi-Đáp trên Tài liệu (RAG)}{222}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Recipe 3: Fine-tuning một LLM cho Tác vụ Phân loại}{224}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Recipe 4: Fine-tuning cho Tác vụ Nhận dạng Thực thể (NER)}{226}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Recipe 5: Xây dựng một Agent đơn giản với khả năng sử dụng công cụ}{228}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Recipe 6: Trích xuất Thông tin có Cấu trúc từ Văn bản}{230}{section.4.6}%
+\contentsline {chapter}{Lời kết}{245}{chapter*.6}%
+\contentsline {paragraph}{Phần 1}{245}{chapter*.6}%
+\contentsline {paragraph}{Phần 2}{245}{chapter*.6}%
+\contentsline {paragraph}{Cuối cùng, đừng quên trách nhiệm.}{245}{chapter*.6}%

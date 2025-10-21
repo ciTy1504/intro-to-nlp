@@ -1,0 +1,38 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{evaluate}
+
+    \PYG{c+c1}{\PYGZsh{} Tải trước các metric để không phải tải lại mỗi lần gọi hàm}
+    \PYG{n}{f1\PYGZus{}metric} \PYG{o}{=} \PYG{n}{evaluate}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}f1\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{precision\PYGZus{}metric} \PYG{o}{=} \PYG{n}{evaluate}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}precision\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{recall\PYGZus{}metric} \PYG{o}{=} \PYG{n}{evaluate}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}recall\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{compute\PYGZus{}metrics}\PYG{p}{(}\PYG{n}{eval\PYGZus{}preds}\PYG{p}{):}
+        \PYG{c+c1}{\PYGZsh{} eval\PYGZus{}preds là một tuple (predictions, label\PYGZus{}ids)}
+        \PYG{n}{logits}\PYG{p}{,} \PYG{n}{labels} \PYG{o}{=} \PYG{n}{eval\PYGZus{}preds}
+
+        \PYG{c+c1}{\PYGZsh{} 1. Chuyển đổi logits thành dự đoán cuối cùng}
+        \PYG{c+c1}{\PYGZsh{} Lấy chỉ số của logit lớn nhất trên chiều cuối cùng (\PYGZhy{}1)}
+        \PYG{n}{predictions} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{argmax}\PYG{p}{(}\PYG{n}{logits}\PYG{p}{,} \PYG{n}{axis}\PYG{o}{=\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} 2. Tính toán từng metric}
+        \PYG{n}{f1} \PYG{o}{=} \PYG{n}{f1\PYGZus{}metric}\PYG{o}{.}\PYG{n}{compute}\PYG{p}{(}\PYG{n}{predictions}\PYG{o}{=}\PYG{n}{predictions}\PYG{p}{,} \PYG{n}{references}\PYG{o}{=}\PYG{n}{labels}\PYG{p}{)[}\PYG{l+s+s2}{\PYGZdq{}f1\PYGZdq{}}\PYG{p}{]}
+        \PYG{n}{precision} \PYG{o}{=} \PYG{n}{precision\PYGZus{}metric}\PYG{o}{.}\PYG{n}{compute}\PYG{p}{(}\PYG{n}{predictions}\PYG{o}{=}\PYG{n}{predictions}\PYG{p}{,} \PYG{n}{references}\PYG{o}{=}\PYG{n}{labels}\PYG{p}{)[}\PYG{l+s+s2}{\PYGZdq{}precision\PYGZdq{}}\PYG{p}{]}
+        \PYG{n}{recall} \PYG{o}{=} \PYG{n}{recall\PYGZus{}metric}\PYG{o}{.}\PYG{n}{compute}\PYG{p}{(}\PYG{n}{predictions}\PYG{o}{=}\PYG{n}{predictions}\PYG{p}{,} \PYG{n}{references}\PYG{o}{=}\PYG{n}{labels}\PYG{p}{)[}\PYG{l+s+s2}{\PYGZdq{}recall\PYGZdq{}}\PYG{p}{]}
+
+        \PYG{c+c1}{\PYGZsh{} 3. Trả về một dictionary}
+        \PYG{k}{return} \PYG{p}{\PYGZob{}}
+            \PYG{l+s+s2}{\PYGZdq{}f1\PYGZdq{}}\PYG{p}{:} \PYG{n}{f1}\PYG{p}{,}
+            \PYG{l+s+s2}{\PYGZdq{}precision\PYGZdq{}}\PYG{p}{:} \PYG{n}{precision}\PYG{p}{,}
+            \PYG{l+s+s2}{\PYGZdq{}recall\PYGZdq{}}\PYG{p}{:} \PYG{n}{recall}\PYG{p}{,}
+        \PYG{p}{\PYGZcb{}}
+
+    \PYG{c+c1}{\PYGZsh{} Sau đó, hàm này sẽ được truyền vào đối tượng TrainingArguments:}
+    \PYG{c+c1}{\PYGZsh{} training\PYGZus{}args = TrainingArguments(..., evaluation\PYGZus{}strategy=\PYGZdq{}epoch\PYGZdq{})}
+    \PYG{c+c1}{\PYGZsh{} trainer = Trainer(}
+    \PYG{c+c1}{\PYGZsh{}     ...,}
+    \PYG{c+c1}{\PYGZsh{}     args=training\PYGZus{}args,}
+    \PYG{c+c1}{\PYGZsh{}     compute\PYGZus{}metrics=compute\PYGZus{}metrics,}
+    \PYG{c+c1}{\PYGZsh{} )}
+    \PYG{c+c1}{\PYGZsh{} trainer.train()}
+\end{MintedVerbatim}

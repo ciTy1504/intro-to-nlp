@@ -1,0 +1,15 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{evaluate}
+
+    \PYG{c+c1}{\PYGZsh{} Tải metric F1}
+    \PYG{n}{f1\PYGZus{}metric} \PYG{o}{=} \PYG{n}{evaluate}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}f1\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Giả sử có các dự đoán và nhãn}
+    \PYG{n}{predictions} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}
+    \PYG{n}{references} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}
+
+    \PYG{c+c1}{\PYGZsh{} Tính toán}
+    \PYG{n}{results} \PYG{o}{=} \PYG{n}{f1\PYGZus{}metric}\PYG{o}{.}\PYG{n}{compute}\PYG{p}{(}\PYG{n}{predictions}\PYG{o}{=}\PYG{n}{predictions}\PYG{p}{,} \PYG{n}{references}\PYG{o}{=}\PYG{n}{references}\PYG{p}{)}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{results}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{} Output: \PYGZob{}\PYGZsq{}f1\PYGZsq{}: 0.8\PYGZcb{}}
+\end{MintedVerbatim}

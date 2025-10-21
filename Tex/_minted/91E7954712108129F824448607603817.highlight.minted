@@ -1,0 +1,41 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{sentence\PYGZus{}transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{SentenceTransformer}
+    \PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{chromadb}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 1: Chuẩn bị dữ liệu và tải mô hình}
+    \PYG{n}{model} \PYG{o}{=} \PYG{n}{SentenceTransformer}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}all\PYGZhy{}MiniLM\PYGZhy{}L6\PYGZhy{}v2\PYGZsq{}}\PYG{p}{)}
+
+    \PYG{n}{documents} \PYG{o}{=} \PYG{p}{[}
+        \PYG{l+s+s2}{\PYGZdq{}Trái Đất quay quanh Mặt Trời.\PYGZdq{}}\PYG{p}{,}
+        \PYG{l+s+s2}{\PYGZdq{}Hệ Mặt Trời có tám hành tinh.\PYGZdq{}}\PYG{p}{,}
+        \PYG{l+s+s2}{\PYGZdq{}Mặt Trăng là vệ tinh tự nhiên của Trái Đất.\PYGZdq{}}\PYG{p}{,}
+        \PYG{l+s+s2}{\PYGZdq{}Python là một ngôn ngữ lập trình phổ biến.\PYGZdq{}}\PYG{p}{,}
+        \PYG{l+s+s2}{\PYGZdq{}Học sâu là một nhánh của học máy.\PYGZdq{}}
+    \PYG{p}{]}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 2: Lập chỉ mục (Embed và Store)}
+    \PYG{n}{client} \PYG{o}{=} \PYG{n}{chromadb}\PYG{o}{.}\PYG{n}{Client}\PYG{p}{()}
+    \PYG{n}{collection} \PYG{o}{=} \PYG{n}{client}\PYG{o}{.}\PYG{n}{create\PYGZus{}collection}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}semantic\PYGZus{}search\PYGZus{}demo\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{n}{embeddings} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{encode}\PYG{p}{(}\PYG{n}{documents}\PYG{p}{)}
+    \PYG{n}{collection}\PYG{o}{.}\PYG{n}{add}\PYG{p}{(}
+        \PYG{n}{embeddings}\PYG{o}{=}\PYG{n}{embeddings}\PYG{o}{.}\PYG{n}{tolist}\PYG{p}{(),}
+        \PYG{n}{documents}\PYG{o}{=}\PYG{n}{documents}\PYG{p}{,}
+        \PYG{n}{ids}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}doc\PYGZus{}}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{i}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{documents}\PYG{p}{))]}
+    \PYG{p}{)}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Đã lập chỉ mục xong!\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Bước 3: Truy vấn}
+    \PYG{n}{query} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}Các thiên thể trong vũ trụ\PYGZdq{}}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s2}{Truy vấn: \PYGZsq{}}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{query}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZsq{}\PYGZdq{}}\PYG{p}{)}
+
+    \PYG{n}{query\PYGZus{}embedding} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{encode}\PYG{p}{(}\PYG{n}{query}\PYG{p}{)}\PYG{o}{.}\PYG{n}{tolist}\PYG{p}{()}
+    \PYG{n}{results} \PYG{o}{=} \PYG{n}{collection}\PYG{o}{.}\PYG{n}{query}\PYG{p}{(}
+        \PYG{n}{query\PYGZus{}embeddings}\PYG{o}{=}\PYG{p}{[}\PYG{n}{query\PYGZus{}embedding}\PYG{p}{],}
+        \PYG{n}{n\PYGZus{}results}\PYG{o}{=}\PYG{l+m+mi}{3}
+    \PYG{p}{)}
+
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Các kết quả tìm kiếm tương tự nhất:\PYGZdq{}}\PYG{p}{)}
+    \PYG{k}{for} \PYG{n}{doc} \PYG{o+ow}{in} \PYG{n}{results}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}documents\PYGZsq{}}\PYG{p}{][}\PYG{l+m+mi}{0}\PYG{p}{]:}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}\PYGZhy{} }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{doc}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

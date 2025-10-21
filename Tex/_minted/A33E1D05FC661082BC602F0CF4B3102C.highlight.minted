@@ -1,0 +1,21 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{    }\PYGZsh{}\PYG{+w}{ }File:\PYG{+w}{ }Dockerfile
+
+\PYG{+w}{    }\PYGZsh{}\PYG{+w}{ }\PYG{l+m}{1}.\PYG{+w}{ }Sử\PYG{+w}{ }dụng\PYG{+w}{ }một\PYG{+w}{ }image\PYG{+w}{ }Python\PYG{+w}{ }chính\PYG{+w}{ }thức\PYG{+w}{ }làm\PYG{+w}{ }nền
+\PYG{+w}{    }FROM\PYG{+w}{ }python:3.9\PYGZhy{}slim
+
+\PYG{+w}{    }\PYGZsh{}\PYG{+w}{ }\PYG{l+m}{2}.\PYG{+w}{ }Đặt\PYG{+w}{ }thư\PYG{+w}{ }mục\PYG{+w}{ }làm\PYG{+w}{ }việc\PYG{+w}{ }bên\PYG{+w}{ }trong\PYG{+w}{ }container
+\PYG{+w}{    }WORKDIR\PYG{+w}{ }/app
+
+\PYG{+w}{    }\PYGZsh{}\PYG{+w}{ }\PYG{l+m}{3}.\PYG{+w}{ }Sao\PYG{+w}{ }chép\PYG{+w}{ }file\PYG{+w}{ }requirements\PYG{+w}{ }vào\PYG{+w}{ }trước\PYG{+w}{ }để\PYG{+w}{ }tận\PYG{+w}{ }dụng\PYG{+w}{ }cache
+\PYG{+w}{    }COPY\PYG{+w}{ }requirements.txt\PYG{+w}{ }.
+
+\PYG{+w}{    }\PYGZsh{}\PYG{+w}{ }\PYG{l+m}{4}.\PYG{+w}{ }Cài\PYG{+w}{ }đặt\PYG{+w}{ }các\PYG{+w}{ }thư\PYG{+w}{ }viện\PYG{+w}{ }phụ\PYG{+w}{ }thuộc
+\PYG{+w}{    }RUN\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}\PYGZhy{}no\PYGZhy{}cache\PYGZhy{}dir\PYG{+w}{ }\PYGZhy{}r\PYG{+w}{ }requirements.txt
+
+\PYG{+w}{    }\PYGZsh{}\PYG{+w}{ }\PYG{l+m}{5}.\PYG{+w}{ }Sao\PYG{+w}{ }chép\PYG{+w}{ }toàn\PYG{+w}{ }bộ\PYG{+w}{ }mã\PYG{+w}{ }nguồn\PYG{+w}{ }của\PYG{+w}{ }ứng\PYG{+w}{ }dụng\PYG{+w}{ }vào
+\PYG{+w}{    }COPY\PYG{+w}{ }.\PYG{+w}{ }.
+tcolorbox
+\PYG{+w}{    }\PYGZsh{}\PYG{+w}{ }\PYG{l+m}{6}.\PYG{+w}{ }Lệnh\PYG{+w}{ }sẽ\PYG{+w}{ }được\PYG{+w}{ }chạy\PYG{+w}{ }khi\PYG{+w}{ }container\PYG{+w}{ }khởi\PYG{+w}{ }động
+\PYG{+w}{    }CMD\PYG{+w}{ }\PYG{o}{[}\PYG{l+s+s2}{\PYGZdq{}uvicorn\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}main:app\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZhy{}\PYGZhy{}host\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}0.0.0.0\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZhy{}\PYGZhy{}port\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}80\PYGZdq{}}\PYG{o}{]}
+\end{MintedVerbatim}
