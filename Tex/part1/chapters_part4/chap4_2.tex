@@ -9,189 +9,273 @@ Kiến trúc Transformer gốc mà chúng ta vừa phân tích là một mô hì
 
 Sự phân tách này đã khai sinh ra ba "họ" kiến trúc chính, định hình nên toàn bộ bối cảnh của các Mô hình Ngôn ngữ Lớn (LLMs) ngày nay. Hiểu rõ ba họ kiến trúc này là chìa khóa để lựa chọn mô hình phù hợp cho ứng dụng của bạn.
 
-\subsection{Họ Mô hình chỉ Encoder (Encoder-Only): Bậc thầy của Sự Hiểu Ngôn ngữ}
-\label{ssec:encoder_only}
+\subsection{Họ Mô hình chỉ Encoder (Encoder-Only): Bậc thầy của Hiểu ngôn ngữ}
+\subsubsection{Kiến trúc và Đặc trưng Chung}
+Các mô hình Encoder-Only kế thừa trực tiếp khối Encoder của Transformer gốc, bao gồm nhiều lớp Self-Attention đa đầu và mạng Feed-Forward, kết nối qua residual và layer normalization. Khối Encoder này bao gồm một chuỗi các lớp giống hệt nhau, thường là 12 lớp cho phiên bản base và 24 lớp cho phiên bản large. Điểm khác biệt quan trọng là Self-Attention ở đây là  \textbf{bidirectional}, cho phép mỗi token nhìn thấy toàn bộ ngữ cảnh trước và sau trong chuỗi --- điều này khiến mô hình cực kỳ mạnh mẽ trong các tác vụ \textbf{hiểu ngôn ngữ} (Natural Language Understanding). 
 
-Các mô hình thuộc họ này chỉ sử dụng khối Encoder của kiến trúc Transformer. Chúng được thiết kế với một mục tiêu duy nhất: tạo ra các \textbf{biểu diễn ngữ cảnh sâu sắc (deep contextualized representations)} cho văn bản đầu vào.
-
-\begin{tcolorbox}[
-    title=Triết lý của Encoder-Only,
-    colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
-]
-"Để thực sự hiểu ý nghĩa của một từ trong câu, tôi cần phải nhìn vào \textbf{cả hai phía}: những từ đứng trước nó và những từ đứng sau nó."
-\end{tcolorbox}
-
-\subsubsection{Kiến trúc và Mục tiêu Huấn luyện Nền tảng}
-\paragraph{Kiến trúc và Tính hai chiều (Bidirectionality)}
-Đây là đặc điểm quan trọng nhất. Nhờ cơ chế Self-Attention không bị che (unmasked), tại mỗi lớp, mỗi từ có thể "chú ý" đến tất cả các từ khác trong câu, cả bên trái và bên phải. Điều này cho phép mô hình xây dựng một sự hiểu biết toàn diện về ngữ cảnh, điều mà các mô hình hồi tiếp (RNN) hay tự hồi quy (Decoder-Only) không thể làm được. Đầu ra của mô hình là một chuỗi các vector embedding, mỗi vector tương ứng với một token đầu vào, nhưng đã được "làm giàu" bởi thông tin ngữ cảnh hai chiều sâu sắc.
-
-\paragraph{Mục tiêu Huấn luyện: Masked Language Modeling (MLM)}
-MLM là mục tiêu huấn luyện cốt lõi của BERT và nhiều mô hình kế nhiệm.
+\paragraph{Chuẩn bị Đầu vào}
+Giả sử đầu vào là một chuỗi token $X = [x_1, x_2, \dots, x_n]$, nơi mỗi $x_i$ là một token từ từ điển (vocabulary). Đầu vào của BERT bao gồm ba loại embedding được cộng lại:
 \begin{itemize}
-    \item \textbf{Cơ chế:} Lấy một câu đầu vào, che (mask) ngẫu nhiên khoảng 15\% số token bằng một token đặc biệt `[MASK]`. Sau đó, nhiệm vụ của mô hình là \textbf{dự đoán các token gốc đã bị che}, dựa vào các token không bị che xung quanh.
-    \item \textbf{Tại sao lại hiệu quả?} MLM buộc mô hình phải học các mối quan hệ ngữ nghĩa và cú pháp sâu sắc từ cả hai phía để có thể "điền vào chỗ trống". Nó không chỉ là dự đoán từ tiếp theo, mà là một bài kiểm tra "đọc hiểu" thực sự.
+	\item \textbf{Token Embedding:} Đầu tiên, mỗi token được ánh xạ thành một vector embedding $e_i \in \mathbb{R}^d$, với $d$ là chiều kích ẩn (hidden dimension), thường là 768 cho BERT-base và 1024 cho BERT-large. Ma trận embedding này được học trong quá trình huấn luyện.
+	\item \textbf{Segment Embedding:} Trong BERT, còn có segment embedding để phân biệt các câu khác nhau trong đầu vào (ví dụ, sentence A và sentence B).
+	\item \textbf{Positional Embedding:} Trong Transformer gốc, positional embedding sử dụng hàm sin và cos để tạo ra các vector không đổi mã hóa thông tin vị trí. Một số biến thể như BERT sử dụng positional embedding có thể học (learned positional embeddings) để linh hoạt hơn.
 \end{itemize}
+Tổng hợp lại, đầu vào có dạng $h_i^{(0)} = e_i + p_i + s_i$.
+
+
+\paragraph{Biến Thể Kiến Trúc}
+Một số mô hình như DeBERTa giới thiệu disentangled attention, tách content và position:
+\[
+A_{i,j} = (Q_i^c (K_j^c)^T + Q_i^c (R_{i-j})^T + (R_{j-i})^T (K_j^c)^T) / \sqrt{3 d_k}
+\]
+với $R$ là relative position embedding.
+
+\subsubsection{Các Token Đặc Biệt và Vai Trò Của Chúng}
+Các token đặc biệt là các phần tử được thêm vào từ điển và chuỗi đầu vào để hỗ trợ huấn luyện và suy luận. Chúng được thiết kế để mô hình học cách sử dụng chúng một cách ý nghĩa.
+
+\begin{itemize}
+	\item \textbf{[CLS] (Classification Token):} Được thêm vào đầu chuỗi đầu vào. Vector đầu ra của [CLS] sau các lớp Encoder tổng hợp thông tin toàn bộ chuỗi, nhờ self-attention cho phép nó chú ý đến tất cả token. Trong fine-tuning cho phân loại, một classifier tuyến tính được thêm lên $h_{[CLS]}^{(L)}$: $p = \text{softmax}(W h_{[CLS]}^{(L)} + b)$.
+	\item \textbf{[SEP] (Separator Token):} Sử dụng để phân cách các câu hoặc đoạn trong đầu vào. Ví dụ, trong BERT: [CLS] sentence A [SEP] sentence B [SEP]. Nó giúp mô hình phân biệt các phần khác nhau và học mối quan hệ giữa chúng.
+	\item \textbf{[MASK] (Mask Token):} Token đặc biệt dùng trong MLM. Khi mask một token, thay bằng [MASK] để mô hình dự đoán token gốc. Trong BERT, [MASK] chiếm 15\% vị trí, nhưng để robust, 80\% là [MASK], 10\% random token, 10\% giữ nguyên.
+	\item \textbf{[PAD] (Padding Token):} Dùng để padding chuỗi đến độ dài max trong batch. Mô hình học bỏ qua [PAD] qua attention mask (không chú ý đến vị trí PAD).
+	\item \textbf{[UNK] (Unknown Token):} Thay thế token ngoài từ điển. Trong subword tokenization như WordPiece (BERT), [UNK] hiếm nhưng vẫn cần cho robustness.
+	\item \textbf{Các Token Khác:} Một số mô hình có [BOS]/[EOS] (beginning/end of sequence), nhưng BERT không dùng. Trong multilingual, có thể có token ngôn ngữ.
+\end{itemize}
+
+Attention mask là ma trận boolean để bỏ qua [PAD]: $A_{i,j} = -\infty$ nếu j là PAD.
+
 
 \begin{center}
-    \includegraphics[width=0.8\textwidth]{bert_mlm_nsp.png}
-    \captionof{figure}{Mục tiêu huấn luyện kinh điển của BERT: Masked Language Modeling (MLM). Mô hình phải dự đoán các token bị che dựa trên ngữ cảnh hai chiều.}
-    \label{fig:bert_mlm_nsp}
+	\includegraphics[width=0.8\textwidth]{bert_mlm_nsp.png}
+	\captionof{figure}{Hai mục tiêu huấn luyện chính của BERT: Masked Language Modeling (MLM) và Next Sentence Prediction (NSP).}
+	\label{fig:bert_mlm_nsp}
 \end{center}
 
-\subsubsection{Sự phát triển và các biến thể của Họ Encoder-Only}
-Từ nền tảng của BERT, một hệ sinh thái đa dạng các mô hình Encoder-Only đã ra đời, mỗi loại được tối ưu cho các mục đích khác nhau: hiệu suất, kích thước, tác vụ cụ thể, hay miền kiến thức chuyên biệt.
+\subsubsection{Quá Trình Huấn Luyện Chi Tiết và Công Thức}
+Huấn luyện Encoder-Only thường chia thành hai giai đoạn: pre-training trên dữ liệu lớn không giám sát, sau đó fine-tuning cho tác vụ downstream.
 
-\paragraph{1. Gia đình BERT: Những người kế nhiệm trực tiếp}
-Đây là các mô hình cải tiến trực tiếp từ kiến trúc và phương pháp huấn luyện của BERT.
-\begin{itemize}
-    \item \textbf{RoBERTa (Facebook) \cite{liu2019roberta}:} Không thay đổi kiến trúc, nhưng chứng minh rằng việc tối ưu hóa kỹ lưỡng quá trình huấn luyện có thể mang lại hiệu quả vượt trội. Các cải tiến chính bao gồm: huấn luyện lâu hơn, trên nhiều dữ liệu hơn, với batch size lớn hơn, loại bỏ mục tiêu NSP (Next Sentence Prediction), và sử dụng "che động" (dynamic masking).
-    \item \textbf{DistilBERT (Hugging Face) \cite{sanh2019distilbert}:} Một phiên bản "chưng cất" nhỏ hơn, nhanh hơn của BERT. Nó sử dụng kỹ thuật \textit{knowledge distillation}, trong đó một mô hình "học trò" (student) nhỏ hơn học cách bắt chước đầu ra của một mô hình "giáo viên" (teacher) lớn hơn (BERT). DistilBERT giữ lại 97\% hiệu năng của BERT nhưng chỉ có 60\% kích thước.
-    \item \textbf{ALBERT (Google) \cite{lan2019albert}:} Một cách tiếp cận khác để giảm tham số. ALBERT sử dụng hai kỹ thuật chính: \textit{factorized embedding parameterization} (phân tách ma trận embedding từ lớn thành hai ma trận nhỏ) và \textit{cross-layer parameter sharing} (chia sẻ trọng số của các khối Transformer với nhau).
-    \item \textbf{SpanBERT (Facebook) \cite{joshi2020spanbert}:} Tối ưu hóa BERT cho các tác vụ cần hiểu các \textbf{đoạn văn bản (spans)} liên tục, như Hỏi-đáp trích xuất. Thay vì che các token ngẫu nhiên, SpanBERT che các đoạn ngẫu nhiên và huấn luyện mô hình dự đoán toàn bộ đoạn bị che chỉ từ các token ở biên của đoạn đó.
-\end{itemize}
+\paragraph{Masked Language Modeling (MLM)}
+MLM là mục tiêu chính của BERT. Quy trình: Lấy chuỗi, mask 15\% token ngẫu nhiên. Mô hình dự đoán token gốc tại vị trí mask dựa trên ngữ cảnh.
 
-\paragraph{2. Các mô hình Biểu diễn Câu: Chuyên gia về Tìm kiếm Ngữ nghĩa}
-Một hạn chế của BERT gốc là nó không tạo ra các vector biểu diễn câu (sentence embeddings) tốt "ngay lập tức". Việc lấy embedding của token `[CLS]` hoặc lấy trung bình các token embedding thường cho kết quả tìm kiếm tương đồng không cao. Nhánh mô hình này giải quyết vấn đề đó.
-\begin{itemize}
-    \item \textbf{SBERT (Sentence-BERT) \cite{reimers2019sentence}:} Là mô hình tiên phong. SBERT tinh chỉnh BERT trên các cặp câu bằng cách sử dụng kiến trúc \textit{siamese} hoặc \textit{triplet}. Kiến trúc này buộc mô hình phải tạo ra một không gian vector mà ở đó các câu có ngữ nghĩa giống nhau sẽ có vector gần nhau (cosine similarity cao) và ngược lại.
-    \item \textbf{SimCSE (Simple Contrastive Sentence Embedding) \cite{gao2021simcse}:} Một phương pháp học tương phản (contrastive learning) đơn giản nhưng cực kỳ hiệu quả. Để tạo một cặp dương, SimCSE chỉ cần đưa cùng một câu qua mô hình BERT hai lần (với dropout khác nhau). Các câu khác trong batch được coi là cặp âm. Kỹ thuật này tạo ra các embedding câu chất lượng rất cao mà không cần dữ liệu gán nhãn.
-    \item \textbf{E5 (Embeddings from bidErectional Encoder rEpresentations \cite{wang2022text}), Contriever, etc.:} Là thế hệ mô hình embedding mới nhất, được huấn luyện đặc biệt cho các tác vụ \textbf{tìm kiếm (retrieval)}, đặc biệt là tìm kiếm bất đối xứng (truy vấn ngắn, tài liệu dài). Chúng thường đạt hiệu năng SOTA trên các benchmark tìm kiếm ngữ nghĩa.
-\end{itemize}
+Công thức loss: Cross-entropy trên vị trí mask:
+\[
+\mathcal{L}_{MLM} = -\frac{1}{M} \sum_{m=1}^M \log p(x_m | X \setminus \{x_m\})
+\]
+với M là số vị trí mask, $p$ từ classifier trên $h_m^{(L)}$: $p = \text{softmax}(E^T h_m^{(L)})$, E là ma trận embedding.
 
-\paragraph{3. Các mô hình cho Miền chuyên biệt và Đa ngôn ngữ}
-Ý tưởng cốt lõi là một mô hình được huấn luyện trước trên dữ liệu chuyên ngành sẽ hiểu thuật ngữ và ngữ cảnh của ngành đó tốt hơn.
-\begin{itemize}
-    \item \textbf{SciBERT \cite{beltagy2019scibert}, BioBERT \cite{lee2020biobert}, ClinicalBERT \cite{alsentzer2019publicly}:} Được huấn luyện trên các kho văn bản khoa học, y sinh, và y tế lâm sàng.
-    \item \textbf{FinBERT:} Chuyên cho lĩnh vực tài chính.
-    \item \textbf{LegalBERT:} Chuyên cho lĩnh vực pháp luật.
-    \item \textbf{CamemBERT \cite{martin2019camembert} (Pháp), PhoBERT \cite{nguyen2020phobert} (Việt), etc.:} Là các mô hình theo kiến trúc RoBERTa nhưng được huấn luyện từ đầu trên kho dữ liệu lớn của một ngôn ngữ cụ thể, cho hiệu năng vượt trội so với các mô hình đa ngôn ngữ trên ngôn ngữ đó.
-\end{itemize}
+Để hiệu quả, BERT dùng WordPiece tokenization, từ điển ~30k subword.
 
-\paragraph{4. Các Encoder Hiện đại, Gọn nhẹ và Hiệu quả}
-Nhánh này tập trung vào việc tạo ra các mô hình nhỏ gọn hơn nhưng vẫn giữ được hiệu năng cao thông qua các cải tiến về kiến trúc và mục tiêu huấn luyện.
-\begin{itemize}
-    \item \textbf{MiniLM (Microsoft) \cite{wang2020minilm}:} Sử dụng một phương pháp chưng cất tri thức sâu, trong đó mô hình học trò không chỉ bắt chước đầu ra cuối cùng mà còn cả ma trận chú ý và mối quan hệ giữa các vector value từ mô hình giáo viên.
-    \item \textbf{DeBERTa (Microsoft) \cite{he2020deberta}:} Một trong những encoder mạnh nhất hiện nay. DeBERTa giới thiệu cơ chế \textit{disentangled attention}, tách rời việc mã hóa nội dung từ và vị trí tương đối của chúng.
-    \item \textbf{MPNet (Microsoft) \cite{song2020mpnet}:} Kết hợp τα tốt nhất của cả hai thế giới: MLM (BERT) và Permuted Language Modeling (XLNet). Nó giải quyết sự không tương thích giữa pre-training và fine-tuning, cho phép mô hình học các phụ thuộc hai chiều một cách toàn diện hơn.
-\end{itemize}
+\paragraph{Next Sentence Prediction (NSP)}
+Trong BERT gốc, kết hợp với MLM. Đầu vào là hai câu: 50\% là câu tiếp theo thật, 50\% random. Dự đoán binary label.
 
-\paragraph{5. Các Encoder với Mục tiêu Huấn luyện khác MLM}
-MLM không phải là cách duy nhất để huấn luyện một encoder hai chiều.
-\begin{itemize}
-    \item \textbf{ELECTRA (Google) \cite{clark2020electra}:} Sử dụng một tác vụ hiệu quả hơn là \textit{replaced token detection}. Một mô hình "generator" nhỏ sẽ thay thế một số token trong câu, và mô hình "discriminator" (chính là ELECTRA) phải dự đoán xem mỗi token là gốc hay đã bị thay thế. Tác vụ này hiệu quả hơn vì mô hình học từ \textit{tất cả} các token, không chỉ 15% bị che.
-    \item \textbf{XLNet (Google/CMU) \cite{yang2019xlnet}:} Một mô hình \textit{tự hồi quy hoán vị (permutation-based autoregressive)}. Nó dự đoán các token trong câu theo một thứ tự ngẫu nhiên. Bằng cách này, nó có thể "nhìn thấy" ngữ cảnh từ cả hai phía (giống BERT) trong khi vẫn giữ được các lợi ích của mô hình tự hồi quy.
-\end{itemize}
+Loss: $\mathcal{L}_{NSP} = -\log p(y | [CLS])$, với $p$ từ classifier trên $h_{[CLS]}^{(L)}$.
 
-\begin{tcolorbox}[
-    title=Tổng kết: Điểm mạnh và Ứng dụng của Encoder-Only,
-    colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
-]
-\textbf{Nguyên tắc chung:} Sử dụng mô hình Encoder-Only khi tác vụ của bạn đòi hỏi sự \textbf{hiểu sâu sắc về toàn bộ văn bản đầu vào} và đầu ra không phải là một chuỗi văn bản mới, mạch lạc. Chúng là các mô hình \textbf{NLU (Natural Language Understanding)} chứ không phải \textbf{NLG (Natural Language Generation)}.
+Total loss: $\mathcal{L} = \mathcal{L}_{MLM} + \mathcal{L}_{NSP}$.
 
-\textbf{Ứng dụng điển hình:}
-\begin{itemize}
-    \item \textbf{Phân loại văn bản (Text Classification):} Phân tích cảm xúc, phát hiện chủ đề, kiểm duyệt nội dung (toxic detection). Mô hình cần hiểu toàn bộ câu để đưa ra một nhãn duy nhất.
-    \item \textbf{Gán nhãn chuỗi (Token Classification):} Nhận dạng Thực thể Tên (NER), Gán nhãn Từ loại (POS Tagging). Mô hình cần hiểu ngữ cảnh xung quanh mỗi từ để gán nhãn cho nó.
-    \item \textbf{Tìm kiếm Ngữ nghĩa (Semantic Search):} Biến các câu/tài liệu thành các vector embedding có ý nghĩa (sử dụng các mô hình như SBERT, E5). Các vector này sau đó được lưu trữ và truy vấn bằng các thuật toán tìm kiếm lân cận gần nhất (ANN).
-    \item \textbf{Hỏi-đáp trích xuất (Extractive QA):} Tìm và trích xuất một đoạn văn bản (span) làm câu trả lời từ một văn bản ngữ cảnh cho trước.
-    \item \textbf{Retrieval-Augmented Generation (RAG):} Đây là một ứng dụng lai. Giai đoạn \textbf{Retrieval (Truy xuất)} trong RAG sử dụng một mô hình Encoder-Only (như E5) để biến truy vấn của người dùng và các tài liệu trong cơ sở tri thức thành vector, sau đó tìm ra các tài liệu liên quan nhất. Các tài liệu này sau đó mới được đưa cho một mô hình sinh (Decoder-Only) để tạo ra câu trả lời.
-\end{itemize}
-\end{tcolorbox}
+RoBERTa loại NSP vì ít cải thiện, tập trung MLM với dynamic masking (mask khác mỗi epoch).
+
+\paragraph{Các Mục Tiêu Huấn Luyện Biến Thể}
+- \textbf{ELECTRA:} Replaced Token Detection (RTD). Generator (nhỏ) mask và dự đoán như MLM, thay thế token. Discriminator (lớn) phân biệt mỗi token là original hay replaced.
+
+Loss discriminator: $\mathcal{L}_{Disc} = -\sum_{i=1}^n [ \mathbb{1}(replaced_i) \log p(replaced_i) + \mathbb{1}(original_i) \log (1 - p(replaced_i)) ]$
+
+Generator loss: MLM trên vị trí replaced. Hiệu quả vì discriminator học từ tất cả token.
+
+- \textbf{XLNet:} Permutation Language Modeling. Hoán vị thứ tự token, dự đoán autoregressive theo thứ tự hoán vị.
+
+Loss: $\mathcal{L} = -\mathbb{E}_{z \sim Z_T} \log p(x_{z_t} | x_{z_{>t}} )$, với $z$ hoán vị, two-stream attention để tránh leak thông tin.
+
+- \textbf{Contrastive Learning (SimCSE):} Không mask, mà tạo positive pair bằng dropout khác nhau, negative từ batch. Loss NT-Xent để embedding gần nhau cho positive.
+
+\paragraph{Tham Số Huấn Luyện}
+- Dữ liệu: BERT: 16GB (BookCorpus + Wikipedia). RoBERTa: 160GB (CC-News, OpenWebText,...).
+- Optimizer: AdamW với $\beta_1=0.9$, $\beta_2=0.999$, $\epsilon=1e-6$, weight decay 0.01.
+- Learning rate: 1e-4, linear warmup 10k steps, sau decay.
+- Batch size: 256-8k với gradient accumulation.
+- Hardware: BERT: 4-16 TPU, huấn 4 ngày cho base.
+- Regularization: Dropout 0.1, attention dropout 0.1.
+
+Sau pre-train, fine-tune: Thêm layer cho task, huấn với lr nhỏ (2e-5), few epochs.
+
+\begin{center}
+	\includegraphics[width=0.8\textwidth]{transformer_encoder_detailed.png}
+	\captionof{figure}{Kiến trúc chi tiết của khối Encoder với công thức Self-Attention.}
+	\label{fig:transformer_encoder_detailed}
+\end{center}
+
+\subsubsection{Mở Rộng Sự Phát Triển và Các Biến Thể Chi Tiết}
+Để làm phong phú thêm, chúng ta đi sâu vào từng biến thể với công thức và lý do cải tiến.
+
+\paragraph{1. Gia Đình BERT}
+- \textbf{RoBERTa:} Tối ưu huấn luyện: Lớn batch (8k), dài sequence (512), dynamic masking. Loss chỉ MLM, dữ liệu sạch hơn. Kết quả: Vượt BERT trên GLUE.
+- \textbf{DistilBERT:} Knowledge Distillation. Student học từ teacher: Loss = $\alpha \text{KL}(p_t || p_s) + \beta \mathcal{L}_{MLM} + \gamma \cos(h_t, h_s)$, với KL là Kullback-Leibler, cos là cosine loss.
+- \textbf{ALBERT:} Giảm param: Embedding factorization $V \times d \to V \times e + e \times d$ ($e<<d$). Cross-layer sharing: All layers share params, giảm từ 110M xuống 17M. SOP thay NSP: Dự đoán order của hai câu.
+- \textbf{SpanBERT:} Mask span liên tục (geometric length). Loss MLM trên span + SBO: Dự đoán token trong span từ boundary tokens.
+
+\paragraph{2. Mô Hình Biểu Diễn Câu}
+- \textbf{SBERT:} Siamese network: Hai BERT chia sẻ weight, pooling (mean/cls), loss contrastive hoặc classification trên pair (STS dataset).
+- \textbf{SimCSE:} Unsupervised: Positive từ same sentence different dropout. Loss:
+\[
+\mathcal{L}_i = -\log \frac{e^{\text{sim}(h_i, h_i^+)/\tau}}{\sum_{j=1}^{2N} e^{\text{sim}(h_i, h_j)/\tau}}
+\]
+Supervised dùng entailment pairs.
+- \textbf{E5:} Multi-stage contrastive: Pre-train MLM, sau fine-tune với mined hard negatives. SOTA trên retrieval benchmarks như BEIR.
+
+\paragraph{3. Mô Hình Chuyên Biệt}
+- \textbf{SciBERT:} Từ điển SciVocab (30k, science terms), pre-train trên 3.17B tokens khoa học. Tốt hơn BERT trên NER khoa học.
+- \textbf{PhoBERT:} Tokenization VinaText syllable-based, pre-train 20GB Vietnamese. Vượt mBERT trên POS, NER tiếng Việt.
+
+\paragraph{4. Encoder Hiện Đại}
+- \textbf{MiniLM:} Distill multi-layer: Loss trên attention matrices $KL(A_t || A_s)$, hidden states, value relations.
+- \textbf{DeBERTa:} Disentangled + scale-invariant fine-tune (SiFT). V3 thêm ELECTRA-style pre-train.
+- \textbf{MPNet:} Input permuted, mask positions. Loss MLM trên masked trong permuted sequence.
+
+\paragraph{5. Mục Tiêu Huấn Luyện Khác}
+- \textbf{ELECTRA:} Pre-train nhanh gấp 4 lần BERT, hiệu suất tốt hơn.
+- \textbf{XLNet:} Outperform BERT trên 20 tasks nhờ generalize AR và bidirectional.
+
+
+\paragraph{Ứng Dụng}
+Các mô hình Encoder-Only như BERT và họ hàng của nó được xem là nền tảng cho các tác vụ hiểu ngôn ngữ tự nhiên (NLU): phân loại văn bản, suy diễn ngữ nghĩa, trích xuất thông tin, v.v.
 
 \subsection{Họ Mô hình chỉ Decoder (Decoder-Only): Bậc thầy của Sự Sáng tạo}
 \label{ssec:decoder_only}
 Đây là họ kiến trúc đang thống trị thế giới AI hiện nay, là nền tảng của các mô hình như ChatGPT, Llama, và Claude. Chúng chỉ sử dụng khối Decoder của kiến trúc Transformer.
-
 \begin{tcolorbox}[
-    title=Triết lý của Decoder-Only,
-    colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
-]
-"Để viết tiếp một câu chuyện, tôi chỉ cần biết những gì đã được viết \textbf{trước đó}. Tôi không được phép nhìn vào tương lai."
+	title=Triết lý của Decoder-Only,
+	colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
+	]
+	"Để viết tiếp một câu chuyện, tôi chỉ cần biết những gì đã được viết \textbf{trước đó}. Tôi không được phép nhìn vào tương lai."
 \end{tcolorbox}
-
 \subsubsection{Kiến trúc và Mục tiêu Huấn luyện Nền tảng}
 \paragraph{Kiến trúc Tự hồi quy (Auto-regressive Architecture)}
 \begin{itemize}
-    \item \textbf{Cấu tạo:} Một chuỗi các khối Decoder của Transformer xếp chồng lên nhau. Quan trọng là, chúng \textbf{không có Encoder} và do đó cũng \textbf{không có lớp Cross-Attention}.
-    \item \textbf{Tính một chiều (Unidirectionality):} Đây là đặc điểm nhận dạng. Chúng sử dụng \textbf{Masked Self-Attention}. Tại mỗi vị trí, một từ chỉ có thể "chú ý" đến chính nó và các từ đứng trước nó. Nó không thể nhìn thấy các từ ở phía sau, đảm bảo rằng việc dự đoán chỉ dựa trên thông tin quá khứ.
-    \item \textbf{Dòng chảy:} Mô hình nhận vào một chuỗi các từ (prompt) và nhiệm vụ của nó là dự đoán từ \textbf{tiếp theo có khả năng nhất}. Từ được dự đoán sau đó được nối vào chuỗi đầu vào, và quá trình này lặp lại để sinh ra từ tiếp theo, cứ thế tiếp tục.
+	\item \textbf{Cấu tạo:} Một chuỗi các khối Decoder của Transformer xếp chồng lên nhau. Quan trọng là, chúng \textbf{không có Encoder} và do đó cũng \textbf{không có lớp Cross-Attention}. Mỗi khối Decoder bao gồm các lớp con chính: Masked Multi-Head Self-Attention, Feed-Forward Network (FFN), và Layer Normalization. Các khối này được lặp lại nhiều lần (thường từ 12 đến 96 lớp tùy mô hình), với các embedding đầu vào (word embeddings + positional encodings) ở dưới cùng và một lớp dự đoán đầu ra (linear projection + softmax) ở trên cùng.
+	\item \textbf{Tính một chiều (Unidirectionality):} Đây là đặc điểm nhận dạng. Chúng sử dụng \textbf{Masked Self-Attention}. Tại mỗi vị trí, một từ chỉ có thể "chú ý" đến chính nó và các từ đứng trước nó. Nó không thể nhìn thấy các từ ở phía sau, đảm bảo rằng việc dự đoán chỉ dựa trên thông tin quá khứ. Mặt nạ (mask) là một ma trận tam giác dưới, nơi các giá trị ở trên đường chéo chính bị đặt thành $-\infty$ để loại bỏ chú ý đến tương lai.
+	\item \textbf{Dòng chảy:} Mô hình nhận vào một chuỗi các từ (prompt) và nhiệm vụ của nó là dự đoán từ \textbf{tiếp theo có khả năng nhất}. Từ được dự đoán sau đó được nối vào chuỗi đầu vào, và quá trình này lặp lại để sinh ra từ tiếp theo, cứ thế tiếp tục. Trong suy luận, có thể sử dụng các kỹ thuật như beam search hoặc sampling (e.g., top-k, nucleus sampling) để đa dạng hóa đầu ra.
+\end{itemize}
+
+\paragraph{Chi tiết Kiến trúc: Đặc điểm riêng của Decoder-Only}
+Kiến trúc Decoder-Only kế thừa trực tiếp từ phần Decoder của Transformer gốc, 
+nhưng được điều chỉnh để phục vụ sinh ngôn ngữ tự hồi quy (\textit{autoregressive generation}). 
+Điểm khác biệt then chốt nằm ở \textbf{cách sử dụng attention} và \textbf{chiến lược sinh đầu ra}.
+
+\begin{itemize}
+	\item \textbf{Masked Self-Attention:}  
+	Thay vì self-attention toàn phần như Encoder, Decoder-Only sử dụng mặt nạ nhân quả (causal mask) để ngăn token tại vị trí $t$ nhìn thấy các token tương lai $t+1, t+2, \dots$.  
+	Điều này cho phép mô hình sinh token tuần tự từ trái sang phải, phù hợp với các tác vụ sinh văn bản.
+	
+	\item \textbf{Không có Cross-Attention:}  
+	Khác với Transformer gốc dùng trong seq2seq (như trong dịch máy), Decoder-Only không có khối cross-attention vì không có đầu vào Encoder.  
+	Toàn bộ ngữ cảnh được lấy từ chính chuỗi đã sinh ra.
+	
+	\item \textbf{Chiến lược sinh đầu ra:}  
+	Sau lớp cuối cùng, mô hình chiếu các vector ẩn $h_t$ sang không gian từ vựng qua ma trận $W_{\text{out}}$ để tính phân phối xác suất:
+	\[
+	P(x_{t+1} | x_{1:t}) = \text{softmax}(W_{\text{out}} h_t + b_{\text{out}})
+	\]
+	Trong quá trình sinh, mô hình chọn token tiếp theo dựa trên xác suất này (qua sampling, top-k, nucleus, v.v.).
+	
+	\item \textbf{Residual, LayerNorm, và FFN:}  
+	Giữ nguyên cấu trúc chuẩn của Transformer (Residual connection + LayerNorm + FFN), giúp gradient ổn định và khả năng biểu diễn cao.
 \end{itemize}
 
 \paragraph{Mục tiêu Huấn luyện: Causal Language Modeling (CLM)}
 Đây là mục tiêu huấn luyện duy nhất và rất đơn giản: \textbf{Dự đoán từ tiếp theo (Next Token Prediction)}.
 \begin{itemize}
-    \item \textbf{Cơ chế:} Mô hình được cho xem một đoạn văn bản và được huấn luyện để, tại mỗi vị trí, dự đoán từ tiếp theo dựa trên tất cả các từ đã có trước đó.
-    \item \textbf{Sức mạnh của Quy mô:} Bằng cách cố gắng dự đoán từ tiếp theo trên một kho văn bản khổng lồ (hàng nghìn tỷ từ), mô hình buộc phải học một lượng kiến thức khổng lồ về thế giới, về ngữ pháp, ngữ nghĩa, và các mẫu hình lý luận để có thể đưa ra dự đoán tốt. Đây là nền tảng cho các "khả năng nổi trội" (emergent abilities) của LLMs.
+	\item \textbf{Cơ chế:} Mô hình được cho xem một đoạn văn bản và được huấn luyện để, tại mỗi vị trí, dự đoán từ tiếp theo dựa trên tất cả các từ đã có trước đó. Loss function là cross-entropy trung bình trên chuỗi:
+	\[
+	\mathcal{L} = -\frac{1}{N} \sum_{i=1}^N \log P(x_i | x_{1:i-1})
+	\]
+	Trong đó $N$ là độ dài chuỗi, và huấn luyện bằng gradient descent (thường Adam optimizer) trên batch lớn.
+	\item \textbf{Sức mạnh của Quy mô:} Bằng cách cố gắng dự đoán từ tiếp theo trên một kho văn bản khổng lồ (hàng nghìn tỷ từ), mô hình buộc phải học một lượng kiến thức khổng lồ về thế giới, về ngữ pháp, ngữ nghĩa, và các mẫu hình lý luận để có thể đưa ra dự đoán tốt. Đây là nền tảng cho các "khả năng nổi trội" (emergent abilities) của LLMs, như in-context learning, nơi mô hình học từ vài ví dụ trong prompt mà không cần cập nhật trọng số.
+	\item \textbf{Quy trình Huấn luyện Chi tiết:} 
+	\begin{itemize}
+		\item \textbf{Pre-training Phase:} Huấn luyện từ đầu (from scratch) trên dữ liệu thô lớn (e.g., CommonCrawl, books, web text). Sử dụng tokenizer (e.g., BPE hoặc WordPiece) để chuyển văn bản thành token. Batch size lớn (hàng nghìn sequences), context length lên đến 8192+ token ở mô hình mới.
+		\item \textbf{Optimization:} Sử dụng mixed precision (FP16), gradient checkpointing để tiết kiệm bộ nhớ. Learning rate scheduler (e.g., cosine decay). Thường cần supercomputers với hàng nghìn GPU, thời gian huấn luyện hàng tháng.
+		\item \textbf{Data Preprocessing:} Lọc dữ liệu để loại bỏ duplicate, low-quality text. Sử dụng techniques như deduplication, quality filtering dựa trên perplexity hoặc classifiers.
+		\item \textbf{Fine-tuning Phase (Optional):} Sau pre-training, fine-tune cho các task cụ thể, nhưng trong decoder-only, thường dùng instruction tuning hoặc RLHF để align với human preferences.
+	\end{itemize}
+	\item \textbf{RLHF (Reinforcement Learning from Human Feedback):} Một phần quan trọng trong training hiện đại. Sử dụng PPO (Proximal Policy Optimization) để tinh chỉnh mô hình dựa trên feedback con người, giảm hallucination và tăng usefulness.
 \end{itemize}
-
 \begin{center}
-    \includegraphics[width=0.8\textwidth]{gpt_clm.png}
-    \captionof{figure}{Mục tiêu huấn luyện của GPT: Causal Language Modeling. Tại mỗi bước, mô hình cố gắng dự đoán từ tiếp theo dựa trên các từ trước đó.}
-    \label{fig:gpt_clm}
+	\includegraphics[width=0.8\textwidth]{gpt_clm.png}
+	\captionof{figure}{Mục tiêu huấn luyện của GPT: Causal Language Modeling. Tại mỗi bước, mô hình cố gắng dự đoán từ tiếp theo dựa trên các từ trước đó.}
+	\label{fig:gpt_clm}
 \end{center}
+
+\paragraph{Các Token Đặc Biệt trong Decoder-Only Models}
+Trong các mô hình Decoder-Only, tokenization đóng vai trò quan trọng, và các token đặc biệt giúp mô hình xử lý chuỗi hiệu quả. Chúng thường được thêm vào từ vựng (vocabulary) và có ý nghĩa đặc biệt trong training/suy luận.
+
+\begin{itemize}
+	\item \textbf{BOS (Beginning of Sequence) Token:} Thường ký hiệu là \texttt{<s>} hoặc \texttt{[BOS]}. Được thêm vào đầu chuỗi để đánh dấu bắt đầu. Trong training, giúp mô hình dự đoán từ đầu tiên dựa trên BOS. Ví dụ: Input: \texttt{<s> The quick brown fox}.
+	\item \textbf{EOS (End of Sequence) Token:} Ký hiệu \texttt{</s>} hoặc \texttt{[EOS]}. Đánh dấu kết thúc chuỗi. Trong generation, mô hình dừng khi sinh ra EOS. Trong training, EOS là token cuối cùng để dự đoán.
+	\item \textbf{PAD (Padding) Token:} \texttt{[PAD]}. Dùng để padding các sequence trong batch có độ dài khác nhau lên cùng kích thước. Masked attention bỏ qua PAD bằng attention mask riêng (khác với causal mask).
+	\item \textbf{UNK (Unknown) Token:} \texttt{[UNK]}. Thay thế các từ ngoài từ vựng. Trong training, giúp xử lý rare words.
+	\item \textbf{Other Special Tokens:} Trong các mô hình như GPT, có thể có \texttt{<|endoftext|>} làm EOS. Trong instruction-tuned models (e.g., ChatGPT), có system/user/assistant tokens để phân biệt vai trò: \texttt{[INST]} cho instruction, \texttt{[/INST]} để kết thúc. Trong multimodal models (e.g., GPT-4o), có image tokens như \texttt{<img>} để nhúng hình ảnh vào sequence.
+	\item \textbf{Vai Trò trong Training:} Các token này được huấn luyện như token thông thường. Ví dụ, loss chỉ tính trên token thực, bỏ qua PAD. Causal mask đảm bảo không leak thông tin từ PAD hoặc future tokens.
+	\item \textbf{Tokenizer Specifics:} Sử dụng Byte-Pair Encoding (BPE) hoặc SentencePiece. Từ vựng thường 50k-100k token, bao gồm subwords để xử lý out-of-vocab. Ví dụ: "transformer" có thể thành "trans" + "former".
+\end{itemize}
 
 \subsubsection{Sự phát triển và các mô hình tiêu biểu}
 Họ mô hình này đã chứng kiến sự phát triển bùng nổ, từ các mô hình tiên phong đến một hệ sinh thái đa dạng các LLMs mã nguồn mở và đóng.
-
 \paragraph{1. Gia đình GPT (OpenAI): Những người tiên phong và dẫn đầu}
 Họ mô hình GPT của OpenAI không chỉ định hình nên kiến trúc Decoder-Only mà còn liên tục đẩy lùi các giới hạn của AI.
 \begin{itemize}
-    \item \textbf{GPT (2018) \cite{radford2018improving}:} Bài báo gốc chứng minh rằng một mô hình Transformer chỉ-Decoder được huấn luyện trước có thể được tinh chỉnh hiệu quả cho các tác vụ NLU.
-    \item \textbf{GPT-2 (2019) \cite{radford2019language}:} Gây tiếng vang lớn khi cho thấy việc tăng quy mô (lên tới 1.5 tỷ tham số) có thể tạo ra một mô hình có khả năng sinh văn bản mạch lạc đáng kinh ngạc mà không cần tinh chỉnh (zero-shot).
-    \item \textbf{GPT-3 (2020) \cite{brown2020language}:} Mở ra kỷ nguyên LLM thực sự với 175 tỷ tham số. GPT-3 lần đầu tiên thể hiện rõ các \textbf{khả năng nổi trội (emergent abilities)}, đặc biệt là \textbf{học trong ngữ cảnh (in-context learning)}, cho phép nó thực hiện các tác vụ chỉ bằng cách cung cấp vài ví dụ trong prompt (few-shot).
-    \item \textbf{InstructGPT \& ChatGPT \cite{ouyang2022training}:} Đánh dấu một bước ngoặt từ "mô hình ngôn ngữ" sang "trợ lý AI" bằng cách sử dụng các kỹ thuật căn chỉnh (alignment) như \textbf{Instruction Tuning} và \textbf{RLHF} (Reinforcement Learning from Human Feedback) để làm cho mô hình hữu ích, trung thực và an toàn hơn.
-    \item \textbf{GPT-4 \& GPT-4o (2023-2024) \cite{openai2023gpt4, openai2024gpt4o}:} Là các mô hình SOTA hiện tại, không chỉ mạnh mẽ hơn về ngôn ngữ mà còn trở thành các mô hình \textbf{đa phương thức (multimodal)}, có khả năng hiểu và xử lý cả văn bản, hình ảnh, và âm thanh.
+	\item \textbf{GPT (2018) \cite{radford2018improving}:} Bài báo gốc chứng minh rằng một mô hình Transformer chỉ-Decoder được huấn luyện trước có thể được tinh chỉnh hiệu quả cho các tác vụ NLU. Với 117M tham số, nó sử dụng pre-training trên BooksCorpus và fine-tuning cho downstream tasks.
+	\item \textbf{GPT-2 (2019) \cite{radford2019language}:} Gây tiếng vang lớn khi cho thấy việc tăng quy mô (lên tới 1.5 tỷ tham số) có thể tạo ra một mô hình có khả năng sinh văn bản mạch lạc đáng kinh ngạc mà không cần tinh chỉnh (zero-shot). Nó huấn luyện trên WebText (8M documents), chứng minh scaling laws.
+	\item \textbf{GPT-3 (2020) \cite{brown2020language}:} Mở ra kỷ nguyên LLM thực sự với 175 tỷ tham số. GPT-3 lần đầu tiên thể hiện rõ các \textbf{khả năng nổi trội (emergent abilities)}, đặc biệt là \textbf{học trong ngữ cảnh (in-context learning)}, cho phép nó thực hiện các tác vụ chỉ bằng cách cung cấp vài ví dụ trong prompt (few-shot). Huấn luyện trên 45TB dữ liệu lọc.
+	\item \textbf{InstructGPT \& ChatGPT \cite{ouyang2022training}:} Đánh dấu một bước ngoặt từ "mô hình ngôn ngữ" sang "trợ lý AI" bằng cách sử dụng các kỹ thuật căn chỉnh (alignment) như \textbf{Instruction Tuning} (huấn luyện trên dataset instruction-response) và \textbf{RLHF} (Reinforcement Learning from Human Feedback) để làm cho mô hình hữu ích, trung thực và an toàn hơn. RLHF sử dụng reward model từ human rankings.
+	\item \textbf{GPT-4 \& GPT-4o (2023-2024) \cite{openai2023gpt4, openai2024gpt4o}:} Là các mô hình SOTA hiện tại, không chỉ mạnh mẽ hơn về ngôn ngữ mà còn trở thành các mô hình \textbf{đa phương thức (multimodal)}, có khả năng hiểu và xử lý cả văn bản, hình ảnh, và âm thanh. GPT-4o tối ưu hóa cho real-time interaction, với context window lên đến 128k tokens.
 \end{itemize}
-
 \paragraph{2. Làn sóng LLMs Mã nguồn mở và các đối thủ cạnh tranh}
 Sự thành công của GPT đã thúc đẩy một làn sóng nghiên cứu và phát triển LLMs trên toàn thế giới, với nhiều mô hình mã nguồn mở mạnh mẽ.
 \begin{itemize}
-    \item \textbf{LLaMA (Meta) \cite{touvron2023llama}:} Họ mô hình LLaMA (và các phiên bản kế nhiệm LLaMA 2, LLaMA 3) đã "dân chủ hóa" LLMs, cung cấp các mô hình mã nguồn mở có hiệu năng cực kỳ cạnh tranh, tạo điều kiện cho một hệ sinh thái ứng dụng và nghiên cứu khổng lồ.
-    \item \textbf{Mistral (Pháp):} Nổi lên như một đối thủ đáng gờm với các mô hình hiệu năng cao nhưng kích thước nhỏ gọn (ví dụ: Mistral 7B \cite{jiang2023mistral}). Họ cũng đi tiên phong trong việc thương mại hóa kiến trúc \textbf{Mixture of Experts (MoE)} với mô hình Mixtral, giúp tăng đáng kể số lượng tham số mà không tăng chi phí suy luận tương ứng.
-    \item \textbf{Claude (Anthropic):} Được biết đến với "cửa sổ ngữ cảnh" (context window) rất lớn và tập trung mạnh vào sự an toàn thông qua phương pháp \textbf{Constitutional AI} \cite{bai2022constitutional}.
-    \item \textbf{Các mô hình đáng chú ý khác:}
-        \begin{itemize}
-            \item \textbf{Google:} Gemma (mã nguồn mở), Gemini (mô hình SOTA cạnh tranh với GPT-4).
-            \item \textbf{Cohere:} Command R(+), tập trung vào các ứng dụng doanh nghiệp và Retrieval-Augmented Generation (RAG).
-            \item \textbf{Các mô hình từ Trung Quốc:} Qwen (Alibaba), Yi, Baichuan, InternLM, DeepSeek, thể hiện sự tiến bộ nhanh chóng của cộng đồng AI Trung Quốc.
-            \item \textbf{TII (UAE):} Falcon.
-        \end{itemize}
+	\item \textbf{LLaMA (Meta) \cite{touvron2023llama}:} Họ mô hình LLaMA (và các phiên bản kế nhiệm LLaMA 2, LLaMA 3) đã "dân chủ hóa" LLMs, cung cấp các mô hình mã nguồn mở có hiệu năng cực kỳ cạnh tranh, tạo điều kiện cho một hệ sinh thái ứng dụng và nghiên cứu khổng lồ. LLaMA 3 (2024) với 70B/405B tham số, huấn luyện trên 15T tokens, hỗ trợ multilingual.
+	\item \textbf{Mistral (Pháp):} Nổi lên như một đối thủ đáng gờm với các mô hình hiệu năng cao nhưng kích thước nhỏ gọn (ví dụ: Mistral 7B \cite{jiang2023mistral}). Họ cũng đi tiên phong trong việc thương mại hóa kiến trúc \textbf{Mixture of Experts (MoE)} với mô hình Mixtral, giúp tăng đáng kể số lượng tham số mà không tăng chi phí suy luận tương ứng. MoE kích hoạt chỉ một phần experts per token.
+	\item \textbf{Claude (Anthropic):} Được biết đến với "cửa sổ ngữ cảnh" (context window) rất lớn (lên đến 200k tokens) và tập trung mạnh vào sự an toàn thông qua phương pháp \textbf{Constitutional AI} \cite{bai2022constitutional}, nơi mô hình tuân thủ các nguyên tắc đạo đức được định nghĩa.
+	\item \textbf{Các mô hình đáng chú ý khác:}
+	\begin{itemize}
+		\item \textbf{Google:} Gemma (mã nguồn mở, 2B-7B), Gemini (mô hình SOTA cạnh tranh với GPT-4, multimodal với native audio/video).
+		\item \textbf{Cohere:} Command R(+), tập trung vào các ứng dụng doanh nghiệp và Retrieval-Augmented Generation (RAG), với tool-use capabilities.
+		\item \textbf{Các mô hình từ Trung Quốc:} Qwen (Alibaba, multilingual), Yi (01.ai, 34B+), Baichuan, InternLM, DeepSeek (math-focused), thể hiện sự tiến bộ nhanh chóng của cộng đồng AI Trung Quốc với dữ liệu lớn từ web Trung.
+		\item \textbf{TII (UAE):} Falcon (40B/180B), huấn luyện trên RefinedWeb dataset.
+	\end{itemize}
 \end{itemize}
-
 \paragraph{3. Các mô hình Decoder-Only chuyên biệt}
 Bên cạnh các LLM đa dụng, nhiều mô hình được huấn luyện đặc biệt cho các miền cụ thể.
 \begin{itemize}
-    \item \textbf{Code LLMs:} Các mô hình được huấn luyện chủ yếu trên dữ liệu mã nguồn để hỗ trợ lập trình. Ví dụ: Codex \cite{chen2021evaluating} (nền tảng của GitHub Copilot đời đầu), StarCoder\cite{li2023starcoder}, CodeLLaMA \cite{roziere2023code}, Phi-3 (Microsoft).
-    \item \textbf{Dialogue-focused Models:} Các mô hình được tinh chỉnh đặc biệt cho các tác vụ hội thoại, là tiền thân của các chatbot hiện đại. Ví dụ: DialoGPT (Microsoft) \cite{zhang2019dialogpt}, ChatGLM (Trung Quốc).
+	\item \textbf{Code LLMs:} Các mô hình được huấn luyện chủ yếu trên dữ liệu mã nguồn để hỗ trợ lập trình. Ví dụ: Codex \cite{chen2021evaluating} (nền tảng của GitHub Copilot đời đầu, huấn luyện trên GitHub repos), StarCoder\cite{li2023starcoder} (BigCode project, ethical data), CodeLLaMA \cite{roziere2023code} (dựa trên LLaMA, với infilling capabilities), Phi-3 (Microsoft, small but powerful for code).
+	\item \textbf{Dialogue-focused Models:} Các mô hình được tinh chỉnh đặc biệt cho các tác vụ hội thoại, là tiền thân của các chatbot hiện đại. Ví dụ: DialoGPT (Microsoft) \cite{zhang2019dialogpt} (dựa trên GPT-2, huấn luyện trên Reddit dialogues), ChatGLM (Trung Quốc, multilingual chat).
+	\item \textbf{Other Specialized:} Math-focused như Minerva (Google), hoặc domain-specific như BioGPT cho biomedical text.
 \end{itemize}
-
 \begin{tcolorbox}[
-    title=Tổng kết: Điểm mạnh và Ứng dụng của Decoder-Only,
-    colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
-]
-\textbf{Nguyên tắc chung:} Sử dụng mô hình Decoder-Only khi tác vụ của bạn đòi hỏi việc \textbf{sinh ra một chuỗi văn bản mới, mạch lạc, và có tính sáng tạo} dựa trên một ngữ cảnh đầu vào. Chúng là các mô hình \textbf{NLG (Natural Language Generation)} và là nền tảng của AI tạo sinh (Generative AI).
-
-\textbf{Điểm mạnh:}
-\begin{itemize}
-    \item \textbf{Khả năng sinh văn bản xuất sắc:} Là kiến trúc tốt nhất cho mọi tác vụ NLG.
-    \item \textbf{Tính linh hoạt (Zero-shot/Few-shot):} Các mô hình lớn có thể thực hiện nhiều tác vụ chỉ thông qua prompt mà không cần fine-tuning, rất linh hoạt và tiết kiệm chi phí gán nhãn.
-\end{itemize}
-\textbf{Điểm yếu:}
-\begin{itemize}
-    \item \textbf{Hiểu ngữ cảnh không sâu bằng Encoder-Only:} Do bản chất một chiều, biểu diễn của một từ không được "nhìn thấy" các từ phía sau. Điều này làm chúng kém tối ưu hơn cho các tác vụ NLU thuần túy so với BERT/RoBERTa.
-    \item \textbf{Dễ "ảo giác" (Hallucination):} Có xu hướng bịa đặt thông tin một cách tự tin.
-    \item \textbf{Quá trình sinh tuần tự là chậm.}
-\end{itemize}
-
-\textbf{Ứng dụng điển hình:}
-\begin{itemize}
-    \item \textbf{Hệ thống Đối thoại và Trợ lý ảo (Chatbots):} ChatGPT, Claude, Gemini.
-    \item \textbf{Sáng tạo nội dung:} Viết văn, làm thơ, soạn email, tóm tắt văn bản (abstractive summarization).
-    \item \textbf{Lập trình và Sinh mã (Code Generation):} GitHub Copilot.
-    \item \textbf{Giải quyết vấn đề thông qua Prompting:} Bất kỳ tác vụ nào có thể được định dạng dưới dạng "đầu vào -> đầu ra văn bản", từ dịch máy, trả lời câu hỏi, đến lý luận toán học.
-\end{itemize}
+	title=Tổng kết: Điểm mạnh và Ứng dụng của Decoder-Only,
+	colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
+	]
+	\textbf{Nguyên tắc chung:} Sử dụng mô hình Decoder-Only khi tác vụ của bạn đòi hỏi việc \textbf{sinh ra một chuỗi văn bản mới, mạch lạc, và có tính sáng tạo} dựa trên một ngữ cảnh đầu vào. Chúng là các mô hình \textbf{NLG (Natural Language Generation)} và là nền tảng của AI tạo sinh (Generative AI).
+	\textbf{Điểm mạnh:}
+	\begin{itemize}
+		\item \textbf{Khả năng sinh văn bản xuất sắc:} Là kiến trúc tốt nhất cho mọi tác vụ NLG, nhờ autoregressive nature.
+		\item \textbf{Tính linh hoạt (Zero-shot/Few-shot):} Các mô hình lớn có thể thực hiện nhiều tác vụ chỉ thông qua prompt mà không cần fine-tuning, rất linh hoạt và tiết kiệm chi phí gán nhãn. In-context learning cho phép adapt nhanh.
+		\item \textbf{Scaling Benefits:} Theo Chinchilla scaling laws, hiệu năng tăng với data và params.
+	\end{itemize}
+	\textbf{Điểm yếu:}
+	\begin{itemize}
+		\item \textbf{Hiểu ngữ cảnh không sâu bằng Encoder-Only:} Do bản chất một chiều, biểu diễn của một từ không được "nhìn thấy" các từ phía sau. Điều này làm chúng kém tối ưu hơn cho các tác vụ NLU thuần túy so với BERT/RoBERTa, mặc dù có thể dùng cho classification bằng prompt.
+		\item \textbf{Dễ "ảo giác" (Hallucination):} Có xu hướng bịa đặt thông tin một cách tự tin, do thiếu grounding. Giải quyết bằng RAG hoặc verification.
+		\item \textbf{Quá trình sinh tuần tự là chậm:} Autoregressive generation O(n) time, nhưng có optimizations như speculative decoding.
+		\item \textbf{Bộ nhớ cao:} Context window lớn đòi hỏi KV cache lớn trong inference.
+	\end{itemize}
+	\textbf{Ứng dụng điển hình:}
+	\begin{itemize}
+		\item \textbf{Hệ thống Đối thoại và Trợ lý ảo (Chatbots):} ChatGPT, Claude, Gemini, với multi-turn conversations.
+		\item \textbf{Sáng tạo nội dung:} Viết văn, làm thơ, soạn email, tóm tắt văn bản (abstractive summarization), story generation.
+		\item \textbf{Lập trình và Sinh mã (Code Generation):} GitHub Copilot, autocompletion, debugging.
+		\item \textbf{Giải quyết vấn đề thông qua Prompting:} Bất kỳ tác vụ nào có thể được định dạng dưới dạng "đầu vào -> đầu ra văn bản", từ dịch máy, trả lời câu hỏi, đến lý luận toán học, agent-based systems.
+		\item \textbf{Multimodal Extensions:} Image captioning, visual QA in GPT-4V.
+	\end{itemize}
 \end{tcolorbox}
-
 
 \subsection{Họ Mô hình Encoder-Decoder: Sự kết hợp của hai thế giới}
 \label{ssec:encoder_decoder_models}

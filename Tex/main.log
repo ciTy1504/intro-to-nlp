@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.4) (preloaded format=xelatex 2025.9.4)  21 OCT 2025 14:36
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.4) (preloaded format=xelatex 2025.9.4)  28 OCT 2025 13:36
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1303,7 +1303,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 [3]
 
 Package babel Info: 'vietnamese' activates 'vietnamese' shorthands.
-(babel)             Reported on input line 314.
+(babel)             Reported on input line 330.
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -2431,18 +2431,8 @@ File: images/scaled_dot_product_attention.png Graphic file (type bmp)
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 81.
+(caption)                particular \caption on input line 93.
 See the caption package documentation for explanation.
-
-File: images/multi_head_attention.png Graphic file (type bmp)
-<images/multi_head_attention.png>
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 101.
-See the caption package documentation for explanation.
-
-
-Underfull \vbox (badness 1910) has occurred while \output is active []
 
 
 
@@ -2454,15 +2444,13 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [87]
-Overfull \hbox (11.16974pt too wide) in paragraph at lines 121--122
-[]\TU/TimesNewRoman(0)/b/n/10.95 Residual Connection (Kết nối phần dư): \TU/Tim
-esNewRoman(0)/m/n/10.95 Đầu ra của mỗi lớp con là $[]\OT1/cmr/m/n/10.95 (\OML/c
-mm/m/it/10.95 x \OT1/cmr/m/n/10.95 + [](\OML/cmm/m/it/10.95 x\OT1/cmr/m/n/10.95
- ))$\TU/TimesNewRoman(0)/m/n/10.95 .
- []
+File: images/multi_head_attention.png Graphic file (type bmp)
+<images/multi_head_attention.png>
 
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 119.
+See the caption package documentation for explanation.
 
 
 
@@ -2492,12 +2480,21 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [90]) (part1/chapters_part4/chap4_2.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[91]
 File: images/bert_mlm_nsp.png Graphic file (type bmp)
 <images/bert_mlm_nsp.png>
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 37.
+(caption)                particular \caption on input line 50.
 See the caption package documentation for explanation.
 
 
@@ -2509,23 +2506,11 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[91]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
 [92]
-Overfull \hbox (3.7255pt too wide) in paragraph at lines 67--68
-[]\TU/TimesNewRoman(0)/b/n/10.95 CamemBERT [[]] (Pháp), PhoBERT [[]] (Việt), et
-c.: \TU/TimesNewRoman(0)/m/n/10.95 Là các mô hình theo kiến trúc RoBERTa
+Overfull \hbox (3.31746pt too wide) in paragraph at lines 91--97
+[] []\TU/TimesNewRoman(0)/b/n/10.95 Tham Số Huấn Luyện[] \TU/TimesNewRoman(0)/m
+/n/10.95 - Dữ liệu: BERT: 16GB (BookCorpus + Wikipedia). RoBERTa: 160GB
  []
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
@@ -2537,21 +2522,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [93]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[94]
-File: images/gpt_clm.png Graphic file (type bmp)
-<images/gpt_clm.png>
+File: images/transformer_encoder_detailed.png Graphic file (type bmp)
+<images/transformer_encoder_detailed.png>
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 129.
+(caption)                particular \caption on input line 102.
 See the caption package documentation for explanation.
 
 
@@ -2563,14 +2539,32 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[95]
-Overfull \hbox (6.41533pt too wide) in paragraph at lines 155--156
-[]\TU/TimesNewRoman(0)/b/n/10.95 Cohere: \TU/TimesNewRoman(0)/m/n/10.95 Command
- R(+), tập trung vào các ứng dụng doanh nghiệp và Retrieval-Augmented
+[94]
+Overfull \hbox (3.00154pt too wide) in paragraph at lines 129--132
+[] []\TU/TimesNewRoman(0)/b/n/10.95 4. Encoder Hiện Đại[] \TU/TimesNewRoman(0)/
+m/n/10.95 - \TU/TimesNewRoman(0)/b/n/10.95 MiniLM: \TU/TimesNewRoman(0)/m/n/10.
+95 Distill multi-layer: Loss trên attention matrices $\OML/cmm/m/it/10.95 KL\OT
+1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 A[]\OMS/cmsy/m/n/10.95 jj\OML/cmm/m/it/10.
+95 A[]\OT1/cmr/m/n/10.95 )$\TU/TimesNewRoman(0)/m/n/10.95 ,
  []
 
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[95]
+File: images/gpt_clm.png Graphic file (type bmp)
+<images/gpt_clm.png>
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 203.
+See the caption package documentation for explanation.
 
 
 
@@ -2590,7 +2584,13 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[97]) (part1/chapters_part4/chap4_3.tex
+[97]
+Overfull \hbox (15.12646pt too wide) in paragraph at lines 241--242
+[]\TU/TimesNewRoman(0)/b/n/10.95 Các mô hình từ Trung Quốc: \TU/TimesNewRoman(0
+)/m/n/10.95 Qwen (Alibaba, multilingual), Yi (01.ai, 34B+), Baichuan,
+ []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -2600,6 +2600,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [98]
+Overfull \hbox (12.46773pt too wide) in paragraph at lines 250--251
+[]\TU/TimesNewRoman(0)/b/n/10.95 Other Specialized: \TU/TimesNewRoman(0)/m/n/10
+.95 Math-focused như Minerva (Google), hoặc domain-specific như BioGPT
+ []
+
+
+Underfull \vbox (badness 1142) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -2618,10 +2627,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [100]
-Missing character: There is no � in font Times New Roman/OT:script=latn;languag
-e=dflt;mapping=tex-text;!
-Missing character: There is no � in font Times New Roman/OT:script=latn;languag
-e=dflt;mapping=tex-text;!
+Overfull \hbox (2.96051pt too wide) in paragraph at lines 321--322
+[]\TU/TimesNewRoman(0)/b/n/10.95 Flan-T5 (Google): \TU/TimesNewRoman(0)/m/n/10.
+95 Là một phiên bản của T5 đã được \TU/TimesNewRoman(0)/b/n/10.95 tinh chỉnh th
+eo chỉ dẫn (instruction-
+ []
+
+) (part1/chapters_part4/chap4_3.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
 
 
 
@@ -2632,6 +2646,9 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [101]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -2641,31 +2658,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [102]
-Underfull \hbox (badness 6078) in paragraph at lines 178--178
-[]|\TU/TimesNewRoman(0)/m/n/10.95 Tần suất cặp cao
- []
-
-
-Underfull \hbox (badness 3713) in paragraph at lines 178--178
-[]|\TU/TimesNewRoman(0)/m/n/10.95 Tối đa hóa likeli-
- []
-
-
-Underfull \hbox (badness 2205) in paragraph at lines 178--178
-[]|\TU/TimesNewRoman(0)/m/n/10.95 Coi là ký tự bình
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 178--178
-[]|\TU/TimesNewRoman(0)/m/n/10.95 GPT, RoBERTa,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 178--178
-[]|\TU/TimesNewRoman(0)/m/n/10.95 T5, ALBERT,
- []
-
-) (part1/chapters_part4/chap4_4.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -2675,14 +2667,10 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [103]
-File: images/sparse_attention_patterns.png Graphic file (type bmp)
-<images/sparse_attention_patterns.png>
-
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 47.
-See the caption package documentation for explanation.
-
+Missing character: There is no � in font Times New Roman/OT:script=latn;languag
+e=dflt;mapping=tex-text;!
+Missing character: There is no � in font Times New Roman/OT:script=latn;languag
+e=dflt;mapping=tex-text;!
 
 
 
@@ -2702,6 +2690,46 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [105]
+Underfull \hbox (badness 10000) in paragraph at lines 178--178
+[]|\TU/TimesNewRoman(0)/b/n/10.95 SentencePiece
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 178--178
+[]|\TU/TimesNewRoman(0)/m/n/10.95 Top-down (loại
+ []
+
+
+Underfull \hbox (badness 1270) in paragraph at lines 178--178
+[]|\TU/TimesNewRoman(0)/m/n/10.95 Giữ lại token để
+ []
+
+
+Underfull \hbox (badness 2635) in paragraph at lines 178--178
+[]|\TU/TimesNewRoman(0)/m/n/10.95 Duy nhất (deter-
+ []
+
+
+Underfull \hbox (badness 2635) in paragraph at lines 178--178
+[]|\TU/TimesNewRoman(0)/m/n/10.95 Duy nhất (deter-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 178--178
+[]|\TU/TimesNewRoman(0)/m/n/10.95 GPT, RoBERTa,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 178--178
+[]|\TU/TimesNewRoman(0)/m/n/10.95 BERT, Distil-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 178--178
+[]|\TU/TimesNewRoman(0)/m/n/10.95 T5, ALBERT,
+ []
+
+) (part1/chapters_part4/chap4_4.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -2710,14 +2738,19 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[106]) (part1/chapters_part4/chap4_5.tex
-File: images/moe_transformer_block.png Graphic file (type bmp)
-<images/moe_transformer_block.png>
+[106]
+File: images/sparse_attention_patterns.png Graphic file (type bmp)
+<images/sparse_attention_patterns.png>
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 34.
+(caption)                particular \caption on input line 47.
 See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 40--47
+ [] 
+ []
 
 
 
@@ -2746,7 +2779,10 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[109]) (part1/chapters_part5/intro.tex
+[109]) (part1/chapters_part4/chap4_5.tex
+Underfull \vbox (badness 4660) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -2756,7 +2792,65 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [110]
+File: images/moe_transformer_block.png Graphic file (type bmp)
+<images/moe_transformer_block.png>
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 34.
+See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 33--34
+ [] 
+ []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[111]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[112]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[113]) (part1/chapters_part5/intro.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[114]
 Chương 5.
+
+Overfull \hbox (24.23811pt too wide) in paragraph at lines 1--1
+|\TU/TimesNewRoman(0)/b/n/20.74 LÝ THUYẾT VỀ TINH CHỈNH VÀ CĂN CHỈNH
+ []
+
 ) (part1/chapters_part5/chap5_1.tex
 File: images/transfer_learning_paradigm.png Graphic file (type bmp)
 <images/transfer_learning_paradigm.png>
@@ -2771,7 +2865,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[111
+[115
 
 ]
 
@@ -2782,7 +2876,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[112]) (part1/chapters_part5/chap5_2.tex
+[116]) (part1/chapters_part5/chap5_2.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -2791,10 +2885,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[113]
+[117]
+Overfull \hbox (3.18857pt too wide) in paragraph at lines 24--25
+[]\TU/TimesNewRoman(0)/b/n/10.95 Adapter-based methods (Adapters)\TU/TimesNewRo
+man(0)/m/n/10.95 : chèn các lớp adapter \TU/TimesNewRoman(0)/m/it/10.95 bottlen
+eck \TU/TimesNewRoman(0)/m/n/10.95 vào từng khối Trans-
+ []
+
 File: images/5group_peft_venn.jpg Graphic file (type bmp)
 <images/5group_peft_venn.jpg>
-
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
 (caption)                particular \caption on input line 34.
@@ -2809,55 +2908,13 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[114]
-Overfull \hbox (1.17326pt too wide) in paragraph at lines 76--78
-[]\TU/TimesNewRoman(0)/b/n/10.95 Parallel Adapters[[]], AdaMix[[]], Ladder-Side
- Tuning[[]]: \TU/TimesNewRoman(0)/m/n/10.95 Các module phụ được chèn
- []
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[115]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[116]
-Overfull \hbox (1.49399pt too wide) in paragraph at lines 187--187
-|[]\TU/TimesNewRoman(0)/b/n/12 Group 3 — Soft Prompts / Prefix-based Methods (P
-hương pháp dựa trên Prompt
- []
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[117]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
 [118]
+Overfull \hbox (2.76794pt too wide) in paragraph at lines 76--78
+[]\TU/TimesNewRoman(0)/b/n/10.95 Parallel Adapters[[]], AdaMix[[]], Ladder-Side
+ Tuning[[]]: \TU/TimesNewRoman(0)/m/n/10.95 Các module phụ được
+ []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -2876,12 +2933,67 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [120]
-Overfull \hbox (8.97859pt too wide) in paragraph at lines 427--429
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[121]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[122]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[123]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[124]
+Overfull \hbox (36.35358pt too wide) in paragraph at lines 427--429
 \TU/TimesNewRoman(0)/m/n/10.95 Mặc dù năm nhóm phương pháp chính (Additive, Ada
 pter-based, Soft Prompt, Selective, Reparametriza-
  []
 
 
+Overfull \hbox (1.34486pt too wide) in paragraph at lines 454--458
+[]\TU/TimesNewRoman(0)/b/n/10.95 Prompt Adapter / WARP [[]]/ Soft-Adapter \TU/T
+imesNewRoman(0)/m/it/10.95 (Adapters + Soft Prompt)\TU/TimesNewRoman(0)/m/n/10.
+95 : Kết hợp adapter
+ []
+
+
+Underfull \vbox (badness 1137) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[125]
 Underfull \hbox (badness 10000) in paragraph at lines 481--481
 []|\TU/TimesNewRoman(0)/b/n/10.95 Tham số
  []
@@ -2917,21 +3029,10 @@ Overfull \hbox (53.864pt too wide) in paragraph at lines 479--492
  []
 
 
-Underfull \vbox (badness 3601) has occurred while \output is active []
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[121]
-Overfull \hbox (1.32301pt too wide) in paragraph at lines 511--513
-\TU/TimesNewRoman(0)/m/n/10.95 hình thế hệ PEFT tiếp theo — kết hợp được tính t
-oán học (Reparam) và tính linh hoạt (Adapter/Prompt). 
+Overfull \hbox (3.19302pt too wide) in paragraph at lines 507--508
+[]\TU/TimesNewRoman(0)/b/n/10.95 Không có quyền truy cập trọng số (closed-weigh
+t model / API): \TU/TimesNewRoman(0)/m/n/10.95 chỉ có thể dùng \TU/TimesNewRoma
+n(0)/b/n/10.95 Prompt-
  []
 
 
@@ -2943,53 +3044,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[122]) (part1/chapters_part5/chap5_3.tex
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[123]
-Underfull \hbox (badness 10000) in paragraph at lines 56--65
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 56--65
-
- []
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[124]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[125]) (part1/chapters_part5/chap5_4.tex
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[126]
+[126]) (part1/chapters_part5/chap5_3.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -2999,6 +3054,19 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [127]
+Underfull \hbox (badness 10000) in paragraph at lines 56--65
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--65
+
+ []
+
+
+Underfull \vbox (badness 1968) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3007,14 +3075,8 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[128]) (part1/chapters_part5/chap5_5.tex
-File: images/rlhf_pipeline.png Graphic file (type bmp)
-<images/rlhf_pipeline.png>
-
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 36.
-See the caption package documentation for explanation.
+[128]
+Underfull \vbox (badness 2913) has occurred while \output is active []
 
 
 
@@ -3034,7 +3096,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[130]
+[130]) (part1/chapters_part5/chap5_4.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3052,7 +3114,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[132]
+[132]) (part1/chapters_part5/chap5_5.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3062,6 +3124,23 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [133]
+File: images/rlhf_pipeline.png Graphic file (type bmp)
+<images/rlhf_pipeline.png>
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 36.
+See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 35--36
+ [] 
+ []
+
+
+Underfull \vbox (badness 1577) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3070,7 +3149,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[134]) (part1/chapters_part6/intro.tex
+[134]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3088,11 +3167,14 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[136
+[136]
 
-]
-Chương 6.
-) (part1/chapters_part6/chap6_1.tex
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [137]
 
@@ -3103,16 +3185,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[138]
-File: images/rag_pipeline_diagram.png Graphic file (type bmp)
-<images/rag_pipeline_diagram.png>
-
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 71.
-See the caption package documentation for explanation.
-
-
+[138])
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3121,7 +3194,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[139]
+[139] (part1/chapters_part6/intro.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3131,15 +3204,20 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [140]
+Chương 6.
+
+Overfull \hbox (11.53894pt too wide) in paragraph at lines 1--1
+|\TU/TimesNewRoman(0)/b/n/20.74 CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO| 
+ []
+
+) (part1/chapters_part6/chap6_1.tex
+
+[141
+
+]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[141]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3149,7 +3227,18 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [142]
-Underfull \vbox (badness 10000) has occurred while \output is active []
+File: images/rag_pipeline_diagram.png Graphic file (type bmp)
+<images/rag_pipeline_diagram.png>
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 71.
+See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 70--71
+ [] 
+ []
 
 
 
@@ -3161,7 +3250,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [143]
-Underfull \vbox (badness 10000) has occurred while \output is active []
+Overfull \hbox (12.12419pt too wide) in paragraph at lines 101--102
+[]\TU/TimesNewRoman(0)/b/n/10.95 Công nghệ: \TU/TimesNewRoman(0)/m/n/10.95 Kết 
+hợp \TU/TimesNewRoman(0)/m/it/10.95 Sparse Retrieval \TU/TimesNewRoman(0)/m/n/1
+0.95 (BM25/TF-IDF) với \TU/TimesNewRoman(0)/m/it/10.95 Dense Retrieval \TU/Time
+sNewRoman(0)/m/n/10.95 (bi-encoders
+ []
 
 
 
@@ -3173,9 +3267,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [144]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3185,9 +3276,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [145]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3198,6 +3286,49 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 [146]
 
+! LaTeX Error: Too deeply nested.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.220                 \item
+                            \textbf{Mở rộng Từ đồng nghĩa (Synonym/Thesaurus...
+
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+! LaTeX Error: Too deeply nested.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.230                 \item
+                            \textbf{Phản hồi Giả liên quan (Pseudo-Relevance...
+
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+! LaTeX Error: Too deeply nested.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.239                 \item
+                            \textbf{Dựa trên Vector Embedding (Embedding-bas...
+
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.83772pt, for example:
@@ -3206,12 +3337,35 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [147]
-Overfull \hbox (9.76819pt too wide) in paragraph at lines 453--454
-[]\TU/TimesNewRoman(0)/b/n/10.95 Vòng lặp Phản hồi (Feedback Loop): \TU/TimesNe
-wRoman(0)/m/n/10.95 Thu thập phản hồi từ người dùng (ví dụ: nút ”thích”/”không
- []
 
-) (part1/chapters_part6/chap6_2.tex
+! LaTeX Error: Too deeply nested.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.257                 \item
+                            \textbf{Pooling với các Mở rộng (Average Pooling...
+
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+! LaTeX Error: Too deeply nested.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.269                 \item
+                            \textbf{ColBERT (Late Interaction):}
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3221,6 +3375,100 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [148]
+Overfull \hbox (28.50577pt too wide) in paragraph at lines 291--293
+\TU/CourierNew(0)/m/n/10.95 "Samsung"\TU/TimesNewRoman(0)/m/n/10.95 , \TU/Couri
+erNew(0)/m/n/10.95 giá < 10,000,000 VNĐ\TU/TimesNewRoman(0)/m/n/10.95 , \TU/Cou
+rierNew(0)/m/n/10.95 tính năng = "pin dung lượng
+ []
+
+
+! LaTeX Error: Too deeply nested.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.300                 \item
+                            \textbf{Học để Truy xuất (Learning to Retrieve w...
+
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[149]
+
+! LaTeX Error: Too deeply nested.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.322                 \item
+                            \textbf{Học Biểu diễn Truy vấn (DPR, ColBERT, Re...
+
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[150]
+Overfull \hbox (5.22745pt too wide) in paragraph at lines 371--373
+[]\TU/TimesNewRoman(0)/b/n/10.95 Chain-of-Thought (CoT) RAG: \TU/TimesNewRoman(
+0)/m/n/10.95 LLM thực hiện suy luận từng bước một (”think
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[151]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[152]) (part1/chapters_part6/chap6_2.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[153]
 File: images/knowledge_distillation.png Graphic file (type bmp)
 <images/knowledge_distillation.png>
 
@@ -3238,96 +3486,14 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[149]
-
-LaTeX Warning: Reference `ssec:qlora' on page 150 undefined on input line 88.
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[150]
-File: images/pruning_types.png Graphic file (type bmp)
-<images/pruning_types.png>
-
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 124.
-See the caption package documentation for explanation.
-
-) (part1/chapters_part6/chap6_3.tex
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[151]
-File: images/vision_transformer_vit.png Graphic file (type bmp)
-<images/vision_transformer_vit.png>
-
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 40.
-See the caption package documentation for explanation.
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[152]
-
-LaTeX Warning: Reference `sec:siamese_networks' on page 153 undefined on input 
-line 51.
-
-File: images/clip_contrastive_learning.png Graphic file (type bmp)
-<images/clip_contrastive_learning.png>
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 74.
-See the caption package documentation for explanation.
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[153]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
 [154]
-File: images/text_to_image_diffusion.jpg Graphic file (type bmp)
-<images/text_to_image_diffusion.jpg>
+Overfull \hbox (2.18375pt too wide) in paragraph at lines 81--83
+[] []\TU/TimesNewRoman(0)/b/n/10.95 Quantization-Aware Training (QAT) - Huấn lu
+yện Nhận biết Lượng tử hóa[] \TU/TimesNewRoman(0)/m/n/10.95 Đây là phương
+ []
 
 
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 131.
-See the caption package documentation for explanation.
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
+LaTeX Warning: Reference `ssec:qlora' on page 155 undefined on input line 88.
 
 
 
@@ -3339,6 +3505,20 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [155]
+File: images/pruning_types.png Graphic file (type bmp)
+<images/pruning_types.png>
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 124.
+See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 123--124
+ [] 
+ []
+
+) (part1/chapters_part6/chap6_3.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3348,10 +3528,17 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [156]
-Overfull \hbox (0.7919pt too wide) in paragraph at lines 162--163
-[]\TU/TimesNewRoman(0)/m/n/10.95 Ví dụ: \TU/CourierNew(0)/m/n/10.95 Reviews Rat
-ing: 5.0 The product was ... \TU/TimesNewRoman(0)/m/n/10.95 để mô hình sinh tiế
-p một đánh
+File: images/vision_transformer_vit.png Graphic file (type bmp)
+<images/vision_transformer_vit.png>
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 40.
+See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 39--40
+ [] 
  []
 
 
@@ -3365,6 +3552,23 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 [157]
 
+LaTeX Warning: Reference `sec:siamese_networks' on page 158 undefined on input 
+line 51.
+
+File: images/clip_contrastive_learning.png Graphic file (type bmp)
+<images/clip_contrastive_learning.png>
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 74.
+See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 73--74
+ [] 
+ []
+
+
+
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.83772pt, for example:
@@ -3372,7 +3576,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[158]) (part1/chapters_part6/chap6_4.tex
+[158]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3382,6 +3586,23 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [159]
+File: images/text_to_image_diffusion.jpg Graphic file (type bmp)
+<images/text_to_image_diffusion.jpg>
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 131.
+See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 130--131
+ [] 
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3390,7 +3611,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[160]) (part1/chapters_part6/chap6_5.tex
+[160]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3400,18 +3621,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [161]
-File: images/othello_gpt.png Graphic file (type bmp)
-<images/othello_gpt.png>
-
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 47.
-See the caption package documentation for explanation.
-
-
-Underfull \vbox (badness 4556) has occurred while \output is active []
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3420,7 +3629,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[162]) (part1/chapters_part6/chap6_6.tex
+[162]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3429,14 +3638,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[163]
-Overfull \hbox (3.74866pt too wide) in paragraph at lines 47--51
-[]\TU/TimesNewRoman(0)/b/n/10.95 Multilingual Language Models \TU/TimesNewRoman
-(0)/m/n/10.95 Huấn luyện mô hình ngôn ngữ đa ngôn ngữ trực tiếp: - \TU/TimesNew
-Roman(0)/b/n/10.95 mBERT\TU/TimesNewRoman(0)/m/n/10.95 ,
- []
-
-
+[163]) (part1/chapters_part6/chap6_4.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3454,7 +3656,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[165]) (part1/chapters_part7/intro.tex
+[165]) (part1/chapters_part6/chap6_5.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3464,23 +3666,21 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [166]
-Chương 7.
 
-Overfull \hbox (10.66454pt too wide) in paragraph at lines 1--1
-|\TU/TimesNewRoman(0)/b/n/20.74 LÝ THUYẾT ĐÁNH GIÁ VÀ CÁC BENCHMARK| 
- []
 
-) (part1/chapters_part7/chap7_1.tex
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[167
-
-]
-File: images/confusion_matrix.png Graphic file (type bmp)
-<images/confusion_matrix.png>
+[167]
+File: images/othello_gpt.png Graphic file (type bmp)
+<images/othello_gpt.png>
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 44.
+(caption)                particular \caption on input line 47.
 See the caption package documentation for explanation.
 
 
@@ -3492,7 +3692,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[168]) (part1/chapters_part7/chap7_2.tex
+[168]) (part1/chapters_part6/chap6_6.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3510,51 +3710,38 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[170]
-Overfull \hbox (5.18335pt too wide) in paragraph at lines 61--62
-[]\TU/TimesNewRoman(0)/b/n/10.95 Tác động: \TU/TimesNewRoman(0)/m/n/10.95 Big-B
-ench đã giúp các nhà nghiên cứu xác định được các ”khả năng nổi trội”(emergent
- []
+[170]) (part1/chapters_part7/intro.tex
 
-File: images/llm_benchmarks_timeline.png Graphic file (type bmp)
-<images/llm_benchmarks_timeline.png>
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[171]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[172
+
+]
+Chương 7.
+) (part1/chapters_part7/chap7_1.tex
+
+[173]
+File: images/confusion_matrix.png Graphic file (type bmp)
+<images/confusion_matrix.png>
+
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 74.
+(caption)                particular \caption on input line 44.
 See the caption package documentation for explanation.
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[171]) (part1/chapters_part7/chap7_3.tex
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[172]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[173]) (part1/chapters_part7/chap7_4.tex
-Underfull \vbox (badness 3724) has occurred while \output is active []
 
 
 
@@ -3566,7 +3753,81 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [174]
-Overfull \hbox (39.76082pt too wide) in paragraph at lines 45--45
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[175]) (part1/chapters_part7/chap7_2.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[176]
+File: images/llm_benchmarks_timeline.png Graphic file (type bmp)
+<images/llm_benchmarks_timeline.png>
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 74.
+See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 73--74
+ [] 
+ []
+
+
+Underfull \vbox (badness 4366) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[177]) (part1/chapters_part7/chap7_3.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[178]
+Underfull \vbox (badness 4859) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[179]) (part1/chapters_part7/chap7_4.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[180]
+Overfull \hbox (67.1358pt too wide) in paragraph at lines 45--45
  []          \TU/CourierNew(0)/m/n/10.95 "reasoning": "Câu trả lời mạch lạc và 
 trung thực nhưng ..."[] 
  []
@@ -3580,7 +3841,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[175]) (part1/ending.tex
+[181]) (part1/ending.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3589,11 +3850,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[176]) (part2/intro.tex
-
-[177
-
-]
+[182]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3602,22 +3859,23 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[178
+[183]
+Overfull \hbox (0.17162pt too wide) in paragraph at lines 49--53
+\TU/TimesNewRoman(0)/m/n/10.95 ROUGE), benchmark (GLUE, SuperGLUE, đánh giá eme
+rgent abilities), thách thức trong
+ []
+
+) (part2/intro.tex
+
+[184
 
 ]
 
-[179]
+[185
 
-[180]) (part2/chapters_part1/intro.tex
+]
 
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[181]
+[186]) (part2/chapters_part1/intro.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3626,7 +3884,16 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[182
+[187]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[188
 
 ]
 Chương 1.
@@ -3640,85 +3907,17 @@ Package caption Warning: The option `hypcap=true' will be ignored for this
 See the caption package documentation for explanation.
 
 
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 15--16
+ [] 
+ []
+
+
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[183]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[184]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[185]) (part2/chapters_part1/chap1_2.tex
-\pydata@fh@0=\write7
-\openout7 = `_FAD58DE7366495DB4650CFEFAC2FCD61.data.minted'.
-
-runsystem(latexminted config  --timestamp 20251021143637 FAD58DE7366495DB4650CF
-EFAC2FCD61)...executed.
-
-
-(_FAD58DE7366495DB4650CFEFAC2FCD61.config.minted)
-runsystem(latexminted cleanconfig  --timestamp 20251021143637 FAD58DE7366495DB4
-650CFEFAC2FCD61)...executed.
-
- (_minted/default.style.minted) (_minted/3C24EB2CD92355858FC2FDA48CCFB6C1.highl
-ight.minted)
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[186]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[187] (_minted/127EBDBB6BF0D323A2F1BB15C89919D4.highlight.minted)
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[188]) (part2/chapters_part1/chap1_3.tex
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
 [189]
-File: images/label_studio_ner.png Graphic file (type bmp)
-<images/label_studio_ner.png>
-
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 61.
-See the caption package documentation for explanation.
+Underfull \vbox (badness 4886) has occurred while \output is active []
 
 
 
@@ -3730,15 +3929,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [190]
-Overfull \hbox (13.74063pt too wide) in paragraph at lines 98--99
-[]\TU/TimesNewRoman(0)/b/n/10.95 SMOTE (Synthetic Minority Over-sampling Techni
-que): \TU/TimesNewRoman(0)/m/n/10.95 Một kỹ thuật over-sampling
- []
-
-) (part2/chapters_part1/chap1_4.tex
-Underfull \vbox (badness 4193) has occurred while \output is active []
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3747,7 +3937,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[191]
+[191]) (part2/chapters_part1/chap1_2.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3757,6 +3947,22 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [192]
+\pydata@fh@0=\write7
+\openout7 = `_FAD58DE7366495DB4650CFEFAC2FCD61.data.minted'.
+
+runsystem(latexminted config  --timestamp 20251028133657 FAD58DE7366495DB4650CF
+EFAC2FCD61)...executed.
+
+ (_FAD58DE7366495DB4650CFEFAC2FCD61.config.minted)
+runsystem(latexminted cleanconfig  --timestamp 20251028133657 FAD58DE7366495DB4
+650CFEFAC2FCD61)...executed.
+
+
+(_minted/default.style.minted)
+(_minted/3C24EB2CD92355858FC2FDA48CCFB6C1.highlight.minted)
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3765,7 +3971,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[193]) (part2/chapters_part1/chap1_5.tex
+[193] (_minted/127EBDBB6BF0D323A2F1BB15C89919D4.highlight.minted)
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3774,13 +3980,22 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[194]
-File: images/dvc_workflowpng.png Graphic file (type bmp)
-<images/dvc_workflowpng.png>
+[194]) (part2/chapters_part1/chap1_3.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[195]
+File: images/label_studio_ner.png Graphic file (type bmp)
+<images/label_studio_ner.png>
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 64.
+(caption)                particular \caption on input line 61.
 See the caption package documentation for explanation.
 
 
@@ -3795,7 +4010,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[195]
+[196]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3804,7 +4019,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[196]) (part2/chapters_part2/intro.tex
+[197]) (part2/chapters_part1/chap1_4.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3813,7 +4028,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[197]
+[198]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3822,7 +4037,66 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[198
+[199]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[200]) (part2/chapters_part1/chap1_5.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[201]
+File: images/dvc_workflowpng.png Graphic file (type bmp)
+<images/dvc_workflowpng.png>
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 64.
+See the caption package documentation for explanation.
+
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 63--64
+ [] 
+ []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[202]) (part2/chapters_part2/intro.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[203]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[204
 
 ]
 Chương 2.
@@ -3837,11 +4111,8 @@ See the caption package documentation for explanation.
 
 (_minted/16789700AA98A879BB80994B12D637A4.highlight.minted)
 
-[199] (_minted/5242FDEE5B1AC44F6C5C920E6EA0E489.highlight.minted)
+[205] (_minted/5242FDEE5B1AC44F6C5C920E6EA0E489.highlight.minted)
 (_minted/79688CEBB13B5F2AA08555A6E7C1DC39.highlight.minted)
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3850,7 +4121,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[200]
+[206]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3859,7 +4130,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[201] (_minted/F7C27E6AD78699705B28C9F247BFEF82.highlight.minted))
+[207] (_minted/F7C27E6AD78699705B28C9F247BFEF82.highlight.minted))
 (part2/chapters_part2/chap2_2.tex
 
 
@@ -3869,7 +4140,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[202] (_minted/86D726AFC2CEA750F751425E7F9A3261.highlight.minted)
+[208] (_minted/86D726AFC2CEA750F751425E7F9A3261.highlight.minted)
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
@@ -3881,7 +4152,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[203] (_minted/86B77021D7E5FFFA623A082AA41C9DC6.highlight.minted)
+[209] (_minted/86B77021D7E5FFFA623A082AA41C9DC6.highlight.minted)
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3890,11 +4161,10 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[204]
-Overfull \hbox (0.32509pt too wide) in paragraph at lines 123--125
-[]\TU/TimesNewRoman(0)/b/n/10.95 Giải pháp: \TU/TimesNewRoman(0)/m/n/10.95 ‘Tra
-iner‘ có một phương thức đặc biệt là ‘predict‘. Khi sử dụng ‘evaluation_strateg
-y‘
+[210]
+Overfull \hbox (10.79895pt too wide) in paragraph at lines 123--125
+\TU/TimesNewRoman(0)/m/n/10.95 tion_strategy‘ cùng với ‘predict_with_generate=T
+rue‘ trong ‘TrainingArguments‘, ‘Trainer‘
  []
 
 (_minted/0CB101BDCB6B4A986AD3AFEA985D8832.highlight.minted)
@@ -3906,17 +4176,21 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[205]) (part2/chapters_part2/chap2_3.tex
+[211]) (part2/chapters_part2/chap2_3.tex
+Overfull \hbox (2.78812pt too wide) in paragraph at lines 15--16
+[]\TU/TimesNewRoman(0)/m/n/10.95 Nếu chỉ dựa vào việc ghi chép thủ công hoặc đặ
+t tên file một cách lộn xộn (ví dụ: ‘model_final.pt‘,
+ []
+
 File: images/wandb_dashboard.png Graphic file (type bmp)
 <images/wandb_dashboard.png>
-
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
 (caption)                particular \caption on input line 32.
 See the caption package documentation for explanation.
 
 
-Underfull \vbox (badness 4621) has occurred while \output is active []
+Underfull \vbox (badness 1371) has occurred while \output is active []
 
 
 
@@ -3927,7 +4201,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[206] (_minted/5613CBF8102DAA11BE12D7D3F02F86B9.highlight.minted)
+[212] (_minted/5613CBF8102DAA11BE12D7D3F02F86B9.highlight.minted)
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3936,24 +4210,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[207]
-Underfull \hbox (badness 5133) in paragraph at lines 110--110
-[]|\TU/TimesNewRoman(0)/b/n/10.95 Mô hình: \TU/TimesNewRoman(0)/m/n/10.95 Chủ y
-ếu là một dịch vụ
- []
-
-
-Underfull \hbox (badness 3471) in paragraph at lines 110--111
-[]|\TU/TimesNewRoman(0)/b/n/10.95 Mô hình: \TU/TimesNewRoman(0)/m/n/10.95 Hoàn 
-toàn mã nguồn mở,
- []
-
-
-Underfull \hbox (badness 1902) in paragraph at lines 115--116
-[]|\TU/TimesNewRoman(0)/m/n/10.95 - Tích hợp chặt chẽ với hệ sinh thái
- []
-
-
+[213]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
@@ -3965,7 +4222,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[208]) (part2/chapters_part2/chap2_4.tex
+[214]) (part2/chapters_part2/chap2_4.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3974,7 +4231,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[209]
+[215]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -3983,7 +4240,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[210]
+[216]
 File: images/deepspeed_zero.png Graphic file (type bmp)
 <images/deepspeed_zero.png>
 
@@ -3992,14 +4249,12 @@ Package caption Warning: The option `hypcap=true' will be ignored for this
 (caption)                particular \caption on input line 74.
 See the caption package documentation for explanation.
 
+
+Overfull \hbox (27.37498pt too wide) in paragraph at lines 73--74
+ [] 
+ []
+
 (_minted/D4ECE98CBAD0962235CD18F4161E2F1B.highlight.minted)
-Overfull \hbox (39.86182pt too wide) in paragraph at lines 92--93
-[]\TU/TimesNewRoman(0)/b/n/10.95 Khởi chạy: \TU/TimesNewRoman(0)/m/n/10.95 Sử d
-ụng ‘deepspeed your_script.py‘ hoặc ‘accelerate launch –use_deepspeed your_scri
-pt.py‘
- []
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4008,7 +4263,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[211]) (part2/chapters_part3/intro.tex
+[217]) (part2/chapters_part3/intro.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4017,19 +4272,16 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[212]
+[218]
 Chương 3.
-
-Overfull \hbox (49.64821pt too wide) in paragraph at lines 3--3
-|\TU/TimesNewRoman(0)/b/n/20.74 TỐI ƯU HÓA, TRIỂN KHAI VÀ VẬN HÀNH (MLOps)| 
- []
-
 ) (part2/chapters_part3/chap3_1.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[213
+
+
+[219
 
 ]) (part2/chapters_part3/chap3_2.tex
-(_minted/6157E8377EA642FFC8021F9CF0B7335F.highlight.minted)
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4038,7 +4290,8 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[214] (_minted/320557FD9DD6A776D58BEEABBF00B3D4.highlight.minted)
+[220] (_minted/6157E8377EA642FFC8021F9CF0B7335F.highlight.minted)
+(_minted/320557FD9DD6A776D58BEEABBF00B3D4.highlight.minted)
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4047,7 +4300,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[215]) (part2/chapters_part3/chap3_3.tex
+[221]) (part2/chapters_part3/chap3_3.tex
 (_minted/9B3C61B9D213B097B8E5BAD12198EEDB.highlight.minted)
 
 
@@ -4057,7 +4310,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[216] (_minted/A33E1D05FC661082BC602F0CF4B3102C.highlight.minted)
+[222] (_minted/A33E1D05FC661082BC602F0CF4B3102C.highlight.minted)
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
@@ -4069,7 +4322,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[217]) (part2/chapters_part3/chap3_4.tex
+[223]) (part2/chapters_part3/chap3_4.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4078,7 +4331,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[218]) (part2/chapters_part3/chap3_5.tex
+[224]) (part2/chapters_part3/chap3_5.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4087,7 +4340,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[219]) (part2/chapters_part4/intro.tex
+[225]) (part2/chapters_part4/intro.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4096,17 +4349,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[220]
+[226]
 Chương 4.
-
-Overfull \hbox (12.91435pt too wide) in paragraph at lines 3--3
-|\TU/TimesNewRoman(0)/b/n/20.74 CÔNG THỨC XÂY DỰNG CÁC ỨNG DỤNG PHỔ
- []
-
 ) (part2/chapters_part4/chap4_1.tex
 (_minted/91E7954712108129F824448607603817.highlight.minted)
 
-[221
+[227
 
 ]) (part2/chapters_part4/chap4_2.tex
 
@@ -4117,36 +4365,14 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[222]
-Overfull \hbox (1.56093pt too wide) in paragraph at lines 21--22
+[228]
+Overfull \hbox (28.93591pt too wide) in paragraph at lines 21--22
 []\TU/TimesNewRoman(0)/b/n/10.95 Xây dựng Chuỗi RAG (RAG Chain): \TU/TimesNewRo
 man(0)/m/n/10.95 Kết nối Retriever và LLM qua một \TU/CourierNew(0)/m/n/10.95 P
 romptTemplate\TU/TimesNewRoman(0)/m/n/10.95 . 
  []
 
 (_minted/CA78B5049C844D00C06C8E533DCE6171.highlight.minted)
-Underfull \vbox (badness 5050) has occurred while \output is active []
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[223]) (part2/chapters_part4/chap4_3.tex
-(_minted/E015579E1EA1B3215F083BF1D0CA4154.highlight.minted)
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[224]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
@@ -4158,116 +4384,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[225]) (part2/chapters_part4/chap4_4.tex
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[226] (_minted/498805CED00F11F568BB81E990718020.highlight.minted)
-Underfull \vbox (badness 5050) has occurred while \output is active []
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[227]) (part2/chapters_part4/chap4_5.tex
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[228] (_minted/C12414423BE72E29A08F1239599B41B9.highlight.minted)
-Underfull \vbox (badness 5862) has occurred while \output is active []
-
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[229]
-Overfull \hbox (38.67014pt too wide) in paragraph at lines 74--74
-[]\TU/CourierNew(0)/m/n/10.95 Thought: The user is asking about the LLaVA model
-. I don[]t have detailed,[] 
- []
-
-
-Overfull \hbox (38.67017pt too wide) in paragraph at lines 75--75
-[]\TU/CourierNew(0)/m/n/10.95 up-to-the-minute information on specific models i
-n my internal knowledge.[] 
- []
-
-
-Overfull \hbox (5.81483pt too wide) in paragraph at lines 80--80
-[]\TU/CourierNew(0)/m/n/10.95 multimodal model (LMM) created by researchers fro
-m the University of[] 
- []
-
-
-Overfull \hbox (64.9544pt too wide) in paragraph at lines 81--81
-[]\TU/CourierNew(0)/m/n/10.95 Wisconsin-Madison, Microsoft Research, and Columb
-ia University. It combines a[] 
- []
-
-
-Overfull \hbox (12.38588pt too wide) in paragraph at lines 82--82
-[]\TU/CourierNew(0)/m/n/10.95 vision encoder with a large language model (LLM) 
-to enable multimodal[] 
- []
-
-
-Overfull \hbox (71.5255pt too wide) in paragraph at lines 83--83
-[]\TU/CourierNew(0)/m/n/10.95 chat capabilities, demonstrating impressive perfo
-rmance on various benchmarks.[] 
- []
-
-
-Overfull \hbox (45.2412pt too wide) in paragraph at lines 84--84
-[]\TU/CourierNew(0)/m/n/10.95 Thought: I now have the main idea of the LLaVA mo
-del. It combines a vision[] 
- []
-
-
-Overfull \hbox (64.95442pt too wide) in paragraph at lines 85--85
-[]\TU/CourierNew(0)/m/n/10.95 encoder and an LLM for multimodal chat. I can now
- formulate the final answer.[] 
- []
-
-
-Overfull \hbox (38.67014pt too wide) in paragraph at lines 87--87
-[]\TU/CourierNew(0)/m/n/10.95 Final Answer: The main idea behind the LLaVA mode
-l is to combine a vision[] 
- []
-
-
-Overfull \hbox (38.67014pt too wide) in paragraph at lines 88--88
-[]\TU/CourierNew(0)/m/n/10.95 encoder with a large language model (LLM) to crea
-te a powerful multimodal[] 
- []
-
-
-Overfull \hbox (58.38333pt too wide) in paragraph at lines 89--89
-[]\TU/CourierNew(0)/m/n/10.95 assistant capable of understanding and discussing
- images in a conversational[] 
- []
-
-) (part2/chapters_part4/chap4_6.tex
-(_minted/2741BCF49B4C014D215EF8245235728D.highlight.minted)
+[229]) (part2/chapters_part4/chap4_3.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4277,6 +4394,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [230]
+Overfull \hbox (0.26169pt too wide) in paragraph at lines 23--24
+[]\TU/TimesNewRoman(0)/b/n/10.95 Thiết lập ‘Trainer‘: \TU/TimesNewRoman(0)/m/n/
+10.95 Định nghĩa ‘TrainingArguments‘ và ‘Trainer‘, truyền vào hàm ‘com-
+ []
+
+(_minted/E015579E1EA1B3215F083BF1D0CA4154.highlight.minted)
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
@@ -4288,8 +4411,10 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[231] (_minted/EEC46631BAE8338644B6AE37AD074039.highlight.minted))
-(part2/ending.tex
+[231]) (part2/chapters_part4/chap4_4.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4298,11 +4423,18 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[232]) (main.bbl
+[232]
+Overfull \hbox (2.05714pt too wide) in paragraph at lines 11--12
+[]\TU/CourierNew(0)/b/n/10.95 transformers\TU/TimesNewRoman(0)/b/n/10.95 : \TU/
+TimesNewRoman(0)/m/n/10.95 Sử dụng \TU/CourierNew(0)/m/n/10.95 AutoModelForToke
+nClassification \TU/TimesNewRoman(0)/m/n/10.95 và \TU/CourierNew(0)/m/n/10.95 T
+rainer\TU/TimesNewRoman(0)/m/n/10.95 . 
+ []
 
-[233
+(_minted/498805CED00F11F568BB81E990718020.highlight.minted)
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-]
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4311,62 +4443,103 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[234
+[233]) (part2/chapters_part4/chap4_5.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-]
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[234] (_minted/C12414423BE72E29A08F1239599B41B9.highlight.minted)
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [235]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[236]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[237]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[238]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[239]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.83772pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.83772pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
-
-[240]
-Underfull \hbox (badness 10000) in paragraph at lines 557--563
-[][][][][][][][] [] [][][][][][][] [] [][][][][][][][] [] [][][][][][] [] [][][
-][] [] [][][][][][] [] [][][][][] [] [][][][][][] [] [][] []
+Overfull \hbox (66.04512pt too wide) in paragraph at lines 74--74
+ []\TU/CourierNew(0)/m/n/10.95 Thought: The user is asking about the LLaVA mode
+l. I don[]t have detailed,[] 
  []
 
 
+Overfull \hbox (66.04515pt too wide) in paragraph at lines 75--75
+ []\TU/CourierNew(0)/m/n/10.95 up-to-the-minute information on specific models 
+in my internal knowledge.[] 
+ []
+
+
+Overfull \hbox (26.61874pt too wide) in paragraph at lines 79--79
+ []\TU/CourierNew(0)/m/n/10.95 Observation: LLaVA (Large Language and Vision As
+sistant) is a large[] 
+ []
+
+
+Overfull \hbox (33.18982pt too wide) in paragraph at lines 80--80
+ []\TU/CourierNew(0)/m/n/10.95 multimodal model (LMM) created by researchers fr
+om the University of[] 
+ []
+
+
+Overfull \hbox (92.32939pt too wide) in paragraph at lines 81--81
+ []\TU/CourierNew(0)/m/n/10.95 Wisconsin-Madison, Microsoft Research, and Colum
+bia University. It combines a[] 
+ []
+
+
+Overfull \hbox (39.76086pt too wide) in paragraph at lines 82--82
+ []\TU/CourierNew(0)/m/n/10.95 vision encoder with a large language model (LLM)
+ to enable multimodal[] 
+ []
+
+
+Overfull \hbox (98.90048pt too wide) in paragraph at lines 83--83
+ []\TU/CourierNew(0)/m/n/10.95 chat capabilities, demonstrating impressive perf
+ormance on various benchmarks.[] 
+ []
+
+
+Overfull \hbox (72.61618pt too wide) in paragraph at lines 84--84
+ []\TU/CourierNew(0)/m/n/10.95 Thought: I now have the main idea of the LLaVA m
+odel. It combines a vision[] 
+ []
+
+
+Overfull \hbox (92.3294pt too wide) in paragraph at lines 85--85
+ []\TU/CourierNew(0)/m/n/10.95 encoder and an LLM for multimodal chat. I can no
+w formulate the final answer.[] 
+ []
+
+
+Overfull \hbox (66.04512pt too wide) in paragraph at lines 87--87
+ []\TU/CourierNew(0)/m/n/10.95 Final Answer: The main idea behind the LLaVA mod
+el is to combine a vision[] 
+ []
+
+
+Overfull \hbox (66.04512pt too wide) in paragraph at lines 88--88
+ []\TU/CourierNew(0)/m/n/10.95 encoder with a large language model (LLM) to cre
+ate a powerful multimodal[] 
+ []
+
+
+Overfull \hbox (85.75832pt too wide) in paragraph at lines 89--89
+ []\TU/CourierNew(0)/m/n/10.95 assistant capable of understanding and discussin
+g images in a conversational[] 
+ []
+
+) (part2/chapters_part4/chap4_6.tex
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4375,7 +4548,10 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[241]
+[236] (_minted/2741BCF49B4C014D215EF8245235728D.highlight.minted)
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4384,7 +4560,69 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[242]) (ending.tex
+[237] (_minted/EEC46631BAE8338644B6AE37AD074039.highlight.minted)
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[238]) (part2/ending.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[239]) (main.bbl
+
+[240
+
+]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+[241
+
+]
+Underfull \hbox (badness 2401) in paragraph at lines 105--110
+\TU/TimesNewRoman(0)/m/n/10.95 Timothée Lacroix, Baptiste Rozière, Naman Goyal,
+ Eric Hambro, Faisal Azhar,
+ []
+
+
+Underfull \hbox (badness 1215) in paragraph at lines 105--110
+\TU/TimesNewRoman(0)/m/n/10.95 et al.  Llama: Open and efficient foundation lan
+guage models.  \TU/TimesNewRoman(0)/m/it/10.95 arXiv preprint
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[242]
+Underfull \hbox (badness 1394) in paragraph at lines 274--279
+[]\TU/TimesNewRoman(0)/m/n/10.95 Nitish Srivastava, Geoffrey Hinton, Alex Krizh
+evsky, Ilya Sutskever, and Ruslan
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4394,6 +4632,9 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
 [243]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -4402,11 +4643,106 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
 
-[244
+[244]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-])
 
-[245] (main.aux)
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[245]
+Underfull \hbox (badness 10000) in paragraph at lines 557--563
+[][][][][][][][][][] [] [][][][][][][][] [] [][][][][][][] [] [][][][][][][][] 
+[] [][][][][][] [] [][][][] [] [][][][][][] []
+ []
+
+
+Underfull \hbox (badness 5274) in paragraph at lines 596--601
+[]\TU/TimesNewRoman(0)/m/n/10.95 Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrz
+ebski, Bruna Morrone, Quentin
+ []
+
+
+Underfull \hbox (badness 1603) in paragraph at lines 626--630
+\TU/TimesNewRoman(0)/m/n/10.95 fine-tuning methods and applications in large la
+nguage models.  \TU/TimesNewRoman(0)/m/it/10.95 arXiv preprint
+ []
+
+
+Underfull \hbox (badness 1242) in paragraph at lines 637--641
+[]\TU/TimesNewRoman(0)/m/n/10.95 Jonas Pfeiffer, Aishwarya Kamath, Andreas Rück
+lé, et al.  Adapterfusion: Non-
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[246]
+Underfull \hbox (badness 1681) in paragraph at lines 773--778
+[]\TU/TimesNewRoman(0)/m/n/10.95 Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc 
+Le, Ed Chi, Sharan Narang,
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[247]
+Underfull \hbox (badness 1122) in paragraph at lines 787--791
+\TU/TimesNewRoman(0)/m/n/10.95 An instruction-following llama model.  [][]$[][]
+[][][] [] [] [] [][][][][][] [] [][][] [] [][][][][][][][][][] []
+ []
+
+) (ending.tex
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.83772pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.83772pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.83772pt}.
+
+[248])
+
+! LaTeX Error: \begin{itemize} on input line 98 ended by \end{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.100 \end{document}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+
+[249
+
+] (main.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-08-13>
@@ -4416,15 +4752,19 @@ L3 programming layer <2025-08-13>
 LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: D997A1D8F0D42B64A870064114DF411A;74577.
- ) 
+(rerunfilecheck)             Checksum: 1767984BAA1478556022AFEBDD0ED4C4;74556.
+ )
+(\end occurred inside a group at level 1)
+
+### semi simple group (level 1) entered at line 98 (\begingroup)
+### bottom level 
 Here is how much of TeX's memory you used:
- 39830 strings out of 403249
- 878021 string characters out of 5463138
- 1550981 words of memory out of 5000000
- 67393 multiletter control sequences out of 15000+600000
+ 39839 strings out of 403249
+ 878471 string characters out of 5463138
+ 1548917 words of memory out of 5000000
+ 67401 multiletter control sequences out of 15000+600000
  636104 words of font info for 141 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 100i,20n,104p,1001b,1304s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 100i,20n,104p,1001b,3160s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on main.pdf (253 pages).
+Output written on main.pdf (257 pages).

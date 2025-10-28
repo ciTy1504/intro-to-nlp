@@ -1,6 +1,6 @@
 # Bách Khoa Toàn Thư Về Lý Thuyết & Thực Chiến NLP
 
-> Một hướng dẫn toàn diện từ nền tảng lý thuyết đến kỹ thuật thực chiến trong Xử lý Ngôn ngữ Tự nhiên (NLP), cập nhật các mô hình hiện đại, LLMs, và các chiến lược MLOps.
+> Một hướng dẫn toàn diện từ nền tảng lý thuyết đến kỹ thuật thực chiến trong Xử lý Ngôn ngữ Tự nhiên (NLP), cập nhật các mô hình hiện đại, các nghiên cứu mới nhất (đến 2025), LLMs, và các chiến lược MLOps.
 
 ---
 
@@ -70,4 +70,4 @@ Nếu có thắc mắc, đóng góp nội dung hoặc lỗi trong tài liệu, b
 Hoặc tạo **issue** trên repository này.
 ---
 
-> 📚 Tài liệu này hướng tới việc trở thành **nguồn tham khảo toàn diện và thực tế nhất về NLP** cho sinh viên, nghiên cứu sinh và các kỹ sư AI.
+> Tài liệu này hướng tới việc trở thành **nguồn tham khảo toàn diện và thực tế nhất về NLP** cho sinh viên, nghiên cứu sinh và các kỹ sư AI.

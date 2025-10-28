@@ -7,6 +7,18 @@
 
 Để hiểu được sức mạnh của Transformer, chúng ta cần mổ xẻ từng khối xây dựng nên nó, bắt đầu từ ý tưởng cốt lõi nhất: Self-Attention.
 
+\begin{tcolorbox}[
+	title={Tổng quan Kiến trúc Transformer},
+	colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries
+	]
+	Transformer là một mô hình \textbf{Encoder-Decoder thuần Attention}, trong đó:
+	\begin{itemize}
+		\item \textbf{Encoder} chịu trách nhiệm mã hóa toàn bộ chuỗi đầu vào thành một dãy vector ngữ cảnh, mỗi vector chứa thông tin ngữ nghĩa của từ và mối quan hệ của nó với toàn câu.
+		\item \textbf{Decoder} lần lượt sinh ra các từ đầu ra, tại mỗi bước đều có thể "nhìn lại" toàn bộ đầu ra của Encoder thông qua cơ chế \textit{Cross-Attention}.
+	\end{itemize}
+	Điểm đặc biệt là: \textbf{toàn bộ quá trình không dùng RNN hay CNN}, mà hoàn toàn dựa vào cơ chế \textbf{Self-Attention song song}. Điều này giúp mô hình học được quan hệ toàn cục và huấn luyện nhanh hơn hàng chục lần so với các mô hình tuần tự.
+\end{tcolorbox}
+
 \subsection{Chi tiết cơ chế Self-Attention: Scaled Dot-Product và Multi-Head Attention}
 \label{ssec:self_attention}
 
@@ -81,6 +93,12 @@ Toàn bộ quá trình này có thể được tóm gọn trong một công th�
     \captionof{figure}{Sơ đồ Scaled Dot-Product Attention. Đầu vào là các ma trận Q, K, V và đầu ra là một ma trận đã được làm giàu ngữ cảnh.}
     \label{fig:scaled_dot_product_attention}
 \end{center}
+\paragraph{Ưu điểm tính toán của Self-Attention}
+Một trong những lý do khiến Transformer trở nên đột phá nằm ở khả năng \textbf{song song hóa hoàn toàn} trong huấn luyện.
+\begin{itemize}
+	\item Trong RNN, việc xử lý chuỗi bắt buộc phải thực hiện \textbf{theo thứ tự thời gian}, khiến việc tính toán trên GPU bị giới hạn.
+	\item Ngược lại, trong Self-Attention, mọi từ trong chuỗi có thể tính toán biểu diễn của mình \textbf{đồng thời}, vì các phép nhân ma trận giữa $Q$, $K$, $V$ có thể thực hiện song song trên toàn bộ chuỗi.
+	\item Độ phức tạp tính toán là $O(n^2 d)$ — tuy cao hơn RNN về mặt lý thuyết khi chuỗi rất dài, nhưng nhờ khả năng song
 
 \subsubsection{Multi-Head Attention}
 \paragraph{Vấn đề của Single-Head Attention}
@@ -157,6 +175,22 @@ Decoder cũng là một chuỗi gồm $N$ khối Decoder giống hệt nhau. M�
     \item \textbf{Position-wise Feed-Forward Network:} Giống hệt như trong Encoder.
 \end{enumerate}
 Tương tự Encoder, mỗi lớp con của Decoder cũng có Residual Connection và Layer Normalization.
+
+\paragraph{Tổng quan dòng chảy thông tin trong Transformer}
+Để hiểu rõ cách Encoder và Decoder phối hợp, hãy nhìn vào luồng xử lý tổng thể:
+\begin{enumerate}
+	\item \textbf{Bước 1:} Chuỗi đầu vào được nhúng (embedding) và cộng với \textit{Positional Encoding}.
+	\item \textbf{Bước 2:} Encoder xử lý toàn bộ chuỗi qua $N$ khối Self-Attention + FFN, tạo ra một \textbf{bản đồ ngữ cảnh} (context map).
+	\item \textbf{Bước 3:} Decoder, tại mỗi bước sinh từ, thực hiện:
+	\begin{itemize}
+		\item \textbf{Masked Self-Attention:} nhìn lại các từ đã sinh.
+		\item \textbf{Cross-Attention:} “hỏi” Encoder xem phần nào của câu nguồn là liên quan nhất cho từ kế tiếp.
+		\item \textbf{FFN:} tinh chỉnh biểu diễn cuối cùng trước khi dự đoán từ tiếp theo.
+	\end{itemize}
+	\item \textbf{Bước 4:} Đầu ra được chiếu qua lớp tuyến tính và softmax để tạo phân phối xác suất trên từ vựng.
+\end{enumerate}
+
+Nhờ cơ chế này, Transformer có thể học cách \textbf{căn chỉnh (alignment)} giữa hai ngôn ngữ một cách nội tại — không cần thêm bước tính attention thủ công như các mô hình Seq2Seq trước đó.
 
 \subsubsection{Huấn luyện và Tối ưu hóa}
 \label{sssec:transformer_training}

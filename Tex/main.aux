@@ -483,14 +483,15 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1.1}Chi tiết cơ chế Self-Attention: Scaled Dot-Product và Multi-Head Attention}{85}{subsection.4.1.1}\protected@file@percent }
 \newlabel{ssec:self_attention}{{4.1.1}{85}{Chi tiết cơ chế Self-Attention: Scaled Dot-Product và Multi-Head Attention}{subsection.4.1.1}{}}
 \@writefile{toc}{\contentsline {paragraph}{Tư duy cốt lõi}{85}{subsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Scaled Dot-Product Attention}{85}{subsection.4.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Scaled Dot-Product Attention}{86}{subsection.4.1.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Cơ chế hoạt động chi tiết}{86}{subsection.4.1.1}\protected@file@percent }
 \newlabel{eq:scaled_dot_product_attention}{{4.1}{87}{Cơ chế hoạt động chi tiết}{equation.4.1}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4.1}{\ignorespaces Sơ đồ Scaled Dot-Product Attention. Đầu vào là các ma trận Q, K, V và đầu ra là một ma trận đã được làm giàu ngữ cảnh.}}{87}{figure.4.1}\protected@file@percent }
 \newlabel{fig:scaled_dot_product_attention}{{4.1}{87}{Sơ đồ Scaled Dot-Product Attention. Đầu vào là các ma trận Q, K, V và đầu ra là một ma trận đã được làm giàu ngữ cảnh}{figure.4.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Ưu điểm tính toán của Self-Attention}{87}{figure.4.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{Multi-Head Attention}{87}{figure.4.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Vấn đề của Single-Head Attention}{87}{figure.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Giải pháp: Nhiều "đầu" chú ý song song}{87}{figure.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Giải pháp: Nhiều "đầu" chú ý song song}{88}{figure.4.1}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {4.2}{\ignorespaces Kiến trúc Multi-Head Attention, bao gồm nhiều "đầu" Scaled Dot-Product Attention chạy song song.}}{88}{figure.4.2}\protected@file@percent }
 \newlabel{fig:multi_head_attention}{{4.2}{88}{Kiến trúc Multi-Head Attention, bao gồm nhiều "đầu" Scaled Dot-Product Attention chạy song song}{figure.4.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1.2}Kiến trúc Encoder-Decoder và các thành phần phụ}{88}{subsection.4.1.2}\protected@file@percent }
@@ -499,211 +500,205 @@
 \@writefile{toc}{\contentsline {subsubsection}{The Decoder Stack}{89}{Item.92}\protected@file@percent }
 \citation{kingma2014adam}
 \citation{srivastava2014dropout}
-\citation{su2021roformer}
-\@writefile{toc}{\contentsline {subsubsection}{Huấn luyện và Tối ưu hóa}{90}{Item.95}\protected@file@percent }
-\newlabel{sssec:transformer_training}{{4.1.2}{90}{Huấn luyện và Tối ưu hóa}{Item.95}{}}
+\@writefile{toc}{\contentsline {paragraph}{Tổng quan dòng chảy thông tin trong Transformer}{90}{Item.95}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Huấn luyện và Tối ưu hóa}{90}{Item.99}\protected@file@percent }
+\newlabel{sssec:transformer_training}{{4.1.2}{90}{Huấn luyện và Tối ưu hóa}{Item.99}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1.3}Positional Encoding: Thêm thông tin về vị trí}{90}{subsection.4.1.3}\protected@file@percent }
 \newlabel{ssec:positional_encoding_intro}{{4.1.3}{90}{Positional Encoding: Thêm thông tin về vị trí}{subsection.4.1.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Absolute Positional Encoding (Sinusoidal)}{90}{subsection.4.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Tại sao lại dùng sin và cos?}{90}{subsection.4.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Relative Positional Encoding}{90}{subsection.4.1.3}\protected@file@percent }
+\citation{su2021roformer}
+\@writefile{toc}{\contentsline {subsubsection}{Absolute Positional Encoding (Sinusoidal)}{91}{subsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Tại sao lại dùng sin và cos?}{91}{subsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Relative Positional Encoding}{91}{subsection.4.1.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{Rotary Position Embedding (RoPE)}{91}{subsection.4.1.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4.2}Phân loại Kiến trúc LLMs}{91}{section.4.2}\protected@file@percent }
 \newlabel{sec:llm_architectures_classification}{{4.2}{91}{Phân loại Kiến trúc LLMs}{section.4.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}Họ Mô hình chỉ Encoder (Encoder-Only): Bậc thầy của Sự Hiểu Ngôn ngữ}{91}{subsection.4.2.1}\protected@file@percent }
-\newlabel{ssec:encoder_only}{{4.2.1}{91}{Họ Mô hình chỉ Encoder (Encoder-Only): Bậc thầy của Sự Hiểu Ngôn ngữ}{subsection.4.2.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Kiến trúc và Mục tiêu Huấn luyện Nền tảng}{91}{subsection.4.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Kiến trúc và Tính hai chiều (Bidirectionality)}{91}{subsection.4.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Mục tiêu Huấn luyện: Masked Language Modeling (MLM)}{91}{subsection.4.2.1}\protected@file@percent }
-\citation{liu2019roberta}
-\citation{sanh2019distilbert}
-\citation{lan2019albert}
-\citation{joshi2020spanbert}
-\citation{reimers2019sentence}
-\citation{gao2021simcse}
-\@writefile{lof}{\contentsline {figure}{\numberline {4.3}{\ignorespaces Mục tiêu huấn luyện kinh điển của BERT: Masked Language Modeling (MLM). Mô hình phải dự đoán các token bị che dựa trên ngữ cảnh hai chiều.}}{92}{figure.4.3}\protected@file@percent }
-\newlabel{fig:bert_mlm_nsp}{{4.3}{92}{Mục tiêu huấn luyện kinh điển của BERT: Masked Language Modeling (MLM). Mô hình phải dự đoán các token bị che dựa trên ngữ cảnh hai chiều}{figure.4.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Sự phát triển và các biến thể của Họ Encoder-Only}{92}{figure.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{1. Gia đình BERT: Những người kế nhiệm trực tiếp}{92}{figure.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{2. Các mô hình Biểu diễn Câu: Chuyên gia về Tìm kiếm Ngữ nghĩa}{92}{figure.4.3}\protected@file@percent }
-\citation{wang2022text}
-\citation{beltagy2019scibert}
-\citation{lee2020biobert}
-\citation{alsentzer2019publicly}
-\citation{martin2019camembert}
-\citation{nguyen2020phobert}
-\citation{wang2020minilm}
-\citation{he2020deberta}
-\citation{song2020mpnet}
-\citation{clark2020electra}
-\citation{yang2019xlnet}
-\@writefile{toc}{\contentsline {paragraph}{3. Các mô hình cho Miền chuyên biệt và Đa ngôn ngữ}{93}{figure.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{4. Các Encoder Hiện đại, Gọn nhẹ và Hiệu quả}{93}{figure.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{5. Các Encoder với Mục tiêu Huấn luyện khác MLM}{93}{figure.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.2}Họ Mô hình chỉ Decoder (Decoder-Only): Bậc thầy của Sự Sáng tạo}{94}{subsection.4.2.2}\protected@file@percent }
-\newlabel{ssec:decoder_only}{{4.2.2}{94}{Họ Mô hình chỉ Decoder (Decoder-Only): Bậc thầy của Sự Sáng tạo}{subsection.4.2.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Kiến trúc và Mục tiêu Huấn luyện Nền tảng}{94}{subsection.4.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Kiến trúc Tự hồi quy (Auto-regressive Architecture)}{94}{subsection.4.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Mục tiêu Huấn luyện: Causal Language Modeling (CLM)}{94}{subsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}Họ Mô hình chỉ Encoder (Encoder-Only): Bậc thầy của Hiểu ngôn ngữ}{92}{subsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Kiến trúc và Đặc trưng Chung}{92}{subsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Chuẩn bị Đầu vào}{92}{subsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Biến Thể Kiến Trúc}{92}{subsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Các Token Đặc Biệt và Vai Trò Của Chúng}{92}{subsection.4.2.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.3}{\ignorespaces Hai mục tiêu huấn luyện chính của BERT: Masked Language Modeling (MLM) và Next Sentence Prediction (NSP).}}{93}{figure.4.3}\protected@file@percent }
+\newlabel{fig:bert_mlm_nsp}{{4.3}{93}{Hai mục tiêu huấn luyện chính của BERT: Masked Language Modeling (MLM) và Next Sentence Prediction (NSP)}{figure.4.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Quá Trình Huấn Luyện Chi Tiết và Công Thức}{93}{figure.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Masked Language Modeling (MLM)}{93}{figure.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Next Sentence Prediction (NSP)}{93}{figure.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Các Mục Tiêu Huấn Luyện Biến Thể}{93}{figure.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Tham Số Huấn Luyện}{94}{figure.4.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.4}{\ignorespaces Kiến trúc chi tiết của khối Encoder với công thức Self-Attention.}}{94}{figure.4.4}\protected@file@percent }
+\newlabel{fig:transformer_encoder_detailed}{{4.4}{94}{Kiến trúc chi tiết của khối Encoder với công thức Self-Attention}{figure.4.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Mở Rộng Sự Phát Triển và Các Biến Thể Chi Tiết}{94}{figure.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{1. Gia Đình BERT}{94}{figure.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{2. Mô Hình Biểu Diễn Câu}{94}{figure.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{3. Mô Hình Chuyên Biệt}{95}{figure.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{4. Encoder Hiện Đại}{95}{figure.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{5. Mục Tiêu Huấn Luyện Khác}{95}{figure.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Ứng Dụng}{95}{figure.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.2}Họ Mô hình chỉ Decoder (Decoder-Only): Bậc thầy của Sự Sáng tạo}{95}{subsection.4.2.2}\protected@file@percent }
+\newlabel{ssec:decoder_only}{{4.2.2}{95}{Họ Mô hình chỉ Decoder (Decoder-Only): Bậc thầy của Sự Sáng tạo}{subsection.4.2.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Kiến trúc và Mục tiêu Huấn luyện Nền tảng}{95}{subsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Kiến trúc Tự hồi quy (Auto-regressive Architecture)}{95}{subsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Chi tiết Kiến trúc: Đặc điểm riêng của Decoder-Only}{96}{subsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Mục tiêu Huấn luyện: Causal Language Modeling (CLM)}{96}{subsection.4.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.5}{\ignorespaces Mục tiêu huấn luyện của GPT: Causal Language Modeling. Tại mỗi bước, mô hình cố gắng dự đoán từ tiếp theo dựa trên các từ trước đó.}}{97}{figure.4.5}\protected@file@percent }
+\newlabel{fig:gpt_clm}{{4.5}{97}{Mục tiêu huấn luyện của GPT: Causal Language Modeling. Tại mỗi bước, mô hình cố gắng dự đoán từ tiếp theo dựa trên các từ trước đó}{figure.4.5}{}}
+\@writefile{toc}{\contentsline {paragraph}{Các Token Đặc Biệt trong Decoder-Only Models}{97}{figure.4.5}\protected@file@percent }
 \citation{radford2018improving}
 \citation{radford2019language}
 \citation{brown2020language}
 \citation{ouyang2022training}
 \citation{openai2023gpt4}
 \citation{openai2024gpt4o}
-\@writefile{lof}{\contentsline {figure}{\numberline {4.4}{\ignorespaces Mục tiêu huấn luyện của GPT: Causal Language Modeling. Tại mỗi bước, mô hình cố gắng dự đoán từ tiếp theo dựa trên các từ trước đó.}}{95}{figure.4.4}\protected@file@percent }
-\newlabel{fig:gpt_clm}{{4.4}{95}{Mục tiêu huấn luyện của GPT: Causal Language Modeling. Tại mỗi bước, mô hình cố gắng dự đoán từ tiếp theo dựa trên các từ trước đó}{figure.4.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Sự phát triển và các mô hình tiêu biểu}{95}{figure.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{1. Gia đình GPT (OpenAI): Những người tiên phong và dẫn đầu}{95}{figure.4.4}\protected@file@percent }
 \citation{touvron2023llama}
 \citation{jiang2023mistral}
 \citation{bai2022constitutional}
+\@writefile{toc}{\contentsline {subsubsection}{Sự phát triển và các mô hình tiêu biểu}{98}{figure.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{1. Gia đình GPT (OpenAI): Những người tiên phong và dẫn đầu}{98}{figure.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{2. Làn sóng LLMs Mã nguồn mở và các đối thủ cạnh tranh}{98}{figure.4.5}\protected@file@percent }
 \citation{chen2021evaluating}
 \citation{li2023starcoder}
 \citation{roziere2023code}
 \citation{zhang2019dialogpt}
-\@writefile{toc}{\contentsline {paragraph}{2. Làn sóng LLMs Mã nguồn mở và các đối thủ cạnh tranh}{96}{figure.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{3. Các mô hình Decoder-Only chuyên biệt}{96}{figure.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.3}Họ Mô hình Encoder-Decoder: Sự kết hợp của hai thế giới}{97}{subsection.4.2.3}\protected@file@percent }
-\newlabel{ssec:encoder_decoder_models}{{4.2.3}{97}{Họ Mô hình Encoder-Decoder: Sự kết hợp của hai thế giới}{subsection.4.2.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Kiến trúc và Lợi thế Cốt lõi}{97}{subsection.4.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{3. Các mô hình Decoder-Only chuyên biệt}{99}{figure.4.5}\protected@file@percent }
 \citation{vaswani2017attention}
 \citation{raffel2020exploring}
 \citation{lewis2019bart}
 \citation{costa2022no}
 \citation{zhang2020pegasus}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.3}Họ Mô hình Encoder-Decoder: Sự kết hợp của hai thế giới}{100}{subsection.4.2.3}\protected@file@percent }
+\newlabel{ssec:encoder_decoder_models}{{4.2.3}{100}{Họ Mô hình Encoder-Decoder: Sự kết hợp của hai thế giới}{subsection.4.2.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Kiến trúc và Lợi thế Cốt lõi}{100}{subsection.4.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Sự phát triển và các mô hình tiêu biểu}{100}{subsection.4.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{1. Các mô hình Nền tảng và Đa ngôn ngữ}{100}{subsection.4.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{2. Các biến thể với Mục tiêu Huấn luyện và Kiến trúc Sáng tạo}{100}{subsection.4.2.3}\protected@file@percent }
 \citation{qi2020prophetnet}
 \citation{rothe2020leveraging}
 \citation{xue2022byt5}
 \citation{tay2022unifying}
 \citation{chung2022scaling}
-\@writefile{toc}{\contentsline {subsubsection}{Sự phát triển và các mô hình tiêu biểu}{98}{subsection.4.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{1. Các mô hình Nền tảng và Đa ngôn ngữ}{98}{subsection.4.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{2. Các biến thể với Mục tiêu Huấn luyện và Kiến trúc Sáng tạo}{98}{subsection.4.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{3. Hướng tới sự Hợp nhất và Linh hoạt}{98}{subsection.4.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Khi nào nên sử dụng Họ mô hình Encoder-Decoder?}{99}{subsection.4.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.3}Các Kỹ thuật Tokenization Hiện đại}{99}{section.4.3}\protected@file@percent }
-\newlabel{sec:modern_tokenization}{{4.3}{99}{Các Kỹ thuật Tokenization Hiện đại}{section.4.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{3. Hướng tới sự Hợp nhất và Linh hoạt}{101}{subsection.4.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Khi nào nên sử dụng Họ mô hình Encoder-Decoder?}{102}{subsection.4.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.3}Các Kỹ thuật Tokenization Hiện đại}{102}{section.4.3}\protected@file@percent }
+\newlabel{sec:modern_tokenization}{{4.3}{102}{Các Kỹ thuật Tokenization Hiện đại}{section.4.3}{}}
 \citation{sennrich2015neural}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.1}Byte-Pair Encoding (BPE)}{100}{subsection.4.3.1}\protected@file@percent }
-\newlabel{ssec:bpe}{{4.3.1}{100}{Byte-Pair Encoding (BPE)}{subsection.4.3.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động: Gộp từ dưới lên (Bottom-up Merging)}{100}{subsection.4.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Bước 1: Chuẩn bị kho văn bản và Từ vựng ban đầu}{100}{subsection.4.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Bước 2: Học các quy tắc gộp (Learn Merges)}{100}{Item.99}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.1}Byte-Pair Encoding (BPE)}{103}{subsection.4.3.1}\protected@file@percent }
+\newlabel{ssec:bpe}{{4.3.1}{103}{Byte-Pair Encoding (BPE)}{subsection.4.3.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động: Gộp từ dưới lên (Bottom-up Merging)}{103}{subsection.4.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bước 1: Chuẩn bị kho văn bản và Từ vựng ban đầu}{103}{subsection.4.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bước 2: Học các quy tắc gộp (Learn Merges)}{104}{Item.103}\protected@file@percent }
+\newlabel{ex:ex:bpe_learning}{{10}{104}{Minh họa quá trình học BPE}{tcb@cnt@example.10}{}}
+\@writefile{toc}{\contentsline {paragraph}{Bước 3: Tokenize một câu mới}{104}{tcb@cnt@example.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Cải tiến quan trọng: Byte-Level BPE (BBPE)}{104}{Item.109}\protected@file@percent }
 \citation{wu2016google}
-\newlabel{ex:ex:bpe_learning}{{10}{101}{Minh họa quá trình học BPE}{tcb@cnt@example.10}{}}
-\@writefile{toc}{\contentsline {paragraph}{Bước 3: Tokenize một câu mới}{101}{tcb@cnt@example.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Cải tiến quan trọng: Byte-Level BPE (BBPE)}{101}{Item.105}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.2}WordPiece}{101}{subsection.4.3.2}\protected@file@percent }
-\newlabel{ssec:wordpiece}{{4.3.2}{101}{WordPiece}{subsection.4.3.2}{}}
 \citation{kudo2018sentencepiece}
-\@writefile{toc}{\contentsline {subsubsection}{Sự khác biệt chính với BPE: Tiêu chí gộp}{102}{subsection.4.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Cơ chế hoạt động}{102}{subsection.4.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.3}SentencePiece}{102}{subsection.4.3.3}\protected@file@percent }
-\newlabel{ssec:sentencepiece}{{4.3.3}{102}{SentencePiece}{subsection.4.3.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Các cải tiến chính}{102}{subsection.4.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{1. Hoạt động trực tiếp trên văn bản thô}{102}{subsection.4.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{2. Tokenization xác suất và Subword Regularization}{102}{subsection.4.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.2}WordPiece}{105}{subsection.4.3.2}\protected@file@percent }
+\newlabel{ssec:wordpiece}{{4.3.2}{105}{WordPiece}{subsection.4.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Sự khác biệt chính với BPE: Tiêu chí gộp}{105}{subsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cơ chế hoạt động}{105}{subsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.3}SentencePiece}{105}{subsection.4.3.3}\protected@file@percent }
+\newlabel{ssec:sentencepiece}{{4.3.3}{105}{SentencePiece}{subsection.4.3.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Các cải tiến chính}{105}{subsection.4.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{1. Hoạt động trực tiếp trên văn bản thô}{105}{subsection.4.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{2. Tokenization xác suất và Subword Regularization}{105}{subsection.4.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.4}Các Biến thể Transformer cho Ngữ cảnh dài (Long-Context Transformers)}{106}{section.4.4}\protected@file@percent }
+\newlabel{sec:long_context_transformers}{{4.4}{106}{Các Biến thể Transformer cho Ngữ cảnh dài (Long-Context Transformers)}{section.4.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.1}Vấn đề của Sự chú ý Bậc hai (The Quadratic Bottleneck)}{106}{subsection.4.4.1}\protected@file@percent }
+\newlabel{ssec:quadratic_bottleneck}{{4.4.1}{106}{Vấn đề của Sự chú ý Bậc hai (The Quadratic Bottleneck)}{subsection.4.4.1}{}}
 \citation{dao2022flashattention}
-\@writefile{toc}{\contentsline {section}{\numberline {4.4}Các Biến thể Transformer cho Ngữ cảnh dài (Long-Context Transformers)}{103}{section.4.4}\protected@file@percent }
-\newlabel{sec:long_context_transformers}{{4.4}{103}{Các Biến thể Transformer cho Ngữ cảnh dài (Long-Context Transformers)}{section.4.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.1}Vấn đề của Sự chú ý Bậc hai (The Quadratic Bottleneck)}{103}{subsection.4.4.1}\protected@file@percent }
-\newlabel{ssec:quadratic_bottleneck}{{4.4.1}{103}{Vấn đề của Sự chú ý Bậc hai (The Quadratic Bottleneck)}{subsection.4.4.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Giải pháp từ Kỹ thuật Tối ưu: FlashAttention}{103}{subsection.4.4.1}\protected@file@percent }
 \citation{beltagy2020longformer}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.2}Lý thuyết về Chú ý Thưa thớt (Sparse Attention)}{104}{subsection.4.4.2}\protected@file@percent }
-\newlabel{ssec:sparse_attention_theory}{{4.4.2}{104}{Lý thuyết về Chú ý Thưa thớt (Sparse Attention)}{subsection.4.4.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi}{104}{subsection.4.4.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {4.5}{\ignorespaces So sánh các mẫu chú ý thưa (sparse attention). (a) Chú ý toàn cục (Global). (b) Chú ý theo khối cục bộ (Block Local). (c) Chú ý theo dải (Band), hay còn gọi là cửa sổ trượt (Sliding Window). (d) Chú ý ngẫu nhiên (Random). (e) Chú ý giãn cách (Dilated). Các mô hình như Longformer và BigBird thường kết hợp các mẫu này.}}{104}{figure.4.5}\protected@file@percent }
-\newlabel{fig:sparse_attention_patterns}{{4.5}{104}{So sánh các mẫu chú ý thưa (sparse attention). (a) Chú ý toàn cục (Global). (b) Chú ý theo khối cục bộ (Block Local). (c) Chú ý theo dải (Band), hay còn gọi là cửa sổ trượt (Sliding Window). (d) Chú ý ngẫu nhiên (Random). (e) Chú ý giãn cách (Dilated). Các mô hình như Longformer và BigBird thường kết hợp các mẫu này}{figure.4.5}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Longformer: Kết hợp Cửa sổ trượt và Chú ý Toàn cục}{104}{figure.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{1. Chú ý Cửa sổ trượt (Sliding Window Attention)}{104}{figure.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{2. Chú ý Cửa sổ trượt Giãn cách (Dilated Sliding Window)}{104}{figure.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Giải pháp từ Kỹ thuật Tối ưu: FlashAttention}{107}{subsection.4.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.2}Lý thuyết về Chú ý Thưa thớt (Sparse Attention)}{107}{subsection.4.4.2}\protected@file@percent }
+\newlabel{ssec:sparse_attention_theory}{{4.4.2}{107}{Lý thuyết về Chú ý Thưa thớt (Sparse Attention)}{subsection.4.4.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi}{107}{subsection.4.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.6}{\ignorespaces So sánh các mẫu chú ý thưa (sparse attention). (a) Chú ý toàn cục (Global). (b) Chú ý theo khối cục bộ (Block Local). (c) Chú ý theo dải (Band), hay còn gọi là cửa sổ trượt (Sliding Window). (d) Chú ý ngẫu nhiên (Random). (e) Chú ý giãn cách (Dilated). Các mô hình như Longformer và BigBird thường kết hợp các mẫu này.}}{107}{figure.4.6}\protected@file@percent }
+\newlabel{fig:sparse_attention_patterns}{{4.6}{107}{So sánh các mẫu chú ý thưa (sparse attention). (a) Chú ý toàn cục (Global). (b) Chú ý theo khối cục bộ (Block Local). (c) Chú ý theo dải (Band), hay còn gọi là cửa sổ trượt (Sliding Window). (d) Chú ý ngẫu nhiên (Random). (e) Chú ý giãn cách (Dilated). Các mô hình như Longformer và BigBird thường kết hợp các mẫu này}{figure.4.6}{}}
 \citation{zaheer2020big}
 \citation{press2021train}
+\@writefile{toc}{\contentsline {subsubsection}{Longformer: Kết hợp Cửa sổ trượt và Chú ý Toàn cục}{108}{figure.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{1. Chú ý Cửa sổ trượt (Sliding Window Attention)}{108}{figure.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{2. Chú ý Cửa sổ trượt Giãn cách (Dilated Sliding Window)}{108}{figure.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{3. Chú ý Toàn cục (Global Attention)}{108}{figure.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{BigBird: Thêm các Mẫu Chú ý Ngẫu nhiên}{108}{figure.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.3}Các phương pháp khác: Thoát khỏi Self-Attention Bậc hai}{108}{subsection.4.4.3}\protected@file@percent }
+\newlabel{ssec:other_long_context_methods}{{4.4.3}{108}{Các phương pháp khác: Thoát khỏi Self-Attention Bậc hai}{subsection.4.4.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Cải tiến Mã hóa Vị trí (Positional Encoding)}{108}{subsection.4.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{ALiBi (Attention with Linear Biases)}{108}{subsection.4.4.3}\protected@file@percent }
 \citation{bloc972023ntkaware}
 \citation{peng2023yarn}
-\@writefile{toc}{\contentsline {paragraph}{3. Chú ý Toàn cục (Global Attention)}{105}{figure.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{BigBird: Thêm các Mẫu Chú ý Ngẫu nhiên}{105}{figure.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.3}Các phương pháp khác: Thoát khỏi Self-Attention Bậc hai}{105}{subsection.4.4.3}\protected@file@percent }
-\newlabel{ssec:other_long_context_methods}{{4.4.3}{105}{Các phương pháp khác: Thoát khỏi Self-Attention Bậc hai}{subsection.4.4.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Cải tiến Mã hóa Vị trí (Positional Encoding)}{105}{subsection.4.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{ALiBi (Attention with Linear Biases)}{105}{subsection.4.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{RoPE Scaling}{105}{subsection.4.4.3}\protected@file@percent }
 \citation{gu2021efficiently}
 \citation{gu2023mamba}
-\@writefile{toc}{\contentsline {subsubsection}{Mô hình Trạng thái (State Space Models - SSMs) và Mamba}{106}{subsection.4.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Nguồn gốc từ Lý thuyết Điều khiển}{106}{subsection.4.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Thách thức và Giải pháp}{106}{subsection.4.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Mamba: SSMs có Chọn lọc (Selective SSMs)}{106}{subsection.4.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{So sánh SSMs và RNNs truyền thống}{106}{subsection.4.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{RoPE Scaling}{109}{subsection.4.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Mô hình Trạng thái (State Space Models - SSMs) và Mamba}{109}{subsection.4.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Nguồn gốc từ Lý thuyết Điều khiển}{109}{subsection.4.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Thách thức và Giải pháp}{109}{subsection.4.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Mamba: SSMs có Chọn lọc (Selective SSMs)}{109}{subsection.4.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{So sánh SSMs và RNNs truyền thống}{109}{subsection.4.4.3}\protected@file@percent }
 \citation{shazeer2017outrageously}
 \citation{fedus2022switch}
-\@writefile{toc}{\contentsline {paragraph}{Ưu điểm của Mamba so với Transformer}{107}{Item.110}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Các hướng tiếp cận khác}{107}{Item.110}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.5}Lý thuyết về Mixture-of-Experts (MoE)}{107}{section.4.5}\protected@file@percent }
-\newlabel{sec:mixture_of_experts}{{4.5}{107}{Lý thuyết về Mixture-of-Experts (MoE)}{section.4.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.1}Kiến trúc và Nguyên lý hoạt động}{107}{subsection.4.5.1}\protected@file@percent }
-\newlabel{ssec:moe_architecture}{{4.5.1}{107}{Kiến trúc và Nguyên lý hoạt động}{subsection.4.5.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4.6}{\ignorespaces So sánh một khối Transformer tiêu chuẩn (trái) và một khối Transformer với lớp MoE (phải). Lớp FFN dày đặc được thay thế bằng một mạng cổng và nhiều chuyên gia FFN thưa thớt.}}{108}{figure.4.6}\protected@file@percent }
-\newlabel{fig:moe_transformer_block}{{4.6}{108}{So sánh một khối Transformer tiêu chuẩn (trái) và một khối Transformer với lớp MoE (phải). Lớp FFN dày đặc được thay thế bằng một mạng cổng và nhiều chuyên gia FFN thưa thớt}{figure.4.6}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Dòng chảy dữ liệu của một token}{108}{figure.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Bước 1: Định tuyến bởi Mạng cổng (Routing by the Gating Network)}{108}{figure.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Bước 2: Chọn các Chuyên gia "Top-K"}{108}{figure.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Bước 3: Xử lý bởi các Chuyên gia}{108}{figure.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Bước 4: Tổng hợp có trọng số}{108}{figure.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Ví dụ: Mixtral 8x7B}{109}{figure.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.2}Thách thức trong việc Huấn luyện MoE}{109}{subsection.4.5.2}\protected@file@percent }
-\newlabel{ssec:moe_training_challenges}{{4.5.2}{109}{Thách thức trong việc Huấn luyện MoE}{subsection.4.5.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{1. Thách thức về sự sụp đổ của việc định tuyến (Routing Collapse)}{109}{subsection.4.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Giải pháp: Hàm Mất mát Cân bằng Tải (Load Balancing Loss)}{109}{Item.114}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Giải pháp bổ sung: Noisy Top-K Gating}{110}{Item.114}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{2. Thách thức về Triển khai và Cơ sở hạ tầng}{110}{Item.114}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.3}Tổng kết về MoE}{110}{subsection.4.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {5}LÝ THUYẾT VỀ TINH CHỈNH VÀ CĂN CHỈNH MÔ HÌNH}{111}{chapter.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Ưu điểm của Mamba so với Transformer}{110}{Item.114}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Các hướng tiếp cận khác}{110}{Item.114}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.5}Lý thuyết về Mixture-of-Experts (MoE)}{110}{section.4.5}\protected@file@percent }
+\newlabel{sec:mixture_of_experts}{{4.5}{110}{Lý thuyết về Mixture-of-Experts (MoE)}{section.4.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.1}Kiến trúc và Nguyên lý hoạt động}{111}{subsection.4.5.1}\protected@file@percent }
+\newlabel{ssec:moe_architecture}{{4.5.1}{111}{Kiến trúc và Nguyên lý hoạt động}{subsection.4.5.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.7}{\ignorespaces So sánh một khối Transformer tiêu chuẩn (trái) và một khối Transformer với lớp MoE (phải). Lớp FFN dày đặc được thay thế bằng một mạng cổng và nhiều chuyên gia FFN thưa thớt.}}{111}{figure.4.7}\protected@file@percent }
+\newlabel{fig:moe_transformer_block}{{4.7}{111}{So sánh một khối Transformer tiêu chuẩn (trái) và một khối Transformer với lớp MoE (phải). Lớp FFN dày đặc được thay thế bằng một mạng cổng và nhiều chuyên gia FFN thưa thớt}{figure.4.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Dòng chảy dữ liệu của một token}{111}{figure.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bước 1: Định tuyến bởi Mạng cổng (Routing by the Gating Network)}{111}{figure.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bước 2: Chọn các Chuyên gia "Top-K"}{112}{figure.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bước 3: Xử lý bởi các Chuyên gia}{112}{figure.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bước 4: Tổng hợp có trọng số}{112}{figure.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Ví dụ: Mixtral 8x7B}{112}{figure.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.2}Thách thức trong việc Huấn luyện MoE}{113}{subsection.4.5.2}\protected@file@percent }
+\newlabel{ssec:moe_training_challenges}{{4.5.2}{113}{Thách thức trong việc Huấn luyện MoE}{subsection.4.5.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{1. Thách thức về sự sụp đổ của việc định tuyến (Routing Collapse)}{113}{subsection.4.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Giải pháp: Hàm Mất mát Cân bằng Tải (Load Balancing Loss)}{113}{Item.118}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Giải pháp bổ sung: Noisy Top-K Gating}{114}{Item.118}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{2. Thách thức về Triển khai và Cơ sở hạ tầng}{114}{Item.118}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.3}Tổng kết về MoE}{114}{subsection.4.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {5}LÝ THUYẾT VỀ TINH CHỈNH VÀ CĂN CHỈNH MÔ HÌNH}{115}{chapter.5}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{chap:finetuning_alignment}{{5}{111}{LÝ THUYẾT VỀ TINH CHỈNH VÀ CĂN CHỈNH MÔ HÌNH}{chapter.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.1}Các Phương pháp Tinh chỉnh (Fine-tuning)}{111}{section.5.1}\protected@file@percent }
-\newlabel{sec:finetuning_methods}{{5.1}{111}{Các Phương pháp Tinh chỉnh (Fine-tuning)}{section.5.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.1}Học Chuyển giao (Transfer Learning): Nền tảng Tư duy}{111}{subsection.5.1.1}\protected@file@percent }
-\newlabel{ssec:transfer_learning}{{5.1.1}{111}{Học Chuyển giao (Transfer Learning): Nền tảng Tư duy}{subsection.5.1.1}{}}
-\newlabel{def:def:transfer_learning}{{5}{111}{Học Chuyển giao}{tcb@cnt@definition.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces Mô hình Học Chuyển giao trong NLP: Một mô hình được huấn luyện trước trên dữ liệu lớn, sau đó được tinh chỉnh trên một tác vụ cụ thể.}}{112}{figure.5.1}\protected@file@percent }
-\newlabel{fig:transfer_learning_paradigm}{{5.1}{112}{Mô hình Học Chuyển giao trong NLP: Một mô hình được huấn luyện trước trên dữ liệu lớn, sau đó được tinh chỉnh trên một tác vụ cụ thể}{figure.5.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.2}Tinh chỉnh Toàn bộ (Full Fine-tuning)}{112}{subsection.5.1.2}\protected@file@percent }
-\newlabel{ssec:full_finetuning}{{5.1.2}{112}{Tinh chỉnh Toàn bộ (Full Fine-tuning)}{subsection.5.1.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động}{112}{subsection.5.1.2}\protected@file@percent }
+\newlabel{chap:finetuning_alignment}{{5}{115}{LÝ THUYẾT VỀ TINH CHỈNH VÀ CĂN CHỈNH MÔ HÌNH}{chapter.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}Các Phương pháp Tinh chỉnh (Fine-tuning)}{115}{section.5.1}\protected@file@percent }
+\newlabel{sec:finetuning_methods}{{5.1}{115}{Các Phương pháp Tinh chỉnh (Fine-tuning)}{section.5.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.1}Học Chuyển giao (Transfer Learning): Nền tảng Tư duy}{115}{subsection.5.1.1}\protected@file@percent }
+\newlabel{ssec:transfer_learning}{{5.1.1}{115}{Học Chuyển giao (Transfer Learning): Nền tảng Tư duy}{subsection.5.1.1}{}}
+\newlabel{def:def:transfer_learning}{{5}{115}{Học Chuyển giao}{tcb@cnt@definition.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces Mô hình Học Chuyển giao trong NLP: Một mô hình được huấn luyện trước trên dữ liệu lớn, sau đó được tinh chỉnh trên một tác vụ cụ thể.}}{116}{figure.5.1}\protected@file@percent }
+\newlabel{fig:transfer_learning_paradigm}{{5.1}{116}{Mô hình Học Chuyển giao trong NLP: Một mô hình được huấn luyện trước trên dữ liệu lớn, sau đó được tinh chỉnh trên một tác vụ cụ thể}{figure.5.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.2}Tinh chỉnh Toàn bộ (Full Fine-tuning)}{116}{subsection.5.1.2}\protected@file@percent }
+\newlabel{ssec:full_finetuning}{{5.1.2}{116}{Tinh chỉnh Toàn bộ (Full Fine-tuning)}{subsection.5.1.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động}{116}{subsection.5.1.2}\protected@file@percent }
 \citation{houlsby2019parameter}
 \citation{hu2021lora}
 \citation{lester2021power}
 \citation{zaken2021bitfit}
-\@writefile{toc}{\contentsline {subsubsection}{Chiến lược Tinh chỉnh Nâng cao}{113}{subsection.5.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Huấn luyện theo lớp phân biệt (Discriminative Layer-wise Training)}{113}{subsection.5.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Rã đông Dần dần (Gradual Unfreezing)}{113}{subsection.5.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Ưu và Nhược điểm của Tinh chỉnh Toàn bộ}{113}{Item.119}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Chiến lược Tinh chỉnh Nâng cao}{117}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Huấn luyện theo lớp phân biệt (Discriminative Layer-wise Training)}{117}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Rã đông Dần dần (Gradual Unfreezing)}{117}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Ưu và Nhược điểm của Tinh chỉnh Toàn bộ}{117}{Item.123}\protected@file@percent }
 \citation{he2022towards}
 \citation{hu2023llmpeft}
 \citation{dettmers2023qlora}
-\@writefile{toc}{\contentsline {section}{\numberline {5.2}Kỹ thuật Tinh chỉnh Hiệu quả Tham số (PEFT)}{114}{section.5.2}\protected@file@percent }
-\newlabel{sec:peft}{{5.2}{114}{Kỹ thuật Tinh chỉnh Hiệu quả Tham số (PEFT)}{section.5.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}Phân loại theo 5 nhóm lớn}{114}{subsection.5.2.1}\protected@file@percent }
-\newlabel{ssec:peft_taxonomy}{{5.2.1}{114}{Phân loại theo 5 nhóm lớn}{subsection.5.2.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces Minh họa trực quan: 5 nhóm chính PEFT và các giao nhau (ví dụ tiêu biểu).}}{114}{figure.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}Kỹ thuật Tinh chỉnh Hiệu quả Tham số (PEFT)}{118}{section.5.2}\protected@file@percent }
+\newlabel{sec:peft}{{5.2}{118}{Kỹ thuật Tinh chỉnh Hiệu quả Tham số (PEFT)}{section.5.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}Phân loại theo 5 nhóm lớn}{118}{subsection.5.2.1}\protected@file@percent }
+\newlabel{ssec:peft_taxonomy}{{5.2.1}{118}{Phân loại theo 5 nhóm lớn}{subsection.5.2.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces Minh họa trực quan: 5 nhóm chính PEFT và các giao nhau (ví dụ tiêu biểu).}}{118}{figure.5.2}\protected@file@percent }
 \citation{pfeiffer2021adapterfusion}
 \citation{chen2022adamixture}
 \citation{he2021laddersidetuning}
 \citation{he2022towards}
 \citation{liu2022ia3}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}Group 1 — Additive Methods (Phương pháp bổ sung)}{115}{subsection.5.2.2}\protected@file@percent }
-\newlabel{ssec:additive}{{5.2.2}{115}{Group 1 — Additive Methods (Phương pháp bổ sung)}{subsection.5.2.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}Group 1 — Additive Methods (Phương pháp bổ sung)}{119}{subsection.5.2.2}\protected@file@percent }
+\newlabel{ssec:additive}{{5.2.2}{119}{Group 1 — Additive Methods (Phương pháp bổ sung)}{subsection.5.2.2}{}}
 \citation{houlsby2019parameter}
 \citation{mahabadi2021compacter}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.3}Group 2 — Adapter-based Methods (Phương pháp dựa trên Adapter)}{120}{subsection.5.2.3}\protected@file@percent }
+\newlabel{ssec:adapters}{{5.2.3}{120}{Group 2 — Adapter-based Methods (Phương pháp dựa trên Adapter)}{subsection.5.2.3}{}}
 \citation{he2022towards}
 \citation{ma2022unipelt}
 \citation{zhang2021phm}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.3}Group 2 — Adapter-based Methods (Phương pháp dựa trên Adapter)}{116}{subsection.5.2.3}\protected@file@percent }
-\newlabel{ssec:adapters}{{5.2.3}{116}{Group 2 — Adapter-based Methods (Phương pháp dựa trên Adapter)}{subsection.5.2.3}{}}
 \citation{lester2021power}
 \citation{li2021prefix}
 \citation{liu2021p}
@@ -712,18 +707,18 @@
 \citation{vu2022spot}
 \citation{wang2022ipt}
 \citation{jia2022promptadapter}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.4}Group 3 — Soft Prompts / Prefix-based Methods (Phương pháp dựa trên Prompt và Prefix mềm)}{117}{subsection.5.2.4}\protected@file@percent }
-\newlabel{ssec:soft_prompts}{{5.2.4}{117}{Group 3 — Soft Prompts / Prefix-based Methods (Phương pháp dựa trên Prompt và Prefix mềm)}{subsection.5.2.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.4}Group 3 — Soft Prompts / Prefix-based Methods (Phương pháp dựa trên Prompt và Prefix mềm)}{121}{subsection.5.2.4}\protected@file@percent }
+\newlabel{ssec:soft_prompts}{{5.2.4}{121}{Group 3 — Soft Prompts / Prefix-based Methods (Phương pháp dựa trên Prompt và Prefix mềm)}{subsection.5.2.4}{}}
 \citation{zaken2021bitfit}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.5}Group 4 — Selective Tuning (Tinh chỉnh chọn lọc)}{122}{subsection.5.2.5}\protected@file@percent }
+\newlabel{ssec:selective}{{5.2.5}{122}{Group 4 — Selective Tuning (Tinh chỉnh chọn lọc)}{subsection.5.2.5}{}}
 \citation{ben-zaken2022ln-tuning}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.5}Group 4 — Selective Tuning (Tinh chỉnh chọn lọc)}{118}{subsection.5.2.5}\protected@file@percent }
-\newlabel{ssec:selective}{{5.2.5}{118}{Group 4 — Selective Tuning (Tinh chỉnh chọn lọc)}{subsection.5.2.5}{}}
 \citation{ansell2022composable}
 \citation{guo2021parameter}
 \citation{sung2022fishmask}
 \citation{frankle2019lottery}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.6}Group 5 — Reparametrization-based / Low-rank Methods (Phương pháp tái tham số hoá và phân rã hạng thấp)}{119}{subsection.5.2.6}\protected@file@percent }
-\newlabel{ssec:reparam}{{5.2.6}{119}{Group 5 — Reparametrization-based / Low-rank Methods (Phương pháp tái tham số hoá và phân rã hạng thấp)}{subsection.5.2.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.6}Group 5 — Reparametrization-based / Low-rank Methods (Phương pháp tái tham số hoá và phân rã hạng thấp)}{123}{subsection.5.2.6}\protected@file@percent }
+\newlabel{ssec:reparam}{{5.2.6}{123}{Group 5 — Reparametrization-based / Low-rank Methods (Phương pháp tái tham số hoá và phân rã hạng thấp)}{subsection.5.2.6}{}}
 \citation{hu2021lora}
 \citation{buczak2023krona}
 \citation{zhang2021phm}
@@ -739,488 +734,488 @@
 \citation{dettmers2023qlora}
 \citation{lester2021power}
 \citation{zaken2021bitfit}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.7}Giao nhau giữa các nhóm — các phương pháp hybrid}{121}{subsection.5.2.7}\protected@file@percent }
-\newlabel{ssec:hybrid}{{5.2.7}{121}{Giao nhau giữa các nhóm — các phương pháp hybrid}{subsection.5.2.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.8}So sánh định lượng và hướng dẫn thực hành}{121}{subsection.5.2.8}\protected@file@percent }
-\newlabel{ssec:comparison}{{5.2.8}{121}{So sánh định lượng và hướng dẫn thực hành}{subsection.5.2.8}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces So sánh định lượng các phương pháp PEFT (ước lượng tương đối)}}{122}{table.caption.4}\protected@file@percent }
-\newlabel{tab:peft_compare}{{5.1}{122}{So sánh định lượng các phương pháp PEFT (ước lượng tương đối)}{table.caption.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.9}Một số ví dụ thực tế và mẹo triển khai}{122}{subsection.5.2.9}\protected@file@percent }
-\newlabel{ssec:practical}{{5.2.9}{122}{Một số ví dụ thực tế và mẹo triển khai}{subsection.5.2.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.10}Kết luận và hướng nghiên cứu tương lai}{123}{subsection.5.2.10}\protected@file@percent }
-\newlabel{ssec:conclusion}{{5.2.10}{123}{Kết luận và hướng nghiên cứu tương lai}{subsection.5.2.10}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.3}Kỹ thuật Prompt Engineering và Học trong Ngữ cảnh (In-context Learning)}{123}{section.5.3}\protected@file@percent }
-\newlabel{sec:prompt_engineering_icl}{{5.3}{123}{Kỹ thuật Prompt Engineering và Học trong Ngữ cảnh (In-context Learning)}{section.5.3}{}}
-\newlabel{def:def:in_context_learning}{{6}{123}{Học trong Ngữ cảnh (ICL)}{tcb@cnt@definition.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}Các cấp độ của Học trong Ngữ cảnh: Zero-shot, One-shot, Few-shot}{123}{subsection.5.3.1}\protected@file@percent }
-\newlabel{ssec:shot_learning}{{5.3.1}{123}{Các cấp độ của Học trong Ngữ cảnh: Zero-shot, One-shot, Few-shot}{subsection.5.3.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Zero-shot Learning (Học không cần ví dụ, n=0)}{123}{subsection.5.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{One-shot Learning (Học với một ví dụ, n=1)}{124}{subsection.5.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Few-shot Learning (Học với vài ví dụ, n > 1)}{124}{subsection.5.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.2}Chuỗi Suy luận (Chain-of-Thought - CoT) Prompting}{124}{subsection.5.3.2}\protected@file@percent }
-\newlabel{ssec:chain_of_thought}{{5.3.2}{124}{Chuỗi Suy luận (Chain-of-Thought - CoT) Prompting}{subsection.5.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.7}Giao nhau giữa các nhóm — các phương pháp hybrid}{125}{subsection.5.2.7}\protected@file@percent }
+\newlabel{ssec:hybrid}{{5.2.7}{125}{Giao nhau giữa các nhóm — các phương pháp hybrid}{subsection.5.2.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.8}So sánh định lượng và hướng dẫn thực hành}{126}{subsection.5.2.8}\protected@file@percent }
+\newlabel{ssec:comparison}{{5.2.8}{126}{So sánh định lượng và hướng dẫn thực hành}{subsection.5.2.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces So sánh định lượng các phương pháp PEFT (ước lượng tương đối)}}{126}{table.caption.4}\protected@file@percent }
+\newlabel{tab:peft_compare}{{5.1}{126}{So sánh định lượng các phương pháp PEFT (ước lượng tương đối)}{table.caption.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.9}Một số ví dụ thực tế và mẹo triển khai}{127}{subsection.5.2.9}\protected@file@percent }
+\newlabel{ssec:practical}{{5.2.9}{127}{Một số ví dụ thực tế và mẹo triển khai}{subsection.5.2.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.10}Kết luận và hướng nghiên cứu tương lai}{127}{subsection.5.2.10}\protected@file@percent }
+\newlabel{ssec:conclusion}{{5.2.10}{127}{Kết luận và hướng nghiên cứu tương lai}{subsection.5.2.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.3}Kỹ thuật Prompt Engineering và Học trong Ngữ cảnh (In-context Learning)}{127}{section.5.3}\protected@file@percent }
+\newlabel{sec:prompt_engineering_icl}{{5.3}{127}{Kỹ thuật Prompt Engineering và Học trong Ngữ cảnh (In-context Learning)}{section.5.3}{}}
+\newlabel{def:def:in_context_learning}{{6}{127}{Học trong Ngữ cảnh (ICL)}{tcb@cnt@definition.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}Các cấp độ của Học trong Ngữ cảnh: Zero-shot, One-shot, Few-shot}{128}{subsection.5.3.1}\protected@file@percent }
+\newlabel{ssec:shot_learning}{{5.3.1}{128}{Các cấp độ của Học trong Ngữ cảnh: Zero-shot, One-shot, Few-shot}{subsection.5.3.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Zero-shot Learning (Học không cần ví dụ, n=0)}{128}{subsection.5.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{One-shot Learning (Học với một ví dụ, n=1)}{128}{subsection.5.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Few-shot Learning (Học với vài ví dụ, n > 1)}{128}{subsection.5.3.1}\protected@file@percent }
 \citation{wei2022chain}
-\@writefile{toc}{\contentsline {subsubsection}{Vấn đề của Prompting Tiêu chuẩn}{125}{subsection.5.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Giải pháp của CoT: ''Hãy suy nghĩ từng bước''}{125}{subsection.5.3.2}\protected@file@percent }
-\newlabel{ex:ex:cot_comparison}{{11}{125}{So sánh Standard Prompting và CoT Prompting}{tcb@cnt@example.11}{}}
-\@writefile{toc}{\contentsline {paragraph}{Zero-shot-CoT}{125}{tcb@cnt@example.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.3}Các kỹ thuật nâng cao dựa trên CoT}{125}{subsection.5.3.3}\protected@file@percent }
-\newlabel{ssec:advanced_cot}{{5.3.3}{125}{Các kỹ thuật nâng cao dựa trên CoT}{subsection.5.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.2}Chuỗi Suy luận (Chain-of-Thought - CoT) Prompting}{129}{subsection.5.3.2}\protected@file@percent }
+\newlabel{ssec:chain_of_thought}{{5.3.2}{129}{Chuỗi Suy luận (Chain-of-Thought - CoT) Prompting}{subsection.5.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Vấn đề của Prompting Tiêu chuẩn}{129}{subsection.5.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Giải pháp của CoT: ''Hãy suy nghĩ từng bước''}{129}{subsection.5.3.2}\protected@file@percent }
+\newlabel{ex:ex:cot_comparison}{{11}{129}{So sánh Standard Prompting và CoT Prompting}{tcb@cnt@example.11}{}}
 \citation{wang2022self}
 \citation{yao2023tree}
-\@writefile{toc}{\contentsline {subsubsection}{Tự Nhất quán (Self-Consistency)}{126}{subsection.5.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Cây Suy tưởng (Tree of Thoughts - ToT)}{126}{Item.127}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.4}Tinh chỉnh theo chỉ dẫn (Instruction Tuning)}{126}{section.5.4}\protected@file@percent }
-\newlabel{sec:instruction_tuning}{{5.4}{126}{Tinh chỉnh theo chỉ dẫn (Instruction Tuning)}{section.5.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.1}Vấn đề của các LLM cơ sở (Base LLMs)}{126}{subsection.5.4.1}\protected@file@percent }
-\newlabel{ssec:base_llm_problem}{{5.4.1}{126}{Vấn đề của các LLM cơ sở (Base LLMs)}{subsection.5.4.1}{}}
-\newlabel{ex:ex:base_llm_behavior}{{12}{126}{Hành vi của một Base LLM}{tcb@cnt@example.12}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.2}Tư duy cốt lõi và Cơ chế hoạt động}{127}{subsection.5.4.2}\protected@file@percent }
-\newlabel{ssec:instruction_tuning_mechanism}{{5.4.2}{127}{Tư duy cốt lõi và Cơ chế hoạt động}{subsection.5.4.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.3}Xây dựng Bộ dữ liệu Chỉ dẫn: Chìa khóa thành công}{127}{subsection.5.4.3}\protected@file@percent }
-\newlabel{ssec:instruction_dataset_building}{{5.4.3}{127}{Xây dựng Bộ dữ liệu Chỉ dẫn: Chìa khóa thành công}{subsection.5.4.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Các thành phần của một mẫu dữ liệu}{127}{subsection.5.4.3}\protected@file@percent }
-\newlabel{ex:ex:instruction_data_examples}{{13}{127}{Các loại mẫu dữ liệu chỉ dẫn}{tcb@cnt@example.13}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Yêu cầu về sự đa dạng}{127}{tcb@cnt@example.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Zero-shot-CoT}{130}{tcb@cnt@example.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.3}Các kỹ thuật nâng cao dựa trên CoT}{130}{subsection.5.3.3}\protected@file@percent }
+\newlabel{ssec:advanced_cot}{{5.3.3}{130}{Các kỹ thuật nâng cao dựa trên CoT}{subsection.5.3.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Tự Nhất quán (Self-Consistency)}{130}{subsection.5.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Cây Suy tưởng (Tree of Thoughts - ToT)}{130}{Item.131}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.4}Tinh chỉnh theo chỉ dẫn (Instruction Tuning)}{131}{section.5.4}\protected@file@percent }
+\newlabel{sec:instruction_tuning}{{5.4}{131}{Tinh chỉnh theo chỉ dẫn (Instruction Tuning)}{section.5.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.1}Vấn đề của các LLM cơ sở (Base LLMs)}{131}{subsection.5.4.1}\protected@file@percent }
+\newlabel{ssec:base_llm_problem}{{5.4.1}{131}{Vấn đề của các LLM cơ sở (Base LLMs)}{subsection.5.4.1}{}}
+\newlabel{ex:ex:base_llm_behavior}{{12}{131}{Hành vi của một Base LLM}{tcb@cnt@example.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.2}Tư duy cốt lõi và Cơ chế hoạt động}{131}{subsection.5.4.2}\protected@file@percent }
+\newlabel{ssec:instruction_tuning_mechanism}{{5.4.2}{131}{Tư duy cốt lõi và Cơ chế hoạt động}{subsection.5.4.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.3}Xây dựng Bộ dữ liệu Chỉ dẫn: Chìa khóa thành công}{131}{subsection.5.4.3}\protected@file@percent }
+\newlabel{ssec:instruction_dataset_building}{{5.4.3}{131}{Xây dựng Bộ dữ liệu Chỉ dẫn: Chìa khóa thành công}{subsection.5.4.3}{}}
 \citation{alpaca}
 \citation{wang2022selfinstruct}
-\@writefile{toc}{\contentsline {subsubsection}{Các phương pháp xây dựng bộ dữ liệu}{128}{tcb@cnt@example.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{1. Sử dụng các bộ dữ liệu học thuật hiện có}{128}{tcb@cnt@example.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{2. Thu thập thủ công bởi con người (Human Annotation)}{128}{tcb@cnt@example.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{3. Tự sinh dữ liệu bằng LLM (Self-Instruct)}{128}{tcb@cnt@example.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.4}Vai trò và Tác động của Instruction Tuning}{128}{subsection.5.4.4}\protected@file@percent }
-\newlabel{ssec:instruction_tuning_impact}{{5.4.4}{128}{Vai trò và Tác động của Instruction Tuning}{subsection.5.4.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Tăng cường khả năng tuân theo mệnh lệnh và ''Tính hữu ích''}{128}{subsection.5.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Cải thiện khả năng Tổng quát hóa Zero-shot}{128}{subsection.5.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Các thành phần của một mẫu dữ liệu}{132}{subsection.5.4.3}\protected@file@percent }
+\newlabel{ex:ex:instruction_data_examples}{{13}{132}{Các loại mẫu dữ liệu chỉ dẫn}{tcb@cnt@example.13}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Yêu cầu về sự đa dạng}{132}{tcb@cnt@example.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Các phương pháp xây dựng bộ dữ liệu}{132}{tcb@cnt@example.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{1. Sử dụng các bộ dữ liệu học thuật hiện có}{132}{tcb@cnt@example.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{2. Thu thập thủ công bởi con người (Human Annotation)}{132}{tcb@cnt@example.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{3. Tự sinh dữ liệu bằng LLM (Self-Instruct)}{132}{tcb@cnt@example.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.4}Vai trò và Tác động của Instruction Tuning}{133}{subsection.5.4.4}\protected@file@percent }
+\newlabel{ssec:instruction_tuning_impact}{{5.4.4}{133}{Vai trò và Tác động của Instruction Tuning}{subsection.5.4.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Tăng cường khả năng tuân theo mệnh lệnh và ''Tính hữu ích''}{133}{subsection.5.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Cải thiện khả năng Tổng quát hóa Zero-shot}{133}{subsection.5.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Cầu nối đến sự Căn chỉnh (Alignment)}{133}{subsection.5.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.5}Các phương pháp Căn chỉnh (Alignment) với Con người}{133}{section.5.5}\protected@file@percent }
+\newlabel{sec:alignment_methods}{{5.5}{133}{Các phương pháp Căn chỉnh (Alignment) với Con người}{section.5.5}{}}
 \citation{christiano2017deep}
 \citation{stiennon2020learning}
-\@writefile{toc}{\contentsline {subsubsection}{Cầu nối đến sự Căn chỉnh (Alignment)}{129}{subsection.5.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.5}Các phương pháp Căn chỉnh (Alignment) với Con người}{129}{section.5.5}\protected@file@percent }
-\newlabel{sec:alignment_methods}{{5.5}{129}{Các phương pháp Căn chỉnh (Alignment) với Con người}{section.5.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.1}Mục tiêu Căn chỉnh: Bộ ba H (The 3 H's)}{129}{subsection.5.5.1}\protected@file@percent }
-\newlabel{ssec:alignment_goals}{{5.5.1}{129}{Mục tiêu Căn chỉnh: Bộ ba H (The 3 H's)}{subsection.5.5.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.2}Học Tăng cường từ Phản hồi Con người (RLHF)}{129}{subsection.5.5.2}\protected@file@percent }
-\newlabel{ssec:rlhf}{{5.5.2}{129}{Học Tăng cường từ Phản hồi Con người (RLHF)}{subsection.5.5.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.3}{\ignorespaces Quy trình ba bước của RLHF: (1) Supervised Fine-Tuning (SFT), (2) Reward Model (RM), (3) Policy Optimization (PPO).}}{130}{figure.5.3}\protected@file@percent }
-\newlabel{fig:rlhf_pipeline}{{5.3}{130}{Quy trình ba bước của RLHF: (1) Supervised Fine-Tuning (SFT), (2) Reward Model (RM), (3) Policy Optimization (PPO)}{figure.5.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.1}Mục tiêu Căn chỉnh: Bộ ba H (The 3 H's)}{134}{subsection.5.5.1}\protected@file@percent }
+\newlabel{ssec:alignment_goals}{{5.5.1}{134}{Mục tiêu Căn chỉnh: Bộ ba H (The 3 H's)}{subsection.5.5.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.2}Học Tăng cường từ Phản hồi Con người (RLHF)}{134}{subsection.5.5.2}\protected@file@percent }
+\newlabel{ssec:rlhf}{{5.5.2}{134}{Học Tăng cường từ Phản hồi Con người (RLHF)}{subsection.5.5.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.3}{\ignorespaces Quy trình ba bước của RLHF: (1) Supervised Fine-Tuning (SFT), (2) Reward Model (RM), (3) Policy Optimization (PPO).}}{134}{figure.5.3}\protected@file@percent }
+\newlabel{fig:rlhf_pipeline}{{5.3}{134}{Quy trình ba bước của RLHF: (1) Supervised Fine-Tuning (SFT), (2) Reward Model (RM), (3) Policy Optimization (PPO)}{figure.5.3}{}}
 \citation{schulman2017proximal}
 \citation{rafailov2023direct}
-\@writefile{toc}{\contentsline {paragraph}{Ghi chú:}{131}{Item.144}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.3}Các phương pháp thay thế: Hướng tới sự Đơn giản và Ổn định}{131}{subsection.5.5.3}\protected@file@percent }
-\newlabel{ssec:rlhf_alternatives}{{5.5.3}{131}{Các phương pháp thay thế: Hướng tới sự Đơn giản và Ổn định}{subsection.5.5.3}{}}
 \citation{rafailov2023direct}
+\@writefile{toc}{\contentsline {paragraph}{Ghi chú:}{136}{Item.148}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.3}Các phương pháp thay thế: Hướng tới sự Đơn giản và Ổn định}{136}{subsection.5.5.3}\protected@file@percent }
+\newlabel{ssec:rlhf_alternatives}{{5.5.3}{136}{Các phương pháp thay thế: Hướng tới sự Đơn giản và Ổn định}{subsection.5.5.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Direct Preference Optimization (DPO)}{136}{subsection.5.5.3}\protected@file@percent }
+\newlabel{ssec:dpo}{{5.5.3}{136}{Direct Preference Optimization (DPO)}{subsection.5.5.3}{}}
 \citation{rafailov2023direct}
-\@writefile{toc}{\contentsline {subsubsection}{Direct Preference Optimization (DPO)}{132}{subsection.5.5.3}\protected@file@percent }
-\newlabel{ssec:dpo}{{5.5.3}{132}{Direct Preference Optimization (DPO)}{subsection.5.5.3}{}}
 \citation{bai2022constitutional}
-\@writefile{toc}{\contentsline {subsubsection}{Constitutional AI (CAI)}{133}{subsection.5.5.3}\protected@file@percent }
-\newlabel{ssec:cai}{{5.5.3}{133}{Constitutional AI (CAI)}{subsection.5.5.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Constitutional AI (CAI)}{137}{subsection.5.5.3}\protected@file@percent }
+\newlabel{ssec:cai}{{5.5.3}{137}{Constitutional AI (CAI)}{subsection.5.5.3}{}}
 \citation{verl2024}
 \citation{grpo2024}
-\@writefile{toc}{\contentsline {subsubsection}{Group Relative Policy Optimization (GRPO) \cite  {verl2024, grpo2024}}{134}{Item.147}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {6}CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO}{137}{chapter.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Group Relative Policy Optimization (GRPO) \cite  {verl2024, grpo2024}}{138}{Item.151}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO}{141}{chapter.6}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{chap:advanced_architectures}{{6}{137}{CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO}{chapter.6}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.1}Tìm kiếm và Sinh Tăng cường (Retrieval-Augmented Generation - RAG)}{137}{section.6.1}\protected@file@percent }
-\newlabel{sec:rag}{{6.1}{137}{Tìm kiếm và Sinh Tăng cường (Retrieval-Augmented Generation - RAG)}{section.6.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.1}Tại sao và Khi nào chúng ta cần RAG?}{137}{subsection.6.1.1}\protected@file@percent }
-\newlabel{ssec:why_rag}{{6.1.1}{137}{Tại sao và Khi nào chúng ta cần RAG?}{subsection.6.1.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Các vấn đề cố hữu của LLM}{137}{subsection.6.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Khi nào nên sử dụng RAG?}{138}{subsection.6.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.2}Kiến trúc RAG Cơ bản (The Naive RAG Pipeline)}{138}{subsection.6.1.2}\protected@file@percent }
-\newlabel{ssec:naive_rag}{{6.1.2}{138}{Kiến trúc RAG Cơ bản (The Naive RAG Pipeline)}{subsection.6.1.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Giai đoạn 1: Lập chỉ mục (Offline)}{138}{subsection.6.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Giai đoạn 2: Truy vấn (Online)}{138}{Item.159}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6.1}{\ignorespaces Sơ đồ kiến trúc của một hệ thống RAG, bao gồm giai đoạn Lập chỉ mục (bên trên) và giai đoạn Truy vấn (bên dưới).}}{139}{figure.6.1}\protected@file@percent }
-\newlabel{fig:rag_pipeline_diagram}{{6.1}{139}{Sơ đồ kiến trúc của một hệ thống RAG, bao gồm giai đoạn Lập chỉ mục (bên trên) và giai đoạn Truy vấn (bên dưới)}{figure.6.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.3}Bài học từ các Công cụ Tìm kiếm: Kiến trúc Phân tầng của Google}{139}{subsection.6.1.3}\protected@file@percent }
-\newlabel{ssec:lesson_from_google}{{6.1.3}{139}{Bài học từ các Công cụ Tìm kiếm: Kiến trúc Phân tầng của Google}{subsection.6.1.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Kiến trúc Phân tầng (A Tiered Architecture)}{139}{subsection.6.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.4}Tối ưu hóa Giai đoạn 1: Lập chỉ mục Thông minh (Smarter Indexing)}{140}{subsection.6.1.4}\protected@file@percent }
-\newlabel{ssec:smarter_indexing}{{6.1.4}{140}{Tối ưu hóa Giai đoạn 1: Lập chỉ mục Thông minh (Smarter Indexing)}{subsection.6.1.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Chiến lược Phân mảnh Nâng cao (Advanced Chunking Strategies)}{140}{subsection.6.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Kỹ thuật Small-to-Big và Sentence-Windowing}{140}{subsection.6.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Tầm quan trọng của Metadata}{141}{Item.171}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.5}Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{141}{subsection.6.1.5}\protected@file@percent }
-\newlabel{ssec:advanced_retrieval_ranking}{{6.1.5}{141}{Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{subsection.6.1.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.6}Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{141}{subsection.6.1.6}\protected@file@percent }
-\newlabel{ssec:advanced_retrieval_ranking_refactored}{{6.1.6}{141}{Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{subsection.6.1.6}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Tìm kiếm Lai (Hybrid Search): Giai đoạn Candidate Generation của RAG}{141}{subsection.6.1.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Xếp hạng lại (Re-ranking) với Cross-Encoders}{141}{subsection.6.1.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.7}Tối ưu hóa Giai đoạn 3: Tăng cường và Sinh (Smarter Augmentation \& Generation)}{142}{subsection.6.1.7}\protected@file@percent }
-\newlabel{ssec:smarter_aug_gen}{{6.1.7}{142}{Tối ưu hóa Giai đoạn 3: Tăng cường và Sinh (Smarter Augmentation \& Generation)}{subsection.6.1.7}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Nén Ngữ cảnh (Context Compression)}{142}{subsection.6.1.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Kiểm soát việc Sinh: Buộc Trích dẫn và Chống Bịa đặt (Hallucination Guardrails)}{142}{subsection.6.1.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.8}Các Mô hình RAG Nâng cao (Advanced RAG Patterns)}{142}{subsection.6.1.8}\protected@file@percent }
-\newlabel{ssec:advanced_rag_patterns}{{6.1.8}{142}{Các Mô hình RAG Nâng cao (Advanced RAG Patterns)}{subsection.6.1.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.9}Đánh giá và Triển khai Hệ thống RAG}{147}{subsection.6.1.9}\protected@file@percent }
-\newlabel{ssec:rag_evaluation_production}{{6.1.9}{147}{Đánh giá và Triển khai Hệ thống RAG}{subsection.6.1.9}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Các chỉ số Đánh giá}{148}{subsection.6.1.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Checklist khi đưa vào Vận hành (Production Checklist)}{148}{subsection.6.1.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.2}Lý thuyết về Tối ưu hóa Mô hình}{148}{section.6.2}\protected@file@percent }
-\newlabel{sec:model_optimization}{{6.2}{148}{Lý thuyết về Tối ưu hóa Mô hình}{section.6.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.1}Chưng cất Tri thức (Knowledge Distillation)}{148}{subsection.6.2.1}\protected@file@percent }
-\newlabel{ssec:knowledge_distillation}{{6.2.1}{148}{Chưng cất Tri thức (Knowledge Distillation)}{subsection.6.2.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi: Thầy dạy Trò}{148}{subsection.6.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động}{149}{subsection.6.2.1}\protected@file@percent }
-\newlabel{eq:distillation_loss}{{6.1}{149}{Cơ chế hoạt động}{equation.6.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6.2}{\ignorespaces Quy trình Chưng cất Tri thức. Mô hình trò học đồng thời từ nhãn cứng của dữ liệu và nhãn mềm (được tạo ra bởi mô hình thầy với nhiệt độ T).}}{149}{figure.6.2}\protected@file@percent }
-\newlabel{fig:knowledge_distillation}{{6.2}{149}{Quy trình Chưng cất Tri thức. Mô hình trò học đồng thời từ nhãn cứng của dữ liệu và nhãn mềm (được tạo ra bởi mô hình thầy với nhiệt độ T)}{figure.6.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.2}Lượng tử hóa (Quantization)}{149}{subsection.6.2.2}\protected@file@percent }
-\newlabel{ssec:quantization}{{6.2.2}{149}{Lượng tử hóa (Quantization)}{subsection.6.2.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi: Giảm độ chính xác của Số}{149}{subsection.6.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Các phương pháp Lượng tử hóa}{150}{subsection.6.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Post-Training Quantization (PTQ) - Lượng tử hóa sau Huấn luyện}{150}{subsection.6.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Quantization-Aware Training (QAT) - Huấn luyện Nhận biết Lượng tử hóa}{150}{Item.176}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.3}Cắt tỉa (Pruning)}{150}{subsection.6.2.3}\protected@file@percent }
-\newlabel{ssec:pruning}{{6.2.3}{150}{Cắt tỉa (Pruning)}{subsection.6.2.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi: Loại bỏ các Kết nối Thừa}{150}{subsection.6.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Các phương pháp Cắt tỉa}{150}{subsection.6.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Cắt tỉa theo Độ lớn (Magnitude Pruning)}{150}{subsection.6.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Cắt tỉa có Cấu trúc vs. Không có Cấu trúc (Structured vs. Unstructured Pruning)}{151}{Item.182}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6.3}{\ignorespaces So sánh Cắt tỉa Không có Cấu trúc (xóa các trọng số riêng lẻ, tạo ma trận thưa thớt) và Cắt tỉa Có Cấu trúc (xóa toàn bộ cột/nơ-ron, tạo ma trận nhỏ hơn).}}{151}{figure.6.3}\protected@file@percent }
-\newlabel{fig:pruning_types}{{6.3}{151}{So sánh Cắt tỉa Không có Cấu trúc (xóa các trọng số riêng lẻ, tạo ma trận thưa thớt) và Cắt tỉa Có Cấu trúc (xóa toàn bộ cột/nơ-ron, tạo ma trận nhỏ hơn)}{figure.6.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.3}Mô hình Đa phương thức (Multimodal Models)}{151}{section.6.3}\protected@file@percent }
-\newlabel{sec:multimodal_models}{{6.3}{151}{Mô hình Đa phương thức (Multimodal Models)}{section.6.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.1}Nền tảng: Xây dựng cầu nối giữa Ảnh và Chữ}{152}{subsection.6.3.1}\protected@file@percent }
-\newlabel{ssec:multimodal_foundations}{{6.3.1}{152}{Nền tảng: Xây dựng cầu nối giữa Ảnh và Chữ}{subsection.6.3.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Vision Transformer (ViT): "Đọc" ảnh như đọc một câu}{152}{subsection.6.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Vấn đề với CNN}{152}{subsection.6.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Giải pháp của ViT: Biến ảnh thành một chuỗi các "từ"}{152}{subsection.6.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Cơ chế hoạt động}{152}{subsection.6.3.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6.4}{\ignorespaces Kiến trúc của Vision Transformer (ViT). Ảnh được chia thành các mảnh vá, mỗi mảnh được nhúng và xử lý như một "token" trong một chuỗi bởi một Transformer Encoder tiêu chuẩn.}}{152}{figure.6.4}\protected@file@percent }
-\newlabel{fig:vision_transformer_vit}{{6.4}{153}{Kiến trúc của Vision Transformer (ViT). Ảnh được chia thành các mảnh vá, mỗi mảnh được nhúng và xử lý như một "token" trong một chuỗi bởi một Transformer Encoder tiêu chuẩn}{figure.6.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{CLIP: Học sự tương đồng giữa Ảnh và Chữ bằng Contrastive Learning}{153}{figure.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Vấn đề}{153}{figure.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Giải pháp của CLIP (Contrastive Language-Image Pre-training)}{153}{figure.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Cơ chế hoạt động}{153}{figure.6.4}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6.5}{\ignorespaces Quy trình huấn luyện của CLIP. Mô hình học cách tối đa hóa độ tương đồng của các cặp (ảnh, văn bản) chính xác trên đường chéo chính và tối thiểu hóa độ tương đồng của các cặp không chính xác.}}{153}{figure.6.5}\protected@file@percent }
-\newlabel{fig:clip_contrastive_learning}{{6.5}{154}{Quy trình huấn luyện của CLIP. Mô hình học cách tối đa hóa độ tương đồng của các cặp (ảnh, văn bản) chính xác trên đường chéo chính và tối thiểu hóa độ tương đồng của các cặp không chính xác}{figure.6.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.2}Ví dụ Kiến trúc: Kết hợp LLM với Thị giác}{154}{subsection.6.3.2}\protected@file@percent }
-\newlabel{ssec:multimodal_architectures_examples}{{6.3.2}{154}{Ví dụ Kiến trúc: Kết hợp LLM với Thị giác}{subsection.6.3.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Flamingo: Thêm Cross-Attention vào một LLM đã đóng băng}{154}{subsection.6.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{LLaVA: Ánh xạ Trực tiếp vào Không gian Từ của LLM}{154}{subsection.6.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.3}Sinh Đa phương thức (Multimodal Generation)}{155}{subsection.6.3.3}\protected@file@percent }
-\newlabel{ssec:multimodal_generation}{{6.3.3}{155}{Sinh Đa phương thức (Multimodal Generation)}{subsection.6.3.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Sinh Ảnh từ Văn bản (Text-to-Image)}{155}{subsection.6.3.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6.6}{\ignorespaces Mô hình Khuếch tán cho việc sinh ảnh từ văn bản. Bắt đầu từ nhiễu, mô hình dần dần khử nhiễu theo sự dẫn dắt của embedding văn bản để tạo ra ảnh cuối cùng.}}{156}{figure.6.6}\protected@file@percent }
-\newlabel{fig:text_to_image_diffusion}{{6.6}{156}{Mô hình Khuếch tán cho việc sinh ảnh từ văn bản. Bắt đầu từ nhiễu, mô hình dần dần khử nhiễu theo sự dẫn dắt của embedding văn bản để tạo ra ảnh cuối cùng}{figure.6.6}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Sinh Video từ Văn bản (Text-to-Video)}{156}{figure.6.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.4}Kiểm soát Quá trình Sinh (Controlled Generation)}{157}{subsection.6.3.4}\protected@file@percent }
-\newlabel{ssec:controlled_generation}{{6.3.4}{157}{Kiểm soát Quá trình Sinh (Controlled Generation)}{subsection.6.3.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Các kỹ thuật kinh điển}{157}{subsection.6.3.4}\protected@file@percent }
-\newlabel{sssec:classic_controlled_generation}{{6.3.4}{157}{Các kỹ thuật kinh điển}{subsection.6.3.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{CTRL (Conditional Transformer Language Model)}{157}{subsection.6.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{PPLM (Plug and Play Language Models)}{157}{subsection.6.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{FUDGE (Future Discriminators for Generation)}{157}{subsection.6.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Các kỹ thuật dựa trên Prompt}{157}{subsection.6.3.4}\protected@file@percent }
-\newlabel{sssec:prompt_based_controlled_generation}{{6.3.4}{157}{Các kỹ thuật dựa trên Prompt}{subsection.6.3.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Prompt Tuning}{157}{subsection.6.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Prefix Tuning}{158}{subsection.6.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{LoRA (Low-Rank Adaptation) và Adapter Tuning}{158}{subsection.6.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{In-Context Control}{158}{subsection.6.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Các hướng mở rộng hiện đại}{158}{subsection.6.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.5}Sinh Nhận biết Cấu trúc (Structure-aware Generation)}{158}{subsection.6.3.5}\protected@file@percent }
-\newlabel{ssec:structure_aware_generation}{{6.3.5}{158}{Sinh Nhận biết Cấu trúc (Structure-aware Generation)}{subsection.6.3.5}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Sinh Văn bản từ Bảng (Table-to-text)}{158}{subsection.6.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Sinh Văn bản từ Đồ thị (Graph-to-text)}{158}{Item.205}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Sinh Văn bản từ CSDL (Data-to-text)}{159}{Item.208}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.4}Hệ thống Tác tử (Agentic Systems) với LLMs}{159}{section.6.4}\protected@file@percent }
-\newlabel{sec:agentic_systems}{{6.4}{159}{Hệ thống Tác tử (Agentic Systems) với LLMs}{section.6.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.1}Vòng lặp Suy luận-Hành động: Khung sườn ReAct}{159}{subsection.6.4.1}\protected@file@percent }
-\newlabel{ssec:react_framework}{{6.4.1}{159}{Vòng lặp Suy luận-Hành động: Khung sườn ReAct}{subsection.6.4.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động}{159}{subsection.6.4.1}\protected@file@percent }
-\newlabel{ex:ex:react_loop}{{14}{159}{Minh họa vòng lặp ReAct}{tcb@cnt@example.14}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.2}Lập kế hoạch và Sử dụng Công cụ (Planning \& Tool Use)}{160}{subsection.6.4.2}\protected@file@percent }
-\newlabel{ssec:planning_tool_use}{{6.4.2}{160}{Lập kế hoạch và Sử dụng Công cụ (Planning \& Tool Use)}{subsection.6.4.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Lập kế hoạch (Planning)}{160}{subsection.6.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Sử dụng Công cụ (Tool Use)}{160}{subsection.6.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.3}Bộ nhớ cho Tác tử (Agent Memory)}{161}{subsection.6.4.3}\protected@file@percent }
-\newlabel{ssec:agent_memory}{{6.4.3}{161}{Bộ nhớ cho Tác tử (Agent Memory)}{subsection.6.4.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Bộ nhớ Ngắn hạn (Short-term Memory)}{161}{subsection.6.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Bộ nhớ Dài hạn (Long-term Memory)}{161}{subsection.6.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.4}Tự sửa lỗi (Self-correction)}{161}{subsection.6.4.4}\protected@file@percent }
-\newlabel{ssec:self_correction}{{6.4.4}{161}{Tự sửa lỗi (Self-correction)}{subsection.6.4.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.5}Mô hình Thế giới (World Models) và Mô phỏng}{161}{section.6.5}\protected@file@percent }
-\newlabel{sec:world_models}{{6.5}{161}{Mô hình Thế giới (World Models) và Mô phỏng}{section.6.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.1}Khái niệm về khả năng LLM xây dựng mô hình nội tại}{162}{subsection.6.5.1}\protected@file@percent }
-\newlabel{ssec:internal_world_model_concept}{{6.5.1}{162}{Khái niệm về khả năng LLM xây dựng mô hình nội tại}{subsection.6.5.1}{}}
-\newlabel{def:def:world_model}{{7}{162}{Mô hình Thế giới (trong bối cảnh LLM)}{tcb@cnt@definition.7}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Các bằng chứng gián tiếp}{162}{tcb@cnt@definition.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Biểu diễn không gian và thời gian}{162}{tcb@cnt@definition.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Mô phỏng các thực thể}{162}{tcb@cnt@definition.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Mô hình Othello-GPT}{162}{tcb@cnt@definition.7}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6.7}{\ignorespaces Nghiên cứu Othello-GPT cho thấy một mô hình Transformer, chỉ được huấn luyện trên chuỗi nước đi, đã tự học cách biểu diễn trạng thái của bàn cờ bên trong nó.}}{163}{figure.6.7}\protected@file@percent }
-\newlabel{fig:othello_gpt}{{6.7}{163}{Nghiên cứu Othello-GPT cho thấy một mô hình Transformer, chỉ được huấn luyện trên chuỗi nước đi, đã tự học cách biểu diễn trạng thái của bàn cờ bên trong nó}{figure.6.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.2}Hướng nghiên cứu và Tiềm năng}{163}{subsection.6.5.2}\protected@file@percent }
-\newlabel{ssec:world_models_future}{{6.5.2}{163}{Hướng nghiên cứu và Tiềm năng}{subsection.6.5.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Cải thiện khả năng Suy luận và Lập kế hoạch}{163}{subsection.6.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Mô hình Thế giới Đa phương thức}{163}{subsection.6.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Hướng tới Trí tuệ Nhân tạo Tổng quát (AGI)}{163}{subsection.6.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.6}Các Kỹ thuật Biểu diễn Nâng cao cho Truy xuất}{164}{section.6.6}\protected@file@percent }
-\newlabel{sec:advanced_representation_retrieval}{{6.6}{164}{Các Kỹ thuật Biểu diễn Nâng cao cho Truy xuất}{section.6.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6.1}Biểu diễn Đa ngôn ngữ (Cross-lingual Embeddings)}{164}{subsection.6.6.1}\protected@file@percent }
-\newlabel{ssec:cross_lingual_embeddings}{{6.6.1}{164}{Biểu diễn Đa ngôn ngữ (Cross-lingual Embeddings)}{subsection.6.6.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6.2}Biểu diễn Thưa và Tối ưu cho Truy xuất (Sparse \& Retriever-specific Embeddings)}{165}{subsection.6.6.2}\protected@file@percent }
-\newlabel{ssec:sparse_retriever_embeddings}{{6.6.2}{165}{Biểu diễn Thưa và Tối ưu cho Truy xuất (Sparse \& Retriever-specific Embeddings)}{subsection.6.6.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{SPLADE (SPARse Lexical AnD Expansion model)}{165}{Item.222}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{ColBERT (Contextualized Late Interaction over BERT)}{165}{Item.222}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {7}LÝ THUYẾT ĐÁNH GIÁ VÀ CÁC BENCHMARK}{167}{chapter.7}\protected@file@percent }
+\newlabel{chap:advanced_architectures}{{6}{141}{CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO}{chapter.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Tìm kiếm và Sinh Tăng cường (Retrieval-Augmented Generation - RAG)}{141}{section.6.1}\protected@file@percent }
+\newlabel{sec:rag}{{6.1}{141}{Tìm kiếm và Sinh Tăng cường (Retrieval-Augmented Generation - RAG)}{section.6.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.1}Tại sao và Khi nào chúng ta cần RAG?}{141}{subsection.6.1.1}\protected@file@percent }
+\newlabel{ssec:why_rag}{{6.1.1}{141}{Tại sao và Khi nào chúng ta cần RAG?}{subsection.6.1.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Các vấn đề cố hữu của LLM}{141}{subsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Khi nào nên sử dụng RAG?}{142}{subsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.2}Kiến trúc RAG Cơ bản (The Naive RAG Pipeline)}{142}{subsection.6.1.2}\protected@file@percent }
+\newlabel{ssec:naive_rag}{{6.1.2}{142}{Kiến trúc RAG Cơ bản (The Naive RAG Pipeline)}{subsection.6.1.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Giai đoạn 1: Lập chỉ mục (Offline)}{142}{subsection.6.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Giai đoạn 2: Truy vấn (Online)}{142}{Item.163}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6.1}{\ignorespaces Sơ đồ kiến trúc của một hệ thống RAG, bao gồm giai đoạn Lập chỉ mục (bên trên) và giai đoạn Truy vấn (bên dưới).}}{143}{figure.6.1}\protected@file@percent }
+\newlabel{fig:rag_pipeline_diagram}{{6.1}{143}{Sơ đồ kiến trúc của một hệ thống RAG, bao gồm giai đoạn Lập chỉ mục (bên trên) và giai đoạn Truy vấn (bên dưới)}{figure.6.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.3}Bài học từ các Công cụ Tìm kiếm: Kiến trúc Phân tầng của Google}{143}{subsection.6.1.3}\protected@file@percent }
+\newlabel{ssec:lesson_from_google}{{6.1.3}{143}{Bài học từ các Công cụ Tìm kiếm: Kiến trúc Phân tầng của Google}{subsection.6.1.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Kiến trúc Phân tầng (A Tiered Architecture)}{143}{subsection.6.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.4}Tối ưu hóa Giai đoạn 1: Lập chỉ mục Thông minh (Smarter Indexing)}{144}{subsection.6.1.4}\protected@file@percent }
+\newlabel{ssec:smarter_indexing}{{6.1.4}{144}{Tối ưu hóa Giai đoạn 1: Lập chỉ mục Thông minh (Smarter Indexing)}{subsection.6.1.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Chiến lược Phân mảnh Nâng cao (Advanced Chunking Strategies)}{144}{subsection.6.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Kỹ thuật Small-to-Big và Sentence-Windowing}{145}{subsection.6.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Tầm quan trọng của Metadata}{145}{Item.175}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.5}Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{145}{subsection.6.1.5}\protected@file@percent }
+\newlabel{ssec:advanced_retrieval_ranking}{{6.1.5}{145}{Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{subsection.6.1.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.6}Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{145}{subsection.6.1.6}\protected@file@percent }
+\newlabel{ssec:advanced_retrieval_ranking_refactored}{{6.1.6}{145}{Tối ưu hóa Giai đoạn 2: Tìm kiếm và Xếp hạng (Advanced Retrieval \& Ranking)}{subsection.6.1.6}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Tìm kiếm Lai (Hybrid Search): Giai đoạn Candidate Generation của RAG}{146}{subsection.6.1.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Xếp hạng lại (Re-ranking) với Cross-Encoders}{146}{subsection.6.1.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.7}Tối ưu hóa Giai đoạn 3: Tăng cường và Sinh (Smarter Augmentation \& Generation)}{146}{subsection.6.1.7}\protected@file@percent }
+\newlabel{ssec:smarter_aug_gen}{{6.1.7}{146}{Tối ưu hóa Giai đoạn 3: Tăng cường và Sinh (Smarter Augmentation \& Generation)}{subsection.6.1.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Nén Ngữ cảnh (Context Compression)}{146}{subsection.6.1.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Kiểm soát việc Sinh: Buộc Trích dẫn và Chống Bịa đặt (Hallucination Guardrails)}{146}{subsection.6.1.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.8}Các Mô hình RAG Nâng cao (Advanced RAG Patterns)}{146}{subsection.6.1.8}\protected@file@percent }
+\newlabel{ssec:advanced_rag_patterns}{{6.1.8}{146}{Các Mô hình RAG Nâng cao (Advanced RAG Patterns)}{subsection.6.1.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.9}Đánh giá và Triển khai Hệ thống RAG}{152}{subsection.6.1.9}\protected@file@percent }
+\newlabel{ssec:rag_evaluation_production}{{6.1.9}{152}{Đánh giá và Triển khai Hệ thống RAG}{subsection.6.1.9}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Các chỉ số Đánh giá}{152}{subsection.6.1.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Checklist khi đưa vào Vận hành (Production Checklist)}{153}{subsection.6.1.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Lý thuyết về Tối ưu hóa Mô hình}{153}{section.6.2}\protected@file@percent }
+\newlabel{sec:model_optimization}{{6.2}{153}{Lý thuyết về Tối ưu hóa Mô hình}{section.6.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.1}Chưng cất Tri thức (Knowledge Distillation)}{153}{subsection.6.2.1}\protected@file@percent }
+\newlabel{ssec:knowledge_distillation}{{6.2.1}{153}{Chưng cất Tri thức (Knowledge Distillation)}{subsection.6.2.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi: Thầy dạy Trò}{153}{subsection.6.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động}{153}{subsection.6.2.1}\protected@file@percent }
+\newlabel{eq:distillation_loss}{{6.1}{154}{Cơ chế hoạt động}{equation.6.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.2}{\ignorespaces Quy trình Chưng cất Tri thức. Mô hình trò học đồng thời từ nhãn cứng của dữ liệu và nhãn mềm (được tạo ra bởi mô hình thầy với nhiệt độ T).}}{154}{figure.6.2}\protected@file@percent }
+\newlabel{fig:knowledge_distillation}{{6.2}{154}{Quy trình Chưng cất Tri thức. Mô hình trò học đồng thời từ nhãn cứng của dữ liệu và nhãn mềm (được tạo ra bởi mô hình thầy với nhiệt độ T)}{figure.6.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.2}Lượng tử hóa (Quantization)}{154}{subsection.6.2.2}\protected@file@percent }
+\newlabel{ssec:quantization}{{6.2.2}{154}{Lượng tử hóa (Quantization)}{subsection.6.2.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi: Giảm độ chính xác của Số}{154}{subsection.6.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Các phương pháp Lượng tử hóa}{155}{subsection.6.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Post-Training Quantization (PTQ) - Lượng tử hóa sau Huấn luyện}{155}{subsection.6.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Quantization-Aware Training (QAT) - Huấn luyện Nhận biết Lượng tử hóa}{155}{Item.180}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.3}Cắt tỉa (Pruning)}{155}{subsection.6.2.3}\protected@file@percent }
+\newlabel{ssec:pruning}{{6.2.3}{155}{Cắt tỉa (Pruning)}{subsection.6.2.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi: Loại bỏ các Kết nối Thừa}{155}{subsection.6.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Các phương pháp Cắt tỉa}{155}{subsection.6.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cắt tỉa theo Độ lớn (Magnitude Pruning)}{155}{subsection.6.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cắt tỉa có Cấu trúc vs. Không có Cấu trúc (Structured vs. Unstructured Pruning)}{155}{Item.186}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6.3}{\ignorespaces So sánh Cắt tỉa Không có Cấu trúc (xóa các trọng số riêng lẻ, tạo ma trận thưa thớt) và Cắt tỉa Có Cấu trúc (xóa toàn bộ cột/nơ-ron, tạo ma trận nhỏ hơn).}}{156}{figure.6.3}\protected@file@percent }
+\newlabel{fig:pruning_types}{{6.3}{156}{So sánh Cắt tỉa Không có Cấu trúc (xóa các trọng số riêng lẻ, tạo ma trận thưa thớt) và Cắt tỉa Có Cấu trúc (xóa toàn bộ cột/nơ-ron, tạo ma trận nhỏ hơn)}{figure.6.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Mô hình Đa phương thức (Multimodal Models)}{156}{section.6.3}\protected@file@percent }
+\newlabel{sec:multimodal_models}{{6.3}{156}{Mô hình Đa phương thức (Multimodal Models)}{section.6.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.1}Nền tảng: Xây dựng cầu nối giữa Ảnh và Chữ}{156}{subsection.6.3.1}\protected@file@percent }
+\newlabel{ssec:multimodal_foundations}{{6.3.1}{156}{Nền tảng: Xây dựng cầu nối giữa Ảnh và Chữ}{subsection.6.3.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Vision Transformer (ViT): "Đọc" ảnh như đọc một câu}{156}{subsection.6.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Vấn đề với CNN}{156}{subsection.6.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Giải pháp của ViT: Biến ảnh thành một chuỗi các "từ"}{157}{subsection.6.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cơ chế hoạt động}{157}{subsection.6.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6.4}{\ignorespaces Kiến trúc của Vision Transformer (ViT). Ảnh được chia thành các mảnh vá, mỗi mảnh được nhúng và xử lý như một "token" trong một chuỗi bởi một Transformer Encoder tiêu chuẩn.}}{157}{figure.6.4}\protected@file@percent }
+\newlabel{fig:vision_transformer_vit}{{6.4}{157}{Kiến trúc của Vision Transformer (ViT). Ảnh được chia thành các mảnh vá, mỗi mảnh được nhúng và xử lý như một "token" trong một chuỗi bởi một Transformer Encoder tiêu chuẩn}{figure.6.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{CLIP: Học sự tương đồng giữa Ảnh và Chữ bằng Contrastive Learning}{158}{figure.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Vấn đề}{158}{figure.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Giải pháp của CLIP (Contrastive Language-Image Pre-training)}{158}{figure.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cơ chế hoạt động}{158}{figure.6.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6.5}{\ignorespaces Quy trình huấn luyện của CLIP. Mô hình học cách tối đa hóa độ tương đồng của các cặp (ảnh, văn bản) chính xác trên đường chéo chính và tối thiểu hóa độ tương đồng của các cặp không chính xác.}}{158}{figure.6.5}\protected@file@percent }
+\newlabel{fig:clip_contrastive_learning}{{6.5}{158}{Quy trình huấn luyện của CLIP. Mô hình học cách tối đa hóa độ tương đồng của các cặp (ảnh, văn bản) chính xác trên đường chéo chính và tối thiểu hóa độ tương đồng của các cặp không chính xác}{figure.6.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.2}Ví dụ Kiến trúc: Kết hợp LLM với Thị giác}{159}{subsection.6.3.2}\protected@file@percent }
+\newlabel{ssec:multimodal_architectures_examples}{{6.3.2}{159}{Ví dụ Kiến trúc: Kết hợp LLM với Thị giác}{subsection.6.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Flamingo: Thêm Cross-Attention vào một LLM đã đóng băng}{159}{subsection.6.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{LLaVA: Ánh xạ Trực tiếp vào Không gian Từ của LLM}{159}{subsection.6.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.3}Sinh Đa phương thức (Multimodal Generation)}{160}{subsection.6.3.3}\protected@file@percent }
+\newlabel{ssec:multimodal_generation}{{6.3.3}{160}{Sinh Đa phương thức (Multimodal Generation)}{subsection.6.3.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Sinh Ảnh từ Văn bản (Text-to-Image)}{160}{subsection.6.3.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6.6}{\ignorespaces Mô hình Khuếch tán cho việc sinh ảnh từ văn bản. Bắt đầu từ nhiễu, mô hình dần dần khử nhiễu theo sự dẫn dắt của embedding văn bản để tạo ra ảnh cuối cùng.}}{161}{figure.6.6}\protected@file@percent }
+\newlabel{fig:text_to_image_diffusion}{{6.6}{161}{Mô hình Khuếch tán cho việc sinh ảnh từ văn bản. Bắt đầu từ nhiễu, mô hình dần dần khử nhiễu theo sự dẫn dắt của embedding văn bản để tạo ra ảnh cuối cùng}{figure.6.6}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Sinh Video từ Văn bản (Text-to-Video)}{161}{figure.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.4}Kiểm soát Quá trình Sinh (Controlled Generation)}{162}{subsection.6.3.4}\protected@file@percent }
+\newlabel{ssec:controlled_generation}{{6.3.4}{162}{Kiểm soát Quá trình Sinh (Controlled Generation)}{subsection.6.3.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Các kỹ thuật kinh điển}{162}{subsection.6.3.4}\protected@file@percent }
+\newlabel{sssec:classic_controlled_generation}{{6.3.4}{162}{Các kỹ thuật kinh điển}{subsection.6.3.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{CTRL (Conditional Transformer Language Model)}{162}{subsection.6.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{PPLM (Plug and Play Language Models)}{162}{subsection.6.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{FUDGE (Future Discriminators for Generation)}{162}{subsection.6.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Các kỹ thuật dựa trên Prompt}{162}{subsection.6.3.4}\protected@file@percent }
+\newlabel{sssec:prompt_based_controlled_generation}{{6.3.4}{162}{Các kỹ thuật dựa trên Prompt}{subsection.6.3.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Prompt Tuning}{162}{subsection.6.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Prefix Tuning}{163}{subsection.6.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{LoRA (Low-Rank Adaptation) và Adapter Tuning}{163}{subsection.6.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{In-Context Control}{163}{subsection.6.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Các hướng mở rộng hiện đại}{163}{subsection.6.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.5}Sinh Nhận biết Cấu trúc (Structure-aware Generation)}{163}{subsection.6.3.5}\protected@file@percent }
+\newlabel{ssec:structure_aware_generation}{{6.3.5}{163}{Sinh Nhận biết Cấu trúc (Structure-aware Generation)}{subsection.6.3.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Sinh Văn bản từ Bảng (Table-to-text)}{163}{subsection.6.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Sinh Văn bản từ Đồ thị (Graph-to-text)}{163}{Item.209}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Sinh Văn bản từ CSDL (Data-to-text)}{164}{Item.212}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.4}Hệ thống Tác tử (Agentic Systems) với LLMs}{164}{section.6.4}\protected@file@percent }
+\newlabel{sec:agentic_systems}{{6.4}{164}{Hệ thống Tác tử (Agentic Systems) với LLMs}{section.6.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.1}Vòng lặp Suy luận-Hành động: Khung sườn ReAct}{164}{subsection.6.4.1}\protected@file@percent }
+\newlabel{ssec:react_framework}{{6.4.1}{164}{Vòng lặp Suy luận-Hành động: Khung sườn ReAct}{subsection.6.4.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động}{164}{subsection.6.4.1}\protected@file@percent }
+\newlabel{ex:ex:react_loop}{{14}{165}{Minh họa vòng lặp ReAct}{tcb@cnt@example.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.2}Lập kế hoạch và Sử dụng Công cụ (Planning \& Tool Use)}{165}{subsection.6.4.2}\protected@file@percent }
+\newlabel{ssec:planning_tool_use}{{6.4.2}{165}{Lập kế hoạch và Sử dụng Công cụ (Planning \& Tool Use)}{subsection.6.4.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Lập kế hoạch (Planning)}{165}{subsection.6.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Sử dụng Công cụ (Tool Use)}{165}{subsection.6.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.3}Bộ nhớ cho Tác tử (Agent Memory)}{166}{subsection.6.4.3}\protected@file@percent }
+\newlabel{ssec:agent_memory}{{6.4.3}{166}{Bộ nhớ cho Tác tử (Agent Memory)}{subsection.6.4.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Bộ nhớ Ngắn hạn (Short-term Memory)}{166}{subsection.6.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Bộ nhớ Dài hạn (Long-term Memory)}{166}{subsection.6.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.4}Tự sửa lỗi (Self-correction)}{166}{subsection.6.4.4}\protected@file@percent }
+\newlabel{ssec:self_correction}{{6.4.4}{166}{Tự sửa lỗi (Self-correction)}{subsection.6.4.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.5}Mô hình Thế giới (World Models) và Mô phỏng}{167}{section.6.5}\protected@file@percent }
+\newlabel{sec:world_models}{{6.5}{167}{Mô hình Thế giới (World Models) và Mô phỏng}{section.6.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.1}Khái niệm về khả năng LLM xây dựng mô hình nội tại}{167}{subsection.6.5.1}\protected@file@percent }
+\newlabel{ssec:internal_world_model_concept}{{6.5.1}{167}{Khái niệm về khả năng LLM xây dựng mô hình nội tại}{subsection.6.5.1}{}}
+\newlabel{def:def:world_model}{{7}{167}{Mô hình Thế giới (trong bối cảnh LLM)}{tcb@cnt@definition.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Các bằng chứng gián tiếp}{167}{tcb@cnt@definition.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Biểu diễn không gian và thời gian}{167}{tcb@cnt@definition.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Mô phỏng các thực thể}{167}{tcb@cnt@definition.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Mô hình Othello-GPT}{167}{tcb@cnt@definition.7}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6.7}{\ignorespaces Nghiên cứu Othello-GPT cho thấy một mô hình Transformer, chỉ được huấn luyện trên chuỗi nước đi, đã tự học cách biểu diễn trạng thái của bàn cờ bên trong nó.}}{168}{figure.6.7}\protected@file@percent }
+\newlabel{fig:othello_gpt}{{6.7}{168}{Nghiên cứu Othello-GPT cho thấy một mô hình Transformer, chỉ được huấn luyện trên chuỗi nước đi, đã tự học cách biểu diễn trạng thái của bàn cờ bên trong nó}{figure.6.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.2}Hướng nghiên cứu và Tiềm năng}{168}{subsection.6.5.2}\protected@file@percent }
+\newlabel{ssec:world_models_future}{{6.5.2}{168}{Hướng nghiên cứu và Tiềm năng}{subsection.6.5.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Cải thiện khả năng Suy luận và Lập kế hoạch}{168}{subsection.6.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Mô hình Thế giới Đa phương thức}{168}{subsection.6.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Hướng tới Trí tuệ Nhân tạo Tổng quát (AGI)}{168}{subsection.6.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.6}Các Kỹ thuật Biểu diễn Nâng cao cho Truy xuất}{169}{section.6.6}\protected@file@percent }
+\newlabel{sec:advanced_representation_retrieval}{{6.6}{169}{Các Kỹ thuật Biểu diễn Nâng cao cho Truy xuất}{section.6.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6.1}Biểu diễn Đa ngôn ngữ (Cross-lingual Embeddings)}{169}{subsection.6.6.1}\protected@file@percent }
+\newlabel{ssec:cross_lingual_embeddings}{{6.6.1}{169}{Biểu diễn Đa ngôn ngữ (Cross-lingual Embeddings)}{subsection.6.6.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6.2}Biểu diễn Thưa và Tối ưu cho Truy xuất (Sparse \& Retriever-specific Embeddings)}{170}{subsection.6.6.2}\protected@file@percent }
+\newlabel{ssec:sparse_retriever_embeddings}{{6.6.2}{170}{Biểu diễn Thưa và Tối ưu cho Truy xuất (Sparse \& Retriever-specific Embeddings)}{subsection.6.6.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{SPLADE (SPARse Lexical AnD Expansion model)}{170}{Item.226}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{ColBERT (Contextualized Late Interaction over BERT)}{171}{Item.226}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {7}LÝ THUYẾT ĐÁNH GIÁ VÀ CÁC BENCHMARK}{173}{chapter.7}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{chap:evaluation}{{7}{167}{LÝ THUYẾT ĐÁNH GIÁ VÀ CÁC BENCHMARK}{chapter.7}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7.1}Các Metric kinh điển}{167}{section.7.1}\protected@file@percent }
-\newlabel{sec:classic_metrics}{{7.1}{167}{Các Metric kinh điển}{section.7.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.1}Perplexity: Đo lường chất lượng của Mô hình Ngôn ngữ}{167}{subsection.7.1.1}\protected@file@percent }
-\newlabel{ssec:perplexity}{{7.1.1}{167}{Perplexity: Đo lường chất lượng của Mô hình Ngôn ngữ}{subsection.7.1.1}{}}
-\newlabel{eq:perplexity}{{7.1}{167}{Perplexity: Đo lường chất lượng của Mô hình Ngôn ngữ}{equation.7.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.2}Precision, Recall, và F1-Score: Nền tảng của các bài toán Phân loại}{167}{subsection.7.1.2}\protected@file@percent }
-\newlabel{ssec:f1_score}{{7.1.2}{167}{Precision, Recall, và F1-Score: Nền tảng của các bài toán Phân loại}{subsection.7.1.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Các thành phần cơ bản}{167}{subsection.7.1.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {7.1}{\ignorespaces Ma trận nhầm lẫn (Confusion Matrix) minh họa bốn kết quả của một bài toán phân loại nhị phân.}}{168}{figure.7.1}\protected@file@percent }
-\newlabel{fig:confusion_matrix}{{7.1}{168}{Ma trận nhầm lẫn (Confusion Matrix) minh họa bốn kết quả của một bài toán phân loại nhị phân}{figure.7.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Định nghĩa các Metric}{168}{figure.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Precision (Độ chính xác)}{168}{figure.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Recall (Độ phủ, hay Độ nhạy)}{168}{figure.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{F1-Score (Điểm F1)}{168}{figure.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.3}BLEU: Đánh giá Dịch máy}{169}{subsection.7.1.3}\protected@file@percent }
-\newlabel{ssec:bleu}{{7.1.3}{169}{BLEU: Đánh giá Dịch máy}{subsection.7.1.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.4}ROUGE: Đánh giá Tóm tắt Văn bản}{169}{subsection.7.1.4}\protected@file@percent }
-\newlabel{ssec:rouge}{{7.1.4}{169}{ROUGE: Đánh giá Tóm tắt Văn bản}{subsection.7.1.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7.2}Các Benchmark Kinh điển và Hiện đại}{170}{section.7.2}\protected@file@percent }
-\newlabel{sec:benchmarks}{{7.2}{170}{Các Benchmark Kinh điển và Hiện đại}{section.7.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.1}Kỷ nguyên Pre-LLM: GLUE và SuperGLUE}{170}{subsection.7.2.1}\protected@file@percent }
-\newlabel{ssec:pre_llm_benchmarks}{{7.2.1}{170}{Kỷ nguyên Pre-LLM: GLUE và SuperGLUE}{subsection.7.2.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{GLUE: Một Bài kiểm tra Năng lực Ngôn ngữ Tổng quát}{170}{subsection.7.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{SuperGLUE: Nâng cấp Độ khó}{170}{subsection.7.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.2}Kỷ nguyên LLM: Đánh giá các Khả năng Nổi trội (Emergent Abilities)}{170}{subsection.7.2.2}\protected@file@percent }
-\newlabel{ssec:llm_benchmarks}{{7.2.2}{170}{Kỷ nguyên LLM: Đánh giá các Khả năng Nổi trội (Emergent Abilities)}{subsection.7.2.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{MMLU: Bài kiểm tra Kiến thức Đa chuyên ngành}{171}{subsection.7.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Big-Bench: Khám phá Giới hạn của LLMs}{171}{subsection.7.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{HumanEval: Đánh giá Năng lực Sinh mã nguồn}{171}{subsection.7.2.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {7.2}{\ignorespaces Sơ đồ thời gian thể hiện sự phát triển của các benchmark}}{172}{figure.7.2}\protected@file@percent }
-\newlabel{fig:llm_benchmarks_timeline}{{7.2}{172}{Sơ đồ thời gian thể hiện sự phát triển của các benchmark}{figure.7.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7.3}Thách thức trong Đánh giá LLM}{172}{section.7.3}\protected@file@percent }
-\newlabel{sec:llm_evaluation_challenges}{{7.3}{172}{Thách thức trong Đánh giá LLM}{section.7.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.1}Nhiễm bẩn Dữ liệu (Data Contamination)}{172}{subsection.7.3.1}\protected@file@percent }
-\newlabel{ssec:data_contamination}{{7.3.1}{172}{Nhiễm bẩn Dữ liệu (Data Contamination)}{subsection.7.3.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Định nghĩa}{172}{subsection.7.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Nguyên nhân}{172}{subsection.7.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Hậu quả}{173}{subsection.7.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Hướng giải quyết}{173}{subsection.7.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.2}Đánh giá bởi Con người vs. Đánh giá Tự động (Human vs. Auto Evaluation)}{173}{subsection.7.3.2}\protected@file@percent }
-\newlabel{ssec:human_vs_auto_eval}{{7.3.2}{173}{Đánh giá bởi Con người vs. Đánh giá Tự động (Human vs. Auto Evaluation)}{subsection.7.3.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Hạn chế của Đánh giá Tự động (Auto-Eval)}{173}{subsection.7.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Ưu điểm và Thách thức của Đánh giá bởi Con người (Human-Eval)}{173}{subsection.7.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.3}Định luật Goodhart và "Dạy cho Bài kiểm tra" (Goodhart's Law \& ''Teaching to the Test'')}{173}{subsection.7.3.3}\protected@file@percent }
-\newlabel{ssec:goodharts_law}{{7.3.3}{173}{Định luật Goodhart và "Dạy cho Bài kiểm tra" (Goodhart's Law \& ''Teaching to the Test'')}{subsection.7.3.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Ý nghĩa trong bối cảnh LLM}{174}{subsection.7.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.4}Đánh giá dựa trên LLM (LLM-as-a-Judge)}{174}{section.7.4}\protected@file@percent }
-\newlabel{sec:llm_as_a_judge}{{7.4}{174}{Đánh giá dựa trên LLM (LLM-as-a-Judge)}{section.7.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.1}Nguyên lý và Cách tiếp cận}{174}{subsection.7.4.1}\protected@file@percent }
-\newlabel{ssec:llm_judge_principles}{{7.4.1}{174}{Nguyên lý và Cách tiếp cận}{subsection.7.4.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Đánh giá dựa trên Điểm số (Score-based Evaluation)}{174}{subsection.7.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Đánh giá dựa trên So sánh Cặp (Pairwise Comparison)}{175}{subsection.7.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.2}Ứng dụng và Tiềm năng}{175}{subsection.7.4.2}\protected@file@percent }
-\newlabel{ssec:llm_judge_applications}{{7.4.2}{175}{Ứng dụng và Tiềm năng}{subsection.7.4.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.3}Thách thức và Những điều cần Lưu ý}{176}{subsection.7.4.3}\protected@file@percent }
-\newlabel{ssec:llm_judge_challenges}{{7.4.3}{176}{Thách thức và Những điều cần Lưu ý}{subsection.7.4.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Thiên vị của Giám khảo (Judge's Bias)}{176}{subsection.7.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Hạn chế về Kiến thức và Suy luận}{176}{subsection.7.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Sự cần thiết của việc Hiệu chỉnh (Calibration)}{176}{subsection.7.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {part}{II\hspace  {1em}CẨM NANG KỸ THUẬT NLP THỰC CHIẾN}{179}{part.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {1}QUY TRÌNH LÀM VIỆC VÀ CÔNG CỤ XỬ LÝ DỮ LIỆU}{183}{chapter.1}\protected@file@percent }
+\newlabel{chap:evaluation}{{7}{173}{LÝ THUYẾT ĐÁNH GIÁ VÀ CÁC BENCHMARK}{chapter.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.1}Các Metric kinh điển}{173}{section.7.1}\protected@file@percent }
+\newlabel{sec:classic_metrics}{{7.1}{173}{Các Metric kinh điển}{section.7.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.1}Perplexity: Đo lường chất lượng của Mô hình Ngôn ngữ}{173}{subsection.7.1.1}\protected@file@percent }
+\newlabel{ssec:perplexity}{{7.1.1}{173}{Perplexity: Đo lường chất lượng của Mô hình Ngôn ngữ}{subsection.7.1.1}{}}
+\newlabel{eq:perplexity}{{7.1}{173}{Perplexity: Đo lường chất lượng của Mô hình Ngôn ngữ}{equation.7.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.2}Precision, Recall, và F1-Score: Nền tảng của các bài toán Phân loại}{173}{subsection.7.1.2}\protected@file@percent }
+\newlabel{ssec:f1_score}{{7.1.2}{173}{Precision, Recall, và F1-Score: Nền tảng của các bài toán Phân loại}{subsection.7.1.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Các thành phần cơ bản}{174}{subsection.7.1.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7.1}{\ignorespaces Ma trận nhầm lẫn (Confusion Matrix) minh họa bốn kết quả của một bài toán phân loại nhị phân.}}{174}{figure.7.1}\protected@file@percent }
+\newlabel{fig:confusion_matrix}{{7.1}{174}{Ma trận nhầm lẫn (Confusion Matrix) minh họa bốn kết quả của một bài toán phân loại nhị phân}{figure.7.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Định nghĩa các Metric}{174}{figure.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Precision (Độ chính xác)}{174}{figure.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Recall (Độ phủ, hay Độ nhạy)}{174}{figure.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{F1-Score (Điểm F1)}{174}{figure.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.3}BLEU: Đánh giá Dịch máy}{175}{subsection.7.1.3}\protected@file@percent }
+\newlabel{ssec:bleu}{{7.1.3}{175}{BLEU: Đánh giá Dịch máy}{subsection.7.1.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.4}ROUGE: Đánh giá Tóm tắt Văn bản}{175}{subsection.7.1.4}\protected@file@percent }
+\newlabel{ssec:rouge}{{7.1.4}{175}{ROUGE: Đánh giá Tóm tắt Văn bản}{subsection.7.1.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.2}Các Benchmark Kinh điển và Hiện đại}{176}{section.7.2}\protected@file@percent }
+\newlabel{sec:benchmarks}{{7.2}{176}{Các Benchmark Kinh điển và Hiện đại}{section.7.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.1}Kỷ nguyên Pre-LLM: GLUE và SuperGLUE}{176}{subsection.7.2.1}\protected@file@percent }
+\newlabel{ssec:pre_llm_benchmarks}{{7.2.1}{176}{Kỷ nguyên Pre-LLM: GLUE và SuperGLUE}{subsection.7.2.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{GLUE: Một Bài kiểm tra Năng lực Ngôn ngữ Tổng quát}{176}{subsection.7.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{SuperGLUE: Nâng cấp Độ khó}{176}{subsection.7.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.2}Kỷ nguyên LLM: Đánh giá các Khả năng Nổi trội (Emergent Abilities)}{177}{subsection.7.2.2}\protected@file@percent }
+\newlabel{ssec:llm_benchmarks}{{7.2.2}{177}{Kỷ nguyên LLM: Đánh giá các Khả năng Nổi trội (Emergent Abilities)}{subsection.7.2.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{MMLU: Bài kiểm tra Kiến thức Đa chuyên ngành}{177}{subsection.7.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Big-Bench: Khám phá Giới hạn của LLMs}{177}{subsection.7.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{HumanEval: Đánh giá Năng lực Sinh mã nguồn}{177}{subsection.7.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7.2}{\ignorespaces Sơ đồ thời gian thể hiện sự phát triển của các benchmark}}{178}{figure.7.2}\protected@file@percent }
+\newlabel{fig:llm_benchmarks_timeline}{{7.2}{178}{Sơ đồ thời gian thể hiện sự phát triển của các benchmark}{figure.7.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.3}Thách thức trong Đánh giá LLM}{178}{section.7.3}\protected@file@percent }
+\newlabel{sec:llm_evaluation_challenges}{{7.3}{178}{Thách thức trong Đánh giá LLM}{section.7.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.1}Nhiễm bẩn Dữ liệu (Data Contamination)}{178}{subsection.7.3.1}\protected@file@percent }
+\newlabel{ssec:data_contamination}{{7.3.1}{178}{Nhiễm bẩn Dữ liệu (Data Contamination)}{subsection.7.3.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Định nghĩa}{178}{subsection.7.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Nguyên nhân}{178}{subsection.7.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hậu quả}{179}{subsection.7.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hướng giải quyết}{179}{subsection.7.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.2}Đánh giá bởi Con người vs. Đánh giá Tự động (Human vs. Auto Evaluation)}{179}{subsection.7.3.2}\protected@file@percent }
+\newlabel{ssec:human_vs_auto_eval}{{7.3.2}{179}{Đánh giá bởi Con người vs. Đánh giá Tự động (Human vs. Auto Evaluation)}{subsection.7.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Hạn chế của Đánh giá Tự động (Auto-Eval)}{179}{subsection.7.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Ưu điểm và Thách thức của Đánh giá bởi Con người (Human-Eval)}{179}{subsection.7.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.3}Định luật Goodhart và "Dạy cho Bài kiểm tra" (Goodhart's Law \& ''Teaching to the Test'')}{180}{subsection.7.3.3}\protected@file@percent }
+\newlabel{ssec:goodharts_law}{{7.3.3}{180}{Định luật Goodhart và "Dạy cho Bài kiểm tra" (Goodhart's Law \& ''Teaching to the Test'')}{subsection.7.3.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Ý nghĩa trong bối cảnh LLM}{180}{subsection.7.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.4}Đánh giá dựa trên LLM (LLM-as-a-Judge)}{180}{section.7.4}\protected@file@percent }
+\newlabel{sec:llm_as_a_judge}{{7.4}{180}{Đánh giá dựa trên LLM (LLM-as-a-Judge)}{section.7.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.1}Nguyên lý và Cách tiếp cận}{180}{subsection.7.4.1}\protected@file@percent }
+\newlabel{ssec:llm_judge_principles}{{7.4.1}{180}{Nguyên lý và Cách tiếp cận}{subsection.7.4.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Đánh giá dựa trên Điểm số (Score-based Evaluation)}{180}{subsection.7.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Đánh giá dựa trên So sánh Cặp (Pairwise Comparison)}{181}{subsection.7.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.2}Ứng dụng và Tiềm năng}{182}{subsection.7.4.2}\protected@file@percent }
+\newlabel{ssec:llm_judge_applications}{{7.4.2}{182}{Ứng dụng và Tiềm năng}{subsection.7.4.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.3}Thách thức và Những điều cần Lưu ý}{182}{subsection.7.4.3}\protected@file@percent }
+\newlabel{ssec:llm_judge_challenges}{{7.4.3}{182}{Thách thức và Những điều cần Lưu ý}{subsection.7.4.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Thiên vị của Giám khảo (Judge's Bias)}{182}{subsection.7.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hạn chế về Kiến thức và Suy luận}{182}{subsection.7.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Sự cần thiết của việc Hiệu chỉnh (Calibration)}{182}{subsection.7.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {part}{II\hspace  {1em}CẨM NANG KỸ THUẬT NLP THỰC CHIẾN}{185}{part.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {1}QUY TRÌNH LÀM VIỆC VÀ CÔNG CỤ XỬ LÝ DỮ LIỆU}{189}{chapter.1}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{chap:workflow_data}{{1}{183}{QUY TRÌNH LÀM VIỆC VÀ CÔNG CỤ XỬ LÝ DỮ LIỆU}{chapter.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {1.1}Phác thảo Quy trình Dự án NLP Tinh gọn}{183}{section.1.1}\protected@file@percent }
-\newlabel{sec:nlp_project_workflow}{{1.1}{183}{Phác thảo Quy trình Dự án NLP Tinh gọn}{section.1.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1.1}{\ignorespaces Quy trình Dự án NLP Tinh gọn: Một chu trình lặp đi lặp lại từ việc xác định bài toán đến triển khai và giám sát.}}{184}{figure.1.1}\protected@file@percent }
-\newlabel{fig:nlp_workflow_cycle}{{1.1}{184}{Quy trình Dự án NLP Tinh gọn: Một chu trình lặp đi lặp lại từ việc xác định bài toán đến triển khai và giám sát}{figure.1.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.1}Vòng lặp 0: Xác định Bài toán và Thiết lập Đường cơ sở (Baseline)}{184}{subsection.1.1.1}\protected@file@percent }
-\newlabel{ssec:workflow_step0}{{1.1.1}{184}{Vòng lặp 0: Xác định Bài toán và Thiết lập Đường cơ sở (Baseline)}{subsection.1.1.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{1. Hiểu rõ Mục tiêu (Problem Framing)}{184}{subsection.1.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{2. Định nghĩa Metric Thành công}{184}{subsection.1.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{3. Thiết lập một Đường cơ sở (Baseline) Đơn giản}{184}{subsection.1.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.2}Vòng lặp 1: Phát triển Mô hình (Model Development)}{185}{subsection.1.1.2}\protected@file@percent }
-\newlabel{ssec:workflow_step1}{{1.1.2}{185}{Vòng lặp 1: Phát triển Mô hình (Model Development)}{subsection.1.1.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{4. Thu thập và Chuẩn bị Dữ liệu}{185}{subsection.1.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{5. Huấn luyện Mô hình}{185}{subsection.1.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{6. Phân tích Lỗi (Error Analysis)}{185}{subsection.1.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.3}Vòng lặp 2: Triển khai và Giám sát (Deployment \& Monitoring)}{186}{subsection.1.1.3}\protected@file@percent }
-\newlabel{ssec:workflow_step2}{{1.1.3}{186}{Vòng lặp 2: Triển khai và Giám sát (Deployment \& Monitoring)}{subsection.1.1.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{7. Đóng gói và Triển khai (Deployment)}{186}{subsection.1.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{8. Giám sát và Bảo trì (Monitoring \& Maintenance)}{186}{subsection.1.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {1.2}Kỹ thuật Thu thập Dữ liệu}{186}{section.1.2}\protected@file@percent }
-\newlabel{sec:data_collection}{{1.2}{186}{Kỹ thuật Thu thập Dữ liệu}{section.1.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.2.1}Sử dụng APIs: Cách tiếp cận "Lịch sự" và Đáng tin cậy}{186}{subsection.1.2.1}\protected@file@percent }
-\newlabel{ssec:apis}{{1.2.1}{186}{Sử dụng APIs: Cách tiếp cận "Lịch sự" và Đáng tin cậy}{subsection.1.2.1}{}}
-\newlabel{ex:ex:requests_api}{{15}{186}{Lấy dữ liệu từ một API đơn giản với `requests`}{tcb@cnt@example.15}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.2.2}Web Scraping: Trích xuất Dữ liệu từ HTML}{187}{subsection.1.2.2}\protected@file@percent }
-\newlabel{ssec:web_scraping}{{1.2.2}{187}{Web Scraping: Trích xuất Dữ liệu từ HTML}{subsection.1.2.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{BeautifulSoup: Phân tích HTML một cách dễ dàng}{187}{Item.230}\protected@file@percent }
-\newlabel{ex:ex:beautifulsoup-example}{{16}{188}{Trích xuất tiêu đề bài viết với `requests` và `BeautifulSoup`}{tcb@cnt@example.16}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Scrapy: Một Framework Cào dữ liệu Toàn diện}{188}{tcb@cnt@example.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {1.3}Làm sạch, Tiền xử lý và Gán nhãn Dữ liệu}{189}{section.1.3}\protected@file@percent }
-\newlabel{sec:data_cleaning_labeling}{{1.3}{189}{Làm sạch, Tiền xử lý và Gán nhãn Dữ liệu}{section.1.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.3.1}Thao tác Dữ liệu quy mô lớn: Pandas, NumPy, và Polars}{189}{subsection.1.3.1}\protected@file@percent }
-\newlabel{ssec:data_manipulation_tools}{{1.3.1}{189}{Thao tác Dữ liệu quy mô lớn: Pandas, NumPy, và Polars}{subsection.1.3.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{NumPy}{189}{subsection.1.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Pandas}{189}{subsection.1.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Polars: Một sự thay thế Hiện đại và Nhanh hơn}{189}{subsection.1.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.3.2}Gán nhãn Dữ liệu: Từ Thủ công đến Tự động}{190}{subsection.1.3.2}\protected@file@percent }
-\newlabel{ssec:data_labeling_methods}{{1.3.2}{190}{Gán nhãn Dữ liệu: Từ Thủ công đến Tự động}{subsection.1.3.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Công cụ Gán nhãn Thủ công: Label Studio}{190}{subsection.1.3.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1.2}{\ignorespaces Giao diện gán nhãn Nhận dạng Thực thể Tên (NER) trong Label Studio.}}{190}{figure.1.2}\protected@file@percent }
-\newlabel{fig:label_studio_ner}{{1.2}{190}{Giao diện gán nhãn Nhận dạng Thực thể Tên (NER) trong Label Studio}{figure.1.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Gán nhãn có Lập trình: Snorkel và Weak Supervision}{190}{figure.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Sử dụng LLM để Sinh và Gán nhãn Dữ liệu}{191}{Item.234}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.3.3}Xử lý Dữ liệu Mất cân bằng (Handling Imbalanced Data)}{191}{subsection.1.3.3}\protected@file@percent }
-\newlabel{ssec:imbalanced_data}{{1.3.3}{191}{Xử lý Dữ liệu Mất cân bằng (Handling Imbalanced Data)}{subsection.1.3.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {1.4}Kỹ thuật Tăng cường Dữ liệu (Data Augmentation)}{192}{section.1.4}\protected@file@percent }
-\newlabel{sec:data_augmentation}{{1.4}{192}{Kỹ thuật Tăng cường Dữ liệu (Data Augmentation)}{section.1.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.1}EDA: Các Phép toán Thay thế Đơn giản}{192}{subsection.1.4.1}\protected@file@percent }
-\newlabel{ssec:eda}{{1.4.1}{192}{EDA: Các Phép toán Thay thế Đơn giản}{subsection.1.4.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.2}Back-Translation: Tận dụng Sức mạnh của Dịch máy}{192}{subsection.1.4.2}\protected@file@percent }
-\newlabel{ssec:back_translation}{{1.4.2}{192}{Back-Translation: Tận dụng Sức mạnh của Dịch máy}{subsection.1.4.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi}{192}{subsection.1.4.2}\protected@file@percent }
-\newlabel{ex:ex:back_translation_example}{{17}{193}{Minh họa Back-Translation}{tcb@cnt@example.17}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Ưu điểm và Nhược điểm}{193}{tcb@cnt@example.17}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.3}Tăng cường Dữ liệu dựa trên LLM}{193}{subsection.1.4.3}\protected@file@percent }
-\newlabel{ssec:llm_based_augmentation}{{1.4.3}{193}{Tăng cường Dữ liệu dựa trên LLM}{subsection.1.4.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Diễn giải lại (Paraphrasing)}{193}{subsection.1.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Tạo dữ liệu theo ngữ cảnh}{193}{subsection.1.4.3}\protected@file@percent }
-\newlabel{ex:ex:llm_augmentation_negation}{{18}{193}{Tạo dữ liệu cho các trường hợp phủ định}{tcb@cnt@example.18}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.4}Lựa chọn Kỹ thuật Tăng cường}{194}{subsection.1.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {1.5}Quản lý Dữ liệu và Phiên bản (Data Version Control - DVC)}{194}{section.1.5}\protected@file@percent }
-\newlabel{sec:dvc}{{1.5}{194}{Quản lý Dữ liệu và Phiên bản (Data Version Control - DVC)}{section.1.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.5.1}DVC là gì và Triết lý hoạt động}{195}{subsection.1.5.1}\protected@file@percent }
-\newlabel{ssec:what_is_dvc}{{1.5.1}{195}{DVC là gì và Triết lý hoạt động}{subsection.1.5.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động}{195}{subsection.1.5.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1.3}{\ignorespaces Luồng làm việc của DVC kết hợp với Git. Git quản lý code và các file metadata `.dvc`. DVC quản lý việc đồng bộ hóa các file dữ liệu/mô hình lớn với bộ nhớ từ xa.}}{196}{figure.1.3}\protected@file@percent }
-\newlabel{fig:dvc_workflow}{{1.3}{196}{Luồng làm việc của DVC kết hợp với Git. Git quản lý code và các file metadata `.dvc`. DVC quản lý việc đồng bộ hóa các file dữ liệu/mô hình lớn với bộ nhớ từ xa}{figure.1.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.5.2}DVC Pipelines: Tái lập toàn bộ Thử nghiệm}{196}{subsection.1.5.2}\protected@file@percent }
-\newlabel{ssec:dvc_pipelines}{{1.5.2}{196}{DVC Pipelines: Tái lập toàn bộ Thử nghiệm}{subsection.1.5.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.5.3}Lợi ích của việc sử dụng DVC}{196}{subsection.1.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {2}HUẤN LUYỆN VÀ ĐÁNH GIÁ MÔ HÌNH}{199}{chapter.2}\protected@file@percent }
+\newlabel{chap:workflow_data}{{1}{189}{QUY TRÌNH LÀM VIỆC VÀ CÔNG CỤ XỬ LÝ DỮ LIỆU}{chapter.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.1}Phác thảo Quy trình Dự án NLP Tinh gọn}{189}{section.1.1}\protected@file@percent }
+\newlabel{sec:nlp_project_workflow}{{1.1}{189}{Phác thảo Quy trình Dự án NLP Tinh gọn}{section.1.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.1}{\ignorespaces Quy trình Dự án NLP Tinh gọn: Một chu trình lặp đi lặp lại từ việc xác định bài toán đến triển khai và giám sát.}}{190}{figure.1.1}\protected@file@percent }
+\newlabel{fig:nlp_workflow_cycle}{{1.1}{190}{Quy trình Dự án NLP Tinh gọn: Một chu trình lặp đi lặp lại từ việc xác định bài toán đến triển khai và giám sát}{figure.1.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.1}Vòng lặp 0: Xác định Bài toán và Thiết lập Đường cơ sở (Baseline)}{190}{subsection.1.1.1}\protected@file@percent }
+\newlabel{ssec:workflow_step0}{{1.1.1}{190}{Vòng lặp 0: Xác định Bài toán và Thiết lập Đường cơ sở (Baseline)}{subsection.1.1.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{1. Hiểu rõ Mục tiêu (Problem Framing)}{190}{subsection.1.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{2. Định nghĩa Metric Thành công}{190}{subsection.1.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{3. Thiết lập một Đường cơ sở (Baseline) Đơn giản}{191}{subsection.1.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.2}Vòng lặp 1: Phát triển Mô hình (Model Development)}{191}{subsection.1.1.2}\protected@file@percent }
+\newlabel{ssec:workflow_step1}{{1.1.2}{191}{Vòng lặp 1: Phát triển Mô hình (Model Development)}{subsection.1.1.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{4. Thu thập và Chuẩn bị Dữ liệu}{191}{subsection.1.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{5. Huấn luyện Mô hình}{191}{subsection.1.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{6. Phân tích Lỗi (Error Analysis)}{191}{subsection.1.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.3}Vòng lặp 2: Triển khai và Giám sát (Deployment \& Monitoring)}{192}{subsection.1.1.3}\protected@file@percent }
+\newlabel{ssec:workflow_step2}{{1.1.3}{192}{Vòng lặp 2: Triển khai và Giám sát (Deployment \& Monitoring)}{subsection.1.1.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{7. Đóng gói và Triển khai (Deployment)}{192}{subsection.1.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{8. Giám sát và Bảo trì (Monitoring \& Maintenance)}{192}{subsection.1.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.2}Kỹ thuật Thu thập Dữ liệu}{192}{section.1.2}\protected@file@percent }
+\newlabel{sec:data_collection}{{1.2}{192}{Kỹ thuật Thu thập Dữ liệu}{section.1.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2.1}Sử dụng APIs: Cách tiếp cận "Lịch sự" và Đáng tin cậy}{192}{subsection.1.2.1}\protected@file@percent }
+\newlabel{ssec:apis}{{1.2.1}{192}{Sử dụng APIs: Cách tiếp cận "Lịch sự" và Đáng tin cậy}{subsection.1.2.1}{}}
+\newlabel{ex:ex:requests_api}{{15}{193}{Lấy dữ liệu từ một API đơn giản với `requests`}{tcb@cnt@example.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2.2}Web Scraping: Trích xuất Dữ liệu từ HTML}{193}{subsection.1.2.2}\protected@file@percent }
+\newlabel{ssec:web_scraping}{{1.2.2}{193}{Web Scraping: Trích xuất Dữ liệu từ HTML}{subsection.1.2.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{BeautifulSoup: Phân tích HTML một cách dễ dàng}{194}{Item.234}\protected@file@percent }
+\newlabel{ex:ex:beautifulsoup-example}{{16}{194}{Trích xuất tiêu đề bài viết với `requests` và `BeautifulSoup`}{tcb@cnt@example.16}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Scrapy: Một Framework Cào dữ liệu Toàn diện}{195}{tcb@cnt@example.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.3}Làm sạch, Tiền xử lý và Gán nhãn Dữ liệu}{195}{section.1.3}\protected@file@percent }
+\newlabel{sec:data_cleaning_labeling}{{1.3}{195}{Làm sạch, Tiền xử lý và Gán nhãn Dữ liệu}{section.1.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3.1}Thao tác Dữ liệu quy mô lớn: Pandas, NumPy, và Polars}{195}{subsection.1.3.1}\protected@file@percent }
+\newlabel{ssec:data_manipulation_tools}{{1.3.1}{195}{Thao tác Dữ liệu quy mô lớn: Pandas, NumPy, và Polars}{subsection.1.3.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{NumPy}{195}{subsection.1.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Pandas}{195}{subsection.1.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Polars: Một sự thay thế Hiện đại và Nhanh hơn}{196}{subsection.1.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3.2}Gán nhãn Dữ liệu: Từ Thủ công đến Tự động}{196}{subsection.1.3.2}\protected@file@percent }
+\newlabel{ssec:data_labeling_methods}{{1.3.2}{196}{Gán nhãn Dữ liệu: Từ Thủ công đến Tự động}{subsection.1.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Công cụ Gán nhãn Thủ công: Label Studio}{196}{subsection.1.3.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1.2}{\ignorespaces Giao diện gán nhãn Nhận dạng Thực thể Tên (NER) trong Label Studio.}}{197}{figure.1.2}\protected@file@percent }
+\newlabel{fig:label_studio_ner}{{1.2}{197}{Giao diện gán nhãn Nhận dạng Thực thể Tên (NER) trong Label Studio}{figure.1.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Gán nhãn có Lập trình: Snorkel và Weak Supervision}{197}{figure.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Sử dụng LLM để Sinh và Gán nhãn Dữ liệu}{197}{Item.238}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3.3}Xử lý Dữ liệu Mất cân bằng (Handling Imbalanced Data)}{198}{subsection.1.3.3}\protected@file@percent }
+\newlabel{ssec:imbalanced_data}{{1.3.3}{198}{Xử lý Dữ liệu Mất cân bằng (Handling Imbalanced Data)}{subsection.1.3.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.4}Kỹ thuật Tăng cường Dữ liệu (Data Augmentation)}{198}{section.1.4}\protected@file@percent }
+\newlabel{sec:data_augmentation}{{1.4}{198}{Kỹ thuật Tăng cường Dữ liệu (Data Augmentation)}{section.1.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.1}EDA: Các Phép toán Thay thế Đơn giản}{198}{subsection.1.4.1}\protected@file@percent }
+\newlabel{ssec:eda}{{1.4.1}{198}{EDA: Các Phép toán Thay thế Đơn giản}{subsection.1.4.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.2}Back-Translation: Tận dụng Sức mạnh của Dịch máy}{199}{subsection.1.4.2}\protected@file@percent }
+\newlabel{ssec:back_translation}{{1.4.2}{199}{Back-Translation: Tận dụng Sức mạnh của Dịch máy}{subsection.1.4.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Trực giác cốt lõi}{199}{subsection.1.4.2}\protected@file@percent }
+\newlabel{ex:ex:back_translation_example}{{17}{199}{Minh họa Back-Translation}{tcb@cnt@example.17}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Ưu điểm và Nhược điểm}{199}{tcb@cnt@example.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.3}Tăng cường Dữ liệu dựa trên LLM}{200}{subsection.1.4.3}\protected@file@percent }
+\newlabel{ssec:llm_based_augmentation}{{1.4.3}{200}{Tăng cường Dữ liệu dựa trên LLM}{subsection.1.4.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Diễn giải lại (Paraphrasing)}{200}{subsection.1.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Tạo dữ liệu theo ngữ cảnh}{200}{subsection.1.4.3}\protected@file@percent }
+\newlabel{ex:ex:llm_augmentation_negation}{{18}{200}{Tạo dữ liệu cho các trường hợp phủ định}{tcb@cnt@example.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.4}Lựa chọn Kỹ thuật Tăng cường}{200}{subsection.1.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.5}Quản lý Dữ liệu và Phiên bản (Data Version Control - DVC)}{201}{section.1.5}\protected@file@percent }
+\newlabel{sec:dvc}{{1.5}{201}{Quản lý Dữ liệu và Phiên bản (Data Version Control - DVC)}{section.1.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5.1}DVC là gì và Triết lý hoạt động}{201}{subsection.1.5.1}\protected@file@percent }
+\newlabel{ssec:what_is_dvc}{{1.5.1}{201}{DVC là gì và Triết lý hoạt động}{subsection.1.5.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Cơ chế hoạt động}{201}{subsection.1.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1.3}{\ignorespaces Luồng làm việc của DVC kết hợp với Git. Git quản lý code và các file metadata `.dvc`. DVC quản lý việc đồng bộ hóa các file dữ liệu/mô hình lớn với bộ nhớ từ xa.}}{202}{figure.1.3}\protected@file@percent }
+\newlabel{fig:dvc_workflow}{{1.3}{202}{Luồng làm việc của DVC kết hợp với Git. Git quản lý code và các file metadata `.dvc`. DVC quản lý việc đồng bộ hóa các file dữ liệu/mô hình lớn với bộ nhớ từ xa}{figure.1.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5.2}DVC Pipelines: Tái lập toàn bộ Thử nghiệm}{202}{subsection.1.5.2}\protected@file@percent }
+\newlabel{ssec:dvc_pipelines}{{1.5.2}{202}{DVC Pipelines: Tái lập toàn bộ Thử nghiệm}{subsection.1.5.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5.3}Lợi ích của việc sử dụng DVC}{203}{subsection.1.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {2}HUẤN LUYỆN VÀ ĐÁNH GIÁ MÔ HÌNH}{205}{chapter.2}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{chap:model_training_evaluation}{{2}{199}{HUẤN LUYỆN VÀ ĐÁNH GIÁ MÔ HÌNH}{chapter.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2.1}Thiết lập Môi trường với Hệ sinh thái Hugging Face}{199}{section.2.1}\protected@file@percent }
-\newlabel{sec:hf_ecosystem}{{2.1}{199}{Thiết lập Môi trường với Hệ sinh thái Hugging Face}{section.2.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces Các thư viện cốt lõi trong Hệ sinh thái Hugging Face.}}{199}{figure.2.1}\protected@file@percent }
-\newlabel{fig:hf_ecosystem_logos}{{2.1}{199}{Các thư viện cốt lõi trong Hệ sinh thái Hugging Face}{figure.2.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.1}Transformers: Trái tim của Hệ sinh thái}{200}{subsection.2.1.1}\protected@file@percent }
-\newlabel{ssec:hf_transformers}{{2.1.1}{200}{Transformers: Trái tim của Hệ sinh thái}{subsection.2.1.1}{}}
-\newlabel{ex:ex:hf_pipeline}{{19}{200}{Sử dụng `pipeline` để phân loại cảm xúc}{tcb@cnt@example.19}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.2}Datasets: Quản lý Dữ liệu Hiệu quả}{200}{subsection.2.1.2}\protected@file@percent }
-\newlabel{ssec:hf_datasets}{{2.1.2}{200}{Datasets: Quản lý Dữ liệu Hiệu quả}{subsection.2.1.2}{}}
-\newlabel{ex:ex:hf_datasets}{{20}{201}{Tải và xử lý một bộ dữ liệu với `datasets`}{tcb@cnt@example.20}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.3}Accelerate: Đơn giản hóa Huấn luyện Phân tán}{201}{subsection.2.1.3}\protected@file@percent }
-\newlabel{ssec:hf_accelerate}{{2.1.3}{201}{Accelerate: Đơn giản hóa Huấn luyện Phân tán}{subsection.2.1.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.4}Evaluate: Một Thư viện Metric Toàn diện}{201}{subsection.2.1.4}\protected@file@percent }
-\newlabel{ssec:hf_evaluate}{{2.1.4}{201}{Evaluate: Một Thư viện Metric Toàn diện}{subsection.2.1.4}{}}
-\newlabel{ex:ex:hf_evaluate}{{21}{202}{Sử dụng `evaluate` để tính F1-score}{tcb@cnt@example.21}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2.2}Kỹ thuật Đánh giá Thực tế}{202}{section.2.2}\protected@file@percent }
-\newlabel{sec:practical_evaluation}{{2.2}{202}{Kỹ thuật Đánh giá Thực tế}{section.2.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.1}Hàm \texttt  {compute\_metrics}: Cầu nối giữa Mô hình và Metric}{202}{subsection.2.2.1}\protected@file@percent }
-\newlabel{ssec:compute_metrics_function}{{2.2.1}{202}{Hàm \texttt {compute\_metrics}: Cầu nối giữa Mô hình và Metric}{subsection.2.2.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Quy trình bên trong một hàm \texttt  {compute\_metrics}}{202}{subsection.2.2.1}\protected@file@percent }
-\newlabel{ex:ex:compute_metrics_classification}{{22}{203}{Một hàm `compute\_metrics` cho bài toán phân loại chuỗi}{tcb@cnt@example.22}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.2}Đánh giá các Tác vụ Phức tạp hơn}{204}{subsection.2.2.2}\protected@file@percent }
-\newlabel{ssec:complex_task_evaluation}{{2.2.2}{204}{Đánh giá các Tác vụ Phức tạp hơn}{subsection.2.2.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Gán nhãn Chuỗi (NER) với `seqeval`}{204}{subsection.2.2.2}\protected@file@percent }
-\newlabel{ex:ex:compute_metrics_ner}{{23}{204}{Hàm \texttt {compute\_metrics} cho NER}{tcb@cnt@example.23}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Sinh Văn bản (Tóm tắt, Dịch máy) với ROUGE và BLEU}{205}{tcb@cnt@example.23}\protected@file@percent }
-\newlabel{ex:ex:compute_metrics_summarization}{{24}{205}{Hàm \texttt {compute\_metrics} cho Tóm tắt (sử dụng ROUGE)}{tcb@cnt@example.24}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2.3}Theo dõi và Quản lý Thí nghiệm}{206}{section.2.3}\protected@file@percent }
-\newlabel{sec:experiment_tracking}{{2.3}{206}{Theo dõi và Quản lý Thí nghiệm}{section.2.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.1}Weights \& Biases (W\&B): Một Nền tảng Toàn diện và Trực quan}{206}{subsection.2.3.1}\protected@file@percent }
-\newlabel{ssec:wandb}{{2.3.1}{206}{Weights \& Biases (W\&B): Một Nền tảng Toàn diện và Trực quan}{subsection.2.3.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces Một trang tổng quan (dashboard) điển hình trong Weights \& Biases, cho phép so sánh nhiều lần chạy thí nghiệm một cách trực quan.}}{207}{figure.2.2}\protected@file@percent }
-\newlabel{fig:wandb_dashboard}{{2.2}{207}{Một trang tổng quan (dashboard) điển hình trong Weights \& Biases, cho phép so sánh nhiều lần chạy thí nghiệm một cách trực quan}{figure.2.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Các tính năng chính}{207}{figure.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Tích hợp với Hugging Face `Trainer`}{207}{figure.2.2}\protected@file@percent }
-\newlabel{ex:ex:wandb_trainer}{{25}{208}{Huấn luyện với WandB}{tcb@cnt@example.25}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.2}MLflow: Một Lựa chọn Mã nguồn mở và Linh hoạt}{208}{subsection.2.3.2}\protected@file@percent }
-\newlabel{ssec:mlflow}{{2.3.2}{208}{MLflow: Một Lựa chọn Mã nguồn mở và Linh hoạt}{subsection.2.3.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Các thành phần chính}{208}{subsection.2.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{So sánh W\&B và MLflow}{209}{subsection.2.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2.4}Huấn luyện Phân tán (Distributed Training)}{209}{section.2.4}\protected@file@percent }
-\newlabel{sec:distributed_training}{{2.4}{209}{Huấn luyện Phân tán (Distributed Training)}{section.2.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.1}Các Mô hình Song song (Parallelism Paradigms)}{209}{subsection.2.4.1}\protected@file@percent }
-\newlabel{ssec:parallelism_paradigms}{{2.4.1}{209}{Các Mô hình Song song (Parallelism Paradigms)}{subsection.2.4.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.2}Sử dụng `accelerate` và `DeepSpeed` để Huấn luyện Mô hình lớn}{210}{subsection.2.4.2}\protected@file@percent }
-\newlabel{ssec:accelerate_deepspeed}{{2.4.2}{210}{Sử dụng `accelerate` và `DeepSpeed` để Huấn luyện Mô hình lớn}{subsection.2.4.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{Accelerate: Giao diện Tối giản}{210}{subsection.2.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{DeepSpeed: Cỗ máy Tối ưu hóa Toàn diện}{210}{Item.253}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Các Giai đoạn của ZeRO}{211}{Item.253}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2.3}{\ignorespaces So sánh việc sử dụng bộ nhớ trong Data Parallelism tiêu chuẩn và các giai đoạn của ZeRO. ZeRO giảm đáng kể sự thừa thãi bằng cách phân mảnh các thành phần của quá trình huấn luyện.}}{211}{figure.2.3}\protected@file@percent }
-\newlabel{fig:deepspeed_zero}{{2.3}{211}{So sánh việc sử dụng bộ nhớ trong Data Parallelism tiêu chuẩn và các giai đoạn của ZeRO. ZeRO giảm đáng kể sự thừa thãi bằng cách phân mảnh các thành phần của quá trình huấn luyện}{figure.2.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Tích hợp DeepSpeed với `Trainer`}{211}{figure.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {3}TỐI ƯU HÓA, TRIỂN KHAI VÀ VẬN HÀNH (MLOps)}{213}{chapter.3}\protected@file@percent }
+\newlabel{chap:model_training_evaluation}{{2}{205}{HUẤN LUYỆN VÀ ĐÁNH GIÁ MÔ HÌNH}{chapter.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.1}Thiết lập Môi trường với Hệ sinh thái Hugging Face}{205}{section.2.1}\protected@file@percent }
+\newlabel{sec:hf_ecosystem}{{2.1}{205}{Thiết lập Môi trường với Hệ sinh thái Hugging Face}{section.2.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces Các thư viện cốt lõi trong Hệ sinh thái Hugging Face.}}{205}{figure.2.1}\protected@file@percent }
+\newlabel{fig:hf_ecosystem_logos}{{2.1}{205}{Các thư viện cốt lõi trong Hệ sinh thái Hugging Face}{figure.2.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.1}Transformers: Trái tim của Hệ sinh thái}{205}{subsection.2.1.1}\protected@file@percent }
+\newlabel{ssec:hf_transformers}{{2.1.1}{205}{Transformers: Trái tim của Hệ sinh thái}{subsection.2.1.1}{}}
+\newlabel{ex:ex:hf_pipeline}{{19}{206}{Sử dụng `pipeline` để phân loại cảm xúc}{tcb@cnt@example.19}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.2}Datasets: Quản lý Dữ liệu Hiệu quả}{206}{subsection.2.1.2}\protected@file@percent }
+\newlabel{ssec:hf_datasets}{{2.1.2}{206}{Datasets: Quản lý Dữ liệu Hiệu quả}{subsection.2.1.2}{}}
+\newlabel{ex:ex:hf_datasets}{{20}{206}{Tải và xử lý một bộ dữ liệu với `datasets`}{tcb@cnt@example.20}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.3}Accelerate: Đơn giản hóa Huấn luyện Phân tán}{207}{subsection.2.1.3}\protected@file@percent }
+\newlabel{ssec:hf_accelerate}{{2.1.3}{207}{Accelerate: Đơn giản hóa Huấn luyện Phân tán}{subsection.2.1.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.4}Evaluate: Một Thư viện Metric Toàn diện}{207}{subsection.2.1.4}\protected@file@percent }
+\newlabel{ssec:hf_evaluate}{{2.1.4}{207}{Evaluate: Một Thư viện Metric Toàn diện}{subsection.2.1.4}{}}
+\newlabel{ex:ex:hf_evaluate}{{21}{208}{Sử dụng `evaluate` để tính F1-score}{tcb@cnt@example.21}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.2}Kỹ thuật Đánh giá Thực tế}{208}{section.2.2}\protected@file@percent }
+\newlabel{sec:practical_evaluation}{{2.2}{208}{Kỹ thuật Đánh giá Thực tế}{section.2.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.1}Hàm \texttt  {compute\_metrics}: Cầu nối giữa Mô hình và Metric}{208}{subsection.2.2.1}\protected@file@percent }
+\newlabel{ssec:compute_metrics_function}{{2.2.1}{208}{Hàm \texttt {compute\_metrics}: Cầu nối giữa Mô hình và Metric}{subsection.2.2.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Quy trình bên trong một hàm \texttt  {compute\_metrics}}{208}{subsection.2.2.1}\protected@file@percent }
+\newlabel{ex:ex:compute_metrics_classification}{{22}{209}{Một hàm `compute\_metrics` cho bài toán phân loại chuỗi}{tcb@cnt@example.22}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.2}Đánh giá các Tác vụ Phức tạp hơn}{210}{subsection.2.2.2}\protected@file@percent }
+\newlabel{ssec:complex_task_evaluation}{{2.2.2}{210}{Đánh giá các Tác vụ Phức tạp hơn}{subsection.2.2.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Gán nhãn Chuỗi (NER) với `seqeval`}{210}{subsection.2.2.2}\protected@file@percent }
+\newlabel{ex:ex:compute_metrics_ner}{{23}{210}{Hàm \texttt {compute\_metrics} cho NER}{tcb@cnt@example.23}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Sinh Văn bản (Tóm tắt, Dịch máy) với ROUGE và BLEU}{211}{tcb@cnt@example.23}\protected@file@percent }
+\newlabel{ex:ex:compute_metrics_summarization}{{24}{211}{Hàm \texttt {compute\_metrics} cho Tóm tắt (sử dụng ROUGE)}{tcb@cnt@example.24}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.3}Theo dõi và Quản lý Thí nghiệm}{212}{section.2.3}\protected@file@percent }
+\newlabel{sec:experiment_tracking}{{2.3}{212}{Theo dõi và Quản lý Thí nghiệm}{section.2.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.1}Weights \& Biases (W\&B): Một Nền tảng Toàn diện và Trực quan}{212}{subsection.2.3.1}\protected@file@percent }
+\newlabel{ssec:wandb}{{2.3.1}{212}{Weights \& Biases (W\&B): Một Nền tảng Toàn diện và Trực quan}{subsection.2.3.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces Một trang tổng quan (dashboard) điển hình trong Weights \& Biases, cho phép so sánh nhiều lần chạy thí nghiệm một cách trực quan.}}{213}{figure.2.2}\protected@file@percent }
+\newlabel{fig:wandb_dashboard}{{2.2}{213}{Một trang tổng quan (dashboard) điển hình trong Weights \& Biases, cho phép so sánh nhiều lần chạy thí nghiệm một cách trực quan}{figure.2.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Các tính năng chính}{213}{figure.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Tích hợp với Hugging Face `Trainer`}{213}{figure.2.2}\protected@file@percent }
+\newlabel{ex:ex:wandb_trainer}{{25}{214}{Huấn luyện với WandB}{tcb@cnt@example.25}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.2}MLflow: Một Lựa chọn Mã nguồn mở và Linh hoạt}{214}{subsection.2.3.2}\protected@file@percent }
+\newlabel{ssec:mlflow}{{2.3.2}{214}{MLflow: Một Lựa chọn Mã nguồn mở và Linh hoạt}{subsection.2.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Các thành phần chính}{214}{subsection.2.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{So sánh W\&B và MLflow}{215}{subsection.2.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2.4}Huấn luyện Phân tán (Distributed Training)}{215}{section.2.4}\protected@file@percent }
+\newlabel{sec:distributed_training}{{2.4}{215}{Huấn luyện Phân tán (Distributed Training)}{section.2.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.1}Các Mô hình Song song (Parallelism Paradigms)}{215}{subsection.2.4.1}\protected@file@percent }
+\newlabel{ssec:parallelism_paradigms}{{2.4.1}{215}{Các Mô hình Song song (Parallelism Paradigms)}{subsection.2.4.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.2}Sử dụng `accelerate` và `DeepSpeed` để Huấn luyện Mô hình lớn}{216}{subsection.2.4.2}\protected@file@percent }
+\newlabel{ssec:accelerate_deepspeed}{{2.4.2}{216}{Sử dụng `accelerate` và `DeepSpeed` để Huấn luyện Mô hình lớn}{subsection.2.4.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Accelerate: Giao diện Tối giản}{216}{subsection.2.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{DeepSpeed: Cỗ máy Tối ưu hóa Toàn diện}{216}{Item.257}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Các Giai đoạn của ZeRO}{217}{Item.257}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2.3}{\ignorespaces So sánh việc sử dụng bộ nhớ trong Data Parallelism tiêu chuẩn và các giai đoạn của ZeRO. ZeRO giảm đáng kể sự thừa thãi bằng cách phân mảnh các thành phần của quá trình huấn luyện.}}{217}{figure.2.3}\protected@file@percent }
+\newlabel{fig:deepspeed_zero}{{2.3}{217}{So sánh việc sử dụng bộ nhớ trong Data Parallelism tiêu chuẩn và các giai đoạn của ZeRO. ZeRO giảm đáng kể sự thừa thãi bằng cách phân mảnh các thành phần của quá trình huấn luyện}{figure.2.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Tích hợp DeepSpeed với `Trainer`}{217}{figure.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {3}TỐI ƯU HÓA, TRIỂN KHAI VÀ VẬN HÀNH (MLOps)}{219}{chapter.3}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{chap:mlops}{{3}{213}{TỐI ƯU HÓA, TRIỂN KHAI VÀ VẬN HÀNH (MLOps)}{chapter.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3.1}Cơ sở dữ liệu Vector (Vector Databases)}{213}{section.3.1}\protected@file@percent }
-\newlabel{sec:vector_databases}{{3.1}{213}{Cơ sở dữ liệu Vector (Vector Databases)}{section.3.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}Khái niệm và vai trò trong NLP hiện đại}{213}{subsection.3.1.1}\protected@file@percent }
-\newlabel{ssec:vector_db_concepts}{{3.1.1}{213}{Khái niệm và vai trò trong NLP hiện đại}{subsection.3.1.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Vấn đề của Tìm kiếm Brute-force}{213}{subsection.3.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Giải pháp: Approximate Nearest Neighbor (ANN) Search}{213}{subsection.3.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}Các công cụ phổ biến}{214}{subsection.3.1.2}\protected@file@percent }
-\newlabel{ssec:vector_db_tools}{{3.1.2}{214}{Các công cụ phổ biến}{subsection.3.1.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3.2}Tối ưu hóa Mô hình với các Thư viện Sẵn có}{214}{section.3.2}\protected@file@percent }
-\newlabel{sec:model_optimization_libraries}{{3.2}{214}{Tối ưu hóa Mô hình với các Thư viện Sẵn có}{section.3.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{bitsandbytes}{214}{section.3.2}\protected@file@percent }
-\newlabel{ex:ex:load_llama_4bit}{{26}{215}{Tải mô hình với lượng tử hóa 4-bit}{tcb@cnt@example.26}{}}
-\@writefile{toc}{\contentsline {paragraph}{PEFT (Parameter-Efficient Fine-Tuning)}{215}{tcb@cnt@example.26}\protected@file@percent }
-\newlabel{ex:ex:lora_peft}{{27}{215}{Sử dụng LoRA với PEFT}{tcb@cnt@example.27}{}}
-\@writefile{toc}{\contentsline {paragraph}{ONNX (Open Neural Network Exchange)}{216}{tcb@cnt@example.27}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.3}Đóng gói và Phục vụ Mô hình}{216}{section.3.3}\protected@file@percent }
-\newlabel{sec:packaging_serving}{{3.3}{216}{Đóng gói và Phục vụ Mô hình}{section.3.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.1}Xây dựng API với FastAPI}{216}{subsection.3.3.1}\protected@file@percent }
-\newlabel{ssec:fastapi}{{3.3.1}{216}{Xây dựng API với FastAPI}{subsection.3.3.1}{}}
-\newlabel{ex:ex:fastapi_example}{{28}{216}{Một API phân loại văn bản đơn giản với FastAPI}{tcb@cnt@example.28}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.2}Container hóa với Docker}{217}{subsection.3.3.2}\protected@file@percent }
-\newlabel{ssec:docker}{{3.3.2}{217}{Container hóa với Docker}{subsection.3.3.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3.4}Các Framework Phục vụ Chuyên dụng cho Production}{218}{section.3.4}\protected@file@percent }
-\newlabel{sec:specialized_serving_frameworks}{{3.4}{218}{Các Framework Phục vụ Chuyên dụng cho Production}{section.3.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Vấn đề của việc Phục vụ LLM}{218}{section.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{vLLM: Tối ưu hóa cho Thông lượng}{218}{section.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{BentoML: Chuẩn hóa Vòng đời Phục vụ}{219}{section.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{NVIDIA Triton Inference Server}{219}{section.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.5}Vòng đời MLOps cho LLM}{219}{section.3.5}\protected@file@percent }
-\newlabel{sec:llmops_lifecycle}{{3.5}{219}{Vòng đời MLOps cho LLM}{section.3.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.1}Giám sát mô hình (Model Monitoring)}{219}{subsection.3.5.1}\protected@file@percent }
-\newlabel{ssec:model_monitoring}{{3.5.1}{219}{Giám sát mô hình (Model Monitoring)}{subsection.3.5.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{1. Giám sát Hệ thống (System Monitoring)}{219}{subsection.3.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{2. Giám sát Chất lượng Mô hình (Model Quality Monitoring)}{219}{subsection.3.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.2}Quy trình Tái huấn luyện và Cập nhật Mô hình}{220}{subsection.3.5.2}\protected@file@percent }
-\newlabel{ssec:retraining_pipeline}{{3.5.2}{220}{Quy trình Tái huấn luyện và Cập nhật Mô hình}{subsection.3.5.2}{}}
-\@writefile{toc}{\contentsline {chapter}{\numberline {4}CÔNG THỨC XÂY DỰNG CÁC ỨNG DỤNG PHỔ BIẾN (RECIPES)}{221}{chapter.4}\protected@file@percent }
+\newlabel{chap:mlops}{{3}{219}{TỐI ƯU HÓA, TRIỂN KHAI VÀ VẬN HÀNH (MLOps)}{chapter.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.1}Cơ sở dữ liệu Vector (Vector Databases)}{219}{section.3.1}\protected@file@percent }
+\newlabel{sec:vector_databases}{{3.1}{219}{Cơ sở dữ liệu Vector (Vector Databases)}{section.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}Khái niệm và vai trò trong NLP hiện đại}{219}{subsection.3.1.1}\protected@file@percent }
+\newlabel{ssec:vector_db_concepts}{{3.1.1}{219}{Khái niệm và vai trò trong NLP hiện đại}{subsection.3.1.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Vấn đề của Tìm kiếm Brute-force}{219}{subsection.3.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Giải pháp: Approximate Nearest Neighbor (ANN) Search}{219}{subsection.3.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}Các công cụ phổ biến}{220}{subsection.3.1.2}\protected@file@percent }
+\newlabel{ssec:vector_db_tools}{{3.1.2}{220}{Các công cụ phổ biến}{subsection.3.1.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}Tối ưu hóa Mô hình với các Thư viện Sẵn có}{220}{section.3.2}\protected@file@percent }
+\newlabel{sec:model_optimization_libraries}{{3.2}{220}{Tối ưu hóa Mô hình với các Thư viện Sẵn có}{section.3.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{bitsandbytes}{221}{section.3.2}\protected@file@percent }
+\newlabel{ex:ex:load_llama_4bit}{{26}{221}{Tải mô hình với lượng tử hóa 4-bit}{tcb@cnt@example.26}{}}
+\@writefile{toc}{\contentsline {paragraph}{PEFT (Parameter-Efficient Fine-Tuning)}{221}{tcb@cnt@example.26}\protected@file@percent }
+\newlabel{ex:ex:lora_peft}{{27}{221}{Sử dụng LoRA với PEFT}{tcb@cnt@example.27}{}}
+\@writefile{toc}{\contentsline {paragraph}{ONNX (Open Neural Network Exchange)}{222}{tcb@cnt@example.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.3}Đóng gói và Phục vụ Mô hình}{222}{section.3.3}\protected@file@percent }
+\newlabel{sec:packaging_serving}{{3.3}{222}{Đóng gói và Phục vụ Mô hình}{section.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.1}Xây dựng API với FastAPI}{222}{subsection.3.3.1}\protected@file@percent }
+\newlabel{ssec:fastapi}{{3.3.1}{222}{Xây dựng API với FastAPI}{subsection.3.3.1}{}}
+\newlabel{ex:ex:fastapi_example}{{28}{223}{Một API phân loại văn bản đơn giản với FastAPI}{tcb@cnt@example.28}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.2}Container hóa với Docker}{223}{subsection.3.3.2}\protected@file@percent }
+\newlabel{ssec:docker}{{3.3.2}{223}{Container hóa với Docker}{subsection.3.3.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.4}Các Framework Phục vụ Chuyên dụng cho Production}{224}{section.3.4}\protected@file@percent }
+\newlabel{sec:specialized_serving_frameworks}{{3.4}{224}{Các Framework Phục vụ Chuyên dụng cho Production}{section.3.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Vấn đề của việc Phục vụ LLM}{224}{section.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{vLLM: Tối ưu hóa cho Thông lượng}{224}{section.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{BentoML: Chuẩn hóa Vòng đời Phục vụ}{225}{section.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{NVIDIA Triton Inference Server}{225}{section.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.5}Vòng đời MLOps cho LLM}{225}{section.3.5}\protected@file@percent }
+\newlabel{sec:llmops_lifecycle}{{3.5}{225}{Vòng đời MLOps cho LLM}{section.3.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.1}Giám sát mô hình (Model Monitoring)}{225}{subsection.3.5.1}\protected@file@percent }
+\newlabel{ssec:model_monitoring}{{3.5.1}{225}{Giám sát mô hình (Model Monitoring)}{subsection.3.5.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{1. Giám sát Hệ thống (System Monitoring)}{225}{subsection.3.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{2. Giám sát Chất lượng Mô hình (Model Quality Monitoring)}{226}{subsection.3.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.2}Quy trình Tái huấn luyện và Cập nhật Mô hình}{226}{subsection.3.5.2}\protected@file@percent }
+\newlabel{ssec:retraining_pipeline}{{3.5.2}{226}{Quy trình Tái huấn luyện và Cập nhật Mô hình}{subsection.3.5.2}{}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}CÔNG THỨC XÂY DỰNG CÁC ỨNG DỤNG PHỔ BIẾN (RECIPES)}{227}{chapter.4}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{chap:recipes}{{4}{221}{CÔNG THỨC XÂY DỰNG CÁC ỨNG DỤNG PHỔ BIẾN (RECIPES)}{chapter.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.1}Xây dựng Hệ thống Tìm kiếm Ngữ nghĩa}{221}{section.4.1}\protected@file@percent }
-\newlabel{sec:semantic_search}{{4.1}{221}{Xây dựng Hệ thống Tìm kiếm Ngữ nghĩa}{section.4.1}{}}
-\newlabel{ex:ex:semantic_search}{{29}{221}{Xây dựng hệ thống tìm kiếm ngữ nghĩa với Sentence-Transformers và ChromaDB}{tcb@cnt@example.29}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.2}Xây dựng Hệ thống Hỏi-Đáp trên Tài liệu (RAG)}{222}{section.4.2}\protected@file@percent }
-\newlabel{sec:recipe_rag}{{4.2}{222}{Xây dựng Hệ thống Hỏi-Đáp trên Tài liệu (RAG)}{section.4.2}{}}
-\newlabel{ex:ex:rag_basic}{{30}{223}{RAG cơ bản với LangChain + Chroma}{tcb@cnt@example.30}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.3}Recipe 3: Fine-tuning một LLM cho Tác vụ Phân loại}{224}{section.4.3}\protected@file@percent }
-\newlabel{sec:recipe_classification_finetuning}{{4.3}{224}{Recipe 3: Fine-tuning một LLM cho Tác vụ Phân loại}{section.4.3}{}}
-\newlabel{ex:ex:finetune_classificationclassification}{{31}{225}{Fine-tuning một LLM cho Tác vụ Phân loại}{tcb@cnt@example.31}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.4}Recipe 4: Fine-tuning cho Tác vụ Nhận dạng Thực thể (NER)}{226}{section.4.4}\protected@file@percent }
-\newlabel{sec:recipe_ner_finetuning}{{4.4}{226}{Recipe 4: Fine-tuning cho Tác vụ Nhận dạng Thực thể (NER)}{section.4.4}{}}
-\newlabel{ex:ex:ner_finetuning}{{32}{227}{Fine-tuning cho Token Classification (NER)}{tcb@cnt@example.32}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.5}Recipe 5: Xây dựng một Agent đơn giản với khả năng sử dụng công cụ}{228}{section.4.5}\protected@file@percent }
-\newlabel{sec:recipe_agent}{{4.5}{228}{Recipe 5: Xây dựng một Agent đơn giản với khả năng sử dụng công cụ}{section.4.5}{}}
-\newlabel{ex:ex:simple_agent}{{33}{229}{Xây dựng Agent Tra cứu Wikipedia}{tcb@cnt@example.33}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.6}Recipe 6: Trích xuất Thông tin có Cấu trúc từ Văn bản}{230}{section.4.6}\protected@file@percent }
-\newlabel{sec:recipe_structured_extraction}{{4.6}{230}{Recipe 6: Trích xuất Thông tin có Cấu trúc từ Văn bản}{section.4.6}{}}
-\newlabel{ex:ex:function_calling}{{34}{231}{Trích xuất Thông tin với OpenAI Function Calling}{tcb@cnt@example.34}{}}
+\newlabel{chap:recipes}{{4}{227}{CÔNG THỨC XÂY DỰNG CÁC ỨNG DỤNG PHỔ BIẾN (RECIPES)}{chapter.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}Xây dựng Hệ thống Tìm kiếm Ngữ nghĩa}{227}{section.4.1}\protected@file@percent }
+\newlabel{sec:semantic_search}{{4.1}{227}{Xây dựng Hệ thống Tìm kiếm Ngữ nghĩa}{section.4.1}{}}
+\newlabel{ex:ex:semantic_search}{{29}{227}{Xây dựng hệ thống tìm kiếm ngữ nghĩa với Sentence-Transformers và ChromaDB}{tcb@cnt@example.29}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.2}Xây dựng Hệ thống Hỏi-Đáp trên Tài liệu (RAG)}{228}{section.4.2}\protected@file@percent }
+\newlabel{sec:recipe_rag}{{4.2}{228}{Xây dựng Hệ thống Hỏi-Đáp trên Tài liệu (RAG)}{section.4.2}{}}
+\newlabel{ex:ex:rag_basic}{{30}{229}{RAG cơ bản với LangChain + Chroma}{tcb@cnt@example.30}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.3}Recipe 3: Fine-tuning một LLM cho Tác vụ Phân loại}{230}{section.4.3}\protected@file@percent }
+\newlabel{sec:recipe_classification_finetuning}{{4.3}{230}{Recipe 3: Fine-tuning một LLM cho Tác vụ Phân loại}{section.4.3}{}}
+\newlabel{ex:ex:finetune_classificationclassification}{{31}{231}{Fine-tuning một LLM cho Tác vụ Phân loại}{tcb@cnt@example.31}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.4}Recipe 4: Fine-tuning cho Tác vụ Nhận dạng Thực thể (NER)}{233}{section.4.4}\protected@file@percent }
+\newlabel{sec:recipe_ner_finetuning}{{4.4}{233}{Recipe 4: Fine-tuning cho Tác vụ Nhận dạng Thực thể (NER)}{section.4.4}{}}
+\newlabel{ex:ex:ner_finetuning}{{32}{233}{Fine-tuning cho Token Classification (NER)}{tcb@cnt@example.32}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.5}Recipe 5: Xây dựng một Agent đơn giản với khả năng sử dụng công cụ}{235}{section.4.5}\protected@file@percent }
+\newlabel{sec:recipe_agent}{{4.5}{235}{Recipe 5: Xây dựng một Agent đơn giản với khả năng sử dụng công cụ}{section.4.5}{}}
+\newlabel{ex:ex:simple_agent}{{33}{235}{Xây dựng Agent Tra cứu Wikipedia}{tcb@cnt@example.33}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.6}Recipe 6: Trích xuất Thông tin có Cấu trúc từ Văn bản}{236}{section.4.6}\protected@file@percent }
+\newlabel{sec:recipe_structured_extraction}{{4.6}{236}{Recipe 6: Trích xuất Thông tin có Cấu trúc từ Văn bản}{section.4.6}{}}
+\newlabel{ex:ex:function_calling}{{34}{237}{Trích xuất Thông tin với OpenAI Function Calling}{tcb@cnt@example.34}{}}
 \bibstyle{unsrt}
 \bibdata{references}
 \bibcite{winograd1972understanding}{1}
@@ -1358,9 +1353,9 @@
 \bibcite{rafailov2023direct}{133}
 \bibcite{verl2024}{134}
 \bibcite{grpo2024}{135}
-\@writefile{toc}{\contentsline {chapter}{Lời kết}{245}{chapter*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Phần 1}{245}{chapter*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Phần 2}{245}{chapter*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Cuối cùng, đừng quên trách nhiệm.}{245}{chapter*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{Lời kết}{249}{chapter*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Phần 1}{249}{chapter*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Phần 2}{249}{chapter*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cuối cùng, đừng quên trách nhiệm.}{249}{chapter*.6}\protected@file@percent }
 \xdef \mintedoldcachechecksum{\detokenize{101717661F05C095F349FCB4AAFE902D:23}}
-\gdef \@abspage@last{253}
+\gdef \@abspage@last{257}
