@@ -1,13 +1,6 @@
-\chapter{CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO}
-\label{chap:advanced_architectures}
+\chapter{TÌM KIẾM VÀ SINH TĂNG CƯỜNG (RAG) TOÀN TẬP}
+\label{chap:rag}
 
-Sau khi đã nắm vững các kiến trúc LLM nền tảng và cách tinh chỉnh chúng, chúng ta sẽ bước vào một lĩnh vực cao hơn: làm thế nào để xây dựng các \textbf{hệ thống (systems)} hoàn chỉnh, có khả năng kết hợp LLM với các nguồn kiến thức bên ngoài.
+Trong chương 5, chúng ta đã hoàn thiện quá trình "thuần hóa" một mô hình ngôn ngữ lớn, biến nó từ một cỗ máy dự đoán từ thành một trợ lý có khả năng tuân theo chỉ dẫn và phù hợp với các giá trị của con người. Mô hình giờ đây đã sẵn sàng để tương tác, nhưng nó vẫn tồn tại một giới hạn cố hữu: kiến thức của nó bị cô lập và đóng băng trong thời gian, giống như một thư viện khổng lồ nhưng không có sách mới và không được phép tham khảo tài liệu bên ngoài.
 
-Một trong những hạn chế lớn nhất của LLM là:
-\begin{enumerate}
-    \item \textbf{Kiến thức bị giới hạn (Knowledge Cutoff):} Kiến thức của chúng bị đóng băng tại thời điểm huấn luyện và không thể tự cập nhật thông tin mới.
-    \item \textbf{Ảo giác (Hallucination):} Chúng có xu hướng bịa đặt thông tin một cách tự tin khi không biết câu trả lời.
-    \item \textbf{Thiếu khả năng truy cập dữ liệu riêng tư:} Chúng không thể trả lời các câu hỏi về các tài liệu nội bộ của một công ty hay dữ liệu cá nhân của người dùng.
-\end{enumerate}
-
-Để giải quyết những vấn đề này, một kiến trúc đã nổi lên như một tiêu chuẩn vàng trong ngành: \textbf{Tìm kiếm và Sinh Tăng cường (Retrieval-Augmented Generation - RAG)}.
+Chương này sẽ giải quyết triệt để vấn đề đó bằng cách giới thiệu một trong những kiến trúc quan trọng và có sức ảnh hưởng nhất trong hệ sinh thái LLM hiện đại: \textbf{Tìm kiếm và Sinh Tăng cường (Retrieval-Augmented Generation - RAG)}. Chúng ta sẽ học cách trao cho LLM "quyền truy cập vào Internet", biến nó từ một "nhà hiền triết" có trí nhớ giới hạn thành một "nhà nghiên cứu" tài ba có khả năng tìm kiếm, xác thực và tổng hợp thông tin từ các nguồn dữ liệu bên ngoài. Từ kiến trúc RAG cơ bản đến các kỹ thuật tối ưu hóa từng giai đoạn, chương này sẽ trang bị cho bạn mọi thứ cần thiết để xây dựng các ứng dụng LLM đáng tin cậy, cập nhật và có khả năng trích dẫn nguồn.

@@ -1,110 +1,88 @@
 % !TEX root = ../main.tex
-% File: chapters_part1/chap7_4.tex
-% Nội dung cho Chương 7, Phần 4
+% File: chapters_part1/chap6_5.tex
+% Nội dung cho Chương 6, Phần 5
 
-\section{Đánh giá dựa trên LLM (LLM-as-a-Judge)}
-\label{sec:llm_as_a_judge}
+\section{Mô hình Thế giới (World Models) và Mô phỏng}
+\label{sec:world_models}
 
-Như chúng ta đã thấy, việc đánh giá các kết quả đầu ra của LLM, đặc biệt là trong các tác vụ mở như đối thoại hay tóm tắt sáng tạo, là một thách thức lớn. Các metric tự động (BLEU, ROUGE) thì quá hời hợt, trong khi đánh giá bởi con người lại quá tốn kém và chậm chạp.
+Khi chúng ta đi đến cuối chương về các hệ thống nâng cao, một câu hỏi sâu sắc và cơ bản được đặt ra: Khi một LLM dự đoán từ tiếp theo một cách chính xác trên một lượng dữ liệu khổng lồ, nó thực sự đang học được điều gì? Liệu nó có chỉ đơn thuần học các quy luật thống kê bề mặt của ngôn ngữ, hay nó đang âm thầm xây dựng một thứ gì đó sâu sắc hơn -- một \textbf{mô hình nội tại (internal model)} về thế giới mà ngôn ngữ đó mô tả?
 
-Trong bối cảnh đó, một hướng tiếp cận mới đã nổi lên, tận dụng chính sức mạnh của các mô hình ngôn ngữ lớn: \textbf{sử dụng một LLM mạnh mẽ để đóng vai một "giám khảo" (judge) và đánh giá các câu trả lời do các mô hình khác tạo ra}.
+Đây chính là ý tưởng cốt lõi đằng sau khái niệm \textbf{Mô hình Thế giới (World Models)}.
 
-\subsection{Nguyên lý và Cách tiếp cận}
-\label{ssec:llm_judge_principles}
+\subsection{Khái niệm về khả năng LLM xây dựng mô hình nội tại}
+\label{ssec:internal_world_model_concept}
+
+\begin{definition}{Mô hình Thế giới (trong bối cảnh LLM)}{def:world_model}
+    Một Mô hình Thế giới là một biểu diễn nén, có thể thực thi (executable), và trừu tượng về các thực thể, mối quan hệ, và các quy luật vật lý/xã hội của thế giới, được hình thành bên trong các trọng số của một mô hình ngôn ngữ lớn thông qua quá trình huấn luyện trên dữ liệu văn bản.
+\end{definition}
 
 \begin{tcolorbox}[
-    title=Trực giác cốt lõi,
-    colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
+    title=Triết lý của Mô hình Thế giới,
+    colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
 ]
-Nếu một LLM đủ mạnh (như GPT-4) có khả năng hiểu các chỉ dẫn phức tạp và tạo ra các câu trả lời chất lượng cao, thì nó cũng có khả năng hiểu các \textbf{tiêu chí đánh giá (evaluation criteria)} phức tạp và áp dụng chúng để chấm điểm hoặc so sánh các câu trả lời. Về cơ bản, chúng ta đang biến bài toán đánh giá thành một bài toán Hỏi-đáp hoặc Suy luận khác cho một LLM giám khảo.
+Giả thuyết cho rằng: để có thể dự đoán văn bản một cách hiệu quả và nhất quán trên nhiều lĩnh vực, cách tối ưu nhất cho mô hình không phải là ghi nhớ tất cả các chuỗi ký tự, mà là xây dựng một mô hình nén của các quy luật sinh ra văn bản đó. Vì văn bản là sự phản ánh của thế giới, nên một mô hình tốt của văn bản cũng phải là một mô hình tốt của thế giới.
 \end{tcolorbox}
 
-Có hai cách tiếp cận chính để sử dụng LLM-as-a-Judge:
-
-\subsubsection{Đánh giá dựa trên Điểm số (Score-based Evaluation)}
+\subsubsection{Các bằng chứng gián tiếp}
+Mặc dù chúng ta không thể "nhìn" trực tiếp vào các trọng số và thấy một "mô hình thế giới" rõ ràng, có nhiều bằng chứng gián tiếp cho thấy các LLM lớn đang học được những biểu diễn như vậy:
+\paragraph{Biểu diễn không gian và thời gian}
 \begin{itemize}
-    \item \textbf{Cơ chế:} LLM giám khảo được cung cấp một bộ các tiêu chí đánh giá (ví dụ: độ chính xác, sự mạch lạc, tính hữu ích), một thang điểm (ví dụ: từ 1 đến 10), cùng với prompt và câu trả lời cần đánh giá. Sau đó, nó được yêu cầu đưa ra một điểm số cho mỗi tiêu chí và một lời giải thích cho điểm số đó.
-    \item \textbf{Ví dụ Prompt cho Giám khảo:}
-        \begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black, sharp corners]
-        Bạn là một giám khảo AI công tâm. Hãy đánh giá câu trả lời sau đây dựa trên các tiêu chí: Mạch lạc, Trung thực, Hữu ích, trên thang điểm từ 1 đến 10. Hãy đưa ra lý do cho điểm số của bạn.
-
-        \textbf{Câu hỏi:} "Trình bày những lợi ích chính của Học Tăng cường từ Phản hồi Con người (RLHF)."
-
-        \textbf{Câu trả lời cần đánh giá:} "RLHF là một phương pháp giúp mô hình tốt hơn. Nó sử dụng con người để chấm điểm và làm cho AI an toàn hơn."
-
-        \textbf{Đánh giá của bạn (dưới dạng JSON):}
-        \end{tcolorbox}
-    \item \textbf{Đầu ra mong muốn của Giám khảo:}
-        \begin{verbatim}
-        {
-          "scores": {
-            "coherence": 8,
-            "honesty": 9,
-            "helpfulness": 5
-          },
-          "reasoning": "Câu trả lời mạch lạc và trung thực nhưng ..."
-        }
-        \end{verbatim}
+    \item Các nhà nghiên cứu đã phát hiện ra các nơ-ron hoặc các hướng (directions) trong không gian kích hoạt của LLM dường như tương ứng với các khái niệm trong thế giới thực. Ví dụ, có những nơ-ron chỉ "kích hoạt" mạnh khi mô hình xử lý các văn bản liên quan đến một địa điểm địa lý cụ thể như "Tháp Eiffel" hoặc một mốc thời gian cụ thể.
+    \item Yann LeCun đã đưa ra ví dụ: để dự đoán từ cuối cùng trong câu "John cầm quả bóng, đi vào phòng khách, đặt quả bóng xuống, rồi đi vào bếp. Quả bóng đang ở...", mô hình phải có một biểu diễn nội tại về không gian, về các đối tượng và vị trí của chúng.
 \end{itemize}
 
-\subsubsection{Đánh giá dựa trên So sánh Cặp (Pairwise Comparison)}
+\paragraph{Mô phỏng các thực thể}
 \begin{itemize}
-    \item \textbf{Cơ chế:} Thay vì cho điểm một câu trả lời một cách độc lập (việc này rất khó và không nhất quán), LLM giám khảo được cung cấp cùng một prompt và \textbf{hai câu trả lời} khác nhau (ví dụ: từ Model A và Model B). Sau đó, nó được yêu cầu cho biết câu trả lời nào tốt hơn và tại sao.
-    \item \textbf{Lợi ích:} Giống như con người, việc so sánh hai đối tượng và chọn ra cái tốt hơn thường dễ dàng và đáng tin cậy hơn nhiều so với việc cho một điểm số tuyệt đối.
-    \item \textbf{Ví dụ Prompt cho Giám khảo:}
-        \begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black, sharp corners]
-        Bạn là một giám khảo AI công tâm. Dưới đây là một câu hỏi và hai câu trả lời từ hai trợ lý AI khác nhau. Hãy so sánh chúng và quyết định câu trả lời nào tốt hơn. Hãy giải thích chi tiết cho lựa chọn của bạn.
-
-        \textbf{Câu hỏi:} [Câu hỏi gốc...]
-        
-        \textbf{[Bắt đầu Câu trả lời A]}
-        [Nội dung câu trả lời của Model A...]
-        \textbf{[Kết thúc Câu trả lời A]}
-
-        \textbf{[Bắt đầu Câu trả lời B]}
-        [Nội dung câu trả lời của Model B...]
-        \textbf{[Kết thúc Câu trả lời B]}
-        
-        \textbf{Phân tích và Quyết định của bạn:}
-        \end{tcolorbox}
-    \item \textbf{Kết quả:} Sau khi thực hiện nhiều so sánh cặp, chúng ta có thể sử dụng các hệ thống xếp hạng như Elo để tính ra một bảng xếp hạng tổng thể cho các mô hình. Các bảng xếp hạng LLM lớn như \textbf{Chatbot Arena Leaderboard} hoạt động dựa trên nguyên tắc này (nhưng với sự so sánh của con người).
+    \item Khi một LLM tương tác trong một vai trò (ví dụ: "hãy đóng vai Napoleon"), nó có thể duy trì sự nhất quán về kiến thức, tính cách, và các mối quan hệ của nhân vật đó trong một cuộc hội thoại dài. Điều này cho thấy nó không chỉ lấy ra các thông tin rời rạc, mà dường như đang "mô phỏng" một mô hình về thực thể "Napoleon".
 \end{itemize}
 
-\subsection{Ứng dụng và Tiềm năng}
-\label{ssec:llm_judge_applications}
-
+\paragraph{Mô hình Othello-GPT}
+Một nghiên cứu nổi tiếng đã huấn luyện một Transformer nhỏ chỉ để chơi cờ Othello (cờ lật). Mô hình chỉ nhận vào chuỗi các nước đi hợp lệ và dự đoán nước đi hợp lệ tiếp theo.
 \begin{itemize}
-    \item \textbf{Tăng tốc Chu trình Đánh giá:} LLM-as-a-Judge nhanh hơn và rẻ hơn đánh giá của con người hàng nghìn lần, cho phép các nhà phát triển nhanh chóng lặp lại và thử nghiệm các ý tưởng mới.
-    \item \textbf{Tự động hóa việc tạo Dữ liệu Sở thích:} Như đã thấy trong Constitutional AI (mục \ref{ssec:rlhf_alternatives}), LLM có thể được dùng để tự động tạo ra các cặp dữ liệu sở thích (câu trả lời tốt hơn > câu trả lời kém hơn), sau đó dữ liệu này có thể được dùng để tinh chỉnh mô hình bằng các phương pháp như DPO.
-    \item \textbf{Đánh giá các khía cạnh khó đo lường:} Cho phép đánh giá các thuộc tính như "sự sáng tạo", "sự đồng cảm", hay "tính an toàn" mà các metric tự động truyền thống không thể chạm tới.
+    \item \textbf{Kết quả đáng kinh ngạc:} Sau khi huấn luyện, các nhà nghiên cứu đã tìm thấy một biểu diễn rõ ràng của \textbf{trạng thái bàn cờ Othello} bên trong các kích hoạt của mô hình. Tức là, mô hình đã tự học cách xây dựng một "mô hình thế giới" (bàn cờ) để có thể chơi tốt, mặc dù nó chưa bao giờ được "nhìn thấy" bàn cờ một cách trực tiếp.
 \end{itemize}
 
-\subsection{Thách thức và Những điều cần Lưu ý}
-\label{ssec:llm_judge_challenges}
-Việc sử dụng LLM-as-a-Judge không phải là một viên đạn bạc và đi kèm với những thách thức riêng.
+\begin{center}
+    \includegraphics[width=0.7\textwidth]{othello_gpt.png}
+    \captionof{figure}{Nghiên cứu Othello-GPT cho thấy một mô hình Transformer, chỉ được huấn luyện trên chuỗi nước đi, đã tự học cách biểu diễn trạng thái của bàn cờ bên trong nó.}
+    \label{fig:othello_gpt}
+\end{center}
 
-\paragraph{Thiên vị của Giám khảo (Judge's Bias)}
-LLM giám khảo cũng có những thiên vị của riêng nó, có thể ảnh hưởng đến kết quả đánh giá:
+\subsection{Hướng nghiên cứu và Tiềm năng}
+\label{ssec:world_models_future}
+Việc các LLM có thể xây dựng mô hình thế giới nội tại mở ra những hướng đi cực kỳ hứa hẹn cho tương lai của AI.
+
+\subsubsection{Cải thiện khả năng Suy luận và Lập kế hoạch}
 \begin{itemize}
-    \item \textbf{Thiên vị về vị trí (Position Bias):} Có xu hướng ưu tiên câu trả lời xuất hiện ở vị trí đầu tiên.
-    \item \textbf{Thiên vị về sự dài dòng (Verbosity Bias):} Có xu hướng cho điểm cao hơn cho các câu trả lời dài hơn và chi tiết hơn, ngay cả khi chúng không chính xác hơn.
-    \item \textbf{Thiên vị về văn phong (Style Bias):} Có xu hướng ưa thích các câu trả lời có văn phong giống với văn phong của chính nó. Điều này đặc biệt có vấn đề khi một mô hình (ví dụ: GPT-4) được dùng để đánh giá chính nó hoặc các biến thể của nó.
+    \item Nếu một Tác tử AI có một mô hình thế giới nội tại tốt, nó có thể thực hiện "mô phỏng trong tâm trí" (mental simulation).
+    \item Trước khi thực hiện một hành động trong thế giới thực, nó có thể "chạy thử" hành động đó trên mô hình thế giới của mình để dự đoán kết quả.
+    \item Điều này cho phép nó lập kế hoạch một cách hiệu quả hơn nhiều, lường trước các hậu quả, và tránh các sai lầm tốn kém, tương tự như cách con người suy nghĩ "nếu... thì...".
 \end{itemize}
 
-\paragraph{Hạn chế về Kiến thức và Suy luận}
-Nếu một bài toán đòi hỏi kiến thức chuyên môn sâu hoặc khả năng suy luận phức tạp (ví dụ: một bài toán toán học khó), LLM giám khảo có thể không đủ năng lực để xác định câu trả lời nào là đúng. Nó có thể bị "đánh lừa" bởi một câu trả lời sai nhưng được trình bày một cách rất thuyết phục và có cấu trúc.
+\subsubsection{Mô hình Thế giới Đa phương thức}
+\begin{itemize}
+    \item Hướng nghiên cứu hiện tại đang tập trung vào việc xây dựng các mô hình thế giới không chỉ từ văn bản, mà còn từ \textbf{video}.
+    \item Bằng cách xem hàng triệu giờ video, một mô hình có thể học được các quy luật vật lý trực quan (intuitive physics) -- ví dụ, một vật thể không thể đi xuyên qua vật thể khác, trọng lực làm cho mọi thứ rơi xuống.
+    \item Các mô hình như \textbf{Sora} của OpenAI, có khả năng sinh ra các video cực kỳ thực tế và nhất quán về mặt vật lý, được cho là một bước tiến lớn trong việc xây dựng các mô hình thế giới có khả năng mô phỏng.
+\end{itemize}
 
-\paragraph{Sự cần thiết của việc Hiệu chỉnh (Calibration)}
-Các nghiên cứu đã chỉ ra rằng điểm số từ LLM-as-a-Judge thường có độ tương quan cao với đánh giá của con người, nhưng không phải là hoàn hảo. Việc sử dụng các kỹ thuật như prompting cẩn thận, cung cấp các ví dụ minh họa (few-shot examples of good evaluation), và tổng hợp kết quả từ nhiều lần chạy là rất quan trọng để có được kết quả đáng tin cậy.
+\subsubsection{Hướng tới Trí tuệ Nhân tạo Tổng quát (AGI)}
+\begin{itemize}
+    \item Nhiều nhà nghiên cứu hàng đầu tin rằng khả năng xây dựng và sử dụng các mô hình thế giới là một trong những thành phần cốt lõi của trí thông minh thực sự.
+    \item Một hệ thống AGI trong tương lai có thể sẽ bao gồm một LLM lớn đóng vai trò là "giao diện" ngôn ngữ, kết hợp với một mô hình thế giới mạnh mẽ cho phép nó hiểu sâu, suy luận, và lập kế hoạch trong một môi trường phức tạp.
+\end{itemize}
 
-Mặc dù có những thách thức, LLM-as-a-Judge đã trở thành một công cụ không thể thiếu trong việc phát triển và đánh giá các mô hình ngôn ngữ thế hệ mới, cung cấp một giải pháp cân bằng giữa tốc độ của các metric tự động và chiều sâu của đánh giá bởi con người.
+Mặc dù vẫn còn là một lĩnh vực đầy tranh cãi và câu hỏi mở, giả thuyết về Mô hình Thế giới cung cấp một lăng kính mạnh mẽ để hiểu về những khả năng đáng kinh ngạc của LLM. Nó gợi ý rằng chúng ta có thể đang vô tình xây dựng được những thứ phức tạp hơn nhiều so với những gì chúng ta nghĩ ban đầu, mở ra một tương lai đầy tiềm năng cho các hệ thống AI có khả năng lý luận và tương tác với thế giới một cách sâu sắc.
+
 
 \bigskip
 \hrule
 \bigskip
 
 \begin{center}
-    \textbf{\Large KẾT THÚC CHƯƠNG 7}
+	\textbf{\Large KẾT THÚC CHƯƠNG 7}
 \end{center}
 
-\textit{Trong chương cuối cùng của hành trình lý thuyết này, chúng ta đã giải quyết một trong những câu hỏi quan trọng nhất: "Làm thế nào để đo lường sự tiến bộ?". Chúng ta đã đi từ các metric kinh điển như F1-score và BLEU, khám phá các "kỳ thi" tiêu chuẩn như GLUE và MMLU, và quan trọng hơn, đã phát triển một tư duy phản biện về những thách thức sâu sắc trong việc đánh giá, từ nhiễm bẩn dữ liệu đến Định luật Goodhart. Việc hiểu rõ cách đánh giá và những hạn chế của nó cũng quan trọng như việc xây dựng mô hình. Đây chính là chiếc la bàn giúp chúng ta định hướng trong quá trình phát triển, phân biệt giữa tiến bộ thực sự và những con số được tối ưu hóa quá mức. Với nền tảng lý thuyết đã hoàn thiện, chúng ta đã sẵn sàng để bước sang một giai đoạn mới.}
+\textit{Trong chương này, chúng ta đã mở rộng tầm nhìn vượt ra ngoài một LLM đơn lẻ để khám phá cách xây dựng các hệ thống AI thực sự toàn diện. Chúng ta đã học cách làm cho các mô hình trở nên tinh gọn và hiệu quả hơn thông qua tối ưu hóa, dạy chúng cách hiểu thế giới đa phương thức, và trao cho chúng khả năng hành động như một tác tử thông minh. Chúng ta cũng đã suy ngẫm về khả năng sâu xa của LLM trong việc xây dựng các mô hình thế giới nội tại.}
+
+\textit{Chúng ta đã lắp ráp nên những hệ thống AI vô cùng phức tạp và mạnh mẽ, từ những trợ lý có thể "nhìn" và thảo luận về hình ảnh, đến những tác tử có thể tự lập kế hoạch và sử dụng công cụ. Nhưng một câu hỏi tối quan trọng vẫn còn đó: Làm thế nào để chúng ta đo lường và so sánh chúng một cách khoa học? Liệu một hệ thống Agentic có thực sự "thông minh" hơn một hệ thống RAG không, và dựa trên tiêu chí nào? Chương cuối cùng của Phần 1 sẽ đi sâu vào lý thuyết và thực hành của việc đánh giá, cung cấp cho chúng ta những công cụ cần thiết để định lượng sự tiến bộ và hiểu rõ những giới hạn của các hệ thống AI phức tạp này.}

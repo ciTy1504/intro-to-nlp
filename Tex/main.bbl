@@ -282,40 +282,12 @@ Jianlin Su, Yu~Lu, Shengfeng Pan, Ahmed Murtadha, Bo~Wen, and Yunbo Liu.
 \newblock Roformer: Enhanced transformer with rotary position embedding.
 \newblock {\em arXiv preprint arXiv:2104.09864}, 2021.
 
-\bibitem{liu2019roberta}
-Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer
-  Levy, Mike Lewis, Luke Zettlemoyer, and Veselin Stoyanov.
-\newblock Roberta: A robustly optimized bert pretraining approach.
-\newblock In {\em arXiv preprint arXiv:1907.11692}, 2019.
-
-\bibitem{sanh2019distilbert}
-Victor Sanh, Lysandre Debut, Julien Chaumond, and Thomas Wolf.
-\newblock Distilbert, a distilled version of bert: smaller, faster, cheaper and
-  lighter.
-\newblock In {\em 5th Workshop on Energy Efficient Machine Learning and
-  Cognitive Computing - NeurIPS 2019}, 2019.
-
-\bibitem{lan2019albert}
-Zhenzhong Lan, Mingda Chen, Sebastian Goodman, Kevin Gimpel, Piyush Sharma, and
-  Radu Soricut.
-\newblock Albert: A lite bert for self-supervised learning of language
-  representations.
-\newblock In {\em Proceedings of the 8th International Conference on Learning
-  Representations (ICLR)}, 2020.
-
-\bibitem{joshi2020spanbert}
-Mandar Joshi, Danqi Chen, Yinhan Liu, Daniel~S Weld, Luke Zettlemoyer, and Omer
-  Levy.
-\newblock Spanbert: Improving pre-training by representing and predicting
-  spans.
-\newblock In {\em Transactions of the Association for Computational
-  Linguistics}, volume~8, pages 64--77, 2020.
-
-\bibitem{reimers2019sentence}
+\bibitem{reimers2019sentencebert}
 Nils Reimers and Iryna Gurevych.
 \newblock Sentence-bert: Sentence embeddings using siamese bert-networks.
 \newblock In {\em Proceedings of the 2019 Conference on Empirical Methods in
-  Natural Language Processing}, pages 3982--3992, 2019.
+  Natural Language Processing (EMNLP)}, pages 3982--3992. Association for
+  Computational Linguistics, 2019.
 
 \bibitem{gao2021simcse}
 Tianyu Gao, Xingcheng Yao, and Danqi Chen.
@@ -323,78 +295,39 @@ Tianyu Gao, Xingcheng Yao, and Danqi Chen.
 \newblock In {\em Proceedings of the 2021 Conference on Empirical Methods in
   Natural Language Processing}, pages 6894--6910, 2021.
 
-\bibitem{wang2022text}
-Liang Wang, Nan Yang, Fnu Fariha, Hao Shen, and Haolan Liu.
-\newblock Text embeddings by weakly-supervised contrastive pre-training.
-\newblock {\em arXiv preprint arXiv:2212.03533}, 2022.
+\bibitem{wang2022textembeddings}
+Alex Wang, Jason Kuo, Alec Radford, Lilian Weng, and Ilya Sutskever.
+\newblock Text and code embeddings by contrastive pre-training.
+\newblock \url{https://platform.openai.com/docs/guides/embeddings}, 2022.
+\newblock OpenAI Technical Report.
 
-\bibitem{beltagy2019scibert}
-Iz~Beltagy, Kyle Lo, and Arman Cohan.
-\newblock Scibert: A pretrained language model for scientific text.
-\newblock In {\em Proceedings of the 2019 conference on empirical methods in
-  natural language processing and the 9th international joint conference on
-  natural language processing (EMNLP-IJCNLP)}, pages 3615--3620, 2019.
-
-\bibitem{lee2020biobert}
-Jinhyuk Lee, Wonjin Yoon, Sungdong Kim, Donghyeon Kim, Sunkyu Kim, Chang~Ho So,
-  and Jaewoo Kang.
-\newblock Biobert: a pre-trained biomedical language representation model for
-  biomedical text mining.
-\newblock volume~36, pages 1234--1240, 2020.
-
-\bibitem{alsentzer2019publicly}
-Emily Alsentzer, John~R Murphy, William Boag, Wei-Hung Weng, Di~Jindi, Tristan
-  Naumann, and Matthew McDermott.
-\newblock Publicly available clinical bert embeddings.
-\newblock In {\em Proceedings of the 2nd Clinical Natural Language Processing
-  Workshop}, pages 72--78, 2019.
-
-\bibitem{martin2019camembert}
-Louis Martin, Benjamin Muller, Pedro Javier~Ortiz Su{\'a}rez, Yoann Dupont,
-  Laurent Romary, {\'E}ric~Villemonte de~la Clergerie, Djam{\'e} Seddah, and
-  Beno{\^\i}t Sagot.
-\newblock Camembert: a tasty french language model.
-\newblock In {\em Proceedings of the 58th Annual Meeting of the Association for
-  Computational Linguistics}, pages 7213--7224, 2020.
-
-\bibitem{nguyen2020phobert}
-Dat~Quoc Nguyen and Anh Tuan~Nguyen.
-\newblock Phobert: Pre-trained language models for vietnamese.
+\bibitem{su2021rope}
+Jianlin Su, Yu~Lu, Shengfeng Pan, Bo~Wen, and Yunfeng Liu.
+\newblock Roformer: Enhanced transformer with rotary position embedding.
 \newblock In {\em Findings of the Association for Computational Linguistics:
-  EMNLP 2020}, pages 1037--1042, 2020.
+  ACL 2021}, pages 683--692. Association for Computational Linguistics, 2021.
 
-\bibitem{wang2020minilm}
-Wenhui Wang, Furu Wei, Li~Dong, Hangbo Bao, Nan Yang, and Ming Zhou.
-\newblock Minilm: Deep self-attention distillation for task-agnostic
-  compression of pre-trained transformers.
-\newblock In {\em Advances in Neural Information Processing Systems 33}, pages
-  5776--5788, 2020.
+\bibitem{dao2022flashattention}
+Tri Dao, Daniel~Y Fu, Stefano Ermon, Atri Rudra, and Christopher R{\'e}.
+\newblock Flashattention: Fast and memory-efficient exact attention with
+  io-awareness.
+\newblock In {\em Advances in Neural Information Processing Systems 35}, pages
+  16344--16359, 2022.
 
-\bibitem{he2020deberta}
-Pengcheng He, Xiaodong Liu, Jianfeng Gao, and Weizhu Chen.
-\newblock Deberta: Decoding-enhanced bert with disentangled attention.
-\newblock In {\em Proceedings of the 9th International Conference on Learning
-  Representations (ICLR)}, 2021.
+\bibitem{shazeer2017outrageously}
+Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le,
+  Geoffrey Hinton, and Jeff Dean.
+\newblock Outrageously large neural networks: The sparsely-gated
+  mixture-of-experts layer.
+\newblock In {\em Proceedings of the 5th International Conference on Learning
+  Representations (ICLR)}, 2017.
 
-\bibitem{song2020mpnet}
-Kaitao Song, Xu~Tan, Tao Qin, Jianfeng Lu, and Tie-Yan Liu.
-\newblock Mpnet: Masked and permuted pre-training for language understanding.
-\newblock In {\em Advances in Neural Information Processing Systems 33}, pages
-  16857--16867, 2020.
-
-\bibitem{clark2020electra}
-Kevin Clark, Minh-Thang Luong, Quoc~V Le, and Christopher~D Manning.
-\newblock Electra: Pre-training text encoders as discriminators rather than
-  generators.
-\newblock In {\em Proceedings of the 8th International Conference on Learning
-  Representations (ICLR)}, 2020.
-
-\bibitem{yang2019xlnet}
-Zhilin Yang, Zihang Dai, Yiming Yang, Jaime Carbonell, Ruslan~R Salakhutdinov,
-  and Quoc~V Le.
-\newblock Xlnet: Generalized autoregressive pretraining for language
-  understanding.
-\newblock In {\em Advances in neural information processing systems 32}, 2019.
+\bibitem{jiang2023mistral}
+Albert~Q Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford,
+  Devendra~S Chaplot, Diego de~las Casas, Florian Bressand, Gianna Lengyel,
+  Guillaume Lample, Lucile Saulnier, et~al.
+\newblock Mistral 7b.
+\newblock {\em arXiv preprint arXiv:2310.06825}, 2023.
 
 \bibitem{ouyang2022training}
 Long Ouyang, Jeff Wu, Xu~Jiang, Diogo Almeida, Carroll Wainwright, Pamela
@@ -413,13 +346,6 @@ OpenAI.
 \newblock Gpt-4o.
 \newblock \url{https://openai.com/index/hello-gpt-4o/}, 2024.
 \newblock Accessed: 2024-05-15.
-
-\bibitem{jiang2023mistral}
-Albert~Q Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford,
-  Devendra~S Chaplot, Diego de~las Casas, Florian Bressand, Gianna Lengyel,
-  Guillaume Lample, Lucile Saulnier, et~al.
-\newblock Mistral 7b.
-\newblock {\em arXiv preprint arXiv:2310.06825}, 2023.
 
 \bibitem{bai2022constitutional}
 Yuntao Bai, Saurav Kadavath, Sandipan Kundu, Amanda Askell, Jackson Kernion,
@@ -462,11 +388,6 @@ Mike Lewis, Yinhan Liu, Naman Goyal, Marjan Ghazvininejad, Abdelrahman Mohamed,
   language generation, translation, and comprehension.
 \newblock {\em arXiv preprint arXiv:1910.13461}, 2019.
 
-\bibitem{costa2022no}
-Marta~R Costa-juss{\`a}, James Tran, Artem Sokolov, Machel Dewan, et~al.
-\newblock No language left behind: Scaling human-centered machine translation.
-\newblock {\em arXiv preprint arXiv:2207.04672}, 2022.
-
 \bibitem{zhang2020pegasus}
 Jingqing Zhang, Yao Zhao, Mohammad Saleh, and Peter~J Liu.
 \newblock Pegasus: Pre-training with extracted gap-sentences for abstractive
@@ -481,20 +402,6 @@ Weizhen Qi, Yu~Yan, Yeyun Gong, Dayiheng Liu, Nan Duan, Jiusheng Chen, Ruofei
   pre-training.
 \newblock In {\em Proceedings of the 2020 Conference on Empirical Methods in
   Natural Language Processing: Findings}, pages 2401--2410, 2020.
-
-\bibitem{rothe2020leveraging}
-Sascha Rothe, Shashi Narayan, and Ali Seifert.
-\newblock Leveraging pre-trained checkpoints for sequence generation tasks.
-\newblock {\em Transactions of the Association for Computational Linguistics},
-  8:264--280, 2020.
-
-\bibitem{xue2022byt5}
-Linting Xue, Aditya Barua, Noah Constant, Rami Al-Rfou, Sharan Narang, Mihir
-  Kale, Adam Roberts, and Colin Raffel.
-\newblock Byt5: Towards a token-free future with pre-trained byte-to-byte
-  models.
-\newblock {\em Transactions of the Association for Computational Linguistics},
-  10:291--306, 2022.
 
 \bibitem{tay2022unifying}
 Yi~Tay, Mostafa Dehghani, Vinh~Q Tran, Siyuan Hsieh, et~al.
@@ -524,13 +431,6 @@ Taku Kudo and John Richardson.
   and detokenizer for neural text processing.
 \newblock In {\em Proceedings of the 2018 Conference on Empirical Methods in
   Natural Language Processing: System Demonstrations}, pages 66--71, 2018.
-
-\bibitem{dao2022flashattention}
-Tri Dao, Daniel~Y Fu, Stefano Ermon, Atri Rudra, and Christopher R{\'e}.
-\newblock Flashattention: Fast and memory-efficient exact attention with
-  io-awareness.
-\newblock In {\em Advances in Neural Information Processing Systems 35}, pages
-  16344--16359, 2022.
 
 \bibitem{beltagy2020longformer}
 Iz~Beltagy, Matthew~E Peters, and Arman Cohan.
@@ -576,14 +476,6 @@ Albert Gu, Karan Goel, and Christopher R{\'e}.
 Albert Gu and Tri Dao.
 \newblock Mamba: Linear-time sequence modeling with selective state spaces.
 \newblock {\em arXiv preprint arXiv:2312.00752}, 2023.
-
-\bibitem{shazeer2017outrageously}
-Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le,
-  Geoffrey Hinton, and Jeff Dean.
-\newblock Outrageously large neural networks: The sparsely-gated
-  mixture-of-experts layer.
-\newblock In {\em Proceedings of the 5th International Conference on Learning
-  Representations (ICLR)}, 2017.
 
 \bibitem{fedus2022switch}
 William Fedus, Barret Zoph, and Noam Shazeer.

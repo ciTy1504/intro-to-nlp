@@ -1,128 +1,93 @@
 % !TEX root = ../main.tex
-% File: chapters_part1/chap6_2.tex
-% Nội dung cho Chương 6, Phần 2
+% File: part1/chapters_part6/chap6_2.tex
+% Nội dung cho Chương 6, Phần 1: Tối ưu hóa Pipeline RAG
 
-\section{Lý thuyết về Tối ưu hóa Mô hình}
-\label{sec:model_optimization}
+\section{Tối ưu hóa Pipeline RAG: Từ Naive đến Nâng cao}
+\label{sec:advanced_rag_pipeline}
 
-Các Mô hình Ngôn ngữ Lớn (LLMs), đúng như tên gọi của chúng, thường cực kỳ lớn, đòi hỏi phần cứng đắt đỏ và có độ trễ suy luận (inference latency) cao. Điều này tạo ra một rào cản lớn cho việc triển khai chúng trong các ứng dụng thực tế, đặc biệt là các ứng dụng cần phản hồi thời gian thực hoặc cần chạy trên các thiết bị có tài nguyên hạn chế (như điện thoại di động).
-
-Để giải quyết vấn đề này, một loạt các kỹ thuật tối ưu hóa mô hình đã được phát triển. Mục tiêu chung của chúng là: \textbf{giảm kích thước mô hình, tăng tốc độ suy luận, và giảm yêu cầu về bộ nhớ, trong khi cố gắng duy trì hiệu năng (độ chính xác) ở mức cao nhất có thể}.
-
-Chúng ta sẽ khám phá ba họ kỹ thuật tối ưu hóa chính: Chưng cất, Lượng tử hóa, và Cắt tỉa.
-
-\subsection{Chưng cất Tri thức (Knowledge Distillation)}
-\label{ssec:knowledge_distillation}
-
-\subsubsection{Trực giác cốt lõi: Thầy dạy Trò}
-Hãy tưởng tượng bạn có một mạng nơ-ron rất lớn, phức tạp nhưng chính xác (gọi là \textbf{mô hình thầy - teacher model}), và một mạng nơ-ron nhỏ hơn, nhanh hơn nhiều (gọi là \textbf{mô hình trò - student model}). Chưng cất Tri thức là quá trình "dạy" cho mô hình trò bắt chước hành vi của mô hình thầy.
+Kiến trúc RAG cơ bản là một điểm khởi đầu mạnh mẽ, nhưng để xây dựng một hệ thống thực sự hiệu quả và đáng tin cậy, chúng ta cần tối ưu hóa từng giai đoạn trong pipeline. Chương này sẽ giới thiệu triết lý "lọc rộng rồi tinh chỉnh sâu", lấy cảm hứng từ các hệ thống tìm kiếm hàng đầu như Google, và áp dụng nó vào việc cải thiện ba giai đoạn cốt lõi: Lập chỉ mục, Truy xuất, và Sinh.
 
 \begin{tcolorbox}[
-    title=Triết lý của Chưng cất Tri thức,
-    colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
-]
-Thay vì chỉ dạy cho mô hình trò học từ các nhãn cứng (hard labels) của dữ liệu (ví dụ: "chó" hoặc "mèo"), chúng ta hãy dạy nó bắt chước cả \textbf{phân phối xác suất đầu ra "mềm" (soft probabilities)} của mô hình thầy. Các xác suất mềm này chứa đựng những thông tin "đen tối" (dark knowledge) vô cùng phong phú về cách mô hình thầy "suy nghĩ" và "khái quát hóa".
+	title=Bài học cốt lõi từ các Hệ thống Tìm kiếm,
+	colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
+	]
+	Xây dựng một hệ thống retrieval mạnh mẽ không phải là việc chọn một thuật toán duy nhất. Đó là việc xây dựng một \textbf{pipeline đa tầng}. Chúng ta chấp nhận sử dụng các phương pháp "đủ tốt" và nhanh ở giai đoạn đầu để lọc số lượng lớn, sau đó mới đầu tư tài nguyên tính toán vào các phương pháp chính xác cao cho một số lượng nhỏ các ứng viên hứa hẹn nhất. Triết lý "lọc rộng rồi tinh chỉnh sâu" này chính là kim chỉ nam cho việc tối ưu hóa RAG.
 \end{tcolorbox}
 
-Ví dụ, khi nhìn vào ảnh một chiếc xe tải, mô hình thầy có thể dự đoán: `{"xe tải": 0.9, "xe buýt": 0.08, "ô tô": 0.015, "máy bay": 0.005}`. Thông tin rằng nó "hơi giống xe buýt" nhưng "không hề giống máy bay" là một tín hiệu huấn luyện quý giá hơn nhiều so với nhãn cứng "xe tải".
+\subsection{Tối ưu hóa Giai đoạn Lập chỉ mục (Smarter Indexing)}
+\label{ssec:smarter_indexing}
+Chất lượng của các chunk được lập chỉ mục ảnh hưởng trực tiếp đến khả năng tìm thấy thông tin chính xác. Nguyên tắc "Rác vào, Rác ra" hoàn toàn đúng ở đây. Các kỹ thuật dưới đây giúp cải thiện "chất lượng đầu vào" cho hệ thống RAG.
 
-\subsubsection{Cơ chế hoạt động}
-Quá trình chưng cất bao gồm việc huấn luyện mô hình trò trên một hàm mất mát kết hợp:
-\begin{enumerate}
-    \item \textbf{Tạo các nhãn mềm:} Cho cùng một đầu vào, chúng ta lấy đầu ra logits (đầu ra trước lớp softmax) của mô hình thầy và đưa nó qua một hàm softmax đã được "làm mềm" bằng một tham số gọi là \textbf{nhiệt độ (temperature - T)}.
-        $$ p_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)} $$
-        Khi $T > 1$, phân phối xác suất sẽ trở nên "mềm" hơn, gán xác suất cao hơn cho các lớp không phải là lớp tốt nhất, từ đó để lộ ra "dark knowledge".
-    \item \textbf{Huấn luyện mô hình trò:} Mô hình trò được huấn luyện để tối thiểu hóa một hàm mất mát tổng hợp:
-        \begin{equation}
-            \mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{CE}}(y_{\text{true}}, y_{\text{student}}) + (1-\alpha) \cdot \mathcal{L}_{\text{KL}}(p_{\text{teacher}}^T, p_{\text{student}}^T)
-            \label{eq:distillation_loss}
-        \end{equation}
-        Trong đó:
-        \begin{itemize}
-            \item \textbf{Thành phần 1 (Hard Loss):} Là hàm mất mát Cross-Entropy thông thường giữa dự đoán của mô hình trò và nhãn thật ($y_{\text{true}}$). Phần này đảm bảo mô hình trò vẫn học tốt trên tác vụ.
-            \item \textbf{Thành phần 2 (Soft Loss):} Là hàm mất mát KL-Divergence (hoặc Cross-Entropy) giữa phân phối xác suất mềm của mô hình trò và phân phối xác suất mềm của mô hình thầy (cả hai đều được tính với nhiệt độ $T$). Phần này buộc mô hình trò phải bắt chước cách "suy nghĩ" của mô hình thầy.
-            \item $\alpha$ là một siêu tham số để cân bằng giữa hai thành phần.
-        \end{itemize}
-\end{enumerate}
-
-\begin{center}
-    \includegraphics[width=0.8\textwidth]{knowledge_distillation.png}
-    \captionof{figure}{Quy trình Chưng cất Tri thức. Mô hình trò học đồng thời từ nhãn cứng của dữ liệu và nhãn mềm (được tạo ra bởi mô hình thầy với nhiệt độ T).}
-    \label{fig:knowledge_distillation}
-\end{center}
-
-Các mô hình như DistilBERT đã sử dụng kỹ thuật này để tạo ra một phiên bản BERT nhỏ hơn 40% và nhanh hơn 60% trong khi vẫn giữ lại 97% hiệu năng.
-
-\subsection{Lượng tử hóa (Quantization)}
-\label{ssec:quantization}
-
-\subsubsection{Trực giác cốt lõi: Giảm độ chính xác của Số}
-Lượng tử hóa là quá trình giảm số lượng bit được sử dụng để biểu diễn một con số. Trong học sâu, các trọng số và giá trị kích hoạt của mô hình thường được lưu trữ dưới dạng số thực dấu phẩy động 32-bit (FP32) hoặc 16-bit (FP16). Lượng tử hóa sẽ ánh xạ các giá trị này sang các định dạng có độ chính xác thấp hơn, ví dụ như số nguyên 8-bit (INT8) hoặc thậm chí 4-bit.
-
-\begin{tcolorbox}[
-    title=Triết lý của Lượng tử hóa,
-    colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
-]
-"Chúng ta có thực sự cần đến 32 bit độ chính xác để lưu trữ mỗi trọng số không? Liệu việc làm tròn các trọng số thành một tập hợp các giá trị rời rạc, có độ chính xác thấp hơn có làm ảnh hưởng nhiều đến hiệu năng cuối cùng không?"
-\end{tcolorbox}
-Câu trả lời, một cách đáng ngạc nhiên, thường là "không nhiều". Các mạng nơ-ron sâu có một sự dư thừa (redundancy) nhất định và có khả năng chống chịu khá tốt với nhiễu và sự mất mát độ chính xác.
-
-\subsubsection{Các phương pháp Lượng tử hóa}
-\paragraph{Post-Training Quantization (PTQ) - Lượng tử hóa sau Huấn luyện}
-Đây là phương pháp đơn giản nhất.
-\begin{enumerate}
-    \item Lấy một mô hình đã được huấn luyện đầy đủ.
-    \item Chuyển đổi các trọng số của nó từ FP32/FP16 sang INT8. Quá trình này bao gồm việc tìm ra một "tỷ lệ" (scale) và một "điểm không" (zero-point) để ánh xạ khoảng giá trị thực sang khoảng giá trị nguyên 8-bit.
-    \item Thường yêu cầu một bộ dữ liệu hiệu chỉnh nhỏ (calibration dataset) để tìm ra các tham số ánh xạ tối ưu.
-\end{enumerate}
-PTQ rất nhanh để thực hiện nhưng có thể gây ra sụt giảm độ chính xác đáng kể.
-
-\paragraph{Quantization-Aware Training (QAT) - Huấn luyện Nhận biết Lượng tử hóa}
-Đây là phương pháp phức tạp nhưng cho kết quả tốt hơn.
-\begin{enumerate}
-    \item Trong quá trình fine-tuning (hoặc huấn luyện từ đầu), mô hình sẽ \textbf{mô phỏng (simulate)} ảnh hưởng của việc lượng tử hóa.
-    \item Tức là, trong quá trình truyền thẳng, các trọng số sẽ được "làm tròn" (quantized) về định dạng có độ chính xác thấp, nhưng trong quá trình truyền ngược, gradient vẫn được tính toán và cập nhật trên các trọng số có độ chính xác đầy đủ.
-    \item Điều này cho phép mô hình học cách "thích ứng" với sự mất mát độ chính xác sẽ xảy ra sau khi lượng tử hóa, giúp giảm thiểu sụt giảm hiệu năng.
-\end{enumerate}
-
-Lợi ích của Lượng tử hóa là rất rõ ràng: giảm kích thước mô hình (INT8 nhỏ hơn FP32 4 lần) và tăng tốc độ suy luận (các phép toán trên số nguyên nhanh hơn nhiều so với số thực trên hầu hết các phần cứng). Chúng ta đã thấy một ứng dụng của nó trong QLoRA (mục \ref{ssec:qlora}).
-
-\subsection{Cắt tỉa (Pruning)}
-\label{ssec:pruning}
-
-\subsubsection{Trực giác cốt lõi: Loại bỏ các Kết nối Thừa}
-Các mạng nơ-ron lớn thường được "tham số hóa quá mức" (over-parameterized), nghĩa là chúng có nhiều trọng số và nơ-ron hơn mức cần thiết. Cắt tỉa là quá trình xác định và loại bỏ các trọng số hoặc các nơ-ron "ít quan trọng" nhất trong mạng.
-
-\begin{tcolorbox}[
-    title=Triết lý của Cắt tỉa,
-    colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
-]
-"Một mạng nơ-ron giống như một cái cây. Sau khi nó phát triển, chúng ta có thể cắt tỉa đi những cành lá không cần thiết mà không làm ảnh hưởng đến sức sống và khả năng ra quả của cây, thậm chí còn giúp cây khỏe mạnh hơn."
-\end{tcolorbox}
-
-\subsubsection{Các phương pháp Cắt tỉa}
-\paragraph{Cắt tỉa theo Độ lớn (Magnitude Pruning)}
-Đây là phương pháp phổ biến nhất.
+\subsubsection{Chiến lược Phân mảnh Nâng cao (Advanced Chunking Strategies)}
+Việc chia văn bản một cách "mù quáng" theo kích thước cố định (fixed-size chunking) thường làm phá vỡ ngữ nghĩa của câu hoặc đoạn văn.
 \begin{itemize}
-    \item \textbf{Giả định:} Các trọng số có giá trị tuyệt đối gần bằng 0 là ít quan trọng nhất.
-    \item \textbf{Quy trình:}
-        \begin{enumerate}
-            \item Huấn luyện một mô hình dày đặc đến khi hội tụ.
-            \item Xóa (đặt bằng 0) tất cả các trọng số có giá trị tuyệt đối nhỏ hơn một ngưỡng nhất định. Điều này tạo ra một ma trận trọng số "thưa thớt" (sparse).
-            \item (Tùy chọn nhưng quan trọng) Fine-tune lại mô hình thưa thớt này trong một vài epoch để cho phép các trọng số còn lại "bù đắp" cho các trọng số đã bị xóa.
-        \end{enumerate}
+	\item \textbf{Chunking theo Ngữ nghĩa/Cấu trúc (Semantic/Structural Chunking):} Thay vì chia theo số ký tự, chúng ta chia dựa trên các ranh giới tự nhiên của văn bản như dấu ngắt câu, đoạn văn, tiêu đề (Markdown headers), hoặc các thẻ HTML. Điều này giúp các chunk giữ được sự mạch lạc và trọn vẹn về ý nghĩa.
+	\item \textbf{Chunking có chồng lấn (Overlap Chunking):} Để tránh mất ngữ cảnh ở điểm nối giữa hai chunk, một phần nhỏ của chunk trước được lặp lại ở đầu chunk sau. Ví dụ: chunk 1 chứa các câu [1, 2, 3, 4], chunk 2 sẽ chứa các câu [4, 5, 6, 7].
 \end{itemize}
 
-\paragraph{Cắt tỉa có Cấu trúc vs. Không có Cấu trúc (Structured vs. Unstructured Pruning)}
+\subsubsection{Kỹ thuật Small-to-Big và Sentence-Windowing}
+Đây là một kỹ thuật mạnh mẽ để cân bằng giữa độ chính xác khi tìm kiếm và đầy đủ ngữ cảnh cho LLM.
 \begin{itemize}
-    \item \textbf{Không có cấu trúc:} Xóa các trọng số riêng lẻ ở bất kỳ đâu trong ma trận. Điều này tạo ra các ma trận thưa thớt, có thể giảm đáng kể số lượng tham số nhưng không phải lúc nào cũng tăng tốc độ trên phần cứng thông thường (như GPU) vốn được tối ưu cho các phép toán ma trận dày đặc.
-    \item \textbf{Có cấu trúc:} Xóa toàn bộ các cấu trúc lớn hơn, ví dụ như xóa toàn bộ một nơ-ron (một cột trong ma trận trọng số) hoặc toàn bộ một bộ lọc trong CNN. Phương pháp này có thể không giảm được nhiều tham số bằng, nhưng kết quả là một mô hình nhỏ hơn, dày đặc hơn, có thể chạy nhanh hơn trên phần cứng hiện có mà không cần các thư viện đặc biệt.
+	\item \textbf{Vấn đề:} Các chunk lớn (nguyên đoạn văn) chứa nhiều ngữ cảnh nhưng khó khớp chính xác với một câu hỏi cụ thể. Các chunk nhỏ (một câu) thì dễ khớp chính xác nhưng lại thiếu ngữ cảnh xung quanh.
+	\item \textbf{Giải pháp "Small-to-Big":}
+	\begin{enumerate}
+		\item \textbf{Lập chỉ mục (Index):} Chia tài liệu thành các đơn vị nhỏ (ví dụ: từng câu) và nhúng chúng.
+		\item \textbf{Tìm kiếm (Retrieve):} Tìm kiếm trên các câu đơn lẻ để có độ chính xác cao nhất.
+		\item \textbf{Mở rộng (Expand):} Sau khi tìm được câu phù hợp nhất, thay vì chỉ trả về câu đó, hệ thống sẽ lấy ra một "cửa sổ" văn bản lớn hơn xung quanh câu đó (ví dụ: 3 câu trước và 3 câu sau, hoặc toàn bộ đoạn văn chứa câu đó) để cung cấp cho LLM.
+	\end{enumerate}
+	Kỹ thuật này giúp đạt được \textit{sự chính xác trong tìm kiếm} và \textit{sự đầy đủ về ngữ cảnh} khi sinh câu trả lời.
 \end{itemize}
 
-\begin{center}
-    \includegraphics[width=1.0\textwidth]{pruning_types.png}
-    \captionof{figure}{So sánh Cắt tỉa Không có Cấu trúc (xóa các trọng số riêng lẻ, tạo ma trận thưa thớt) và Cắt tỉa Có Cấu trúc (xóa toàn bộ cột/nơ-ron, tạo ma trận nhỏ hơn).}
-    \label{fig:pruning_types}
-\end{center}
+\subsubsection{Tầm quan trọng của Metadata}
+Metadata là "thông tin về thông tin". Khi lập chỉ mục, việc lưu trữ metadata cùng với mỗi chunk là cực kỳ quan trọng cho các ứng dụng thực tế.
+\begin{itemize}
+	\item \textbf{Ví dụ về Metadata:} Tên file nguồn, số trang, ngày xuất bản, tác giả, tiêu đề chương/mục, URL.
+	\item \textbf{Tại sao nó quan trọng?}
+	\begin{itemize}
+		\item \textbf{Trích dẫn nguồn:} Giúp LLM có thể trích dẫn nguồn gốc của thông tin một cách chính xác trong câu trả lời (ví dụ: "Theo tài liệu X, trang 5...").
+		\item \textbf{Lọc trước khi tìm kiếm (Pre-filtering):} Cho phép thu hẹp không gian tìm kiếm. Ví dụ: "Chỉ tìm kiếm trong các tài liệu được xuất bản sau năm 2023".
+		\item \textbf{Gỡ lỗi (Debugging):} Dễ dàng truy vết xem chunk gây ra câu trả lời sai đến từ tài liệu nào.
+	\end{itemize}
+\end{itemize}
 
-Các kỹ thuật tối ưu hóa này thường được sử dụng kết hợp với nhau (ví dụ, một mô hình được chưng cất, sau đó được cắt tỉa và cuối cùng được lượng tử hóa) để đạt được sự cân bằng tốt nhất giữa kích thước, tốc độ và độ chính xác.
+\subsection{Tối ưu hóa Giai đoạn Truy xuất (Advanced Retrieval \& Ranking)}
+\label{ssec:advanced_retrieval_ranking}
+\begin{tcolorbox}[title=Mục tiêu, colback=blue!5!white, colframe=blue!75!black]
+	Retriever là trái tim của RAG. Giai đoạn này quyết định "chất lượng nguyên liệu đầu vào" cho LLM. Một hệ thống RAG chỉ có thể tốt bằng thành phần retriever của nó. Các kỹ thuật dưới đây giúp tìm được những mảnh ghép thông tin (chunk) chính xác, liên quan và đa dạng nhất.
+\end{tcolorbox}
+
+\subsubsection{Tầng 1: Tìm kiếm Lai để Tạo Ứng viên (Hybrid Search for Candidate Generation)}
+Đây là bước "lọc rộng", ưu tiên \textit{recall} để đảm bảo không bỏ sót các tài liệu tiềm năng.
+\begin{itemize}
+	\item \textbf{Cơ chế:} Hệ thống chạy song song cả \textbf{Sparse Retriever} (BM25) để khớp từ khóa và \textbf{Dense Retriever} (Vector Search) để hiểu ngữ nghĩa. Sau đó, điểm số từ hai hệ thống được kết hợp lại (ví dụ: dùng thuật toán Reciprocal Rank Fusion - RRF) để tạo ra một danh sách ứng viên (candidate list) chất lượng cao (thường là top 100-200).
+	\item \textbf{Lợi ích:} Tận dụng khả năng khớp từ khóa chính xác của Sparse và khả năng hiểu ngữ nghĩa sâu sắc của Dense. Đây được coi là phương pháp mặc định để có được recall tốt nhất.
+\end{itemize}
+
+\subsubsection{Tầng 2: Xếp hạng lại (Re-ranking) với Cross-Encoders}
+Đây là bước "tinh chỉnh sâu", ưu tiên \textit{precision} để chọn ra những tài liệu tốt nhất từ danh sách ứng viên.
+\begin{itemize}
+	\item \textbf{Vấn đề:} Hybrid Search rất nhanh và hiệu quả, nhưng trong top 100-200 ứng viên, đâu mới là những chunk thực sự tốt nhất?
+	\item \textbf{Giải pháp:} Sử dụng một mô hình thứ hai, mạnh hơn nhưng chậm hơn, gọi là \textbf{Cross-Encoder}.
+	\begin{itemize}
+		\item \textbf{Cơ chế:} Thay vì tạo vector riêng cho câu hỏi và tài liệu, Cross-Encoder nhận vào cặp \texttt{(câu hỏi, chunk)} và xử lý chúng cùng lúc để đưa ra một điểm số tương đồng duy nhất. Việc xem xét cả hai cùng lúc cho phép nó hiểu được sự tương tác tinh vi hơn.
+		\item \textbf{Quy trình:} Hybrid Search tìm ra top-K ứng viên (K lớn). Sau đó, Cross-Encoder sẽ đánh giá và xếp hạng lại top-K này để chọn ra top-N cuối cùng (N nhỏ) gửi cho LLM.
+	\end{itemize}
+\end{itemize}
+
+\subsection{Tối ưu hóa Giai đoạn Sinh (Smarter Generation)}
+\label{ssec:smarter_aug_gen}
+Sau khi đã có những chunk chất lượng nhất, chúng ta cần đảm bảo LLM sử dụng chúng một cách hiệu quả và trung thực.
+
+\subsubsection{Nén Ngữ cảnh (Context Compression)}
+Đôi khi, các chunk được truy xuất vẫn chứa nhiều thông tin thừa so với câu hỏi. Việc "nhồi nhét" tất cả vào prompt có thể làm LLM bị nhiễu.
+\begin{itemize}
+	\item \textbf{Cơ chế:} Trước khi đưa các chunk vào prompt cuối cùng, một mô hình nhỏ hơn (hoặc chính LLM với một prompt đặc biệt) sẽ chạy qua và chỉ giữ lại những câu, những ý có liên quan trực tiếp đến câu hỏi của người dùng.
+	\item \textbf{Lợi ích:} Giảm độ dài của prompt (tiết kiệm chi phí), tăng sự tập trung cho LLM vào các bằng chứng quan trọng nhất.
+\end{itemize}
+
+\subsubsection{Kiểm soát việc Sinh: Buộc Trích dẫn và Chống Bịa đặt (Hallucination Guardrails)}
+Đây là bước cuối cùng và quan trọng nhất để đảm bảo tính tin cậy của hệ thống.
+\begin{itemize}
+	\item \textbf{Instruction Tuning:} Huấn luyện hoặc chỉ dẫn LLM một cách rõ ràng thông qua prompt: \textit{"Hãy trả lời câu hỏi chỉ dựa trên ngữ cảnh được cung cấp. Với mỗi thông tin đưa ra, hãy trích dẫn nguồn [doc\_id, chunk\_id]. Nếu thông tin không có trong ngữ cảnh, hãy trả lời 'Tôi không tìm thấy thông tin trong tài liệu'."}
+	\item \textbf{Giảm Temperature:} Khi sinh câu trả lời, đặt tham số `temperature` của LLM ở mức thấp (ví dụ: 0.1) để giảm tính ngẫu nhiên và sáng tạo, buộc nó bám sát vào văn bản nguồn.
+\end{itemize}

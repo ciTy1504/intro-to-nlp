@@ -99,7 +99,7 @@ Một trong những lý do khiến Transformer trở nên đột phá nằm ở 
 	\item Trong RNN, việc xử lý chuỗi bắt buộc phải thực hiện \textbf{theo thứ tự thời gian}, khiến việc tính toán trên GPU bị giới hạn.
 	\item Ngược lại, trong Self-Attention, mọi từ trong chuỗi có thể tính toán biểu diễn của mình \textbf{đồng thời}, vì các phép nhân ma trận giữa $Q$, $K$, $V$ có thể thực hiện song song trên toàn bộ chuỗi.
 	\item Độ phức tạp tính toán là $O(n^2 d)$ — tuy cao hơn RNN về mặt lý thuyết khi chuỗi rất dài, nhưng nhờ khả năng song
-
+\end{itemize}
 \subsubsection{Multi-Head Attention}
 \paragraph{Vấn đề của Single-Head Attention}
 Chỉ có một bộ Self-Attention duy nhất sẽ bị hạn chế. Nó giống như việc bạn chỉ có thể tập trung vào một khía cạnh của mối quan hệ giữa các từ. Ví dụ, khi xử lý câu "Con mèo ngồi trên chiếu", một "đầu" chú ý (attention head) có thể học cách liên kết "nó" với "mèo" (quan hệ đồng tham chiếu), nhưng có thể sẽ bỏ lỡ các mối quan hệ khác (ví dụ, quan hệ cú pháp).

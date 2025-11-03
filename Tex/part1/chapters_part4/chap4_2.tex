@@ -50,7 +50,6 @@ Attention mask là ma trận boolean để bỏ qua [PAD]: $A_{i,j} = -\infty$ n
 	\captionof{figure}{Hai mục tiêu huấn luyện chính của BERT: Masked Language Modeling (MLM) và Next Sentence Prediction (NSP).}
 	\label{fig:bert_mlm_nsp}
 \end{center}
-
 \subsubsection{Quá Trình Huấn Luyện Chi Tiết và Công Thức}
 Huấn luyện Encoder-Only thường chia thành hai giai đoạn: pre-training trên dữ liệu lớn không giám sát, sau đó fine-tuning cho tác vụ downstream.
 
@@ -103,6 +102,55 @@ Sau pre-train, fine-tune: Thêm layer cho task, huấn với lr nhỏ (2e-5), fe
 	\label{fig:transformer_encoder_detailed}
 \end{center}
 
+
+\subsubsection{Từ Biểu Diễn Token đến Biểu Diễn Câu: Cách BERT và SBERT Mã hóa Câu}
+Mặc dù đầu ra của BERT là một chuỗi các vector token-level $H = [h_1^{(L)}, h_2^{(L)}, \dots, h_n^{(L)}]$, nhưng trong thực tế, nhiều ứng dụng cần một biểu diễn duy nhất cho toàn câu (\textit{sentence embedding}). Có ba chiến lược phổ biến:
+
+\paragraph{1. Sử dụng [CLS] Embedding}
+BERT gốc được thiết kế để dùng vector $h_{[CLS]}^{(L)}$ làm biểu diễn tổng hợp của toàn chuỗi, vì token [CLS] có thể chú ý đến toàn bộ các token khác thông qua cơ chế self-attention. 
+Trong các tác vụ phân loại, ta thường thêm một lớp tuyến tính hoặc MLP:
+\[
+p = \text{softmax}(W h_{[CLS]}^{(L)} + b)
+\]
+Tuy nhiên, các nghiên cứu sau này cho thấy vector [CLS] của BERT gốc chưa nắm bắt tốt ngữ nghĩa toàn cục khi sử dụng trực tiếp cho các tác vụ đo tương đồng câu (semantic similarity).
+
+\paragraph{2. Pooling Trên Các Token Embedding}
+Một cách đơn giản và hiệu quả hơn là gộp (pool) tất cả các token embeddings lại để tạo thành vector câu:
+\[
+s = \text{Pooling}(H)
+\]
+Trong đó \textbf{Pooling} có thể là:
+\begin{itemize}
+	\item \textbf{Mean Pooling:} Trung bình các token embeddings (bỏ qua [PAD]).
+	\[
+	s = \frac{1}{n} \sum_{i=1}^{n} h_i^{(L)}
+	\]
+	\item \textbf{Max Pooling:} Lấy giá trị cực đại theo từng chiều.
+	\item \textbf{[CLS] Pooling:} Dùng riêng $h_{[CLS]}^{(L)}$ (phổ biến trong phân loại).
+\end{itemize}
+Cách này giúp tạo ra vector câu có ý nghĩa tổng quát hơn, đặc biệt khi kết hợp với fine-tuning theo hướng ngữ nghĩa.
+
+\paragraph{3. Sentence-BERT (SBERT): Tối ưu hóa Biểu Diễn Câu}
+\textbf{SBERT} \cite{reimers2019sentencebert} mở rộng BERT bằng cách huấn luyện với kiến trúc \textit{Siamese network} gồm hai (hoặc ba) BERT chia sẻ trọng số. Mỗi câu được ánh xạ thành một vector $s = \text{Pooling}(H)$, sau đó sử dụng \textit{cosine similarity} để đo độ tương đồng giữa hai câu:
+\[
+\text{sim}(s_1, s_2) = \frac{s_1 \cdot s_2}{\|s_1\| \|s_2\|}
+\]
+SBERT được huấn luyện trên tập dữ liệu paraphrase (ví dụ: SNLI, STS) với loss dạng contrastive hoặc classification, giúp biểu diễn $s$ thực sự phản ánh mức độ tương đồng ngữ nghĩa giữa các câu.
+
+\paragraph{4. SimCSE và E5: Cải thiện Huấn Luyện Biểu Diễn Câu}
+Các mô hình sau như \textbf{SimCSE} \cite{gao2021simcse} và \textbf{E5} \cite{wang2022textembeddings} tinh chỉnh BERT theo hướng contrastive learning. 
+Với SimCSE không giám sát, hai bản dropout khác nhau của cùng câu được coi là positive pair:
+\[
+\mathcal{L}_i = -\log \frac{e^{\text{sim}(s_i, s_i^+)/\tau}}{\sum_{j=1}^{2N} e^{\text{sim}(s_i, s_j)/\tau}}
+\]
+E5 mở rộng ý tưởng này với các negative khó (hard negatives) và dữ liệu đa miền, đạt hiệu năng SOTA trong truy hồi văn bản và semantic search.
+
+\paragraph{Tóm lại:}
+\begin{itemize}
+	\item BERT gốc sinh ra embedding theo \textit{token}, không có “sentence vector” cố định.
+	\item SBERT, SimCSE, E5 giúp tạo ra \textit{sentence-level embedding} có ý nghĩa ngữ nghĩa thực thụ.
+	\item Trong thực hành, \textbf{mean pooling} trên đầu ra của BERT-base (hoặc bất kỳ encoder nào) là cách phổ biến nhất để tạo vector câu nếu không có mô hình SBERT.
+\end{itemize}
 \subsubsection{Mở Rộng Sự Phát Triển và Các Biến Thể Chi Tiết}
 Để làm phong phú thêm, chúng ta đi sâu vào từng biến thể với công thức và lý do cải tiến.
 
@@ -180,6 +228,21 @@ nhưng được điều chỉnh để phục vụ sinh ngôn ngữ tự hồi qu
 	Giữ nguyên cấu trúc chuẩn của Transformer (Residual connection + LayerNorm + FFN), giúp gradient ổn định và khả năng biểu diễn cao.
 \end{itemize}
 
+\paragraph{Cấu trúc Toán học của Một Khối Decoder}
+Mỗi khối Decoder-Only có thể được mô tả theo công thức sau:
+\[
+\begin{aligned}
+	&Z^{(l)} = \text{LayerNorm}(H^{(l-1)} + \text{MaskedMultiHead}(H^{(l-1)})) \\
+	&H^{(l)} = \text{LayerNorm}(Z^{(l)} + \text{FFN}(Z^{(l)}))
+\end{aligned}
+\]
+với $H^{(0)} = E = XW_E + P$, là embedding đầu vào cộng positional encoding.  
+Không có khối cross-attention, vì không có Encoder.  
+Sau $L$ lớp, ta thu được $H^{(L)} = [h_1, \dots, h_T]$, và xác suất sinh token tiếp theo:
+\[
+P(x_{t+1}|x_{\leq t}) = \text{softmax}(W_{\text{out}} h_t)
+\]
+
 \paragraph{Mục tiêu Huấn luyện: Causal Language Modeling (CLM)}
 Đây là mục tiêu huấn luyện duy nhất và rất đơn giản: \textbf{Dự đoán từ tiếp theo (Next Token Prediction)}.
 \begin{itemize}
@@ -198,11 +261,26 @@ nhưng được điều chỉnh để phục vụ sinh ngôn ngữ tự hồi qu
 	\end{itemize}
 	\item \textbf{RLHF (Reinforcement Learning from Human Feedback):} Một phần quan trọng trong training hiện đại. Sử dụng PPO (Proximal Policy Optimization) để tinh chỉnh mô hình dựa trên feedback con người, giảm hallucination và tăng usefulness.
 \end{itemize}
+
 \begin{center}
 	\includegraphics[width=0.8\textwidth]{gpt_clm.png}
 	\captionof{figure}{Mục tiêu huấn luyện của GPT: Causal Language Modeling. Tại mỗi bước, mô hình cố gắng dự đoán từ tiếp theo dựa trên các từ trước đó.}
 	\label{fig:gpt_clm}
 \end{center}
+\subsubsection{Các Cải tiến Kiến trúc Hiện đại}
+Các mô hình Decoder-Only hiện đại không chỉ đơn thuần lặp lại cấu trúc Transformer gốc mà đã có nhiều điều chỉnh nhằm tăng hiệu quả huấn luyện và suy luận:
+\begin{itemize}
+	\item \textbf{Rotary Positional Embedding (RoPE)} \cite{su2021rope}:  
+	Thay thế positional encoding kiểu sin/cosine bằng phép quay tuyến tính trong không gian vector, giúp mô hình mở rộng context window dễ dàng hơn.
+	\item \textbf{FlashAttention} \cite{dao2022flashattention}:  
+	Thuật toán tính attention hiệu quả hơn về bộ nhớ và tốc độ, giảm độ phức tạp truy cập bộ nhớ trong GPU.
+	\item \textbf{Grouped-Query Attention (GQA)} và \textbf{Multi-Query Attention (MQA)}:  
+	Giúp giảm kích thước KV cache trong suy luận mà không ảnh hưởng nhiều đến chất lượng, được dùng trong GPT-4, LLaMA 2/3.
+	\item \textbf{Mixture of Experts (MoE)} \cite{shazeer2017outrageously,jiang2023mistral}:  
+	Chỉ kích hoạt một phần nhỏ “experts” tại mỗi token → tăng số tham số hiệu dụng mà không tăng chi phí inference.
+	\item \textbf{ALiBi, YaRN, và NTK Scaling:}  
+	Các phương pháp mở rộng context window lên hàng trăm nghìn token mà không cần tái huấn luyện mô hình từ đầu.
+\end{itemize}
 
 \paragraph{Các Token Đặc Biệt trong Decoder-Only Models}
 Trong các mô hình Decoder-Only, tokenization đóng vai trò quan trọng, và các token đặc biệt giúp mô hình xử lý chuỗi hiệu quả. Chúng thường được thêm vào từ vựng (vocabulary) và có ý nghĩa đặc biệt trong training/suy luận.
@@ -216,6 +294,18 @@ Trong các mô hình Decoder-Only, tokenization đóng vai trò quan trọng, v�
 	\item \textbf{Vai Trò trong Training:} Các token này được huấn luyện như token thông thường. Ví dụ, loss chỉ tính trên token thực, bỏ qua PAD. Causal mask đảm bảo không leak thông tin từ PAD hoặc future tokens.
 	\item \textbf{Tokenizer Specifics:} Sử dụng Byte-Pair Encoding (BPE) hoặc SentencePiece. Từ vựng thường 50k-100k token, bao gồm subwords để xử lý out-of-vocab. Ví dụ: "transformer" có thể thành "trans" + "former".
 \end{itemize}
+
+\paragraph{Công thức tổng quát của Khối Decoder trong Encoder–Decoder}
+Một khối Decoder có thể được mô tả theo trình tự toán học:
+\[
+\begin{aligned}
+	Z^{(l)} &= \text{LayerNorm}(H^{(l-1)} + \text{MaskedMultiHead}(H^{(l-1)})) \\
+	Y^{(l)} &= \text{LayerNorm}(Z^{(l)} + \text{CrossAttn}(Z^{(l)}, H_E, H_E)) \\
+	H^{(l)} &= \text{LayerNorm}(Y^{(l)} + \text{FFN}(Y^{(l)}))
+\end{aligned}
+\]
+Trong đó $H_E$ là đầu ra từ Encoder, và $H^{(0)} = E_D = X_D W_E + P_D$ là embedding của chuỗi đầu vào Decoder.  
+Mỗi lớp Decoder vừa học thông tin từ quá khứ (qua masked attention) vừa “hỏi” Encoder qua cross-attention.
 
 \subsubsection{Sự phát triển và các mô hình tiêu biểu}
 Họ mô hình này đã chứng kiến sự phát triển bùng nổ, từ các mô hình tiên phong đến một hệ sinh thái đa dạng các LLMs mã nguồn mở và đóng.
@@ -249,6 +339,12 @@ Bên cạnh các LLM đa dụng, nhiều mô hình được huấn luyện đặ
 	\item \textbf{Dialogue-focused Models:} Các mô hình được tinh chỉnh đặc biệt cho các tác vụ hội thoại, là tiền thân của các chatbot hiện đại. Ví dụ: DialoGPT (Microsoft) \cite{zhang2019dialogpt} (dựa trên GPT-2, huấn luyện trên Reddit dialogues), ChatGLM (Trung Quốc, multilingual chat).
 	\item \textbf{Other Specialized:} Math-focused như Minerva (Google), hoặc domain-specific như BioGPT cho biomedical text.
 \end{itemize}
+
+\paragraph{Đặc điểm Biểu diễn của Decoder-Only}
+Do chỉ sử dụng Masked Self-Attention, các vector ẩn $h_t$ của mô hình Decoder-Only mang thông tin \textbf{một chiều} (từ trái sang phải).  
+Điều này khiến chúng rất mạnh cho \textbf{sinh ngôn ngữ} nhưng kém hiệu quả hơn cho \textbf{hiểu ngôn ngữ (NLU)} so với Encoder-Only.  
+Các nghiên cứu gần đây đề xuất trích xuất \textit{last hidden states} hoặc \textit{average pooling} từ các token để tạo sentence embedding, nhưng kết quả thường kém hơn các mô hình bidirectional như BERT hoặc DeBERTa.
+
 \begin{tcolorbox}[
 	title=Tổng kết: Điểm mạnh và Ứng dụng của Decoder-Only,
 	colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
@@ -279,71 +375,154 @@ Bên cạnh các LLM đa dụng, nhiều mô hình được huấn luyện đặ
 
 \subsection{Họ Mô hình Encoder-Decoder: Sự kết hợp của hai thế giới}
 \label{ssec:encoder_decoder_models}
-Họ mô hình này quay trở lại với kiến trúc Transformer gốc ("Attention is All You Need"), sử dụng cả hai thành phần Encoder và Decoder. Mặc dù không còn là tâm điểm chú ý như các LLM Decoder-Only, chúng vẫn là kiến trúc mạnh mẽ và phù hợp nhất cho nhiều tác vụ chuỗi-sang-chuỗi quan trọng.
+
+Họ mô hình này quay trở lại với kiến trúc Transformer gốc — nơi cả Encoder và Decoder cùng tồn tại và phối hợp chặt chẽ. 
+Encoder chịu trách nhiệm \textbf{hiểu toàn bộ ngữ cảnh nguồn (bidirectional representation)}, 
+trong khi Decoder đảm nhiệm \textbf{sinh ngôn ngữ có điều kiện (conditional generation)}. 
+Đây là cấu trúc nền tảng của các hệ thống \textbf{Sequence-to-Sequence (Seq2Seq)} hiện đại, 
+và vẫn giữ vị thế vững chắc trong các tác vụ dịch máy, tóm tắt văn bản, và chuyển đổi chuỗi.
 
 \begin{tcolorbox}[
-    title=Triết lý của Encoder-Decoder,
-    colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
-]
-"Tôi sẽ dùng một bộ mã hóa hai chiều mạnh mẽ để \textbf{hiểu trọn vẹn} văn bản nguồn, và sau đó dùng một bộ giải mã tự hồi quy để \textbf{sinh ra} văn bản đích dựa trên sự hiểu biết đó."
+	title=Triết lý của Encoder-Decoder,
+	colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
+	]
+	“Tôi sẽ dùng một bộ mã hóa hai chiều mạnh mẽ để \textbf{hiểu trọn vẹn} văn bản nguồn, 
+	và sau đó dùng một bộ giải mã tự hồi quy để \textbf{sinh ra} văn bản đích dựa trên sự hiểu biết đó.”
 \end{tcolorbox}
 
-\subsubsection{Kiến trúc và Lợi thế Cốt lõi}
+\subsubsection{Kiến trúc và Cơ chế Tương tác}
+Kiến trúc Encoder-Decoder có thể được xem là sự hòa quyện giữa BERT và GPT: một bên hiểu, một bên tạo.
+
 \begin{itemize}
-    \item \textbf{Kiến trúc:} Một Encoder hai chiều (giống BERT) để đọc và hiểu toàn bộ chuỗi đầu vào. Một Decoder một chiều (giống GPT) để sinh ra chuỗi đầu ra. Hai thành phần này được kết nối với nhau thông qua cơ chế \textbf{Cross-Attention}, cho phép Decoder "tham khảo" bất kỳ phần nào của chuỗi đầu vào đã được mã hóa ở mỗi bước sinh từ.
-    \item \textbf{Lợi thế Cốt lõi:} Sự phân tách vai trò này là một lợi thế không thể thay thế trong các tác vụ đòi hỏi sự hiểu biết sâu sắc về toàn bộ ngữ cảnh nguồn trước khi tạo ra đầu ra. Encoder có thể xây dựng một biểu diễn hai chiều hoàn chỉnh, nắm bắt các mối quan hệ phức tạp trong văn bản nguồn. Decoder sau đó có thể tận dụng biểu diễn phong phú này để tạo ra một đầu ra chính xác và phù hợp hơn.
+	\item \textbf{Encoder:} Bao gồm nhiều lớp self-attention hai chiều, giúp mỗi token nắm bắt ngữ cảnh trước–sau trong toàn chuỗi. 
+	Đầu ra cuối cùng là các biểu diễn ngữ nghĩa $H_E = [h_1^E, \dots, h_n^E]$.
+	
+	\item \textbf{Decoder:} Hoạt động tự hồi quy (autoregressive). Mỗi bước sinh token $x_t$ dựa trên toàn bộ các token trước đó $x_{<t}$ và thông tin từ Encoder.
+	
+	\item \textbf{Cơ chế Cross-Attention:}  
+	Là cầu nối giữa hai thế giới. Ở mỗi lớp Decoder, đầu ra tạm thời $h_t^D$ được dùng làm truy vấn ($Q$), 
+	còn biểu diễn từ Encoder đóng vai trò khóa–giá trị ($K, V$):
+	\[
+	\text{CrossAttn}(Q, K, V) = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right)V
+	\]
+	Cơ chế này cho phép mô hình “nhìn lại” toàn bộ câu nguồn để sinh ra từng phần của câu đích một cách có điều kiện.
+	
+	\item \textbf{Ba loại Attention tổng thể:}
+	\begin{itemize}
+		\item \textit{Self-Attention (Encoder):} Hai chiều, không bị mask.  
+		\item \textit{Masked Self-Attention (Decoder):} Một chiều, ngăn nhìn thấy tương lai.  
+		\item \textit{Cross-Attention:} Nối hai miền Encoder–Decoder, là điểm khác biệt cốt lõi.
+	\end{itemize}
 \end{itemize}
 
-\subsubsection{Sự phát triển và các mô hình tiêu biểu}
-Họ Encoder-Decoder có một lịch sử phát triển phong phú, từ mô hình nền tảng đến các biến thể được tối ưu hóa cao cho các tác vụ chuyên biệt.
+\begin{center}
+	\includegraphics[width=0.8\textwidth]{transformer_encoder_decoder_full.png}
+	\captionof{figure}{Kiến trúc chi tiết của Transformer Encoder–Decoder và ba loại attention.}
+\end{center}
 
-\paragraph{1. Các mô hình Nền tảng và Đa ngôn ngữ}
+\subsubsection{Hai biểu tượng tiêu biểu: BART và T5}
+
+\paragraph{BART (Facebook, 2019) \cite{lewis2019bart}}
+BART có thể được xem là một “sự lai” giữa BERT và GPT:
+Encoder giống BERT (bidirectional), Decoder giống GPT (autoregressive).
+Mục tiêu huấn luyện là \textbf{denoising autoencoding} — phục hồi lại văn bản gốc từ phiên bản bị phá nhiễu.
+
 \begin{itemize}
-    \item \textbf{Transformer (Google, 2017) \cite{vaswani2017attention}:} Bài báo "Attention Is All You Need" chính là khởi nguồn của tất cả. Nó giới thiệu kiến trúc Encoder-Decoder với Self-Attention và đã thay thế hoàn toàn RNN trong các tác vụ dịch máy SOTA thời bấy giờ.
-    \item \textbf{T5 (Google, 2019) \cite{raffel2020exploring}:} Phổ biến hóa khung làm việc "Text-to-Text", đối xử mọi bài toán NLP như một tác vụ Seq2Seq, giúp đơn giản hóa và thống nhất quá trình nghiên cứu và ứng dụng.
-    \item \textbf{BART (Facebook, 2019) \cite{lewis2019bart}:} Kết hợp các ý tưởng từ BERT (encoder hai chiều) và GPT (decoder tự hồi quy) với mục tiêu huấn luyện khử nhiễu linh hoạt, đặc biệt mạnh mẽ cho các tác vụ sinh văn bản có điều kiện.
-    \item \textbf{Các phiên bản Đa ngôn ngữ:} Thành công của các mô hình trên đã dẫn đến các phiên bản đa ngôn ngữ được huấn luyện trên hàng trăm thứ tiếng, bao gồm \textbf{mT5}, \textbf{mBART}, và \textbf{MarianMT} (một mô hình từ Microsoft/Facebook được tối ưu hóa cao cho dịch máy). Gần đây nhất, \textbf{NLLB (No Language Left Behind) \cite{costa2022no}} của Meta đã đẩy giới hạn này đi xa hơn, tập trung vào các ngôn ngữ ít tài nguyên.
+	\item \textbf{Nhiễu đầu vào:} Văn bản được biến đổi ngẫu nhiên: mask token, hoán đổi vị trí, xóa đoạn, đảo trật tự câu, v.v.
+	\item \textbf{Mục tiêu:} Dự đoán lại chuỗi gốc. Điều này giúp BART học cách tái cấu trúc ngữ cảnh ở mức cao.
+	\item \textbf{Ứng dụng:} Đặc biệt mạnh ở các tác vụ như \textit{tóm tắt văn bản}, \textit{paraphrasing}, \textit{text editing}, 
+	và \textit{data-to-text generation}.
 \end{itemize}
 
-\paragraph{2. Các biến thể với Mục tiêu Huấn luyện và Kiến trúc Sáng tạo}
-Nhiều mô hình đã cải tiến kiến trúc hoặc mục tiêu huấn luyện để đạt hiệu năng vượt trội trên các tác vụ cụ thể, đặc biệt là tóm tắt văn bản.
+Kiến trúc BART giúp nó linh hoạt giữa hai thế giới:
+Encoder hiểu sâu toàn bộ đầu vào, còn Decoder sinh ra chuỗi mới — một cách “tái tạo có điều kiện”.
+
+\paragraph{T5 (Text-to-Text Transfer Transformer, Google, 2019) \cite{raffel2020exploring}}
+T5 đưa ra một tư tưởng thống nhất: 
+mọi bài toán NLP đều có thể được mô tả dưới dạng \textbf{text-to-text}.  
+Tức là, đầu vào và đầu ra đều là chuỗi văn bản.
+
 \begin{itemize}
-    \item \textbf{PEGASUS (Google, 2020) \cite{zhang2020pegasus}:} Một mô hình cực kỳ mạnh mẽ cho tóm tắt văn bản. Thay vì che các token (MLM) hay các đoạn (T5), PEGASUS có mục tiêu huấn luyện trước là \textbf{"Gap-Sentences Generation"}. Nó che đi toàn bộ các câu quan trọng trong một tài liệu và yêu cầu mô hình sinh lại các câu đó từ phần còn lại. Điều này mô phỏng rất gần với tác vụ tóm tắt.
-    \item \textbf{ProphetNet (Microsoft, 2020) \cite{qi2020prophetnet}:} Cải tiến kiến trúc Decoder để có thể dự đoán \textbf{nhiều bước trong tương lai (future n-gram prediction)} thay vì chỉ một từ tiếp theo. Việc "nhìn xa" này giúp mô hình tránh bị lặp lại và tạo ra các bản tóm tắt chất lượng cao hơn.
-    \item \textbf{BERT2BERT \cite{rothe2020leveraging}:} Một kiến trúc đơn giản nhưng hiệu quả, khởi tạo cả Encoder và Decoder bằng các trọng số của một mô hình BERT đã được huấn luyện trước. Đây là một cách "khởi động nóng" (warm-start) hiệu quả cho các tác vụ Seq2Seq như tóm tắt.
-    \item \textbf{ByT5 (Google) \cite{xue2022byt5}:} Một biến thể của T5 xử lý trực tiếp \textbf{chuỗi các byte UTF-8} thay vì các token. Cách tiếp cận này loại bỏ sự phức tạp và các lỗi tiềm ẩn của quá trình tokenization, giúp mô hình trở nên mạnh mẽ hơn với nhiễu và đa ngôn ngữ.
+	\item \textbf{Chuẩn hóa tác vụ:}  
+	Mỗi bài toán được “đặt tên” trong prompt:  
+	\texttt{translate English to German: Hello → Hallo},  
+	\texttt{summarize: [đoạn văn] → [tóm tắt]},  
+	\texttt{classify sentiment: ... → positive}.
+	\item \textbf{Mục tiêu huấn luyện:} \textbf{Span Corruption (denoising)} — 
+	thay vì che từng token, T5 che các đoạn liên tục (spans), rồi yêu cầu mô hình sinh lại chúng.
+	\item \textbf{Biến thể:}  
+	- \textbf{mT5:} huấn luyện đa ngôn ngữ trên 101 thứ tiếng.  
+	- \textbf{ByT5:} làm việc trực tiếp trên byte-level UTF-8, không cần tokenization.  
+	- \textbf{Flan-T5:} instruction-tuned, có khả năng zero-shot cực mạnh.
 \end{itemize}
 
-\paragraph{3. Hướng tới sự Hợp nhất và Linh hoạt}
-Các nghiên cứu gần đây tìm cách tạo ra các mô hình linh hoạt hơn, có thể đảm nhận nhiều vai trò khác nhau.
+\begin{center}
+	\includegraphics[width=0.75\textwidth]{t5_text_to_text_framework.png}
+	\captionof{figure}{Khung “Text-to-Text” của T5: mọi tác vụ đều được biểu diễn dưới dạng chuỗi vào–ra.}
+\end{center}
+
+\subsubsection{Các Cải tiến Kiến trúc Hiện Đại}
+Các mô hình Encoder–Decoder hiện đại đã kế thừa nhưng cũng mở rộng Transformer gốc theo nhiều hướng:
 \begin{itemize}
-    \item \textbf{UL2 (Google, 2022) \cite{tay2022unifying}:} Giới thiệu một khung làm việc huấn luyện trước \textbf{hợp nhất (unified)}. Bằng cách thay đổi các mục tiêu khử nhiễu, UL2 có thể được huấn luyện để hoạt động như một Encoder-Only, Decoder-Only, hoặc Encoder-Decoder, mở ra hướng đi cho các mô hình đa năng.
-    \item \textbf{Flan-T5 (Google):} Là một phiên bản của T5 đã được \textbf{tinh chỉnh theo chỉ dẫn (instruction-tuned) \cite{chung2022scaling}} trên hàng trăm tác vụ NLP được định dạng lại. Quá trình này giúp Flan-T5 có khả năng tổng quát hóa zero-shot đáng kinh ngạc cho các tác vụ mới, một khả năng vốn thường thấy ở các mô hình Decoder-Only. \textbf{Tk-Instruct} cũng là một mô hình tương tự được huấn luyện trên một bộ chỉ dẫn còn lớn hơn.
+	\item \textbf{Pre-norm Architecture:} Chuẩn hóa đầu vào mỗi sub-layer giúp gradient ổn định hơn trong huấn luyện sâu.
+	\item \textbf{Relative Positional Encoding (T5, DeBERTa):}  
+	Sử dụng khoảng cách tương đối giữa các token thay vì vị trí tuyệt đối.
+	\item \textbf{Shared Embedding:}  
+	Dùng chung bảng embedding giữa Encoder và Decoder, tiết kiệm tham số và tăng hiệu quả học ngữ nghĩa.
+	\item \textbf{Parameter Sharing theo tầng (ALBERT, mT5):}  
+	Giúp giảm kích thước mô hình mà vẫn giữ được chất lượng.
+	\item \textbf{Sparse / MoE Layers (UL2, Switch Transformer):}  
+	Cho phép tăng số tham số hiệu dụng lên hàng nghìn tỷ mà vẫn suy luận hiệu quả.
 \end{itemize}
 
-\subsubsection{Khi nào nên sử dụng Họ mô hình Encoder-Decoder?}
+\subsubsection{Biến thể và hướng phát triển hiện đại}
+
+\begin{itemize}
+	\item \textbf{PEGASUS \cite{zhang2020pegasus}:} Thiết kế đặc biệt cho tóm tắt, 
+	che các câu quan trọng (salient sentences) và yêu cầu mô hình sinh lại chúng — mô phỏng trực tiếp tác vụ tóm tắt.
+	
+	\item \textbf{ProphetNet \cite{qi2020prophetnet}:} Dự đoán đồng thời nhiều token trong tương lai (n-gram prediction), 
+	giúp mô hình “nhìn xa” và giảm lặp lại khi sinh văn bản.
+	
+	\item \textbf{UL2 \cite{tay2022unifying}:} Đề xuất khung huấn luyện \textbf{hợp nhất} (Unified Language Learning), 
+	cho phép cùng lúc huấn luyện theo ba chế độ: \textit{bidirectional (BERT-like)}, 
+	\textit{unidirectional (GPT-like)}, và \textit{denoising (T5-like)}.  
+	Đây là nền tảng để tạo ra các mô hình đa năng như Flan-T5 hay PaLM 2.
+	
+	\item \textbf{Flan-T5 \cite{chung2022scaling}:} Instruction-tuned T5 — 
+	được tinh chỉnh trên hàng trăm tác vụ định dạng lại thành chỉ dẫn.  
+	Nhờ vậy, mô hình có thể generalize mạnh mẽ ở chế độ zero-shot, tương tự như GPT nhưng với kiến trúc Encoder–Decoder.
+\end{itemize}
+
+\subsubsection{Khi nào nên dùng Encoder–Decoder?}
 \begin{tcolorbox}[
-    title=Đánh giá Họ Mô hình Encoder-Decoder,
-    colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
-]
-\textbf{Nguyên tắc chung:} Sử dụng mô hình Encoder-Decoder khi tác vụ của bạn là một bài toán \textbf{chuỗi-sang-chuỗi (sequence-to-sequence) có điều kiện mạnh mẽ}, nơi chất lượng của đầu ra phụ thuộc rất nhiều vào sự hiểu biết sâu sắc và toàn diện về toàn bộ chuỗi đầu vào.
-
-\textbf{Điểm mạnh:}
-\begin{itemize}
-    \item \textbf{Hiệu năng SOTA cho các tác vụ Seq2Seq cổ điển:} Là lựa chọn tự nhiên và thường là tốt nhất cho các tác vụ như dịch máy và tóm tắt văn bản, đặc biệt khi cần độ chính xác cao.
-    \item \textbf{Kiểm soát tốt hơn:} Việc tách biệt Encoder và Decoder cho phép kiểm soát tốt hơn quá trình mã hóa thông tin nguồn trước khi sinh ra thông tin đích.
-\end{itemize}
-\textbf{Điểm yếu:}
-\begin{itemize}
-    \item \textbf{Phức tạp và nhiều tham số hơn:} Phải huấn luyện cả Encoder và Decoder, làm tăng chi phí tính toán và bộ nhớ.
-    \item \textbf{Kém linh hoạt trong các tác vụ zero-shot:} So với các mô hình Decoder-Only lớn, chúng thường không có khả năng "học trong ngữ cảnh" (in-context learning) mạnh mẽ và đòi hỏi phải được tinh chỉnh (fine-tuned) cho từng tác vụ cụ thể (ngoại trừ các phiên bản instruction-tuned như Flan-T5).
-\end{itemize}
-\textbf{Ứng dụng điển hình:}
-\begin{itemize}
-    \item \textbf{Dịch máy (Machine Translation).}
-    \item \textbf{Tóm tắt văn bản (Summarization).}
-    \item \textbf{Hỏi-đáp sinh (Generative Question Answering).}
-    \item \textbf{Chuyển đổi Dữ liệu-thành-Văn bản (Data-to-text),} ví dụ, sinh mô tả từ một bảng dữ liệu có cấu trúc.
-    \item \textbf{Các tác vụ chỉnh sửa văn bản (Text Editing) và tái cấu trúc câu.}
-\end{itemize}
+	title=Đánh giá Họ Mô hình Encoder–Decoder,
+	colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
+	]
+	\textbf{Khi nên dùng:}
+	\begin{itemize}
+		\item Tác vụ có \textbf{đầu ra phụ thuộc mạnh vào đầu vào}: dịch máy, tóm tắt, sinh QA có điều kiện.
+		\item Khi cần kiểm soát cấu trúc đầu ra, ví dụ: \textit{text editing}, \textit{data-to-text}.
+	\end{itemize}
+	
+	\textbf{Điểm mạnh:}
+	\begin{itemize}
+		\item Hiểu toàn diện + sinh có điều kiện $\rightarrow$ chất lượng đầu ra cao.  
+		\item Kiến trúc hai phần cho phép kiểm soát rõ ràng việc mã hóa và giải mã.
+	\end{itemize}
+	
+	\textbf{Điểm yếu:}
+	\begin{itemize}
+		\item Nặng gấp đôi — cần huấn luyện cả Encoder và Decoder.  
+		\item Khả năng zero-shot và in-context learning hạn chế hơn các mô hình Decoder-only.
+	\end{itemize}
+	
+	\textbf{Ứng dụng điển hình:}
+	\begin{itemize}
+		\item Dịch máy (Machine Translation).  
+		\item Tóm tắt (Summarization).  
+		\item Sinh câu hỏi–trả lời (QA Generation).  
+		\item Chuyển đổi dữ liệu–thành–văn bản (Data-to-Text).  
+		\item Hiệu chỉnh / tái cấu trúc câu (Text Editing).
+	\end{itemize}
 \end{tcolorbox}

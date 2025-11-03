@@ -1,4 +1,14 @@
-\chapter{LÝ THUYẾT ĐÁNH GIÁ VÀ CÁC BENCHMARK}
-\label{chap:evaluation}
+\chapter{CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO}
+\label{chap:advanced_systems}
 
-Xuyên suốt các chương vừa qua, chúng ta đã khám phá một loạt các kiến trúc và kỹ thuật để xây dựng các mô hình NLP ngày càng mạnh mẽ. Tuy nhiên, một câu hỏi nền tảng vẫn còn đó: "Làm thế nào để chúng ta đo lường sự 'tốt' của một mô hình một cách khách quan?". Việc xây dựng các mô hình mà không có phương pháp đánh giá rõ ràng cũng giống như lái một con tàu mà không có la bàn.
+Ở chương trước, chúng ta đã đi sâu vào RAG, một kiến trúc nền tảng để kết nối LLM với kho kiến thức văn bản bên ngoài. Chúng ta đã trao cho "bộ não" AI một "thư viện" khổng lồ và đáng tin cậy. Tuy nhiên, để xây dựng các hệ thống AI thực sự toàn diện, chúng ta cần trang bị cho chúng nhiều khả năng hơn là chỉ đọc và tổng hợp văn bản. Liệu chúng có thể "nhìn", "hành động", hay thậm chí tự tối ưu hóa để trở nên tinh gọn hơn?
+
+Chương này sẽ đưa chúng ta vượt ra ngoài khuôn khổ của một pipeline RAG tiêu chuẩn, khám phá một loạt các kiến trúc và hệ thống nâng cao để biến LLM thành một thành phần trung tâm trong các ứng dụng phức tạp hơn.
+\begin{itemize}
+	\item Đầu tiên, chúng ta sẽ giải quyết bài toán thực tế về việc triển khai các mô hình khổng lồ bằng các kỹ thuật \textbf{Tối ưu hóa Mô hình} như chưng cất và lượng tử hóa.
+	\item Tiếp theo, chúng ta sẽ dạy cho LLM cách "nhìn" và hiểu thế giới đa phương thức, kết hợp văn bản với hình ảnh trong các \textbf{Mô hình Đa phương thức (Multimodal Models)}.
+	\item Sau đó, chúng ta sẽ trao cho LLM "tay chân" để tương tác với thế giới số, sử dụng các công cụ và API thông qua các \textbf{Hệ thống Tác tử (Agentic Systems)}.
+	\item Cuối cùng, chúng ta sẽ suy ngẫm về một khái niệm sâu sắc hơn: liệu LLM có đang âm thầm xây dựng một \textbf{Mô hình Thế giới (World Model)} bên trong để hiểu và mô phỏng thực tại hay không.
+\end{itemize}
+
+Đây là bước cuối cùng trong hành trình khám phá lý thuyết, nơi chúng ta kết hợp tất cả các khối xây dựng đã học để tạo ra các hệ thống AI có khả năng tiệm cận với trí thông minh tổng quát.

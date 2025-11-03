@@ -1,109 +1,240 @@
 % !TEX root = ../main.tex
-% File: chapters_part1/chap7_1.tex
-% Nội dung cho Chương 7, Phần 1
+% File: chapters_part1/chap6_2.tex
+% Nội dung cho Chương 6, Phần 2
 
+\section{Lý thuyết về Tối ưu hóa Mô hình}
+\label{sec:model_optimization}
 
-\section{Các Metric kinh điển}
-\label{sec:classic_metrics}
+Các Mô hình Ngôn ngữ Lớn (LLMs), đúng như tên gọi của chúng, thường cực kỳ lớn, đòi hỏi phần cứng đắt đỏ và có độ trễ suy luận (inference latency) cao. Điều này tạo ra một rào cản lớn cho việc triển khai chúng trong các ứng dụng thực tế, đặc biệt là các ứng dụng cần phản hồi thời gian thực hoặc cần chạy trên các thiết bị có tài nguyên hạn chế (như điện thoại di động).
 
-Đây là những công cụ đầu tiên và cơ bản nhất trong bộ công cụ của bất kỳ nhà thực hành NLP nào. Mỗi metric được thiết kế để đo lường một khía cạnh cụ thể của hiệu năng mô hình.
+Để giải quyết vấn đề này, một loạt các kỹ thuật tối ưu hóa mô hình đã được phát triển. Mục tiêu chung của chúng là: \textbf{giảm kích thước mô hình, tăng tốc độ suy luận, và giảm yêu cầu về bộ nhớ, trong khi cố gắng duy trì hiệu năng (độ chính xác) ở mức cao nhất có thể}.
 
-\subsection{Perplexity: Đo lường chất lượng của Mô hình Ngôn ngữ}
-\label{ssec:perplexity}
+Chúng ta sẽ khám phá ba họ kỹ thuật tối ưu hóa chính: Chưng cất, Lượng tử hóa, và Cắt tỉa.
+
+\subsection{Chưng cất Tri thức (Knowledge Distillation)}
+\label{ssec:knowledge_distillation}
+Các mô hình ngôn ngữ lớn (LLM) thường đi kèm với chi phí tính toán khổng lồ cả trong huấn luyện và suy luận. Chưng cất tri thức là một kỹ thuật tối ưu hóa mô hình mạnh mẽ, cho phép chúng ta "chuyển giao" kiến thức từ một mô hình lớn, phức tạp sang một mô hình nhỏ hơn, nhanh hơn mà vẫn giữ được phần lớn hiệu năng.
+
+\subsubsection{Trực giác cốt lõi: Thầy dạy Trò}
+Hãy tưởng tượng bạn có một mạng nơ-ron rất lớn, phức tạp nhưng chính xác (gọi là \textbf{mô hình thầy - teacher model}), và một mạng nơ-ron nhỏ hơn, nhanh hơn nhiều (gọi là \textbf{mô hình trò - student model}). Thay vì huấn luyện mô hình trò từ đầu trên dữ liệu gốc, quá trình chưng cất tri thức sẽ "dạy" cho mô hình trò bắt chước hành vi của mô hình thầy.
+
+\begin{tcolorbox}[
+	title=Triết lý của Chưng cất Tri thức,
+	colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
+	]
+	Thay vì chỉ dạy cho mô hình trò học từ các nhãn cứng (hard labels) của dữ liệu (ví dụ: "tích cực" hoặc "tiêu cực"), chúng ta hãy dạy nó bắt chước cả \textbf{phân phối xác suất đầu ra "mềm" (soft probabilities)} của mô hình thầy. Các xác suất mềm này chứa đựng những thông tin "đen tối" (dark knowledge) vô cùng phong phú về cách mô hình thầy "suy nghĩ", khái quát hóa và nhận thấy sự tương đồng giữa các lớp.
+\end{tcolorbox}
+
+Ví dụ, khi phân loại cảm xúc cho câu "Bộ phim này cũng được.", một mô hình thầy có thể dự đoán: `{"Trung tính": 0.7, "Tích cực": 0.25, "Tiêu cực": 0.05}`. Thông tin rằng câu này "hơi giống Tích cực" nhưng "chắc chắn không phải Tiêu cực" là một tín hiệu huấn luyện quý giá hơn nhiều so với nhãn cứng "Trung tính".
+
+\subsubsection{Cơ chế hoạt động chi tiết}
+Quá trình chưng cất bao gồm việc huấn luyện mô hình trò trên một hàm mất mát kết hợp:
+
+\paragraph{1. Tạo các nhãn mềm với Nhiệt độ (Temperature Scaling)}
+Để khai thác "dark knowledge", chúng ta cần làm cho phân phối đầu ra của mô hình thầy bớt "sắc nét". Chúng ta lấy đầu ra logits (đầu ra trước lớp softmax) của mô hình thầy và chia cho một tham số gọi là \textbf{nhiệt độ (temperature - T)} trước khi đưa vào hàm softmax.
+$$ q_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)} $$
+Khi $T > 1$ (thường chọn $T$ trong khoảng 2-10), phân phối xác suất $q$ sẽ trở nên "mềm" hơn, gán xác suất cao hơn cho các lớp không phải là lớp tốt nhất, từ đó để lộ ra cấu trúc tương quan giữa các lớp mà mô hình thầy đã học được.
+
+\paragraph{2. Xây dựng Hàm mất mát kết hợp}
+Mô hình trò được huấn luyện để tối thiểu hóa một hàm mất mát là tổng có trọng số của hai thành phần:
+\begin{equation}
+	\mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{Hard}} + (1-\alpha) \cdot \mathcal{L}_{\text{Soft}}
+	\label{eq:distillation_loss}
+\end{equation}
+
+Trong đó:
 \begin{itemize}
-    \item \textbf{Dùng cho tác vụ nào?} Đánh giá chất lượng nội tại của các \textbf{Mô hình Ngôn ngữ (Language Models)} (ví dụ: các mô hình được huấn luyện để dự đoán từ tiếp theo).
-    \item \textbf{Trực giác cốt lõi:} Một mô hình ngôn ngữ tốt là mô hình \textbf{ít "ngạc nhiên" (less surprised)} hơn khi nhìn thấy một câu văn thực tế. Perplexity (PPL), hay còn gọi là Độ bối rối, chính là một cách để định lượng sự "ngạc nhiên" này. \textbf{Perplexity càng thấp, mô hình càng tốt}.
-    \item \textbf{Cơ chế hoạt động:} Perplexity có mối quan hệ trực tiếp với hàm mất mát Cross-Entropy. Đối với một chuỗi văn bản $W = (w_1, w_2, \dots, w_N)$, Perplexity được định nghĩa là:
-        \begin{equation}
-            \text{PPL}(W) = \sqrt[N]{\frac{1}{P(w_1, w_2, \dots, w_N)}} = \left( \prod_{i=1}^{N} \frac{1}{P(w_i|w_1, \dots, w_{i-1})} \right)^{1/N}
-            \label{eq:perplexity}
-        \end{equation}
-        Về mặt toán học, nó là nghịch đảo của xác suất trung bình trên mỗi từ (được lấy căn bậc $N$).
-    \item \textbf{Hạn chế:}
-        \begin{itemize}
-            \item Chỉ đo lường khả năng dự đoán xác suất, không trực tiếp đo lường chất lượng ngữ nghĩa hay sự mạch lạc của văn bản được sinh ra.
-            \item Rất nhạy cảm với kích thước từ vựng. Không thể so sánh Perplexity của hai mô hình có từ vựng khác nhau.
-        \end{itemize}
-\end{itemize}
-
-\subsection{Precision, Recall, và F1-Score: Nền tảng của các bài toán Phân loại}
-\label{ssec:f1_score}
-Đây là bộ ba metric không thể thiếu cho hầu hết các bài toán \textbf{phân loại (classification)} và \textbf{trích xuất thông tin (information extraction)} như NER.
-
-\subsubsection{Các thành phần cơ bản}
-Để hiểu bộ ba này, chúng ta cần định nghĩa bốn kết quả có thể xảy ra khi phân loại một điểm dữ liệu:
-\begin{itemize}
-    \item \textbf{True Positive (TP):} Dự đoán là \textbf{Dương tính}, và thực tế là \textbf{Dương tính}. (Dự đoán đúng)
-    \item \textbf{True Negative (TN):} Dự đoán là \textbf{Âm tính}, và thực tế là \textbf{Âm tính}. (Dự đoán đúng)
-    \item \textbf{False Positive (FP):} Dự đoán là \textbf{Dương tính}, nhưng thực tế là \textbf{Âm tính}. (Lỗi Loại I - "báo động giả")
-    \item \textbf{False Negative (FN):} Dự đoán là \textbf{Âm tính}, nhưng thực tế là \textbf{Dương tính}. (Lỗi Loại II - "bỏ sót")
+	\item \textbf{Mất mát cứng (Hard Loss):}
+	Là hàm mất mát Cross-Entropy thông thường giữa dự đoán của mô hình trò (tính với $T=1$)
+	và nhãn thật ($y_{\text{true}}$). Phần này đảm bảo mô hình trò vẫn học được thông tin chính xác từ dữ liệu gốc.
+	
+	\begin{equation*}
+		\mathcal{L}_{\text{Hard}} = \text{CrossEntropy}(y_{\text{true}}, p_{\text{student}}^{T=1})
+	\end{equation*}
+	
+	\item \textbf{Mất mát mềm (Soft Loss):}
+	Là hàm mất mát KL-Divergence (hoặc Cross-Entropy) giữa phân phối xác suất mềm của mô hình trò
+	và phân phối xác suất mềm của mô hình thầy (cả hai đều được tính với cùng nhiệt độ $T$).
+	Phần này buộc mô hình trò phải bắt chước cách “suy nghĩ” của mô hình thầy.
+	
+	\begin{equation*}
+		\mathcal{L}_{\text{Soft}} = T^2 \cdot \text{KL-Divergence}(q_{\text{teacher}}^T, p_{\text{student}}^T)
+	\end{equation*}
+	
+	Lưu ý: Việc nhân với $T^2$ là kỹ thuật để đảm bảo độ lớn của gradient không bị giảm quá nhiều khi nhiệt độ tăng.
+	
+	\item $\alpha$ là siêu tham số (ví dụ $\alpha = 0.1$) để cân bằng giữa việc học từ dữ liệu thật và học từ mô hình thầy.
 \end{itemize}
 
 \begin{center}
-    \includegraphics[width=0.6\textwidth]{confusion_matrix.png}
-    \captionof{figure}{Ma trận nhầm lẫn (Confusion Matrix) minh họa bốn kết quả của một bài toán phân loại nhị phân.}
-    \label{fig:confusion_matrix}
+	\includegraphics[width=0.8\textwidth]{knowledge_distillation.png}
+	\captionof{figure}{Quy trình Chưng cất Tri thức. Mô hình trò học đồng thời từ nhãn cứng của dữ liệu (Hard Loss) và nhãn mềm được tạo ra bởi mô hình thầy (Soft Loss).}
+	\label{fig:knowledge_distillation}
 \end{center}
 
-\subsubsection{Định nghĩa các Metric}
-\paragraph{Precision (Độ chính xác)}
+
+\subsubsection{Ứng dụng và các Biến thể}
 \begin{itemize}
-    \item \textbf{Câu hỏi nó trả lời:} "Trong số tất cả những gì mô hình dự đoán là Dương tính, có bao nhiêu cái thực sự là Dương tính?"
-    \item \textbf{Công thức:}
-        $$ \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}} $$
-    \item \textbf{Mục tiêu:} Tối đa hóa Precision có nghĩa là cố gắng giảm thiểu số lượng báo động giả (FP). Rất quan trọng trong các ứng dụng như phát hiện spam (thà bỏ sót một email spam còn hơn là đưa một email quan trọng vào hòm thư rác).
+	\item \textbf{DistilBERT:} Một trong những ứng dụng thành công nhất, DistilBERT sử dụng kỹ thuật này để tạo ra một phiên bản BERT nhỏ hơn 40\% và nhanh hơn 60\%, trong khi vẫn giữ lại 97\% hiệu năng trên benchmark GLUE.
+	\item \textbf{Chưng cất đặc trưng (Feature Distillation):} Thay vì chỉ bắt chước đầu ra cuối cùng, mô hình trò còn được huấn luyện để bắt chước các biểu diễn ở các lớp trung gian (ví dụ: các hidden state hoặc attention map) của mô hình thầy.
+	\item \textbf{Tự chưng cất (Self-Distillation):} Một kỹ thuật thú vị trong đó mô hình thầy và mô hình trò là cùng một kiến trúc. Mô hình được huấn luyện để đầu ra của nó ở các epoch sau "chưng cất" kiến thức từ chính nó ở các epoch trước.
+\end{itemize}
+Chưng cất tri thức là một công cụ cực kỳ linh hoạt và hiệu quả, không chỉ giúp giảm kích thước và tăng tốc độ mô hình mà còn có thể cải thiện khả năng tổng quát hóa của mô hình trò.
+
+\subsection{Lượng tử hóa (Quantization)}
+\label{ssec:quantization}
+Lượng tử hóa là một kỹ thuật tối ưu hóa mô hình cốt lõi, nhằm giảm chi phí tính toán và bộ nhớ bằng cách lưu trữ các trọng số và/hoặc các giá trị kích hoạt ở độ chính xác thấp hơn. Thay vì dùng 32-bit (FP32) hay 16-bit (FP16), chúng ta sẽ biểu diễn chúng bằng 8-bit (INT8), 4-bit, hoặc thậm chí thấp hơn.
+
+\subsubsection{Trực giác cốt lõi: Làm tròn Thông minh}
+\begin{tcolorbox}[
+	title=Triết lý của Lượng tử hóa,
+	colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
+	]
+	"Chúng ta có thực sự cần đến hàng tỷ con số thực với độ chính xác vô hạn để biểu diễn kiến thức không? Liệu việc làm tròn các trọng số thành một tập hợp hữu hạn các giá trị rời rạc có làm mô hình mất đi khả năng suy luận không?"
+\end{tcolorbox}
+Câu trả lời là không hẳn. Các mạng nơ-ron sâu, đặc biệt là các LLM lớn, có một sự dư thừa (redundancy) đáng kể trong các tham số của chúng. Điều này cho phép chúng chống chịu khá tốt với "nhiễu" được tạo ra từ việc lượng tử hóa, miễn là quá trình này được thực hiện một cách cẩn thận.
+
+\subsubsection{Cơ chế Lượng tử hóa: Ánh xạ và Phân cụm}
+Quá trình lượng tử hóa không chỉ đơn giản là nén dữ liệu. Về cơ bản, nó thực hiện một phép ánh xạ từ một tập hợp các giá trị liên tục (trọng số FP32) sang một tập hợp các giá trị rời rạc (ví dụ, 256 giá trị trong INT8).
+
+\paragraph{Lượng tử hóa Affine (Affine Quantization)}
+Đây là phương pháp phổ biến nhất. Một giá trị thực $r$ được ánh xạ tới một giá trị lượng tử hóa $q$ thông qua một phép biến đổi tuyến tính:
+\[ r \approx S \cdot (q - Z) \]
+Trong đó:
+\begin{itemize}
+	\item $S$ (scale) là một số thực dương, đại diện cho "kích thước bước" của mỗi mức lượng tử hóa.
+	\item $Z$ (zero-point) là một số nguyên, đảm bảo rằng giá trị thực 0 được ánh xạ chính xác.
+\end{itemize}
+Việc tìm ra $S$ và $Z$ tối ưu là chìa khóa của quá trình lượng tử hóa.
+
+\paragraph{Tại sao trọng số LLM lại tuân theo phân phối Gauss?}
+Các nghiên cứu đã chỉ ra rằng phần lớn các trọng số trong các LLM đã được huấn luyện có xu hướng tuân theo một phân phối chuẩn (Gauss) với trung bình gần bằng 0. Điều này có nghĩa là:
+\begin{itemize}
+	\item \textbf{Tập trung giá trị:} Hầu hết các trọng số có giá trị nhỏ, tập trung xung quanh 0.
+	\item \textbf{Giá trị ngoại lai (Outliers):} Có một số ít trọng số có giá trị tuyệt đối rất lớn. Những giá trị ngoại lai này thường cực kỳ quan trọng đối với hiệu năng của mô hình.
+\end{itemize}
+Một lược đồ lượng tử hóa tốt phải xử lý được đặc điểm này. Nếu chúng ta lượng tử hóa một cách \textbf{đều (uniform quantization)} trên toàn bộ dải giá trị (từ min đến max), các giá trị ngoại lai sẽ kéo dãn khoảng lượng tử hóa, khiến cho phần lớn các trọng số quan trọng ở gần 0 bị "gộp" vào cùng một vài giá trị rời rạc, làm mất mát thông tin nghiêm trọng.
+
+\subsubsection{Các Chiến lược Lượng tử hóa Nâng cao}
+Để giải quyết các vấn đề trên, nhiều kỹ thuật lượng tử hóa tinh vi đã ra đời.
+
+\paragraph{Lượng tử hóa Phi đồng nhất (Non-Uniform Quantization)}
+Thay vì chia đều các mức lượng tử hóa, các phương pháp này phân bổ nhiều mức hơn cho các vùng có mật độ trọng số cao (quanh 0) và ít mức hơn cho các vùng thưa thớt (các giá trị ngoại lai).
+\begin{itemize}
+	\item \textbf{k-Means Quantization:} Sử dụng thuật toán k-Means để tìm ra $k$ "tâm cụm" (centroids) đại diện tốt nhất cho phân phối trọng số. Mỗi trọng số sau đó được thay thế bằng tâm cụm gần nhất.
+	\item \textbf{Quantile Quantization:} Các mức lượng tử hóa được chọn dựa trên các điểm phân vị (quantiles) của phân phối trọng số, đảm bảo mỗi "thùng" lượng tử hóa chứa cùng một số lượng trọng số.
+	\item \textbf{NormalFloat (NF4) và QLoRA:} Kỹ thuật được sử dụng trong QLoRA là một dạng Quantile Quantization được thiết kế đặc biệt cho các trọng số tuân theo phân phối chuẩn. Nó tạo ra một kiểu dữ liệu 4-bit (NF4) có khả năng biểu diễn phân phối này một cách hiệu quả nhất về mặt lý thuyết thông tin.
 \end{itemize}
 
-\paragraph{Recall (Độ phủ, hay Độ nhạy)}
+\paragraph{Lượng tử hóa theo Khối (Block-wise Quantization)}
+Thay vì tính toán các tham số scale ($S$) và zero-point ($Z$) cho toàn bộ một ma trận trọng số, kỹ thuật này chia ma trận thành các khối nhỏ hơn (ví dụ: 64x64) và tính toán $S, Z$ riêng cho từng khối. Điều này cho phép quá trình lượng tử hóa thích ứng tốt hơn với sự biến thiên của các giá trị trọng số trong các phần khác nhau của ma trận, đặc biệt là xử lý các giá trị ngoại lai. QLoRA đã sử dụng kỹ thuật này rất thành công.
+
+\paragraph{Lượng tử hóa Nhận biết Huấn luyện (Quantization-Aware Training - QAT)}
+Đây là phương pháp phức tạp nhưng cho kết quả tốt nhất.
 \begin{itemize}
-    \item \textbf{Câu hỏi nó trả lời:} "Trong số tất cả những cái thực sự là Dương tính, mô hình đã tìm thấy được bao nhiêu cái?"
-    \item \textbf{Công thức:}
-        $$ \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}} $$
-    \item \textbf{Mục tiêu:} Tối đa hóa Recall có nghĩa là cố gắng giảm thiểu số lượng bỏ sót (FN). Rất quan trọng trong các ứng dụng như chẩn đoán y tế (thà chẩn đoán nhầm một người khỏe mạnh là có bệnh còn hơn là bỏ sót một người thực sự có bệnh).
+	\item \textbf{Cơ chế:} Trong quá trình fine-tuning, mô hình sẽ \textbf{mô phỏng (simulate)} ảnh hưởng của việc lượng tử hóa. Tức là, trong quá trình truyền thẳng, nó sẽ "giả vờ" làm tròn các trọng số, nhưng trong quá trình truyền ngược, gradient vẫn được tính toán và cập nhật trên các trọng số có độ chính xác đầy đủ.
+	\item \textbf{Lợi ích:} Điều này cho phép mô hình học cách "thích ứng" với sự mất mát độ chính xác sẽ xảy ra sau khi lượng tử hóa, giúp giảm thiểu sụt giảm hiệu năng.
 \end{itemize}
 
-\paragraph{F1-Score (Điểm F1)}
-\begin{itemize}
-    \item \textbf{Vấn đề:} Precision và Recall thường có sự đánh đổi (trade-off). Một mô hình rất "cẩn trọng" có thể có Precision cao nhưng Recall thấp, và ngược lại. F1-score được tạo ra để kết hợp cả hai thành một chỉ số duy nhất.
-    \item \textbf{Công thức:} F1-score là trung bình điều hòa (harmonic mean) của Precision và Recall.
-        $$ \text{F1-Score} = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} $$
-    \item \textbf{Mục tiêu:} F1-score cao khi cả Precision và Recall đều cao. Nó là một thước đo cân bằng, được sử dụng rộng rãi trong các tác vụ như NER, nơi chúng ta quan tâm đến cả việc không nhận dạng sai và không bỏ sót thực thể.
-\end{itemize}
-Khi đánh giá trên nhiều lớp, người ta thường tính `macro-F1` (tính F1 cho mỗi lớp rồi lấy trung bình) hoặc `micro-F1` (tính tổng TP, FP, FN trên tất cả các lớp rồi mới tính F1).
+Lợi ích của lượng tử hóa là rất rõ ràng: giảm kích thước mô hình (INT8 nhỏ hơn FP32 4 lần) và tăng tốc độ suy luận (các phép toán trên số nguyên nhanh hơn nhiều so với số thực trên hầu hết các phần cứng). Các kỹ thuật như QLoRA đã chứng minh rằng chúng ta có thể fine-tune các LLM khổng lồ ngay cả trên các GPU tiêu dùng nhờ vào sức mạnh của lượng tử hóa thông minh.
 
-\subsection{BLEU: Đánh giá Dịch máy}
-\label{ssec:bleu}
+\subsection{Cắt tỉa (Pruning)}
+\label{ssec:pruning}
+Cắt tỉa là một kỹ thuật tối ưu hóa nhằm giảm kích thước và độ phức tạp tính toán của mô hình bằng cách loại bỏ các tham số (trọng số) hoặc các thành phần (nơ-ron, đầu chú ý) được cho là dư thừa hoặc ít quan trọng.
+
+\subsubsection{Trực giác cốt lõi: Loại bỏ các Kết nối Thừa}
+Các mạng nơ-ron lớn thường được "tham số hóa quá mức" (over-parameterized), nghĩa là chúng có nhiều trọng số hơn mức cần thiết để thực hiện một tác vụ. Nhiều trong số các kết nối này có thể gần như bằng không và đóng góp rất ít vào kết quả cuối cùng.
+
+\begin{tcolorbox}[
+	title=Triết lý của Cắt tỉa,
+	colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
+	]
+	"Một mạng nơ-ron giống như một hệ thống thần kinh. Không phải tất cả các kết nối đều quan trọng như nhau. Bằng cách xác định và loại bỏ các liên kết thần kinh yếu nhất, bộ não có thể trở nên hiệu quả hơn trong việc xử lý thông tin."
+\end{tcolorbox}
+
+% ============================================================
+\subsubsection{Các Tiêu chí Lựa chọn Phần cần Cắt}
+Câu hỏi cốt lõi trong cắt tỉa là làm thế nào để xác định tầm quan trọng của một trọng số hoặc một nhóm trọng số.
+
+\paragraph{Cắt tỉa dựa trên Độ lớn (Magnitude-based Pruning)}
+Đây là phương pháp phổ biến và đơn giản nhất.
 \begin{itemize}
-    \item \textbf{Dùng cho tác vụ nào?} Chủ yếu là \textbf{Dịch máy (Machine Translation)}, nhưng đôi khi cũng dùng cho các tác vụ sinh văn bản khác.
-    \item \textbf{Trực giác cốt lõi:} Một bản dịch tốt nên có nhiều \textbf{N-gram trùng lặp} với các bản dịch tham khảo chất lượng cao do con người tạo ra.
-    \item \textbf{Cơ chế hoạt động:} BLEU (Bilingual Evaluation Understudy) tính toán một điểm số dựa trên hai yếu tố:
-        \begin{enumerate}
-            \item \textbf{Độ chính xác N-gram đã được sửa đổi (Modified N-gram Precision):} Tính toán tỷ lệ các N-gram (thường từ 1-gram đến 4-gram) trong câu do máy dịch tạo ra cũng xuất hiện trong các câu tham khảo. Nó được "sửa đổi" để ngăn mô hình lặp lại một từ đúng nhiều lần để gian lận điểm.
-            \item \textbf{Hình phạt cho câu ngắn (Brevity Penalty - BP):} Nếu câu do máy dịch tạo ra ngắn hơn đáng kể so với các câu tham khảo, nó sẽ bị phạt. Điều này ngăn mô hình chỉ sinh ra một vài từ rất chính xác để có Precision cao.
-        \end{enumerate}
-        $$ \text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right) $$
-        Trong đó $p_n$ là độ chính xác của n-gram, và $w_n$ thường là $1/N$.
-    \item \textbf{Hạn chế:}
-        \begin{itemize}
-            \item \textbf{Chỉ quan tâm đến Precision, không quan tâm đến Recall:} Nó không phạt nếu bản dịch bỏ sót các thông tin quan trọng.
-            \item \textbf{Không hiểu ngữ nghĩa:} Một bản dịch có thể dùng từ đồng nghĩa hoàn hảo nhưng vẫn bị điểm BLEU thấp nếu không khớp chính xác N-gram.
-            \item \textbf{Gặp khó khăn với trật tự từ và sự sáng tạo:} Không đánh giá tốt các bản dịch có cấu trúc câu khác biệt nhưng vẫn đúng.
-        \end{itemize}
+	\item \textbf{Nguyên lý:} Các trọng số có giá trị tuyệt đối (magnitude) nhỏ nhất được xem là ít quan trọng nhất.
+	\item \textbf{Quy trình:} Huấn luyện mô hình dày đặc, xếp hạng trọng số theo độ lớn, loại bỏ $p\%$ trọng số nhỏ nhất, rồi fine-tune lại.
 \end{itemize}
 
-\subsection{ROUGE: Đánh giá Tóm tắt Văn bản}
-\label{ssec:rouge}
+\paragraph{Cắt tỉa dựa trên Gradient (Gradient-based Pruning)}
 \begin{itemize}
-    \item \textbf{Dùng cho tác vụ nào?} Chủ yếu là \textbf{Tóm tắt văn bản (Summarization)}.
-    \item \textbf{Trực giác cốt lõi:} ROUGE (Recall-Oriented Understudy for Gisting Evaluation) hoạt động ngược lại với BLEU. Nó cho rằng một bản tóm tắt tốt nên \textbf "bao phủ" được các N-gram quan trọng có trong các bản tóm tắt tham khảo của con người.
-    \item \textbf{Cơ chế hoạt động:} ROUGE là một họ các metric, trong đó phổ biến nhất là:
-        \begin{itemize}
-            \item \textbf{ROUGE-N:} Dựa trên sự trùng lặp N-gram, nhưng tính toán dựa trên \textbf{Recall}.
-                $$ \text{ROUGE-N} = \frac{\text{Số N-gram trong tham khảo cũng xuất hiện trong tóm tắt máy}}{\text{Tổng số N-gram trong tham khảo}} $$
-                Thường dùng `ROUGE-1` (unigram) và `ROUGE-2` (bigram).
-            \item \textbf{ROUGE-L:} Dựa trên \textbf{Chuỗi con chung dài nhất (Longest Common Subsequence - LCS)}. Nó không yêu cầu các từ phải liền kề nhau, do đó nắm bắt được sự tương đồng về trật tự từ tốt hơn.
-        \end{itemize}
-    \item \textbf{Hạn chế:} Tương tự như BLEU, ROUGE cũng chỉ dựa trên sự khớp bề mặt của từ và không hiểu được ngữ nghĩa sâu sắc. Một bản tóm tắt có thể diễn đạt lại ý tưởng một cách hoàn hảo nhưng vẫn bị điểm ROUGE thấp.
+	\item \textbf{Nguyên lý:} Các trọng số quan trọng là những trọng số mà nếu thay đổi sẽ ảnh hưởng mạnh đến hàm mất mát.  
+	Tầm quan trọng được ước lượng bởi $|w \cdot \frac{\partial \mathcal{L}}{\partial w}|$.
 \end{itemize}
 
-Mặc dù có nhiều hạn chế, các metric kinh điển này vẫn được sử dụng rộng rãi vì chúng tự động, nhanh chóng và cung cấp một thước đo khách quan (dù không hoàn hảo) để so sánh các mô hình với nhau trong quá trình phát triển.
+\paragraph{Cắt tỉa dựa trên Taylor / Hessian}
+\begin{itemize}
+	\item \textbf{Nguyên lý:} Sử dụng khai triển Taylor để ước lượng mức thay đổi của hàm mất mát khi loại bỏ một trọng số.
+	\item \textbf{Hessian-based:} Dùng ma trận Hessian (đạo hàm bậc hai) để đánh giá chính xác hơn ảnh hưởng của từng trọng số, tuy nhiên rất tốn tài nguyên.
+\end{itemize}
+
+\paragraph{Cắt tỉa học được (Learned Sparsity / Movement Pruning)}
+\begin{itemize}
+	\item \textbf{Learned Sparsity:} Huấn luyện cùng với một mặt nạ nhị phân có thể học được (L0 regularization).
+	\item \textbf{Movement Pruning (Sanh et al., 2020):} Theo dõi hướng thay đổi của trọng số trong quá trình fine-tuning, trọng số ít “di chuyển” sẽ bị loại bỏ.
+\end{itemize}
+
+% ============================================================
+\subsubsection{Các Phương pháp Cắt tỉa theo Cấu trúc}
+
+\paragraph{Cắt tỉa Không có cấu trúc (Unstructured Pruning)}
+\begin{itemize}
+	\item \textbf{Nguyên lý:} Loại bỏ các trọng số riêng lẻ theo tiêu chí bất kỳ.
+	\item \textbf{Kết quả:} Ma trận trọng số thưa thớt, có nhiều phần tử bằng 0.
+	\item \textbf{Ưu điểm:} Đạt được độ thưa thớt rất cao mà ít giảm độ chính xác.
+	\item \textbf{Nhược điểm:} Khó tăng tốc trên phần cứng, cần thư viện sparse chuyên dụng.
+\end{itemize}
+
+\paragraph{Cắt tỉa có Cấu trúc (Structured Pruning)}
+\begin{itemize}
+	\item \textbf{Nguyên lý:} Loại bỏ các nhóm trọng số có cấu trúc (nơ-ron, bộ lọc, đầu chú ý).
+	\item \textbf{Kết quả:} Tạo mô hình nhỏ hơn nhưng vẫn dày đặc.
+	\item \textbf{Ưu điểm:} Dễ tăng tốc trên GPU/TPU tiêu chuẩn.
+	\item \textbf{Nhược điểm:} Dễ mất hiệu năng hơn ở cùng tỷ lệ cắt.
+\end{itemize}
+
+\paragraph{Cắt tỉa theo Khối (Block Pruning)}
+\begin{itemize}
+	\item \textbf{Nguyên lý:} Chia ma trận trọng số thành các khối con cố định (ví dụ $4\times4$, $8\times8$), rồi loại bỏ toàn bộ khối ít quan trọng.
+	\item \textbf{Ưu điểm:} Trung hòa giữa structured và unstructured pruning — vừa dễ tối ưu phần cứng, vừa giữ độ linh hoạt.
+	\item \textbf{Ứng dụng:} Hỗ trợ trong các engine tối ưu như TensorRT, SparseML.
+\end{itemize}
+
+\begin{center}
+	\includegraphics[width=1.0\textwidth]{pruning_types.png}
+	\captionof{figure}{So sánh Cắt tỉa Không có Cấu trúc (tạo ma trận thưa thớt) và Cắt tỉa Có Cấu trúc (tạo ma trận nhỏ hơn, dày đặc hơn).}
+	\label{fig:pruning_types}
+\end{center}
+
+% ============================================================
+\subsubsection{Chiến lược Cắt tỉa theo Thời điểm và Quy mô}
+
+\paragraph{Cắt tỉa Sau huấn luyện (Post-training Pruning)}
+Huấn luyện mô hình đầy đủ, sau đó mới loại bỏ trọng số yếu và fine-tune lại.  
+\textbf{Ưu điểm:} Dễ áp dụng cho mô hình đã huấn luyện.  
+\textbf{Nhược điểm:} Có thể mất nhiều thời gian để fine-tune.
+
+\paragraph{Cắt tỉa Trong quá trình huấn luyện (Pruning During Training)}
+Thực hiện cắt tỉa dần trong khi huấn luyện (theo lịch cắt).  
+\textbf{Ưu điểm:} Mô hình thích nghi dần với độ thưa thớt.  
+\textbf{Nhược điểm:} Tăng độ phức tạp huấn luyện.
+
+\paragraph{Cắt tỉa Một lần (One-shot Pruning)}
+Cắt toàn bộ một lần sau khi huấn luyện xong, sau đó fine-tune lại.  
+Nhanh, nhưng dễ gây giảm hiệu năng.
+
+\paragraph{Cắt tỉa Lặp lại (Iterative Pruning)}
+Thực hiện nhiều vòng cắt với tỷ lệ nhỏ (ví dụ 10\% mỗi lần) kèm fine-tune.  
+Giúp duy trì độ chính xác cao hơn.
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=Tổng kết]
+	Các chiến lược này có thể được kết hợp linh hoạt:  
+	ví dụ, \textit{Iterative Magnitude-based Pruning During Training} thường cho hiệu năng cao và độ thưa thớt lớn.
+\end{tcolorbox}
