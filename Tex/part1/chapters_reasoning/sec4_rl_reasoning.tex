@@ -1,0 +1,106 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_reasoning/sec4_rl_reasoning.tex
+
+\section{Học Tăng cường với Phần thưởng Kiểm chứng được: Từ GRPO đến DeepSeek-R1}
+\label{sec:rl_reasoning}
+
+\subsection{RLVR: Khi phần thưởng không thể bị “hack”}
+\label{ssec:rlvr}
+RLHF (mục~\ref{ssec:rlhf}) tối ưu theo một reward model học từ sở thích con người -- một hàm \emph{xấp xỉ}, và chính sách đủ mạnh sẽ tìm ra cách khai thác điểm yếu của nó (reward hacking). Với các bài toán có đáp án kiểm chứng được -- toán học có đáp số, lập trình có test case, câu đố logic có lời giải duy nhất -- ta có thể dùng một \textbf{phần thưởng dựa trên luật}, chính xác tuyệt đối. Cách tiếp cận này được gọi là \textbf{RLVR (Reinforcement Learning with Verifiable Rewards)}. Thuật toán tối ưu phổ biến nhất cho RLVR là \textbf{GRPO} (đã trình bày ở mục~\ref{ssec:grpo}).
+
+\subsection{DeepSeek-R1-Zero: Suy luận “nảy sinh” từ học tăng cường thuần túy}
+\label{ssec:r1_zero}
+DeepSeek-R1 \cite{deepseekai2025r1} bắt đầu bằng một thí nghiệm táo bạo: áp dụng GRPO \textbf{trực tiếp lên mô hình nền} DeepSeek-V3-Base, \emph{không có bất kỳ bước SFT nào}.
+
+\paragraph{Thiết lập tối giản.}
+\begin{itemize}
+	\item \textbf{Mẫu prompt:} Chỉ yêu cầu về cấu trúc -- mô hình phải viết quá trình suy luận trong cặp thẻ \texttt{<think>}\ldots\texttt{</think>} rồi đưa ra câu trả lời trong \texttt{<answer>}\ldots\texttt{</answer>}. Không có gợi ý nào về \emph{cách} suy luận.
+	\item \textbf{Phần thưởng chính xác (accuracy reward):} Đáp án toán ở định dạng quy định (ví dụ trong hộp) được so khớp tự động; bài lập trình được chấm bằng trình biên dịch và test case.
+	\item \textbf{Phần thưởng định dạng (format reward):} Thưởng khi quá trình suy nghĩ nằm đúng trong thẻ \texttt{<think>}.
+	\item \textbf{Không dùng reward model nơ-ron} (cả theo kết quả lẫn theo quá trình), vì lo ngại reward hacking ở quy mô lớn và chi phí huấn luyện lại reward model.
+\end{itemize}
+
+\paragraph{Kết quả.} Sau hàng nghìn bước RL, pass@1 trên AIME 2024 tăng từ \textbf{15.6\%} lên \textbf{71.0\%}; với bỏ phiếu đa số trên 64 mẫu đạt \textbf{86.7\%}, ngang mô hình o1 bản đầu của OpenAI.
+
+\paragraph{Sự tự tiến hóa và “khoảnh khắc aha”.} Hai hiện tượng đáng chú ý xuất hiện mà không hề được lập trình sẵn:
+\begin{itemize}
+	\item \textbf{Độ dài suy nghĩ tăng dần:} Độ dài trung bình của câu trả lời tăng đều đặn theo quá trình huấn luyện, từ vài trăm lên hàng nghìn token. Mô hình tự học được rằng \emph{suy nghĩ lâu hơn} giúp giải đúng nhiều hơn -- tức là tự học cách tận dụng tính toán lúc suy luận.
+	\item \textbf{Hành vi phản tư:} Mô hình bắt đầu tự kiểm tra lại, quay lại xem xét các bước trước và thử cách tiếp cận khác. Nhóm tác giả ghi lại một “khoảnh khắc aha” khi một phiên bản trung gian của mô hình tự viết giữa chừng lời giải: \emph{“Wait, wait. Wait. That's an aha moment I can flag here.”} rồi đánh giá lại toàn bộ cách giải.
+\end{itemize}
+
+\begin{center}
+\bookimage[0.98\textwidth]{r1_zero_response_length}{Hai biểu đồ: (a) độ chính xác trên AIME của DeepSeek-R1-Zero trong quá trình huấn luyện, gồm đường pass@1 và đường cons@16 (bỏ phiếu đa số trên 16 mẫu), cùng một đường ngang thể hiện mức của người tham gia thi; (b) độ dài trung bình mỗi câu trả lời tăng dần từ vài trăm lên hơn 10 nghìn token theo số bước huấn luyện.}
+\captionof{figure}{DeepSeek-R1-Zero trong quá trình học tăng cường: độ chính xác AIME tăng và vượt mức người tham gia thi (trái), đồng thời độ dài câu trả lời tăng dần -- mô hình tự học cách “suy nghĩ lâu hơn” (phải). Nguồn: DeepSeek-AI~\cite{deepseekai2025r1}, phiên bản Nature, giấy phép CC BY 4.0.}
+\label{fig:r1_zero_length}
+\end{center}
+
+\paragraph{Hạn chế.} Chuỗi suy nghĩ của R1-Zero \textbf{khó đọc} và thường \textbf{trộn lẫn nhiều ngôn ngữ} (ví dụ tiếng Anh và tiếng Trung trong cùng một đoạn).
+
+\subsection{DeepSeek-R1: Quy trình bốn giai đoạn}
+\label{ssec:r1_pipeline}
+Để có một mô hình vừa suy luận mạnh vừa thân thiện với người dùng, DeepSeek-R1 dùng quy trình đa giai đoạn:
+\begin{enumerate}
+	\item \textbf{Khởi động lạnh (cold start):} Tinh chỉnh DeepSeek-V3-Base trên vài nghìn ví dụ chuỗi suy luận dài, được định dạng dễ đọc (kèm phần tóm tắt cuối). Bước này tránh giai đoạn RL ban đầu thiếu ổn định và đưa “tiên nghiệm” của con người về cách trình bày suy luận vào mô hình.
+	\item \textbf{RL hướng suy luận:} GRPO như R1-Zero trên toán, lập trình, khoa học, logic; thêm \textbf{phần thưởng nhất quán ngôn ngữ} (tỷ lệ từ thuộc ngôn ngữ mục tiêu trong chuỗi suy nghĩ) để giảm trộn lẫn ngôn ngữ -- chấp nhận giảm nhẹ hiệu năng để dễ đọc hơn.
+	\item \textbf{Lấy mẫu loại bỏ + SFT:} Từ checkpoint RL, sinh nhiều lời giải và chỉ giữ lời giải đúng, dễ đọc: khoảng \textbf{600 nghìn mẫu suy luận}; cộng thêm khoảng \textbf{200 nghìn mẫu không phải suy luận} (viết, hỏi đáp, dịch\ldots) từ pipeline của DeepSeek-V3. Tinh chỉnh lại DeepSeek-V3-Base trên khoảng 800 nghìn mẫu này.
+	\item \textbf{RL cho mọi tình huống:} Vòng RL thứ hai kết hợp phần thưởng dựa trên luật (cho suy luận) và reward model (cho tính hữu ích và vô hại của câu trả lời tổng quát). Tính hữu ích chỉ đánh giá phần tóm tắt cuối; tính vô hại đánh giá toàn bộ, kể cả chuỗi suy nghĩ.
+\end{enumerate}
+Kết quả: DeepSeek-R1 đạt \textbf{79.8\%} pass@1 trên AIME 2024 và \textbf{97.3\%} trên MATH-500, ngang OpenAI o1 (bản 12/2024).
+
+\begin{center}
+\bookimage[0.98\textwidth]{deepseek_r1_pipeline}{Sơ đồ khối quy trình huấn luyện DeepSeek-R1 theo bốn cột: (1) từ DeepSeek-V3-Base, học tăng cường với prompt suy luận và phần thưởng chính xác/định dạng tạo ra DeepSeek-R1-Zero, rồi lấy mẫu và lọc tạo dữ liệu khởi động lạnh; (2) SFT trên chuỗi suy luận dài tạo Dev1, sau đó RL với phần thưởng dựa trên luật và nhất quán ngôn ngữ tạo Dev2; (3) lấy mẫu dữ liệu suy luận và không suy luận từ Dev2 và DeepSeek-V3; (4) SFT rồi RL với phần thưởng dựa trên luật và phần thưởng theo sở thích để ra DeepSeek-R1.}
+\captionof{figure}{Quy trình huấn luyện nhiều giai đoạn của DeepSeek-R1-Zero và DeepSeek-R1. Nguồn: DeepSeek-AI~\cite{deepseekai2025r1}, phiên bản Nature, giấy phép CC BY 4.0.}
+\label{fig:r1_pipeline}
+\end{center}
+
+\subsection{Chưng cất suy luận sang mô hình nhỏ}
+\label{ssec:r1_distill}
+Dùng chính 800 nghìn mẫu ở giai đoạn 3, nhóm tác giả tinh chỉnh (chỉ SFT, không RL) các mô hình Qwen2.5 và Llama 3 cỡ 1.5B, 7B, 8B, 14B, 32B và 70B. DeepSeek-R1-Distill-Qwen-32B đạt 72.6\% trên AIME 2024.
+
+Thí nghiệm quan trọng nhất của phần này: áp dụng RL quy mô lớn (hơn 10 nghìn bước) trực tiếp lên Qwen2.5-32B-Base chỉ đạt 47.0\% trên AIME 2024 -- \textbf{kém xa bản chưng cất}. Kết luận:
+\begin{itemize}
+	\item Chưng cất từ mô hình mạnh sang mô hình nhỏ vừa rẻ vừa hiệu quả hơn RL trực tiếp trên mô hình nhỏ.
+	\item Nhưng để \emph{vượt qua} giới hạn hiện tại, vẫn cần mô hình nền mạnh và RL quy mô lớn.
+\end{itemize}
+Mối liên hệ giữa chưng cất và RL được phân tích tiếp ở chương~\ref{chap:efficiency}.
+
+\paragraph{Những thử nghiệm không thành công.} Nhóm DeepSeek cũng chia sẻ thất bại: (1) \textbf{PRM} gặp các vấn đề đã nêu ở mục~\ref{sec:verifiers}; (2) \textbf{Monte Carlo Tree Search} kiểu AlphaGo khó mở rộng vì không gian sinh token lớn hơn nhiều so với cờ vây và mô hình giá trị chi tiết rất khó huấn luyện. Đây là ví dụ quý giá về việc báo cáo cả kết quả âm.
+
+\subsection{Sau R1: Các cải tiến thuật toán RL cho suy luận}
+\label{ssec:grpo_variants}
+Sự thành công của R1 kéo theo một làn sóng nghiên cứu mổ xẻ và cải tiến GRPO:
+
+\paragraph{DAPO \cite{yu2025dapo}.} Hệ thống RL mã nguồn mở đầy đủ, đạt 50 điểm trên AIME 2024 với Qwen2.5-32B-Base (cao hơn kết quả RL trực tiếp của DeepSeek với ít bước hơn). Bốn kỹ thuật:
+\begin{enumerate}
+	\item \textbf{Clip-Higher:} Tách ngưỡng cắt thành $\epsilon_{\text{low}}$ và $\epsilon_{\text{high}}$ với $\epsilon_{\text{high}}$ lớn hơn, để các token xác suất thấp nhưng tốt có thể được tăng xác suất nhiều hơn -- chống hiện tượng \emph{sụp đổ entropy} (mô hình mất khả năng khám phá).
+	\item \textbf{Dynamic Sampling:} Loại bỏ các prompt mà cả nhóm đều đúng hoặc đều sai (advantage bằng 0), lấy mẫu bù để mỗi batch đều có tín hiệu học.
+	\item \textbf{Token-level policy gradient loss:} Lấy trung bình loss trên \emph{tất cả token} trong batch thay vì trung bình theo từng câu trả lời, để các chuỗi suy luận dài (và các mẫu lỗi bên trong chúng) có trọng số tương xứng.
+	\item \textbf{Overlong reward shaping:} Phạt mềm các câu trả lời bị cắt do vượt độ dài tối đa thay vì phạt nặng, giảm nhiễu phần thưởng.
+\end{enumerate}
+
+\paragraph{Dr.~GRPO \cite{liu2025drgrpo}.} Phân tích “phê phán” các quy trình huấn luyện kiểu R1-Zero, chỉ ra hai thiên lệch trong mục tiêu GRPO gốc: chia cho độ dài $|o_i|$ khiến các câu trả lời sai mà dài bị phạt nhẹ hơn trên mỗi token (khuyến khích trả lời dài lê thê khi sai), và chia cho độ lệch chuẩn của nhóm khiến các câu hỏi quá dễ hoặc quá khó được tăng trọng số. Bỏ hai phép chuẩn hóa này giúp dùng token hiệu quả hơn. Nghiên cứu cũng cho thấy một số mô hình nền đã có sẵn hành vi “tự phản tư” trước khi RL -- tức là “khoảnh khắc aha” không hoàn toàn do RL tạo ra.
+
+\paragraph{GSPO \cite{zheng2025gspo}.} Nhóm Qwen cho rằng tỷ số quan trọng ở \emph{từng token} là nguồn nhiễu lớn, đặc biệt gây mất ổn định khi huấn luyện RL cho mô hình MoE. GSPO định nghĩa tỷ số ở mức \emph{cả chuỗi}, chuẩn hóa theo độ dài:
+\[
+s_i(\theta) = \left(\frac{\pi_\theta(o_i\mid q)}{\pi_{\theta_{\text{old}}}(o_i\mid q)}\right)^{1/|o_i|},
+\]
+và thực hiện cắt ngưỡng ở mức chuỗi. GSPO ổn định hơn và được dùng để huấn luyện dòng Qwen3.
+
+\subsection{Những vấn đề mở}
+\label{ssec:reasoning_open_problems}
+\begin{itemize}
+	\item \textbf{Suy nghĩ quá mức (overthinking):} Mô hình sinh hàng nghìn token cho câu hỏi đơn giản. Các hướng giải quyết: phần thưởng theo độ dài, chế độ “suy nghĩ/không suy nghĩ” có thể bật tắt (như Qwen3), ngân sách suy nghĩ do người dùng đặt.
+	\item \textbf{Tính trung thực của chuỗi suy nghĩ (faithfulness):} Chuỗi suy nghĩ hiển thị không nhất thiết phản ánh đúng quá trình tính toán thực sự bên trong mô hình.
+	\item \textbf{Mở rộng ra ngoài miền kiểm chứng được:} Viết lách, tư vấn, nghiên cứu mở không có phần thưởng dựa trên luật; cần reward model hoặc LLM-as-a-judge (mục~\ref{sec:llm_as_a_judge}) với nguy cơ bị hack.
+	\item \textbf{RL có thực sự dạy năng lực mới?} Một số nghiên cứu cho rằng RLVR chủ yếu làm “sắc nét” phân phối -- tăng pass@1 -- hơn là mở rộng tập bài toán mô hình có thể giải (pass@$k$ với $k$ lớn). Đây vẫn là chủ đề tranh luận.
+\end{itemize}
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Chương này đã theo dấu hành trình từ các verifier kiểm chứng lời giải (ORM, PRM), qua các quy luật mở rộng tính toán lúc suy luận, các phương pháp tự học suy luận (STaR, ReST$^{EM}$, Quiet-STaR), đến học tăng cường với phần thưởng kiểm chứng được -- nền tảng của DeepSeek-R1 và các mô hình suy luận hiện đại. Thông điệp cốt lõi: trí thông minh của LLM không chỉ đến từ số tham số mà còn từ cách chúng ta cho phép và dạy mô hình sử dụng tính toán khi trả lời. Nhưng mô hình suy luận vẫn cần tri thức cập nhật từ bên ngoài -- chủ đề của chương tiếp theo về Tìm kiếm và Sinh Tăng cường.}

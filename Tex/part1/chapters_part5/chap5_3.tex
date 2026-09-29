@@ -11,7 +11,7 @@ Với sự ra đời của các Mô hình Ngôn ngữ Lớn (LLMs) có quy mô h
     Học trong Ngữ cảnh là khả năng của một LLM có thể học và thực hiện một tác vụ mới chỉ bằng cách được cung cấp một vài ví dụ minh họa ngay trong \textbf{câu lệnh đầu vào (prompt)}, mà \textbf{không cần bất kỳ sự cập nhật trọng số nào} của mô hình.
 \end{definition}
 
-Nói cách khác, mô hình "học" bằng cách suy luận từ các ví dụ được đưa ra trong "bộ nhớ ngắn hạn" (ngữ cảnh của prompt), thay vì "học" bằng cách cập nhật "bộ nhớ dài hạn" (trọng số của mô hình) thông qua quá trình fine-tuning.
+Nói cách khác, mô hình “học” bằng cách suy luận từ các ví dụ được đưa ra trong “bộ nhớ ngắn hạn” (ngữ cảnh của prompt), thay vì “học” bằng cách cập nhật “bộ nhớ dài hạn” (trọng số của mô hình) thông qua quá trình fine-tuning.
 
 Khả năng này đã khai sinh ra một lĩnh vực hoàn toàn mới: \textbf{Kỹ thuật Thiết kế Câu lệnh (Prompt Engineering)} -- nghệ thuật và khoa học của việc thiết kế các prompt hiệu quả để khai thác tối đa tiềm năng của LLMs.
 
@@ -37,14 +37,14 @@ Khả năng ICL của LLMs thường được phân loại dựa trên số lư�
 \subsubsection{One-shot Learning (Học với một ví dụ, n=1)}
 \begin{itemize}
     \item \textbf{Cơ chế:} Cung cấp cho mô hình \textbf{một ví dụ} duy nhất về cặp (đầu vào, đầu ra) để làm mẫu, trước khi đưa ra câu hỏi thực sự.
-    \item \textbf{Trực giác:} Một ví dụ duy nhất giúp mô hình "định vị" được tác vụ, hiểu rõ hơn về định dạng đầu ra mong muốn và bối cảnh cụ thể.
+    \item \textbf{Trực giác:} Một ví dụ duy nhất giúp mô hình “định vị” được tác vụ, hiểu rõ hơn về định dạng đầu ra mong muốn và bối cảnh cụ thể.
     \item \textbf{Ví dụ (Dịch từ vô nghĩa):}
         \begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black]
         \textbf{Prompt:} \\
-        Dịch từ "glorp" sang tiếng Việt có nghĩa là "vui vẻ". \\
-        Dịch từ "flumph" sang tiếng Việt có nghĩa là gì?
+        Dịch từ “glorp” sang tiếng Việt có nghĩa là “vui vẻ”. \\
+        Dịch từ “flumph” sang tiếng Việt có nghĩa là gì?
         \end{tcolorbox}
-        \textbf{Đầu ra mong muốn:} Một từ vô nghĩa khác, thể hiện mô hình đã hiểu "quy luật" của tác vụ.
+        \textbf{Đầu ra mong muốn:} Một từ vô nghĩa khác, thể hiện mô hình đã hiểu “quy luật” của tác vụ.
 \end{itemize}
 
 \subsubsection{Few-shot Learning (Học với vài ví dụ, n > 1)}
@@ -71,7 +71,7 @@ Hiệu năng của mô hình thường tăng lên cùng với số lượng ví 
 \label{ssec:chain_of_thought}
 
 \subsubsection{Vấn đề của Prompting Tiêu chuẩn}
-Với các bài toán đòi hỏi suy luận nhiều bước (ví dụ: các bài toán logic, toán học), phương pháp few-shot tiêu chuẩn thường thất bại. Mô hình có thể cố gắng "đoán" câu trả lời cuối cùng một cách trực tiếp và thường đưa ra kết quả sai.
+Với các bài toán đòi hỏi suy luận nhiều bước (ví dụ: các bài toán logic, toán học), phương pháp few-shot tiêu chuẩn thường thất bại. Mô hình có thể cố gắng “đoán” câu trả lời cuối cùng một cách trực tiếp và thường đưa ra kết quả sai.
 
 \subsubsection{Giải pháp của CoT: ''Hãy suy nghĩ từng bước''}
 Chain-of-Thought (CoT) Prompting (Wei et al., 2022) Prompting \cite{wei2022chain} là một kỹ thuật đơn giản nhưng cực kỳ mạnh mẽ.
@@ -79,7 +79,7 @@ Chain-of-Thought (CoT) Prompting (Wei et al., 2022) Prompting \cite{wei2022chain
     title=Trực giác của Chain-of-Thought,
     colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries
 ]
-Thay vì chỉ cung cấp các ví dụ (Câu hỏi, Trả lời), chúng ta hãy cung cấp các ví dụ bao gồm cả \textbf{quá trình suy luận từng bước (step-by-step reasoning)} dẫn đến câu trả lời cuối cùng. Điều này khuyến khích mô hình "bắt chước" quá trình suy nghĩ đó, phân rã một bài toán phức tạp thành các bước trung gian đơn giản hơn.
+Thay vì chỉ cung cấp các ví dụ (Câu hỏi, Trả lời), chúng ta hãy cung cấp các ví dụ bao gồm cả \textbf{quá trình suy luận từng bước (step-by-step reasoning)} dẫn đến câu trả lời cuối cùng. Điều này khuyến khích mô hình “bắt chước” quá trình suy nghĩ đó, phân rã một bài toán phức tạp thành các bước trung gian đơn giản hơn.
 \end{tcolorbox}
 
 \begin{example}{So sánh Standard Prompting và CoT Prompting}{ex:cot_comparison}
@@ -103,11 +103,11 @@ Thay vì chỉ cung cấp các ví dụ (Câu hỏi, Trả lời), chúng ta hã
     Q: Roger có 5 quả bóng tennis. Anh ấy mua thêm 2 hộp, mỗi hộp có 3 quả. Hỏi bây giờ anh ấy có tất cả bao nhiêu quả bóng?
     A:
     \end{tcolorbox}
-    \(\rightarrow\) Bị "mớm" bởi ví dụ trên, mô hình có khả năng cao sẽ sinh ra chuỗi suy luận: `Roger ban đầu có 5 quả bóng. Anh ấy mua thêm 2 hộp, mỗi hộp 3 quả, tức là thêm 2 * 3 = 6 quả. Tổng cộng anh ấy có 5 + 6 = 11 quả. Câu trả lời là 11.`
+    \(\rightarrow\) Bị “mớm” bởi ví dụ trên, mô hình có khả năng cao sẽ sinh ra chuỗi suy luận: `Roger ban đầu có 5 quả bóng. Anh ấy mua thêm 2 hộp, mỗi hộp 3 quả, tức là thêm 2 * 3 = 6 quả. Tổng cộng anh ấy có 5 + 6 = 11 quả. Câu trả lời là 11.`
 \end{example}
 
 \paragraph{Zero-shot-CoT}
-Một khám phá thú vị sau đó là chúng ta thậm chí không cần cung cấp ví dụ. Chỉ cần thêm một câu thần chú đơn giản như \textbf{"Let's think step by step."} (Hãy suy nghĩ từng bước.) vào cuối prompt cũng đủ để kích hoạt khả năng suy luận theo chuỗi của các LLM lớn.
+Một khám phá thú vị sau đó là chúng ta thậm chí không cần cung cấp ví dụ. Chỉ cần thêm một câu thần chú đơn giản như \textbf{“Let's think step by step.”} (Hãy suy nghĩ từng bước.) vào cuối prompt cũng đủ để kích hoạt khả năng suy luận theo chuỗi của các LLM lớn.
 
 \subsection{Các kỹ thuật nâng cao dựa trên CoT}
 \label{ssec:advanced_cot}
@@ -127,14 +127,14 @@ CoT là một ý tưởng nền tảng, và nhiều kỹ thuật khác đã đư
 
 \subsubsection{Cây Suy tưởng (Tree of Thoughts - ToT)}
 \begin{itemize}
-    \item \textbf{Vấn đề:} CoT và Self-Consistency vẫn chỉ khám phá các con đường suy luận một cách độc lập. Chúng không có khả năng "quay lại", "đánh giá" hay "so sánh" các bước suy luận trung gian.
+    \item \textbf{Vấn đề:} CoT và Self-Consistency vẫn chỉ khám phá các con đường suy luận một cách độc lập. Chúng không có khả năng “quay lại”, “đánh giá” hay “so sánh” các bước suy luận trung gian.
     \item \textbf{Giải pháp của Tree of Thoughts (Yao et al., 2023) \cite{yao2023tree}:}
         \begin{enumerate}
-            \item \textbf{Tạo cây:} Thay vì một chuỗi duy nhất, mô hình sẽ chủ động tạo ra một \textbf{cây các "suy tưởng" (thoughts)}. Tại mỗi bước, nó sẽ đề xuất nhiều bước tiếp theo có thể có, tạo thành các nhánh mới.
-            \item \textbf{Đánh giá:} Một "bộ đánh giá" (có thể là chính LLM đó) sẽ cho điểm mỗi nhánh (mỗi "suy tưởng" trung gian), đánh giá xem nó có hứa hẹn dẫn đến giải pháp cuối cùng hay không.
+            \item \textbf{Tạo cây:} Thay vì một chuỗi duy nhất, mô hình sẽ chủ động tạo ra một \textbf{cây các “suy tưởng” (thoughts)}. Tại mỗi bước, nó sẽ đề xuất nhiều bước tiếp theo có thể có, tạo thành các nhánh mới.
+            \item \textbf{Đánh giá:} Một “bộ đánh giá” (có thể là chính LLM đó) sẽ cho điểm mỗi nhánh (mỗi “suy tưởng” trung gian), đánh giá xem nó có hứa hẹn dẫn đến giải pháp cuối cùng hay không.
             \item \textbf{Tìm kiếm:} Sử dụng các thuật toán tìm kiếm trên cây (như tìm kiếm theo chiều rộng hoặc chiều sâu) để khám phá cây suy tưởng một cách có hệ thống, ưu tiên các nhánh có điểm số cao và loại bỏ các nhánh không hứa hẹn.
         \end{enumerate}
     \item \textbf{Trực giác:} ToT mô phỏng cách con người giải quyết các vấn đề phức tạp hơn: chúng ta không chỉ đi theo một luồng suy nghĩ duy nhất, mà còn xem xét nhiều khả năng, đánh giá chúng, và quay lại nếu một hướng đi có vẻ sai lầm. ToT cho phép mô hình có khả năng tự đánh giá và lập kế hoạch một cách tường minh.
 \end{itemize}
 
-Các kỹ thuật prompt engineering, từ few-shot đơn giản đến các cấu trúc suy luận phức tạp như ToT, đang liên tục phát triển, biến việc "trò chuyện" với LLM trở thành một lĩnh vực kỹ thuật thực sự.
+Các kỹ thuật prompt engineering, từ few-shot đơn giản đến các cấu trúc suy luận phức tạp như ToT, đang liên tục phát triển, biến việc “trò chuyện” với LLM trở thành một lĩnh vực kỹ thuật thực sự.

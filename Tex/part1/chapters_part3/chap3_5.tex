@@ -7,7 +7,7 @@
 
 Khi nhắc đến Mạng Nơ-ron Tích chập (Convolutional Neural Networks - CNNs), người ta thường nghĩ ngay đến các ứng dụng xử lý ảnh (Image Processing) như nhận dạng vật thể hay phân loại hình ảnh. Tuy nhiên, vào khoảng năm 2014, các nhà nghiên cứu như Yoon Kim \cite{kim2014convolutional} đã chứng minh rằng kiến trúc này, với một vài điều chỉnh nhỏ, lại có thể đạt được hiệu năng ấn tượng cho các bài toán phân loại văn bản (text classification).
 
-Vậy, làm thế nào một kiến trúc được thiết kế để "nhìn" các điểm ảnh 2D lại có thể "đọc" được văn bản 1D?
+Vậy, làm thế nào một kiến trúc được thiết kế để “nhìn” các điểm ảnh 2D lại có thể “đọc” được văn bản 1D?
 
 \subsection{Từ Ảnh 2D đến Văn bản 1D: Một sự tương đồng}
 \label{ssec:cnn_analogy}
@@ -15,7 +15,7 @@ Vậy, làm thế nào một kiến trúc được thiết kế để "nhìn" c�
 Hãy xem xét sự tương đồng giữa ảnh và văn bản:
 \begin{itemize}
     \item \textbf{Ảnh:} Là một ma trận các pixel 2D (chiều cao x chiều rộng). Một CNN sử dụng các \textbf{bộ lọc (filters)} hoặc \textbf{nhân (kernels)} 2D để trượt qua các vùng ảnh nhỏ, nhằm phát hiện các đặc trưng cục bộ như cạnh, góc, hay các hoa văn.
-    \item \textbf{Văn bản:} Sau khi các từ được chuyển thành vector embedding, một câu có thể được xem như một "bức ảnh" 1D. Cụ thể, một câu gồm $n$ từ, mỗi từ là một vector $k$ chiều, có thể được biểu diễn bằng một ma trận có kích thước $n \times k$.
+    \item \textbf{Văn bản:} Sau khi các từ được chuyển thành vector embedding, một câu có thể được xem như một “bức ảnh” 1D. Cụ thể, một câu gồm $n$ từ, mỗi từ là một vector $k$ chiều, có thể được biểu diễn bằng một ma trận có kích thước $n \times k$.
 \end{itemize}
 
 Dựa trên sự tương đồng này, chúng ta có thể áp dụng các phép tích chập (convolutions) lên văn bản. Tuy nhiên, thay vì các bộ lọc 2D trượt theo cả chiều ngang và dọc, trong NLP, chúng ta sử dụng các \textbf{bộ lọc 1D} chỉ trượt theo một chiều duy nhất: chiều dài của câu.
@@ -33,7 +33,7 @@ Một kiến trúc CNN điển hình cho bài toán phân loại văn bản bao 
 \subsubsection{1. Lớp Nhúng (Embedding Layer)}
 Đây là bước đầu tiên, biến đổi câu đầu vào từ một chuỗi các chỉ số từ (word indices) thành một ma trận.
 \begin{itemize}
-    \item \textbf{Đầu vào:} Một câu, ví dụ "NLP rất thú vị và mạnh mẽ".
+    \item \textbf{Đầu vào:} Một câu, ví dụ “NLP rất thú vị và mạnh mẽ”.
     \item \textbf{Đầu ra:} Một ma trận có kích thước (\texttt{số\_từ}, chiều\_embedding). Ví dụ, (6, 300).
 \end{itemize}
 
@@ -46,10 +46,10 @@ Trong NLP, một bộ lọc 1D có thể được xem như một \textbf{bộ ph
 \begin{itemize}
     \item \textbf{Bộ lọc (Filter):} Một bộ lọc là một ma trận trọng số nhỏ, có kích thước (\texttt{kích\_thước\_N-gram}, \texttt{chiều\_embedding}). Ví dụ, một bộ lọc trigram sẽ có kích thước (3, 300).
     \item \textbf{Phép tích chập:} Bộ lọc này sẽ \textbf{trượt (slides)} dọc theo ma trận embedding của câu, từ trên xuống dưới, mỗi lần một bước. Tại mỗi vị trí, nó thực hiện một phép tích vô hướng (dot product) giữa các trọng số của nó và vùng ma trận embedding mà nó bao phủ. Kết quả của mỗi phép tích là một con số duy nhất.
-    \item \textbf{Bản đồ Đặc trưng (Feature Map):} Sau khi trượt hết câu, bộ lọc sẽ tạo ra một chuỗi các con số, gọi là một \textbf{bản đồ đặc trưng}. Chuỗi này biểu diễn sự hiện diện của mẫu N-gram mà bộ lọc đó được "chuyên môn hóa" để phát hiện tại các vị trí khác nhau trong câu.
+    \item \textbf{Bản đồ Đặc trưng (Feature Map):} Sau khi trượt hết câu, bộ lọc sẽ tạo ra một chuỗi các con số, gọi là một \textbf{bản đồ đặc trưng}. Chuỗi này biểu diễn sự hiện diện của mẫu N-gram mà bộ lọc đó được “chuyên môn hóa” để phát hiện tại các vị trí khác nhau trong câu.
 \end{itemize}
 
-Thông thường, chúng ta không chỉ dùng một bộ lọc. Chúng ta sử dụng \textbf{nhiều bộ lọc} cho mỗi kích thước N-gram (ví dụ: 100 bộ lọc cho bigram, 100 bộ lọc cho trigram, 100 bộ lọc cho 4-gram). Mỗi bộ lọc sẽ tự học để phát hiện một loại mẫu N-gram khác nhau (ví dụ: một bộ lọc bigram có thể chuyên phát hiện các mẫu "rất + [tính từ tích cực]", một bộ lọc khác chuyên phát hiện "không + [động từ]").
+Thông thường, chúng ta không chỉ dùng một bộ lọc. Chúng ta sử dụng \textbf{nhiều bộ lọc} cho mỗi kích thước N-gram (ví dụ: 100 bộ lọc cho bigram, 100 bộ lọc cho trigram, 100 bộ lọc cho 4-gram). Mỗi bộ lọc sẽ tự học để phát hiện một loại mẫu N-gram khác nhau (ví dụ: một bộ lọc bigram có thể chuyên phát hiện các mẫu “rất + [tính từ tích cực]”, một bộ lọc khác chuyên phát hiện “không + [động từ]”).
 \begin{tcolorbox}[
     title=Ghi chú sâu về Lớp Nhúng và Tích chập,
     colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries
@@ -58,8 +58,8 @@ Thông thường, chúng ta không chỉ dùng một bộ lọc. Chúng ta sử 
 Một quyết định quan trọng là có nên cập nhật các vector embedding trong quá trình huấn luyện hay không.
 \begin{itemize}
     \item \textbf{Static (Tĩnh):} Sử dụng embedding đã được huấn luyện trước (pre-trained) và giữ cố định. Đây là lựa chọn tốt khi tập dữ liệu cho tác vụ hiện tại nhỏ, để tránh overfitting.
-    \item \textbf{Non-static (Động):} Cho phép mô hình "tinh chỉnh" (fine-tune) các embedding. Điều này giúp các vector từ học được những sắc thái ngữ nghĩa đặc thù cho tác vụ đang giải quyết. Ví dụ, trong bài toán phân tích cảm xúc, embedding của từ "tuyệt vời" có thể được đẩy ra xa hơn embedding của từ "tốt".
-    \item \textbf{Multiple Channels:} Một kỹ thuật mạnh mẽ là sử dụng nhiều "kênh" đầu vào. Ví dụ, một kênh là embedding tĩnh, kênh kia là embedding động. Các bộ lọc tích chập sẽ học cách trích xuất đặc trưng từ cả hai kênh này. Ý tưởng này tương tự như các kênh màu (RGB) trong ảnh, cho phép mô hình tiếp cận dữ liệu từ nhiều "góc nhìn" khác nhau.
+    \item \textbf{Non-static (Động):} Cho phép mô hình “tinh chỉnh” (fine-tune) các embedding. Điều này giúp các vector từ học được những sắc thái ngữ nghĩa đặc thù cho tác vụ đang giải quyết. Ví dụ, trong bài toán phân tích cảm xúc, embedding của từ “tuyệt vời” có thể được đẩy ra xa hơn embedding của từ “tốt”.
+    \item \textbf{Multiple Channels:} Một kỹ thuật mạnh mẽ là sử dụng nhiều “kênh” đầu vào. Ví dụ, một kênh là embedding tĩnh, kênh kia là embedding động. Các bộ lọc tích chập sẽ học cách trích xuất đặc trưng từ cả hai kênh này. Ý tưởng này tương tự như các kênh màu (RGB) trong ảnh, cho phép mô hình tiếp cận dữ liệu từ nhiều “góc nhìn” khác nhau.
 \end{itemize}
 
 \textbf{2. Tại sao chiều rộng của bộ lọc bằng chiều embedding?} \\
@@ -69,7 +69,7 @@ Bộ lọc trong CNN cho NLP được thiết kế để có chiều rộng bằ
 Sau lớp tích chập, chúng ta có rất nhiều bản đồ đặc trưng, mỗi cái là một vector dài. Lớp gộp có nhiệm vụ giảm chiều dữ liệu và tóm tắt thông tin quan trọng nhất từ mỗi bản đồ đặc trưng.
 
 \paragraph{Trực giác cốt lõi}
-Lớp gộp trả lời câu hỏi: "Đối với mẫu N-gram mà bộ lọc này phát hiện, liệu nó có xuất hiện một cách \textbf{nổi bật} ở đâu đó trong câu không?". Chúng ta không quan tâm nó xuất hiện ở đâu, chỉ cần biết nó có xuất hiện hay không.
+Lớp gộp trả lời câu hỏi: “Đối với mẫu N-gram mà bộ lọc này phát hiện, liệu nó có xuất hiện một cách \textbf{nổi bật} ở đâu đó trong câu không?”. Chúng ta không quan tâm nó xuất hiện ở đâu, chỉ cần biết nó có xuất hiện hay không.
 
 \paragraph{Hoạt động: Max-over-time Pooling}
 Kỹ thuật gộp phổ biến nhất trong NLP là \textbf{Max-over-time Pooling} (gọi tắt là Max-Pooling).
@@ -79,11 +79,11 @@ Kỹ thuật gộp phổ biến nhất trong NLP là \textbf{Max-over-time Pooli
     \item Sau bước này, mỗi bộ lọc chỉ đóng góp một con số duy nhất. Nếu chúng ta có 100 bộ lọc bigram, 100 bộ lọc trigram, và 100 bộ lọc 4-gram, kết quả của lớp gộp sẽ là một vector 300 chiều.
 \end{itemize}
 \paragraph{Tại sao Max-Pooling lại hiệu quả?}
-Trực giác đằng sau sự thành công của Max-pooling trong phân loại văn bản là nó hoạt động như một cơ chế phát hiện đặc trưng. Mỗi bản đồ đặc trưng là đầu ra của một "bộ phát hiện N-gram" cụ thể. Bằng cách lấy giá trị lớn nhất, chúng ta đang trả lời câu hỏi: "Tín hiệu của N-gram quan trọng này có xuất hiện mạnh mẽ nhất ở đâu đó trong câu không?".
+Trực giác đằng sau sự thành công của Max-pooling trong phân loại văn bản là nó hoạt động như một cơ chế phát hiện đặc trưng. Mỗi bản đồ đặc trưng là đầu ra của một “bộ phát hiện N-gram” cụ thể. Bằng cách lấy giá trị lớn nhất, chúng ta đang trả lời câu hỏi: “Tín hiệu của N-gram quan trọng này có xuất hiện mạnh mẽ nhất ở đâu đó trong câu không?”.
 \begin{itemize}
-    \item Nó tạo ra sự \textbf{bất biến về vị trí (positional invariance)}. Mô hình không quan tâm cụm từ "rất tệ" xuất hiện ở đầu hay cuối câu, miễn là nó xuất hiện và tạo ra một tín hiệu mạnh.
+    \item Nó tạo ra sự \textbf{bất biến về vị trí (positional invariance)}. Mô hình không quan tâm cụm từ “rất tệ” xuất hiện ở đầu hay cuối câu, miễn là nó xuất hiện và tạo ra một tín hiệu mạnh.
     \item Nó tập trung vào các tín hiệu \textbf{nổi bật nhất}, bỏ qua các tín hiệu nhiễu hoặc yếu hơn. Trong phân loại cảm xúc, chỉ cần một cụm từ tiêu cực mạnh là đủ để quyết định nhãn của cả câu.
-    \item \textbf{Average-pooling}, ngược lại, sẽ làm "trung hòa" tín hiệu. Nếu một câu có một cụm từ rất tích cực và nhiều cụm từ trung tính, giá trị trung bình sẽ bị kéo xuống, làm mất đi đặc trưng quan trọng nhất.
+    \item \textbf{Average-pooling}, ngược lại, sẽ làm “trung hòa” tín hiệu. Nếu một câu có một cụm từ rất tích cực và nhiều cụm từ trung tính, giá trị trung bình sẽ bị kéo xuống, làm mất đi đặc trưng quan trọng nhất.
 \end{itemize}
 \subsubsection{4. Lớp Kết nối Đầy đủ, Phân loại, và Huấn luyện}
 Vector đặc trưng cuối cùng (ví dụ, 300 chiều) từ lớp gộp giờ đây đã nắm bắt được những thông tin N-gram quan trọng nhất của câu. Vector này được đưa vào một mạng nơ-ron truyền thẳng (FNN) thông thường, thường có một hoặc hai lớp ẩn và một lớp softmax ở cuối để đưa ra dự đoán phân loại cuối cùng.
@@ -124,14 +124,14 @@ Thay vì áp dụng tích chập trên các từ, chúng ta có thể áp dụng
     \item \textbf{Ưu điểm:}
         \begin{enumerate}
             \item \textbf{Xử lý từ OOV:} Mô hình có thể tạo ra biểu diễn cho bất kỳ từ nào, kể cả từ chưa từng thấy, dựa trên các ký tự cấu thành nó.
-            \item \textbf{Hiểu hình thái học:} Nó có thể nhận ra các tiền tố, hậu tố, và gốc từ (ví dụ, "running", "ran", "runner" đều chứa "run"), giúp mô hình hiểu được mối quan hệ giữa các từ cùng họ.
+            \item \textbf{Hiểu hình thái học:} Nó có thể nhận ra các tiền tố, hậu tố, và gốc từ (ví dụ, “running”, “ran”, “runner” đều chứa “run”), giúp mô hình hiểu được mối quan hệ giữa các từ cùng họ.
         \end{enumerate}
 \end{itemize}
 Những kiến trúc nâng cao này cho thấy sự linh hoạt và sức mạnh của phép tích chập như một công cụ trích xuất đặc trưng hiệu quả trong NLP.
 \subsection{So sánh CNN và RNN cho NLP}
 CNN và RNN tiếp cận bài toán xử lý văn bản từ hai góc độ hoàn toàn khác nhau:
 \begin{itemize}
-    \item \textbf{RNN/LSTM} xem văn bản như một chuỗi tuần tự, xử lý từng bước một và xây dựng một "trí nhớ" về quá khứ. Nó rất mạnh trong việc mô hình hóa các phụ thuộc tầm xa và các tác vụ yêu cầu hiểu sâu về cấu trúc câu.
-    \item \textbf{CNN} xem văn bản như một "túi các N-gram", sử dụng các bộ lọc để tìm kiếm các mẫu cục bộ quan trọng. Nó rất mạnh trong việc trích xuất các đặc trưng phân loại hiệu quả và nhanh chóng.
+    \item \textbf{RNN/LSTM} xem văn bản như một chuỗi tuần tự, xử lý từng bước một và xây dựng một “trí nhớ” về quá khứ. Nó rất mạnh trong việc mô hình hóa các phụ thuộc tầm xa và các tác vụ yêu cầu hiểu sâu về cấu trúc câu.
+    \item \textbf{CNN} xem văn bản như một “túi các N-gram”, sử dụng các bộ lọc để tìm kiếm các mẫu cục bộ quan trọng. Nó rất mạnh trong việc trích xuất các đặc trưng phân loại hiệu quả và nhanh chóng.
 \end{itemize}
 Trong thực tế, người ta cũng thường kết hợp cả hai kiến trúc này (ví dụ, sử dụng CNN để trích xuất đặc trưng từ ký tự, sau đó đưa vào một LSTM để xử lý ở cấp độ từ) để tận dụng thế mạnh của cả hai.

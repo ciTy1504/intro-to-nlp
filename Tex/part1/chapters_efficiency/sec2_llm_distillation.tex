@@ -1,0 +1,76 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_efficiency/sec2_llm_distillation.tex
+
+\section{Chưng cất Tri thức cho LLM}
+\label{sec:llm_distillation}
+
+Chưng cất kinh điển (mục~\ref{ssec:knowledge_distillation}) khớp phân phối xác suất của thầy và trò trên \emph{một} nhãn. Với LLM tự hồi quy, “nhãn” là cả một \emph{chuỗi} token, và điều này đặt ra ba câu hỏi thiết kế mới: \textbf{trò học từ chuỗi của ai} (của thầy, của dữ liệu, hay của chính nó)? \textbf{Khớp phân phối theo độ đo nào} (KL xuôi hay ngược)? Và \textbf{chưng cất cái gì} -- chỉ đáp án, hay cả quá trình suy luận?
+
+\subsection{Chưng cất mức chuỗi và vấn đề lệch phân phối}
+\label{ssec:seq_kd}
+\paragraph{Word-level KD.} Tại mỗi vị trí, cho trò khớp phân phối token của thầy trên tiền tố \emph{lấy từ dữ liệu huấn luyện}:
+\[
+\mathcal{L}_{\text{word}} = \sum_{t} \text{KL}\Big(p_T(\cdot\mid y_{<t}, x)\,\Big\|\, q_S(\cdot\mid y_{<t}, x)\Big).
+\]
+\paragraph{Sequence-level KD \cite{kim2016sequence}.} Cho thầy sinh ra chuỗi đầu ra (ví dụ bằng beam search), rồi huấn luyện trò bằng cross-entropy thông thường trên các chuỗi này. Đây chính là cách phổ biến nhất hiện nay: \emph{sinh dữ liệu bằng mô hình lớn, SFT mô hình nhỏ trên dữ liệu đó} (ví dụ Alpaca, hay 800 nghìn mẫu của DeepSeek-R1 ở mục~\ref{ssec:r1_distill}).
+
+\paragraph{Vấn đề lệch phân phối (exposure bias).} Cả hai cách trên đều huấn luyện trò trên tiền tố \emph{không do chính nó sinh ra}. Khi suy luận, trò phải tiếp tục từ các tiền tố của nó -- vốn có thể chứa lỗi mà nó chưa từng học cách phục hồi. Hai hướng giải quyết dưới đây nhắm vào đúng vấn đề này.
+
+\subsection{MiniLLM: KL ngược thay cho KL xuôi}
+\label{ssec:minillm}
+KL xuôi $\text{KL}(p_T\|q_S)$ có tính \textbf{bao phủ mode (mode-covering)}: trò bị phạt nặng nếu gán xác suất thấp cho bất cứ vùng nào thầy gán xác suất cao, nên một trò nhỏ (năng lực hạn chế) buộc phải “trải mỏng” xác suất, kể cả vào các vùng mà thầy gán xác suất rất thấp -- sinh ra văn bản kém chất lượng. \textbf{MiniLLM} \cite{gu2024minillm} dùng KL ngược:
+\[
+\theta^\star = \arg\min_\theta \text{KL}\big(q_\theta \,\|\, p_T\big) = \arg\min_\theta \; \mathbb{E}_{y\sim q_\theta}\left[\log\frac{q_\theta(y\mid x)}{p_T(y\mid x)}\right],
+\]
+có tính \textbf{tìm mode (mode-seeking)}: trò tập trung vào các vùng xác suất cao của thầy và tránh sinh ra những gì thầy cho là khó xảy ra.
+
+Vì kỳ vọng lấy theo $y \sim q_\theta$ (câu trả lời do \emph{chính trò} sinh ra), bài toán được giải bằng \textbf{policy gradient}, với ba kỹ thuật ổn định: (1) phân rã gradient theo từng bước để giảm phương sai; (2) \emph{lấy mẫu trộn với thầy} (teacher-mixed sampling) để giảm hiện tượng trò khai thác điểm yếu của “phần thưởng”; (3) chuẩn hóa theo độ dài để tránh trò sinh câu quá ngắn. Trên các mô hình từ 120M đến 13B tham số, MiniLLM sinh văn bản chính xác hơn, ít lệch phân phối hơn, hiệu chỉnh xác suất (calibration) tốt hơn và làm tốt hơn với văn bản dài so với KD thông thường.
+
+\subsection{GKD: Chưng cất trên chính chính sách (on-policy distillation)}
+\label{ssec:gkd}
+\textbf{Generalized Knowledge Distillation (GKD)} \cite{agarwal2024gkd} hợp nhất các lựa chọn thiết kế thành một khung tổng quát:
+\begin{itemize}
+	\item \textbf{Nguồn chuỗi:} Trộn dữ liệu cố định (từ tập huấn luyện hoặc do thầy sinh) với chuỗi \textbf{do chính trò sinh ra} theo tỷ lệ $\lambda$. Với các chuỗi on-policy này, \emph{thầy chấm từng token} bằng phân phối xác suất của nó -- trò “học từ chính những lỗi mình tự gây ra”.
+	\item \textbf{Độ đo khớp phân phối:} Cho phép chọn KL xuôi, KL ngược, hoặc Jensen-Shannon tổng quát $\text{JSD}(\beta)$ nội suy giữa hai loại.
+\end{itemize}
+Các phương pháp cũ là trường hợp đặc biệt: SFT trên đầu ra của thầy ($\lambda=0$, KL xuôi), MiniLLM (on-policy, KL ngược). Trên các tác vụ tóm tắt, dịch và suy luận số học, GKD on-policy vượt các phương pháp chưng cất trước đó; và vì trò sinh chuỗi on-policy giống như trong RL, GKD \textbf{kết hợp tự nhiên với tinh chỉnh bằng học tăng cường} (ví dụ RLHF) trong cùng một vòng huấn luyện. Chưng cất on-policy đã trở thành thành phần tiêu chuẩn: ví dụ dòng Qwen3 dùng chưng cất từ mô hình mạnh sang mô hình yếu, gồm cả giai đoạn off-policy và on-policy, để tạo các mô hình nhỏ \cite{yang2025qwen3}.
+
+\subsection{Chưng cất quá trình suy luận}
+\label{ssec:rationale_distillation}
+
+\paragraph{Distilling Step-by-Step \cite{hsieh2023distilling}.} Thay vì chỉ học đáp án, trò học cả \emph{lý giải} (rationale) do LLM sinh ra bằng Chain-of-Thought, dưới dạng \textbf{học đa nhiệm}:
+\[
+\mathcal{L} = \mathcal{L}_{\text{label}} + \lambda\, \mathcal{L}_{\text{rationale}},
+\]
+trong đó cùng một đầu vào được gắn tiền tố \texttt{[label]} để dự đoán đáp án và \texttt{[rationale]} để sinh lý giải. Khi suy luận chỉ cần chạy nhiệm vụ \texttt{[label]}, nên không tốn thêm chi phí sinh lý giải. Lý giải đóng vai trò như \emph{giám sát bổ sung giàu thông tin}, giúp trò học hiệu quả với ít dữ liệu hơn: mô hình T5 770M vượt PaLM 540B dùng few-shot prompting trên ANLI chỉ với 80\% dữ liệu huấn luyện -- nhỏ hơn hơn 700 lần.
+
+\paragraph{KARD: Chưng cất suy luận có tăng cường tri thức \cite{kang2023kard}.} Với các tác vụ \emph{cần nhiều kiến thức} (y khoa, câu hỏi đa bước), mô hình nhỏ không đủ dung lượng để ghi nhớ mọi kiến thức mà lý giải của thầy dựa vào. KARD kết hợp chưng cất lý giải với truy xuất:
+\begin{itemize}
+	\item Tinh chỉnh trò sinh lý giải của LLM, \emph{kèm theo} các tài liệu được truy xuất từ kho tri thức bên ngoài.
+	\item Huấn luyện một \textbf{bộ xếp hạng lại (reranker)} nơ-ron để tìm các tài liệu thực sự liên quan tới việc sinh lý giải.
+\end{itemize}
+Kết quả: mô hình T5 250M tham số dùng KARD vượt các mô hình 3B (lớn hơn 12 lần) được tinh chỉnh thông thường trên MedQA-USMLE và StrategyQA. Bài học: \emph{tách kiến thức (đưa vào truy xuất) khỏi kỹ năng suy luận (chưng cất vào tham số)} -- tinh thần của RAG (chương~\ref{chap:rag}) áp dụng cho mô hình nhỏ.
+
+\subsection{Chưng cất trong kỷ nguyên học tăng cường: RLAD}
+\label{ssec:rlad}
+Ở mục~\ref{ssec:r1_distill}, chúng ta thấy chưng cất từ mô hình suy luận lớn hiệu quả hơn RL trực tiếp trên mô hình nhỏ. Một câu hỏi tự nhiên: có thể \emph{kết hợp} cả hai -- vừa học từ thầy, vừa học từ phần thưởng -- không? Cách đơn giản nhất là thêm một số hạng KL giữa trò và thầy vào mục tiêu RL. Nhưng Zhang et al. (2026) \cite{zhang2026rlad} chỉ ra hai vấn đề: dữ liệu của thầy bị \textbf{lệch phân phối} so với các chuỗi do trò sinh ra trong RL, và số hạng KL \textbf{xung đột mục tiêu} với việc cực đại phần thưởng.
+
+\textbf{RLAD (RL-Aware Distillation)} đề xuất \emph{bắt chước có chọn lọc}: chỉ kéo trò về phía thầy khi điều đó thực sự cải thiện bước cập nhật chính sách hiện tại. Thành phần cốt lõi, \textbf{Trust Region Ratio Distillation (TRRD)}, thay số hạng KL thầy--trò bằng một mục tiêu dạng tỷ số xác suất kiểu PPO/GRPO, được neo vào một \emph{hỗn hợp giữa thầy và chính sách cũ}. Nhờ vậy việc chưng cất vừa nhận biết advantage (chỉ học từ thầy ở nơi có lợi) vừa bị giới hạn trong vùng tin cậy (không nhảy quá xa). Trên các benchmark suy luận logic và toán học, RLAD vượt cả chưng cất offline, GRPO tiêu chuẩn, và chưng cất on-policy dựa trên KL.
+
+\begin{table}[H]
+\centering
+\caption{Bản đồ các phương pháp chưng cất cho LLM.}
+\label{tab:llm_distillation_map}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+\textbf{Phương pháp} & \textbf{Trò học từ chuỗi nào / tín hiệu gì} & \textbf{Ý tưởng then chốt} \\
+\midrule
+Seq-level KD / SFT trên dữ liệu thầy & Chuỗi của thầy, cross-entropy & Đơn giản, phổ biến nhất; bị lệch phân phối \\
+MiniLLM & Chuỗi của trò, KL ngược & Tìm mode; tối ưu bằng policy gradient \\
+GKD & Trộn chuỗi cố định và của trò, JSD($\beta$) & On-policy, hợp nhất các KD trước đó; kết hợp được với RL \\
+Distilling Step-by-Step & Đáp án + lý giải của thầy & Học đa nhiệm, lý giải là giám sát phụ \\
+KARD & Lý giải của thầy + tài liệu truy xuất & Tách kiến thức khỏi suy luận \\
+RLAD & Chuỗi của trò, phần thưởng + thầy có chọn lọc & Chưng cất trong vùng tin cậy, nhận biết advantage \\
+\bottomrule
+\end{tabularx}
+\end{table}

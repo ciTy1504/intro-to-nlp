@@ -10,17 +10,17 @@ Cho đến nay, các mô hình chúng ta đã thảo luận chủ yếu thuộc 
 Công cụ mạnh mẽ và phổ biến nhất cho nhiệm vụ này là \textbf{Phân bổ Dirichlet Tiềm ẩn (Latent Dirichlet Allocation - LDA)}\cite{blei2003latent}.
 
 \subsection{Tư duy cốt lõi và bài toán}
-Hãy tưởng tượng bạn được giao một kho lưu trữ gồm 1 triệu bài báo và được yêu cầu cho biết "Các bài báo này đang nói về những chủ đề chính nào?". Việc đọc thủ công là bất khả thi. Topic Modeling, và cụ thể là LDA, được sinh ra để giải quyết chính xác bài toán này.
+Hãy tưởng tượng bạn được giao một kho lưu trữ gồm 1 triệu bài báo và được yêu cầu cho biết “Các bài báo này đang nói về những chủ đề chính nào?”. Việc đọc thủ công là bất khả thi. Topic Modeling, và cụ thể là LDA, được sinh ra để giải quyết chính xác bài toán này.
 
-LDA được xây dựng dựa trên một loạt các giả định trực quan về cách các tài liệu được "sinh ra":
+LDA được xây dựng dựa trên một loạt các giả định trực quan về cách các tài liệu được “sinh ra”:
 \begin{enumerate}
-    \item Mỗi tài liệu là một \textbf{hỗn hợp của nhiều chủ đề} với các tỷ lệ khác nhau. Ví dụ, một bài báo về việc Apple ra mắt iPhone mới có thể là 70\% chủ đề "Công nghệ", 20\% chủ đề "Kinh doanh" và 10\% chủ đề "Thiết kế".
-    \item Mỗi chủ đề là một \textbf{phân phối xác suất trên các từ}. Ví dụ, chủ đề "Công nghệ" sẽ có xác suất cao cho các từ như "máy tính", "phần mềm", "dữ liệu", "AI", và xác suất rất thấp cho các từ như "chính trị", "bầu cử".
+    \item Mỗi tài liệu là một \textbf{hỗn hợp của nhiều chủ đề} với các tỷ lệ khác nhau. Ví dụ, một bài báo về việc Apple ra mắt iPhone mới có thể là 70\% chủ đề “Công nghệ”, 20\% chủ đề “Kinh doanh” và 10\% chủ đề “Thiết kế”.
+    \item Mỗi chủ đề là một \textbf{phân phối xác suất trên các từ}. Ví dụ, chủ đề “Công nghệ” sẽ có xác suất cao cho các từ như “máy tính”, “phần mềm”, “dữ liệu”, “AI”, và xác suất rất thấp cho các từ như “chính trị”, “bầu cử”.
 \end{enumerate}
 Nhiệm vụ của LDA là, khi chỉ được cho xem các tài liệu (tức là các từ), nó phải \textbf{suy ngược (infer)} ra các cấu trúc ẩn đã sinh ra chúng: (1) Hỗn hợp chủ đề cho mỗi tài liệu là gì? và (2) Phân phối từ cho mỗi chủ đề là gì?
 
 \subsection{Câu chuyện sinh dữ liệu của LDA (The Generative Story)}
-Cách dễ nhất để hiểu LDA là thông qua "câu chuyện" về cách một tài liệu được tạo ra theo quy tắc của nó. Đây là một thí nghiệm tưởng tượng:
+Cách dễ nhất để hiểu LDA là thông qua “câu chuyện” về cách một tài liệu được tạo ra theo quy tắc của nó. Đây là một thí nghiệm tưởng tượng:
 
 \begin{tcolorbox}[
     title=Câu chuyện sinh dữ liệu,
@@ -31,8 +31,8 @@ Giả sử bạn muốn viết một tài liệu mới có $N$ từ, và đã c�
     \item \textbf{Chọn hỗn hợp chủ đề cho tài liệu:} Đầu tiên, bạn quyết định tỷ lệ các chủ đề cho tài liệu của mình. Bạn lấy ngẫu nhiên một vector phân phối chủ đề $\theta_d$ từ một phân phối Dirichlet. Vector này có thể trông như: `[Topic1: 0.7, Topic2: 0.2, Topic3: 0.1, ...]`.
     \item \textbf{Viết từng từ một:} Để viết từ thứ $i$ trong tài liệu (với $i$ từ 1 đến $N$):
         \begin{enumerate}
-            \item \textbf{Chọn một chủ đề:} Dựa trên phân phối chủ đề $\theta_d$ của tài liệu, bạn "tung xúc xắc" để chọn ra một chủ đề $z_i$. Ví dụ, với xác suất 70\% bạn sẽ chọn Topic1.
-            \item \textbf{Chọn một từ từ chủ đề đó:} Bây giờ bạn đã có chủ đề $z_i$. Mỗi chủ đề lại có một phân phối từ riêng của nó (ký hiệu là $\phi_{z_i}$). Bạn lại "tung xúc xắc" một lần nữa, dựa trên phân phối từ này, để chọn ra một từ $w_i$.
+            \item \textbf{Chọn một chủ đề:} Dựa trên phân phối chủ đề $\theta_d$ của tài liệu, bạn “tung xúc xắc” để chọn ra một chủ đề $z_i$. Ví dụ, với xác suất 70\% bạn sẽ chọn Topic1.
+            \item \textbf{Chọn một từ từ chủ đề đó:} Bây giờ bạn đã có chủ đề $z_i$. Mỗi chủ đề lại có một phân phối từ riêng của nó (ký hiệu là $\phi_{z_i}$). Bạn lại “tung xúc xắc” một lần nữa, dựa trên phân phối từ này, để chọn ra một từ $w_i$.
         \end{enumerate}
     \item Lặp lại bước 2 cho đến khi bạn viết đủ $N$ từ.
 \end{enumerate}
@@ -54,7 +54,7 @@ Trực giác của Lấy mẫu Gibbs như sau:
     \item \textbf{Khởi tạo:} Đi qua tất cả các từ trong tất cả các tài liệu, gán ngẫu nhiên một trong $K$ chủ đề cho mỗi từ.
     \item \textbf{Lặp lại nhiều lần:} Với mỗi từ $w$ trong một tài liệu $d$:
         \begin{itemize}
-            \item Tạm thời "bỏ gán nhãn" chủ đề cho từ $w$.
+            \item Tạm thời “bỏ gán nhãn” chủ đề cho từ $w$.
             \item Tính toán lại xác suất từ $w$ thuộc về mỗi chủ đề $k$, dựa trên hai yếu tố:
                 \begin{enumerate}
                     \item Phân phối các chủ đề của các từ khác trong tài liệu $d$ (Tài liệu này đang nói nhiều về chủ đề nào?).
@@ -82,7 +82,7 @@ Mỗi chủ đề được biểu diễn bằng một danh sách các từ có x
 \paragraph{2. Biểu diễn tài liệu bằng chủ đề}
 Mỗi tài liệu giờ đây có thể được biểu diễn bằng một vector dày đặc, có số chiều bằng số chủ đề $K$. Mỗi chiều của vector là tỷ lệ của chủ đề đó trong tài liệu.
 \begin{example}{Biểu diễn tài liệu bằng LDA}{ex:lda_doc_representation}
-    Một bài báo có nội dung "Đội tuyển bóng đá quốc gia giành chức vô địch sau một trận đấu kịch tính" có thể được biểu diễn bằng vector:
+    Một bài báo có nội dung “Đội tuyển bóng đá quốc gia giành chức vô địch sau một trận đấu kịch tính” có thể được biểu diễn bằng vector:
     `[Thể thao: 0.9, Kinh tế: 0.05, Chính trị: 0.05]`
 \end{example}
 
@@ -117,7 +117,7 @@ Mỗi tài liệu giờ đây có thể được biểu diễn bằng một vect
 \bigskip
 
 \begin{center}
-    \textbf{\Large KẾT THÚC CHƯƠNG 2}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
 \end{center}
 
-\textit{Chương 2 đã đưa chúng ta vào một hành trình qua kỷ nguyên thống kê, từ việc biểu diễn văn bản như những "túi từ" đơn giản đến các vector ngữ nghĩa phức tạp. Cuộc cách mạng Word Embeddings đã cho chúng ta thấy rằng ý nghĩa của từ có thể được nắm bắt trong các không gian vector dày đặc, một ý tưởng nền tảng cho toàn bộ NLP hiện đại. Tuy nhiên, các embedding tĩnh này vẫn chưa nắm bắt được sự thay đổi của ý nghĩa theo ngữ cảnh. Đây chính là động lực để chúng ta bước sang chương tiếp theo, khám phá các kiến trúc mạng nơ-ron được thiết kế để "đọc" và "ghi nhớ" các chuỗi văn bản, mở ra kỷ nguyên của sự hiểu biết ngữ cảnh sâu sắc.}
+\textit{Chương 2 đã đưa chúng ta vào một hành trình qua kỷ nguyên thống kê, từ việc biểu diễn văn bản như những “túi từ” đơn giản đến các vector ngữ nghĩa phức tạp. Cuộc cách mạng Word Embeddings đã cho chúng ta thấy rằng ý nghĩa của từ có thể được nắm bắt trong các không gian vector dày đặc, một ý tưởng nền tảng cho toàn bộ NLP hiện đại. Tuy nhiên, các embedding tĩnh này vẫn chưa nắm bắt được sự thay đổi của ý nghĩa theo ngữ cảnh. Đây chính là động lực để chúng ta bước sang chương tiếp theo, khám phá các kiến trúc mạng nơ-ron được thiết kế để “đọc” và “ghi nhớ” các chuỗi văn bản, mở ra kỷ nguyên của sự hiểu biết ngữ cảnh sâu sắc.}

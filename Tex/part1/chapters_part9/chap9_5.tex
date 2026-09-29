@@ -1,0 +1,77 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_part9/chap9_5.tex
+% Cập nhật 2026 -- trục Evaluation của LLM Research Reading List
+
+\section{Đánh giá Tác tử và Đánh giá Tái lập được}
+\label{sec:agent_evaluation}
+
+Khi LLM chuyển từ “trả lời câu hỏi” sang “hoàn thành nhiệm vụ” -- duyệt web, sửa mã nguồn, thao tác hệ điều hành (mục~\ref{sec:agentic_systems}) -- các benchmark một lượt hỏi--đáp không còn đủ. Ta cần đo khả năng \textbf{lập kế hoạch nhiều bước, dùng công cụ, và phục hồi sau lỗi} trong môi trường tương tác. Mục này giới thiệu ba benchmark tác tử tiêu biểu, rồi bàn về một vấn đề nền tảng hơn: làm sao để kết quả đánh giá \emph{tái lập được}.
+
+\subsection{AgentBench: LLM trong vai trò tác tử trên nhiều môi trường}
+\label{ssec:agentbench}
+\textbf{AgentBench} \cite{liu2024agentbench} là benchmark có hệ thống đầu tiên đánh giá LLM như một tác tử trên \textbf{8 môi trường} thuộc ba nhóm:
+\begin{itemize}
+	\item \textbf{Nhóm mã nguồn:} Hệ điều hành (thực thi lệnh bash để trả lời câu hỏi hoặc thao tác), Cơ sở dữ liệu (viết SQL), Đồ thị tri thức (truy vấn qua các API).
+	\item \textbf{Nhóm trò chơi:} Trò chơi thẻ bài chiến thuật, câu đố tư duy ngang (lateral thinking puzzles), và môi trường việc nhà (ALFWorld).
+	\item \textbf{Nhóm web:} Mua sắm trên web (WebShop) và duyệt web (Mind2Web).
+\end{itemize}
+Mô hình tương tác qua nhiều lượt với môi trường, nhận quan sát và phải đưa ra hành động đúng định dạng. Kết quả trên hàng chục LLM cho thấy \textbf{khoảng cách lớn giữa các mô hình thương mại hàng đầu và mô hình mã nguồn mở} thời điểm đó; các nguyên nhân thất bại chính là \textbf{suy luận dài hạn kém}, \textbf{ra quyết định kém}, và \textbf{không tuân thủ chỉ dẫn/định dạng} -- ví dụ lặp lại cùng một hành động không hiệu quả hoặc vượt quá số lượt cho phép.
+
+\subsection{GAIA: Câu hỏi dễ với người, khó với AI}
+\label{ssec:gaia}
+Nhiều benchmark nhắm tới những tác vụ ngày càng khó với \emph{con người} (thi chuyên gia, toán olympic). \textbf{GAIA} \cite{mialon2024gaia} đi theo triết lý ngược lại: các câu hỏi \emph{đơn giản về khái niệm với con người} nhưng đòi hỏi một trợ lý AI thực sự hữu ích phải kết hợp nhiều năng lực -- suy luận, xử lý đa phương thức (ảnh, bảng tính, PDF, âm thanh), duyệt web, và dùng công cụ.
+\begin{itemize}
+	\item \textbf{466 câu hỏi} do con người thiết kế, chia thành \textbf{3 cấp độ} theo số bước và số công cụ cần dùng.
+	\item Mỗi câu có \textbf{một đáp án ngắn, duy nhất, kiểm chứng được} (một con số, một tên riêng\ldots), nên chấm điểm tự động và khách quan, không cần giám khảo LLM.
+	\item Phần lớn đáp án được giữ kín để làm bảng xếp hạng, hạn chế nhiễm bẩn.
+\end{itemize}
+Khi công bố, người tham gia trả lời đúng \textbf{92\%}, trong khi GPT-4 có plugin chỉ đạt \textbf{15\%} -- một khoảng cách cho thấy năng lực “làm việc thực tế” khác xa năng lực “thi cử”. GAIA về sau trở thành thước đo chuẩn cho các hệ thống tác tử nghiên cứu sâu (deep research).
+
+\subsection{SWE-bench: Sửa lỗi thực trên GitHub}
+\label{ssec:swebench}
+\textbf{SWE-bench} \cite{jimenez2024swebench} đánh giá khả năng kỹ sư phần mềm trong điều kiện sát thực tế nhất:
+\begin{itemize}
+	\item \textbf{Dữ liệu:} 2\,294 nhiệm vụ lấy từ các \emph{issue} thật và pull request tương ứng trong 12 kho mã Python phổ biến (Django, scikit-learn, sympy, matplotlib\ldots).
+	\item \textbf{Nhiệm vụ:} Cho mô hình mô tả issue và toàn bộ kho mã tại thời điểm trước khi sửa; mô hình phải sinh ra một bản vá (patch). Việc này đòi hỏi định vị đúng các file liên quan trong kho mã lớn, hiểu tương tác giữa nhiều hàm/lớp, và chỉnh sửa đồng thời nhiều vị trí.
+	\item \textbf{Chấm điểm bằng kiểm thử:} Bản vá được áp vào kho mã, rồi chạy các unit test: các test \emph{trước đó thất bại} (do lỗi của issue) phải chuyển sang thành công, và các test \emph{vốn đã thành công} không được bị hỏng. Không cần giám khảo, không mơ hồ.
+\end{itemize}
+Khi công bố (10/2023), mô hình tốt nhất chỉ giải được khoảng \textbf{2\%} nhiệm vụ. Để giảm nhiễu do một số nhiệm vụ mô tả mơ hồ hoặc test không hợp lý, OpenAI phối hợp với các tác giả phát hành \textbf{SWE-bench Verified} \cite{openai2024sweverified} (8/2024): 500 nhiệm vụ được các kỹ sư phần mềm chuyên nghiệp kiểm tra thủ công. Đến 2025--2026, các tác tử lập trình hàng đầu đã giải được phần lớn SWE-bench Verified -- một trong những đường cong tiến bộ nhanh nhất của LLM -- và cộng đồng chuyển dần sang các biến thể khó hơn, đa ngôn ngữ và dài hơi hơn.
+
+\begin{center}
+\bookimage[0.95\textwidth]{swe_bench_overview}{Một nhiệm vụ mẫu của SWE-bench: bên trái là siêu dữ liệu (kho mã sympy, mã issue, commit gốc) và mô tả lỗi kèm đoạn mã tái hiện; bên phải là “test patch” -- các unit test được thêm để kiểm tra lỗi -- và “gold patch” là bản vá thật của lập trình viên.}
+\captionof{figure}{Cấu trúc một nhiệm vụ SWE-bench: mô tả issue, bản vá kiểm thử và bản vá tham chiếu. Mô hình chỉ được xem mô tả issue và codebase, rồi phải sinh ra bản vá vượt qua các unit test. Nguồn: Jimenez et al.~\cite{jimenez2024swebench}.}
+\label{fig:swebench}
+\end{center}
+
+\begin{tcolorbox}[title={Những khó khăn đặc thù khi đánh giá tác tử}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{itemize}
+	\item \textbf{Kết quả phụ thuộc vào “giàn giáo” (scaffold):} Cùng một mô hình nhưng khác bộ công cụ, prompt hệ thống, số lượt tối đa có thể cho kết quả chênh lệch rất lớn. Một điểm số tác tử là điểm của \emph{hệ thống}, không chỉ của mô hình.
+	\item \textbf{Chi phí và phương sai:} Mỗi lần chạy tốn nhiều token và thời gian; kết quả có tính ngẫu nhiên cao nên cần nhiều lần chạy và báo cáo khoảng tin cậy.
+	\item \textbf{Môi trường thay đổi:} Web thật thay đổi theo thời gian; cần môi trường đóng gói (container) hoặc ảnh chụp cố định để tái lập.
+	\item \textbf{Nhiễm bẩn:} Issue và bản vá của các kho mã công khai có thể đã nằm trong dữ liệu huấn luyện.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Đánh giá tái lập được: Bài học từ LM Evaluation Harness}
+\label{ssec:lm_eval_harness}
+EleutherAI phát triển \textbf{Language Model Evaluation Harness} (\texttt{lm-evaluation-harness}) -- framework mã nguồn mở được dùng rộng rãi nhất để đánh giá mô hình ngôn ngữ trên hàng trăm tác vụ, và là “động cơ” phía sau nhiều bảng xếp hạng mở. Từ ba năm kinh nghiệm vận hành, Biderman et al. \cite{biderman2024lessons} tổng kết các vấn đề dai dẳng:
+\begin{enumerate}
+	\item \textbf{Mô hình rất nhạy với thiết lập đánh giá:} Thay đổi nhỏ về định dạng prompt, số ví dụ few-shot, cách tách đáp án, hay việc chấm bằng log-likelihood (xếp hạng các lựa chọn) hay bằng sinh văn bản tự do có thể làm điểm số -- và cả \emph{thứ hạng} giữa các mô hình -- thay đổi đáng kể.
+	\item \textbf{So sánh giữa các phương pháp là khó:} Hai bài báo cùng báo cáo “MMLU 5-shot” nhưng dùng prompt, cách chuẩn hóa và mã khác nhau thì con số không so sánh trực tiếp được.
+	\item \textbf{Thiếu tái lập và minh bạch:} Nhiều kết quả không công bố prompt, mã đánh giá hay đầu ra của mô hình.
+\end{enumerate}
+\textbf{Khuyến nghị:} Chia sẻ chính xác prompt, mã và đầu ra của mô hình; báo cáo độ lệch chuẩn/khoảng tin cậy thay vì một con số; so sánh các mô hình trong \emph{cùng một} framework với \emph{cùng} thiết lập; và thận trọng với các kết luận dựa trên chênh lệch nhỏ. Hướng dẫn sử dụng thực tế có ở mục~\ref{sec:lm_eval_practice} (Phần 2).
+
+\begin{tcolorbox}[title={Áp dụng quy tắc của danh sách đọc cho một paper đánh giá}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
+Khi gặp một benchmark mới, hãy hỏi: (1) Nó đo năng lực nào mà benchmark cũ \emph{không} đo được? (2) Đáp án có \emph{kiểm chứng được} không, hay cần giám khảo? (3) Có biện pháp chống \emph{nhiễm bẩn} không? (4) Kết quả có kèm \emph{khoảng tin cậy} và mã tái lập? (5) Benchmark có đủ “khoảng trống” (headroom) để không bão hòa sau vài tháng?
+\end{tcolorbox}
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Trong chương cuối cùng của hành trình lý thuyết này, chúng ta đã giải quyết một trong những câu hỏi quan trọng nhất: “Làm thế nào để đo lường sự tiến bộ?”. Chúng ta đã đi từ các metric kinh điển như F1-score và BLEU, qua các “kỳ thi” tiêu chuẩn như GLUE, MMLU, GSM8K, MATH và khung đánh giá toàn diện HELM, đến LLM-as-a-Judge, Chatbot Arena và các benchmark tác tử như AgentBench, GAIA, SWE-bench. Quan trọng hơn, chúng ta đã phát triển một tư duy phản biện về những thách thức sâu sắc trong việc đánh giá, từ nhiễm bẩn dữ liệu, Định luật Goodhart, đến tính tái lập. Việc hiểu rõ cách đánh giá và những hạn chế của nó cũng quan trọng như việc xây dựng mô hình. Với nền tảng lý thuyết đã hoàn thiện, chúng ta đã sẵn sàng để bước sang một giai đoạn mới.}

@@ -8,7 +8,7 @@ Sau khi đã có một mô hình đã được tối ưu hóa, làm thế nào �
 \subsection{Xây dựng API với FastAPI}
 \label{ssec:fastapi}
 \begin{itemize}
-    \item \textbf{Vấn đề:} Chúng ta cần một cách để "gói" mô hình của mình lại và cung cấp một giao diện web (API) để nhận đầu vào và trả về dự đoán.
+    \item \textbf{Vấn đề:} Chúng ta cần một cách để “gói” mô hình của mình lại và cung cấp một giao diện web (API) để nhận đầu vào và trả về dự đoán.
     \item \textbf{FastAPI là gì?} Là một framework web Python hiện đại, hiệu năng cao, được thiết kế đặc biệt để xây dựng các API.
     \item \textbf{Tại sao lại phổ biến cho ML?}
         \begin{itemize}
@@ -52,8 +52,8 @@ Sau khi đã có một mô hình đã được tối ưu hóa, làm thế nào �
 \label{ssec:docker}
 \begin{itemize}
     \item \textbf{Vấn đề:} Ứng dụng FastAPI của bạn chạy tốt trên máy của bạn, nhưng khi triển khai lên một máy chủ khác, nó có thể bị lỗi do thiếu thư viện, sai phiên bản Python, hoặc các vấn đề môi trường khác.
-    \item \textbf{Docker là gì?} Là một nền tảng cho phép bạn "đóng gói" ứng dụng của mình và tất cả các thành phần phụ thuộc của nó (thư viện, file hệ thống, biến môi trường) vào một đơn vị tiêu chuẩn, có thể di động, gọi là \textbf{container}.
-    \item \textbf{Lợi ích:} "Build once, run anywhere." Một container sẽ chạy giống hệt nhau trên máy tính cá nhân, máy chủ nội bộ, hay trên đám mây. Nó giải quyết triệt để vấn đề "nó chạy được trên máy của tôi mà!".
+    \item \textbf{Docker là gì?} Là một nền tảng cho phép bạn “đóng gói” ứng dụng của mình và tất cả các thành phần phụ thuộc của nó (thư viện, file hệ thống, biến môi trường) vào một đơn vị tiêu chuẩn, có thể di động, gọi là \textbf{container}.
+    \item \textbf{Lợi ích:} “Build once, run anywhere.” Một container sẽ chạy giống hệt nhau trên máy tính cá nhân, máy chủ nội bộ, hay trên đám mây. Nó giải quyết triệt để vấn đề “nó chạy được trên máy của tôi mà!”.
 \end{itemize}
 \begin{tcolorbox}[title=Một Dockerfile đơn giản cho ứng dụng FastAPI, colback=black!5!white, colframe=black!80!white]
     \begin{minted}{docker}

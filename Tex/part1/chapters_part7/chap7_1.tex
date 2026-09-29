@@ -9,31 +9,31 @@ Các Mô hình Ngôn ngữ Lớn (LLMs), đúng như tên gọi của chúng, th
 
 Để giải quyết vấn đề này, một loạt các kỹ thuật tối ưu hóa mô hình đã được phát triển. Mục tiêu chung của chúng là: \textbf{giảm kích thước mô hình, tăng tốc độ suy luận, và giảm yêu cầu về bộ nhớ, trong khi cố gắng duy trì hiệu năng (độ chính xác) ở mức cao nhất có thể}.
 
-Chúng ta sẽ khám phá ba họ kỹ thuật tối ưu hóa chính: Chưng cất, Lượng tử hóa, và Cắt tỉa.
+Chúng ta sẽ khám phá ba họ kỹ thuật tối ưu hóa chính: Chưng cất, Lượng tử hóa, và Cắt tỉa. Mục này trình bày các nguyên lý chung; các mục tiếp theo của chương đi sâu vào những biến thể được thiết kế riêng cho LLM tự hồi quy quy mô tỷ tham số.
 
 \subsection{Chưng cất Tri thức (Knowledge Distillation)}
 \label{ssec:knowledge_distillation}
-Các mô hình ngôn ngữ lớn (LLM) thường đi kèm với chi phí tính toán khổng lồ cả trong huấn luyện và suy luận. Chưng cất tri thức là một kỹ thuật tối ưu hóa mô hình mạnh mẽ, cho phép chúng ta "chuyển giao" kiến thức từ một mô hình lớn, phức tạp sang một mô hình nhỏ hơn, nhanh hơn mà vẫn giữ được phần lớn hiệu năng.
+Các mô hình ngôn ngữ lớn (LLM) thường đi kèm với chi phí tính toán khổng lồ cả trong huấn luyện và suy luận. Chưng cất tri thức là một kỹ thuật tối ưu hóa mô hình mạnh mẽ, cho phép chúng ta “chuyển giao” kiến thức từ một mô hình lớn, phức tạp sang một mô hình nhỏ hơn, nhanh hơn mà vẫn giữ được phần lớn hiệu năng.
 
 \subsubsection{Trực giác cốt lõi: Thầy dạy Trò}
-Hãy tưởng tượng bạn có một mạng nơ-ron rất lớn, phức tạp nhưng chính xác (gọi là \textbf{mô hình thầy - teacher model}), và một mạng nơ-ron nhỏ hơn, nhanh hơn nhiều (gọi là \textbf{mô hình trò - student model}). Thay vì huấn luyện mô hình trò từ đầu trên dữ liệu gốc, quá trình chưng cất tri thức sẽ "dạy" cho mô hình trò bắt chước hành vi của mô hình thầy.
+Ý tưởng này được Hinton et al. \cite{hinton2015distilling} phổ biến năm 2015. Hãy tưởng tượng bạn có một mạng nơ-ron rất lớn, phức tạp nhưng chính xác (gọi là \textbf{mô hình thầy - teacher model}), và một mạng nơ-ron nhỏ hơn, nhanh hơn nhiều (gọi là \textbf{mô hình trò - student model}). Thay vì huấn luyện mô hình trò từ đầu trên dữ liệu gốc, quá trình chưng cất tri thức sẽ “dạy” cho mô hình trò bắt chước hành vi của mô hình thầy.
 
 \begin{tcolorbox}[
 	title=Triết lý của Chưng cất Tri thức,
 	colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
 	]
-	Thay vì chỉ dạy cho mô hình trò học từ các nhãn cứng (hard labels) của dữ liệu (ví dụ: "tích cực" hoặc "tiêu cực"), chúng ta hãy dạy nó bắt chước cả \textbf{phân phối xác suất đầu ra "mềm" (soft probabilities)} của mô hình thầy. Các xác suất mềm này chứa đựng những thông tin "đen tối" (dark knowledge) vô cùng phong phú về cách mô hình thầy "suy nghĩ", khái quát hóa và nhận thấy sự tương đồng giữa các lớp.
+	Thay vì chỉ dạy cho mô hình trò học từ các nhãn cứng (hard labels) của dữ liệu (ví dụ: “tích cực” hoặc “tiêu cực”), chúng ta hãy dạy nó bắt chước cả \textbf{phân phối xác suất đầu ra “mềm” (soft probabilities)} của mô hình thầy. Các xác suất mềm này chứa đựng những thông tin “đen tối” (dark knowledge) vô cùng phong phú về cách mô hình thầy “suy nghĩ”, khái quát hóa và nhận thấy sự tương đồng giữa các lớp.
 \end{tcolorbox}
 
-Ví dụ, khi phân loại cảm xúc cho câu "Bộ phim này cũng được.", một mô hình thầy có thể dự đoán: `{"Trung tính": 0.7, "Tích cực": 0.25, "Tiêu cực": 0.05}`. Thông tin rằng câu này "hơi giống Tích cực" nhưng "chắc chắn không phải Tiêu cực" là một tín hiệu huấn luyện quý giá hơn nhiều so với nhãn cứng "Trung tính".
+Ví dụ, khi phân loại cảm xúc cho câu “Bộ phim này cũng được.”, một mô hình thầy có thể dự đoán: `{“Trung tính”: 0.7, “Tích cực”: 0.25, “Tiêu cực”: 0.05}`. Thông tin rằng câu này “hơi giống Tích cực” nhưng “chắc chắn không phải Tiêu cực” là một tín hiệu huấn luyện quý giá hơn nhiều so với nhãn cứng “Trung tính”.
 
 \subsubsection{Cơ chế hoạt động chi tiết}
 Quá trình chưng cất bao gồm việc huấn luyện mô hình trò trên một hàm mất mát kết hợp:
 
 \paragraph{1. Tạo các nhãn mềm với Nhiệt độ (Temperature Scaling)}
-Để khai thác "dark knowledge", chúng ta cần làm cho phân phối đầu ra của mô hình thầy bớt "sắc nét". Chúng ta lấy đầu ra logits (đầu ra trước lớp softmax) của mô hình thầy và chia cho một tham số gọi là \textbf{nhiệt độ (temperature - T)} trước khi đưa vào hàm softmax.
+Để khai thác “dark knowledge”, chúng ta cần làm cho phân phối đầu ra của mô hình thầy bớt “sắc nét”. Chúng ta lấy đầu ra logits (đầu ra trước lớp softmax) của mô hình thầy và chia cho một tham số gọi là \textbf{nhiệt độ (temperature - T)} trước khi đưa vào hàm softmax.
 $$ q_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)} $$
-Khi $T > 1$ (thường chọn $T$ trong khoảng 2-10), phân phối xác suất $q$ sẽ trở nên "mềm" hơn, gán xác suất cao hơn cho các lớp không phải là lớp tốt nhất, từ đó để lộ ra cấu trúc tương quan giữa các lớp mà mô hình thầy đã học được.
+Khi $T > 1$ (thường chọn $T$ trong khoảng 2-10), phân phối xác suất $q$ sẽ trở nên “mềm” hơn, gán xác suất cao hơn cho các lớp không phải là lớp tốt nhất, từ đó để lộ ra cấu trúc tương quan giữa các lớp mà mô hình thầy đã học được.
 
 \paragraph{2. Xây dựng Hàm mất mát kết hợp}
 Mô hình trò được huấn luyện để tối thiểu hóa một hàm mất mát là tổng có trọng số của hai thành phần:
@@ -77,7 +77,7 @@ Trong đó:
 \begin{itemize}
 	\item \textbf{DistilBERT:} Một trong những ứng dụng thành công nhất, DistilBERT sử dụng kỹ thuật này để tạo ra một phiên bản BERT nhỏ hơn 40\% và nhanh hơn 60\%, trong khi vẫn giữ lại 97\% hiệu năng trên benchmark GLUE.
 	\item \textbf{Chưng cất đặc trưng (Feature Distillation):} Thay vì chỉ bắt chước đầu ra cuối cùng, mô hình trò còn được huấn luyện để bắt chước các biểu diễn ở các lớp trung gian (ví dụ: các hidden state hoặc attention map) của mô hình thầy.
-	\item \textbf{Tự chưng cất (Self-Distillation):} Một kỹ thuật thú vị trong đó mô hình thầy và mô hình trò là cùng một kiến trúc. Mô hình được huấn luyện để đầu ra của nó ở các epoch sau "chưng cất" kiến thức từ chính nó ở các epoch trước.
+	\item \textbf{Tự chưng cất (Self-Distillation):} Một kỹ thuật thú vị trong đó mô hình thầy và mô hình trò là cùng một kiến trúc. Mô hình được huấn luyện để đầu ra của nó ở các epoch sau “chưng cất” kiến thức từ chính nó ở các epoch trước.
 \end{itemize}
 Chưng cất tri thức là một công cụ cực kỳ linh hoạt và hiệu quả, không chỉ giúp giảm kích thước và tăng tốc độ mô hình mà còn có thể cải thiện khả năng tổng quát hóa của mô hình trò.
 
@@ -90,9 +90,9 @@ Lượng tử hóa là một kỹ thuật tối ưu hóa mô hình cốt lõi, n
 	title=Triết lý của Lượng tử hóa,
 	colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
 	]
-	"Chúng ta có thực sự cần đến hàng tỷ con số thực với độ chính xác vô hạn để biểu diễn kiến thức không? Liệu việc làm tròn các trọng số thành một tập hợp hữu hạn các giá trị rời rạc có làm mô hình mất đi khả năng suy luận không?"
+	“Chúng ta có thực sự cần đến hàng tỷ con số thực với độ chính xác vô hạn để biểu diễn kiến thức không? Liệu việc làm tròn các trọng số thành một tập hợp hữu hạn các giá trị rời rạc có làm mô hình mất đi khả năng suy luận không?”
 \end{tcolorbox}
-Câu trả lời là không hẳn. Các mạng nơ-ron sâu, đặc biệt là các LLM lớn, có một sự dư thừa (redundancy) đáng kể trong các tham số của chúng. Điều này cho phép chúng chống chịu khá tốt với "nhiễu" được tạo ra từ việc lượng tử hóa, miễn là quá trình này được thực hiện một cách cẩn thận.
+Câu trả lời là không hẳn. Các mạng nơ-ron sâu, đặc biệt là các LLM lớn, có một sự dư thừa (redundancy) đáng kể trong các tham số của chúng. Điều này cho phép chúng chống chịu khá tốt với “nhiễu” được tạo ra từ việc lượng tử hóa, miễn là quá trình này được thực hiện một cách cẩn thận.
 
 \subsubsection{Cơ chế Lượng tử hóa: Ánh xạ và Phân cụm}
 Quá trình lượng tử hóa không chỉ đơn giản là nén dữ liệu. Về cơ bản, nó thực hiện một phép ánh xạ từ một tập hợp các giá trị liên tục (trọng số FP32) sang một tập hợp các giá trị rời rạc (ví dụ, 256 giá trị trong INT8).
@@ -102,7 +102,7 @@ Quá trình lượng tử hóa không chỉ đơn giản là nén dữ liệu. V
 \[ r \approx S \cdot (q - Z) \]
 Trong đó:
 \begin{itemize}
-	\item $S$ (scale) là một số thực dương, đại diện cho "kích thước bước" của mỗi mức lượng tử hóa.
+	\item $S$ (scale) là một số thực dương, đại diện cho “kích thước bước” của mỗi mức lượng tử hóa.
 	\item $Z$ (zero-point) là một số nguyên, đảm bảo rằng giá trị thực 0 được ánh xạ chính xác.
 \end{itemize}
 Việc tìm ra $S$ và $Z$ tối ưu là chìa khóa của quá trình lượng tử hóa.
@@ -113,7 +113,7 @@ Các nghiên cứu đã chỉ ra rằng phần lớn các trọng số trong cá
 	\item \textbf{Tập trung giá trị:} Hầu hết các trọng số có giá trị nhỏ, tập trung xung quanh 0.
 	\item \textbf{Giá trị ngoại lai (Outliers):} Có một số ít trọng số có giá trị tuyệt đối rất lớn. Những giá trị ngoại lai này thường cực kỳ quan trọng đối với hiệu năng của mô hình.
 \end{itemize}
-Một lược đồ lượng tử hóa tốt phải xử lý được đặc điểm này. Nếu chúng ta lượng tử hóa một cách \textbf{đều (uniform quantization)} trên toàn bộ dải giá trị (từ min đến max), các giá trị ngoại lai sẽ kéo dãn khoảng lượng tử hóa, khiến cho phần lớn các trọng số quan trọng ở gần 0 bị "gộp" vào cùng một vài giá trị rời rạc, làm mất mát thông tin nghiêm trọng.
+Một lược đồ lượng tử hóa tốt phải xử lý được đặc điểm này. Nếu chúng ta lượng tử hóa một cách \textbf{đều (uniform quantization)} trên toàn bộ dải giá trị (từ min đến max), các giá trị ngoại lai sẽ kéo dãn khoảng lượng tử hóa, khiến cho phần lớn các trọng số quan trọng ở gần 0 bị “gộp” vào cùng một vài giá trị rời rạc, làm mất mát thông tin nghiêm trọng.
 
 \subsubsection{Các Chiến lược Lượng tử hóa Nâng cao}
 Để giải quyết các vấn đề trên, nhiều kỹ thuật lượng tử hóa tinh vi đã ra đời.
@@ -121,8 +121,8 @@ Một lược đồ lượng tử hóa tốt phải xử lý được đặc đi
 \paragraph{Lượng tử hóa Phi đồng nhất (Non-Uniform Quantization)}
 Thay vì chia đều các mức lượng tử hóa, các phương pháp này phân bổ nhiều mức hơn cho các vùng có mật độ trọng số cao (quanh 0) và ít mức hơn cho các vùng thưa thớt (các giá trị ngoại lai).
 \begin{itemize}
-	\item \textbf{k-Means Quantization:} Sử dụng thuật toán k-Means để tìm ra $k$ "tâm cụm" (centroids) đại diện tốt nhất cho phân phối trọng số. Mỗi trọng số sau đó được thay thế bằng tâm cụm gần nhất.
-	\item \textbf{Quantile Quantization:} Các mức lượng tử hóa được chọn dựa trên các điểm phân vị (quantiles) của phân phối trọng số, đảm bảo mỗi "thùng" lượng tử hóa chứa cùng một số lượng trọng số.
+	\item \textbf{k-Means Quantization:} Sử dụng thuật toán k-Means để tìm ra $k$ “tâm cụm” (centroids) đại diện tốt nhất cho phân phối trọng số. Mỗi trọng số sau đó được thay thế bằng tâm cụm gần nhất.
+	\item \textbf{Quantile Quantization:} Các mức lượng tử hóa được chọn dựa trên các điểm phân vị (quantiles) của phân phối trọng số, đảm bảo mỗi “thùng” lượng tử hóa chứa cùng một số lượng trọng số.
 	\item \textbf{NormalFloat (NF4) và QLoRA:} Kỹ thuật được sử dụng trong QLoRA là một dạng Quantile Quantization được thiết kế đặc biệt cho các trọng số tuân theo phân phối chuẩn. Nó tạo ra một kiểu dữ liệu 4-bit (NF4) có khả năng biểu diễn phân phối này một cách hiệu quả nhất về mặt lý thuyết thông tin.
 \end{itemize}
 
@@ -132,8 +132,8 @@ Thay vì tính toán các tham số scale ($S$) và zero-point ($Z$) cho toàn b
 \paragraph{Lượng tử hóa Nhận biết Huấn luyện (Quantization-Aware Training - QAT)}
 Đây là phương pháp phức tạp nhưng cho kết quả tốt nhất.
 \begin{itemize}
-	\item \textbf{Cơ chế:} Trong quá trình fine-tuning, mô hình sẽ \textbf{mô phỏng (simulate)} ảnh hưởng của việc lượng tử hóa. Tức là, trong quá trình truyền thẳng, nó sẽ "giả vờ" làm tròn các trọng số, nhưng trong quá trình truyền ngược, gradient vẫn được tính toán và cập nhật trên các trọng số có độ chính xác đầy đủ.
-	\item \textbf{Lợi ích:} Điều này cho phép mô hình học cách "thích ứng" với sự mất mát độ chính xác sẽ xảy ra sau khi lượng tử hóa, giúp giảm thiểu sụt giảm hiệu năng.
+	\item \textbf{Cơ chế:} Trong quá trình fine-tuning, mô hình sẽ \textbf{mô phỏng (simulate)} ảnh hưởng của việc lượng tử hóa. Tức là, trong quá trình truyền thẳng, nó sẽ “giả vờ” làm tròn các trọng số, nhưng trong quá trình truyền ngược, gradient vẫn được tính toán và cập nhật trên các trọng số có độ chính xác đầy đủ.
+	\item \textbf{Lợi ích:} Điều này cho phép mô hình học cách “thích ứng” với sự mất mát độ chính xác sẽ xảy ra sau khi lượng tử hóa, giúp giảm thiểu sụt giảm hiệu năng.
 \end{itemize}
 
 Lợi ích của lượng tử hóa là rất rõ ràng: giảm kích thước mô hình (INT8 nhỏ hơn FP32 4 lần) và tăng tốc độ suy luận (các phép toán trên số nguyên nhanh hơn nhiều so với số thực trên hầu hết các phần cứng). Các kỹ thuật như QLoRA đã chứng minh rằng chúng ta có thể fine-tune các LLM khổng lồ ngay cả trên các GPU tiêu dùng nhờ vào sức mạnh của lượng tử hóa thông minh.
@@ -143,13 +143,13 @@ Lợi ích của lượng tử hóa là rất rõ ràng: giảm kích thước m
 Cắt tỉa là một kỹ thuật tối ưu hóa nhằm giảm kích thước và độ phức tạp tính toán của mô hình bằng cách loại bỏ các tham số (trọng số) hoặc các thành phần (nơ-ron, đầu chú ý) được cho là dư thừa hoặc ít quan trọng.
 
 \subsubsection{Trực giác cốt lõi: Loại bỏ các Kết nối Thừa}
-Các mạng nơ-ron lớn thường được "tham số hóa quá mức" (over-parameterized), nghĩa là chúng có nhiều trọng số hơn mức cần thiết để thực hiện một tác vụ. Nhiều trong số các kết nối này có thể gần như bằng không và đóng góp rất ít vào kết quả cuối cùng.
+Các mạng nơ-ron lớn thường được “tham số hóa quá mức” (over-parameterized), nghĩa là chúng có nhiều trọng số hơn mức cần thiết để thực hiện một tác vụ. Nhiều trong số các kết nối này có thể gần như bằng không và đóng góp rất ít vào kết quả cuối cùng.
 
 \begin{tcolorbox}[
 	title=Triết lý của Cắt tỉa,
 	colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
 	]
-	"Một mạng nơ-ron giống như một hệ thống thần kinh. Không phải tất cả các kết nối đều quan trọng như nhau. Bằng cách xác định và loại bỏ các liên kết thần kinh yếu nhất, bộ não có thể trở nên hiệu quả hơn trong việc xử lý thông tin."
+	“Một mạng nơ-ron giống như một hệ thống thần kinh. Không phải tất cả các kết nối đều quan trọng như nhau. Bằng cách xác định và loại bỏ các liên kết thần kinh yếu nhất, bộ não có thể trở nên hiệu quả hơn trong việc xử lý thông tin.”
 \end{tcolorbox}
 
 % ============================================================

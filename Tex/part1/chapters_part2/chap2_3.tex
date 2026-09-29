@@ -5,7 +5,7 @@
 \section{Các thuật toán Học máy Thống kê}
 \label{sec:statistical_ml_algos}
 
-Sau khi đã biến đổi văn bản thành các vector số (sử dụng BoW hoặc TF-IDF), chúng ta đã sẵn sàng để "dạy" cho máy tính. Các thuật toán học máy thống kê là những công cụ cho phép chúng ta xây dựng các mô hình có khả năng học các mẫu (patterns) từ dữ liệu đã được gán nhãn, và sau đó sử dụng các mẫu đó để đưa ra dự đoán trên dữ liệu mới.
+Sau khi đã biến đổi văn bản thành các vector số (sử dụng BoW hoặc TF-IDF), chúng ta đã sẵn sàng để “dạy” cho máy tính. Các thuật toán học máy thống kê là những công cụ cho phép chúng ta xây dựng các mô hình có khả năng học các mẫu (patterns) từ dữ liệu đã được gán nhãn, và sau đó sử dụng các mẫu đó để đưa ra dự đoán trên dữ liệu mới.
 
 Mục này sẽ giới thiệu một số thuật toán kinh điển đã tạo nên xương sống của NLP trong kỷ nguyên thống kê. Chúng được chia thành hai nhóm chính: các mô hình cho bài toán \textbf{phân loại} và các mô hình cho bài toán \textbf{học chuỗi}.
 
@@ -30,8 +30,8 @@ Trong đó:
 \end{itemize}
 Do đó, việc tối đa hóa $P(c|d)$ tương đương với việc tối đa hóa $P(d|c) \cdot P(c)$.
 
-\paragraph{Giả định "Ngây thơ" (The "Naive" Assumption)}
-Để tính $P(d|c) = P(w_1, w_2, \dots, w_n | c)$, Naive Bayes đưa ra một giả định rất mạnh và "ngây thơ" (naive): \textbf{các từ (đặc trưng) trong tài liệu là độc lập có điều kiện với nhau khi biết lớp $c$}.
+\paragraph{Giả định “Ngây thơ” (The “Naive” Assumption)}
+Để tính $P(d|c) = P(w_1, w_2, \dots, w_n | c)$, Naive Bayes đưa ra một giả định rất mạnh và “ngây thơ” (naive): \textbf{các từ (đặc trưng) trong tài liệu là độc lập có điều kiện với nhau khi biết lớp $c$}.
 $$ P(d|c) = P(w_1, w_2, \dots, w_n | c) \approx \prod_{i=1}^{n} P(w_i | c) $$
 Mặc dù giả định này rõ ràng là sai trong thực tế (trật tự từ và sự phụ thuộc giữa các từ là rất quan trọng), nó giúp việc tính toán trở nên cực kỳ đơn giản và hiệu quả.
 
@@ -57,13 +57,13 @@ Các xác suất $P(c)$ và $P(w_i|c)$ được học từ tập dữ liệu hu�
 \end{itemize}
 \textbf{Nhược điểm:}
 \begin{itemize}
-    \item \textbf{Giả định độc lập "ngây thơ":} Không thể nắm bắt mối quan hệ và trật tự từ, làm hạn chế hiệu năng ở các bài toán phức tạp.
+    \item \textbf{Giả định độc lập “ngây thơ”:} Không thể nắm bắt mối quan hệ và trật tự từ, làm hạn chế hiệu năng ở các bài toán phức tạp.
 \end{itemize}
 \end{tcolorbox}
 
 
 \subsubsection{Hồi quy Logistic (Logistic Regression)}
-Hồi quy Logistic \cite{hosmer2013applied}, mặc dù tên gọi có chữ "hồi quy", lại là một thuật toán phân loại mạnh mẽ và được sử dụng cực kỳ rộng rãi. Nó thuộc nhóm các mô hình \textbf{phân biệt (discriminative models)}, trái ngược với Naive Bayes là một mô hình \textbf{sinh (generative model)}.
+Hồi quy Logistic \cite{hosmer2013applied}, mặc dù tên gọi có chữ “hồi quy”, lại là một thuật toán phân loại mạnh mẽ và được sử dụng cực kỳ rộng rãi. Nó thuộc nhóm các mô hình \textbf{phân biệt (discriminative models)}, trái ngược với Naive Bayes là một mô hình \textbf{sinh (generative model)}.
 
 \paragraph{Trực giác cốt lõi}
 Thay vì mô hình hóa $P(d|c)$ như Naive Bayes, Hồi quy Logistic mô hình hóa trực tiếp xác suất hậu nghiệm $P(c|d)$. Nó học một \textbf{ranh giới quyết định (decision boundary)} tuyến tính để phân tách các lớp trong không gian đặc trưng.
@@ -120,7 +120,7 @@ Mục tiêu của SVM là tìm ra một \textbf{siêu phẳng (hyperplane)} phâ
 Việc tối đa hóa lề này giúp mô hình có khả năng tổng quát hóa tốt hơn trên dữ liệu mới, vì ranh giới quyết định ít bị ảnh hưởng bởi nhiễu.
 
 \paragraph{The Kernel Trick}
-Điểm mạnh thực sự của SVM nằm ở "thủ thuật kernel" (kernel trick). Nếu dữ liệu không thể phân tách bằng một đường thẳng, SVM có thể sử dụng một hàm kernel (ví dụ: RBF kernel) để ánh xạ dữ liệu lên một không gian nhiều chiều hơn, nơi chúng có thể trở nên phân tách tuyến tính. Điều này cho phép SVM học được các ranh giới quyết định phi tuyến rất phức tạp mà không cần tính toán trực tiếp trong không gian nhiều chiều đó, rất hiệu quả.
+Điểm mạnh thực sự của SVM nằm ở “thủ thuật kernel” (kernel trick). Nếu dữ liệu không thể phân tách bằng một đường thẳng, SVM có thể sử dụng một hàm kernel (ví dụ: RBF kernel) để ánh xạ dữ liệu lên một không gian nhiều chiều hơn, nơi chúng có thể trở nên phân tách tuyến tính. Điều này cho phép SVM học được các ranh giới quyết định phi tuyến rất phức tạp mà không cần tính toán trực tiếp trong không gian nhiều chiều đó, rất hiệu quả.
 
 \paragraph{Huấn luyện và Hinge Loss}
 Quá trình huấn luyện SVM là một bài toán tối ưu hóa nhằm tìm ra siêu phẳng có lề lớn nhất. Điều này được thực hiện bằng cách tối thiểu hóa một hàm mất mát đặc biệt gọi là \textbf{Hinge Loss}:
@@ -154,11 +154,11 @@ Các bài toán như Gán nhãn Từ loại (POS Tagging) hay Nhận dạng Th�
 HMM \cite{rabiner1989tutorial} là một mô hình sinh kinh điển cho các bài toán gán nhãn chuỗi.
 
 \paragraph{Trực giác cốt lõi}
-HMM giả định rằng một chuỗi các quan sát (observations) - tức là các từ trong câu - được "sinh ra" bởi một chuỗi các trạng thái ẩn (hidden states) - tức là các nhãn (ví dụ, các nhãn POS).
+HMM giả định rằng một chuỗi các quan sát (observations) - tức là các từ trong câu - được “sinh ra” bởi một chuỗi các trạng thái ẩn (hidden states) - tức là các nhãn (ví dụ, các nhãn POS).
 Quá trình sinh này tuân theo hai loại xác suất:
 \begin{enumerate}
     \item \textbf{Xác suất chuyển trạng thái (Transition Probabilities):} Xác suất chuyển từ một trạng thái ẩn này sang một trạng thái ẩn khác. Ví dụ, $P(\text{Verb}|\text{Noun})$ - xác suất một động từ xuất hiện sau một danh từ. Điều này tuân theo giả định Markov.
-    \item \textbf{Xác suất phát sinh (Emission Probabilities):} Xác suất một trạng thái ẩn "sinh ra" một từ quan sát được. Ví dụ, $P(\text{``sách''}|\text{Noun})$ - xác suất từ "sách" được sinh ra khi trạng thái ẩn là Danh từ.
+    \item \textbf{Xác suất phát sinh (Emission Probabilities):} Xác suất một trạng thái ẩn “sinh ra” một từ quan sát được. Ví dụ, $P(\text{``sách''}|\text{Noun})$ - xác suất từ “sách” được sinh ra khi trạng thái ẩn là Danh từ.
 \end{enumerate}
 
 \begin{center}
@@ -176,7 +176,7 @@ CRF, và đặc biệt là Linear-chain CRF, là một cải tiến vượt bậ
 HMM là một mô hình sinh, nó mô hình hóa xác suất kết hợp $P(\text{chuỗi quan sát, chuỗi nhãn})$. CRF là một mô hình phân biệt, nó mô hình hóa trực tiếp xác suất có điều kiện $P(\text{chuỗi nhãn}|\text{chuỗi quan sát})$.
 Sự thay đổi này mang lại hai lợi thế lớn:
 \begin{enumerate}
-    \item \textbf{Bỏ giả định độc lập của đặc trưng:} HMM giả định rằng một từ quan sát chỉ phụ thuộc vào trạng thái ẩn hiện tại. CRF không có giả định này. Nó có thể sử dụng một loạt các đặc trưng phức tạp của chuỗi đầu vào, ví dụ: "từ hiện tại có viết hoa không?", "hậu tố của từ hiện tại là gì?", "từ trước đó là gì?". Điều này làm cho CRF linh hoạt và mạnh mẽ hơn nhiều.
+    \item \textbf{Bỏ giả định độc lập của đặc trưng:} HMM giả định rằng một từ quan sát chỉ phụ thuộc vào trạng thái ẩn hiện tại. CRF không có giả định này. Nó có thể sử dụng một loạt các đặc trưng phức tạp của chuỗi đầu vào, ví dụ: “từ hiện tại có viết hoa không?”, “hậu tố của từ hiện tại là gì?”, “từ trước đó là gì?”. Điều này làm cho CRF linh hoạt và mạnh mẽ hơn nhiều.
     \item \textbf{Tránh tính toán $P(\text{chuỗi quan sát})$:} Việc mô hình hóa xác suất của chuỗi quan sát là rất khó, CRF đã loại bỏ được gánh nặng này.
 \end{enumerate}
 

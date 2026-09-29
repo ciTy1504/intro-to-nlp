@@ -14,7 +14,7 @@ Việc theo dõi các metric đánh giá trong suốt quá trình huấn luyện
 \begin{itemize}
     \item \textbf{Mục đích:} Hàm `compute\_metrics` là một hàm Python mà bạn tự định nghĩa. `Trainer` sẽ gọi hàm này sau mỗi epoch (hoặc sau một số bước nhất định) trong quá trình huấn luyện.
     \item \textbf{Đầu vào:} Hàm này nhận vào một đối tượng `EvalPrediction`, là một tuple chứa hai mảng NumPy: `predictions` (các logits đầu ra từ mô hình) và `label\_ids` (các nhãn thật từ bộ dữ liệu).
-    \item \textbf{Đầu ra:} Hàm phải trả về một dictionary, trong đó key là tên của metric (ví dụ: `"f1"`) và value là giá trị của metric đó.
+    \item \textbf{Đầu ra:} Hàm phải trả về một dictionary, trong đó key là tên của metric (ví dụ: `“f1”`) và value là giá trị của metric đó.
 \end{itemize}
 
 \paragraph{Quy trình bên trong một hàm \texttt{compute\_metrics}}
@@ -58,7 +58,7 @@ Một hàm `compute\_metrics` điển hình sẽ thực hiện các bước sau:
         }
 
     # Sau đó, hàm này sẽ được truyền vào đối tượng TrainingArguments:
-    # training_args = TrainingArguments(..., evaluation_strategy="epoch")
+    # training_args = TrainingArguments(..., eval_strategy="epoch")
     # trainer = Trainer(
     #     ...,
     #     args=training_args,
@@ -73,7 +73,7 @@ Một hàm `compute\_metrics` điển hình sẽ thực hiện các bước sau:
 
 \subsubsection{Gán nhãn Chuỗi (NER) với `seqeval`}
 \begin{itemize}
-    \item \textbf{Vấn đề:} Đối với các tác vụ như Nhận dạng Thực thể Tên (NER), việc đánh giá không chỉ đơn giản là so sánh từng nhãn một. Chúng ta quan tâm đến việc mô hình có nhận dạng đúng \textbf{toàn bộ các thực thể} (bao gồm cả ranh giới và loại) hay không. Ví dụ, dự đoán `[B-PER, I-PER]` cho "Hồ Chí Minh" là đúng, nhưng dự đoán `[B-PER, B-LOC]` là sai hoàn toàn, mặc dù đúng được 1/2 nhãn.
+    \item \textbf{Vấn đề:} Đối với các tác vụ như Nhận dạng Thực thể Tên (NER), việc đánh giá không chỉ đơn giản là so sánh từng nhãn một. Chúng ta quan tâm đến việc mô hình có nhận dạng đúng \textbf{toàn bộ các thực thể} (bao gồm cả ranh giới và loại) hay không. Ví dụ, dự đoán `[B-PER, I-PER]` cho “Hồ Chí Minh” là đúng, nhưng dự đoán `[B-PER, B-LOC]` là sai hoàn toàn, mặc dù đúng được 1/2 nhãn.
     \item \textbf{Giải pháp: `seqeval`.} Đây là một thư viện Python (cũng được tích hợp trong `evaluate`) chuyên để đánh giá các tác vụ gán nhãn chuỗi. Nó tính toán Precision, Recall, và F1-score ở cấp độ thực thể (entity-level) theo các định dạng chuẩn như IOB2.
 \end{itemize}
 

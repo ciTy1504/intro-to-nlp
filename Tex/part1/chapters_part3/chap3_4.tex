@@ -17,13 +17,13 @@ Seq2Seq, được giới thiệu gần như đồng thời bởi Sutskever và c
 
 \begin{center}
     \includegraphics[width=0.9\textwidth]{seq2seq_architecture.png}
-    \captionof{figure}{Kiến trúc Encoder-Decoder tổng quát. Encoder "đọc" và nén chuỗi đầu vào thành một vector ngữ cảnh. Decoder sử dụng vector này để "viết" ra chuỗi đầu ra.}
+    \captionof{figure}{Kiến trúc Encoder-Decoder tổng quát. Encoder “đọc” và nén chuỗi đầu vào thành một vector ngữ cảnh. Decoder sử dụng vector này để “viết” ra chuỗi đầu ra.}
     \label{fig:seq2seq_architecture}
 \end{center}
 
 \subsubsection{Bộ mã hóa (The Encoder)}
 \paragraph{Nhiệm vụ}
-Nhiệm vụ của Encoder là "đọc" toàn bộ chuỗi đầu vào (ví dụ, một câu tiếng Việt) và nén toàn bộ thông tin, ngữ nghĩa của nó vào một vector có kích thước cố định. Vector này được gọi là \textbf{vector ngữ cảnh (context vector)} hay "thought vector".
+Nhiệm vụ của Encoder là “đọc” toàn bộ chuỗi đầu vào (ví dụ, một câu tiếng Việt) và nén toàn bộ thông tin, ngữ nghĩa của nó vào một vector có kích thước cố định. Vector này được gọi là \textbf{vector ngữ cảnh (context vector)} hay “thought vector”.
 
 \paragraph{Cấu tạo và Hoạt động}
 \begin{itemize}
@@ -46,20 +46,20 @@ Một RNN đơn giản xử lý câu từ trái sang phải. Trạng thái ẩn 
 Việc này cung cấp một biểu diễn ngữ cảnh phong phú hơn nhiều cho mỗi từ, và đã trở thành tiêu chuẩn trong hầu hết các mô hình Encoder-Decoder.
 
 \textbf{2. Tại sao không dùng Pooling thay vì trạng thái ẩn cuối cùng?} \\
-Sử dụng trạng thái ẩn cuối cùng là cách đơn giản nhất, nhưng nó có thể bị ảnh hưởng bởi "hiệu ứng gần đây" (recency bias) - các từ cuối chuỗi có thể có ảnh hưởng lớn hơn. Các phương pháp khác như:
+Sử dụng trạng thái ẩn cuối cùng là cách đơn giản nhất, nhưng nó có thể bị ảnh hưởng bởi “hiệu ứng gần đây” (recency bias) - các từ cuối chuỗi có thể có ảnh hưởng lớn hơn. Các phương pháp khác như:
 \begin{itemize}
-    \item \textbf{Average/Max Pooling:} Lấy trung bình hoặc giá trị lớn nhất trên tất cả các trạng thái ẩn (của Bi-RNN). Cách này dân chủ hơn, đảm bảo mọi từ đều có đóng góp, nhưng có thể làm "lu mờ" các chi tiết quan trọng.
+    \item \textbf{Average/Max Pooling:} Lấy trung bình hoặc giá trị lớn nhất trên tất cả các trạng thái ẩn (của Bi-RNN). Cách này dân chủ hơn, đảm bảo mọi từ đều có đóng góp, nhưng có thể làm “lu mờ” các chi tiết quan trọng.
 \end{itemize}
 Trong thực tế, trước khi Attention ra đời, không có phương pháp nào là hoàn hảo. Sự ra đời của Attention đã giải quyết triệt để vấn đề này bằng cách cho phép Decoder tự quyết định nên tập trung vào đâu, thay vì ép Encoder phải tạo ra một bản tóm tắt duy nhất.
 \end{tcolorbox}
 \subsubsection{Bộ giải mã (The Decoder)}
 \paragraph{Nhiệm vụ}
-Nhiệm vụ của Decoder là lấy vector ngữ cảnh do Encoder cung cấp và "giải nén" nó để sinh ra chuỗi đầu ra (ví dụ, câu tiếng Anh tương ứng), từng từ một.
+Nhiệm vụ của Decoder là lấy vector ngữ cảnh do Encoder cung cấp và “giải nén” nó để sinh ra chuỗi đầu ra (ví dụ, câu tiếng Anh tương ứng), từng từ một.
 
 \paragraph{Cấu tạo và Hoạt động}
 \begin{itemize}
     \item Decoder cũng là một mạng RNN (hoặc LSTM, GRU) khác, thường có kiến trúc tương tự Encoder nhưng với bộ trọng số riêng.
-    \item \textbf{Khởi tạo:} Trạng thái ẩn ban đầu của Decoder ($h_0^{dec}$) được khởi tạo bằng chính vector ngữ cảnh (trạng thái ẩn cuối cùng của Encoder, $h_T^{enc}$). Đây là "cây cầu" duy nhất kết nối Encoder và Decoder.
+    \item \textbf{Khởi tạo:} Trạng thái ẩn ban đầu của Decoder ($h_0^{dec}$) được khởi tạo bằng chính vector ngữ cảnh (trạng thái ẩn cuối cùng của Encoder, $h_T^{enc}$). Đây là “cây cầu” duy nhất kết nối Encoder và Decoder.
     \item \textbf{Quá trình sinh từ (Generation):} Quá trình này diễn ra tuần tự:
         \begin{enumerate}
             \item \textbf{Bước 1:} Decoder nhận vào một token bắt đầu đặc biệt (ví dụ: `<SOS>` - Start of Sentence) và trạng thái ẩn ban đầu. Nó tính toán trạng thái ẩn mới $h_1^{dec}$ và tạo ra một phân phối xác suất trên toàn bộ từ vựng của ngôn ngữ đích thông qua một lớp softmax. Từ có xác suất cao nhất được chọn làm từ đầu ra đầu tiên, $y_1$.
@@ -68,11 +68,11 @@ Nhiệm vụ của Decoder là lấy vector ngữ cảnh do Encoder cung cấp v
         \end{enumerate}
 \end{itemize}
 
-\subsubsection{Vấn đề của cái "Cổ chai" (The Bottleneck Problem)}
+\subsubsection{Vấn đề của cái “Cổ chai” (The Bottleneck Problem)}
 Kiến trúc Encoder-Decoder cơ bản này rất thông minh, nhưng nó có một điểm yếu chết người: nó buộc Encoder phải nén toàn bộ thông tin của một câu, dù dài và phức tạp đến đâu, vào một \textbf{vector ngữ cảnh có kích thước cố định}.
 \begin{itemize}
-    \item Đây là một "cổ chai" thông tin. Với những câu dài, việc nhồi nhét tất cả các chi tiết ngữ nghĩa vào một vector duy nhất là cực kỳ khó khăn, nếu không muốn nói là bất khả thi.
-    \item Decoder chỉ được "nhìn" vào bản tóm tắt này một lần duy nhất lúc bắt đầu. Nó không có cách nào để quay lại và xem xét các phần cụ thể của câu nguồn khi nó đang dịch.
+    \item Đây là một “cổ chai” thông tin. Với những câu dài, việc nhồi nhét tất cả các chi tiết ngữ nghĩa vào một vector duy nhất là cực kỳ khó khăn, nếu không muốn nói là bất khả thi.
+    \item Decoder chỉ được “nhìn” vào bản tóm tắt này một lần duy nhất lúc bắt đầu. Nó không có cách nào để quay lại và xem xét các phần cụ thể của câu nguồn khi nó đang dịch.
 \end{itemize}
 Hãy tưởng tượng bạn yêu cầu một dịch giả nghe toàn bộ một bài phát biểu dài, sau đó phải dịch lại toàn bộ từ trí nhớ mà không được ghi chép. Đó chính là những gì mô hình Seq2Seq cơ bản phải làm. Hạn chế này đã dẫn đến sự ra đời của ý tưởng có sức ảnh hưởng bậc nhất trong lịch sử NLP hiện đại: \textbf{Cơ chế Chú ý (Attention)}.
 
@@ -88,7 +88,7 @@ Có hai kỹ thuật quan trọng liên quan đến cách mô hình Seq2Seq đư
 Trong quá trình huấn luyện, tại mỗi bước $t$, thay vì đưa từ mà Decoder vừa dự đoán ở bước $t-1$ vào làm đầu vào, chúng ta lại đưa từ \textbf{chính xác (ground truth)} trong chuỗi đích vào.
 \begin{itemize}
     \item \textbf{Ưu điểm:} Kỹ thuật này giúp quá trình huấn luyện ổn định và hội tụ nhanh hơn rất nhiều. Nó ngăn ngừa việc lỗi bị tích tụ: nếu mô hình dự đoán sai ở bước đầu, lỗi sai đó sẽ không làm ảnh hưởng đến các bước sau trong cùng một chuỗi huấn luyện. Mỗi bước thời gian được coi là một mẫu huấn luyện độc lập.
-    \item \textbf{Nhược điểm:} Nó tạo ra một sự khác biệt giữa lúc huấn luyện và lúc suy luận (khi mô hình không có "thầy" để chỉ bảo). Điều này có thể dẫn đến hiệu năng kém khi mô hình phải tự sinh ra một chuỗi dài.
+    \item \textbf{Nhược điểm:} Nó tạo ra một sự khác biệt giữa lúc huấn luyện và lúc suy luận (khi mô hình không có “thầy” để chỉ bảo). Điều này có thể dẫn đến hiệu năng kém khi mô hình phải tự sinh ra một chuỗi dài.
 \end{itemize}
 
 \paragraph{Suy luận với Beam Search}
@@ -108,10 +108,10 @@ Khi một dịch giả con người dịch một câu, họ không làm như mô
     title=Ý tưởng đột phá của Attention,
     colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries
 ]
-Thay vì ép Encoder tạo ra một vector ngữ cảnh duy nhất, hãy cho phép Decoder, tại \textbf{mỗi bước} sinh từ của mình, có khả năng \textbf{"nhìn lại" toàn bộ chuỗi đầu vào} và quyết định xem phần nào của chuỗi đầu vào là quan trọng nhất cần phải "chú ý" đến ngay tại thời điểm đó.
+Thay vì ép Encoder tạo ra một vector ngữ cảnh duy nhất, hãy cho phép Decoder, tại \textbf{mỗi bước} sinh từ của mình, có khả năng \textbf{“nhìn lại” toàn bộ chuỗi đầu vào} và quyết định xem phần nào của chuỗi đầu vào là quan trọng nhất cần phải “chú ý” đến ngay tại thời điểm đó.
 \end{tcolorbox}
 
-Attention tạo ra một "đường tắt" kết nối trực tiếp Decoder với tất cả các trạng thái ẩn của Encoder, phá vỡ cái "cổ chai" thông tin.
+Attention tạo ra một “đường tắt” kết nối trực tiếp Decoder với tất cả các trạng thái ẩn của Encoder, phá vỡ cái “cổ chai” thông tin.
 
 \subsubsection{Cơ chế hoạt động chi tiết}
 Cơ chế chú ý được tích hợp vào giữa Encoder và Decoder. Thay vì chỉ truyền trạng thái ẩn cuối cùng, Encoder sẽ cung cấp \textbf{tất cả các trạng thái ẩn của nó} ($h_1^{enc}, h_2^{enc}, \dots, h_T^{enc}$) cho Decoder.
@@ -125,7 +125,7 @@ Bây giờ, tại mỗi bước $t$ của Decoder, để sinh ra từ $y_t$, nó
 \end{center}
 
 \paragraph{Bước 1: Tính điểm chú ý (Attention Scores)}
-Decoder lấy trạng thái ẩn của nó ở bước trước, $h_{t-1}^{dec}$, và so sánh nó với \textbf{từng trạng thái ẩn của Encoder}, $h_i^{enc}$, để tính ra một "điểm số tương hợp" (alignment score). Điểm số này đo lường mức độ "liên quan" của từ đầu vào thứ $i$ đối với việc sinh ra từ đầu ra thứ $t$. Có nhiều cách để định nghĩa hàm $\text{score}(h_{t-1}^{dec}, h_i^{enc})$, trong đó phổ biến là:
+Decoder lấy trạng thái ẩn của nó ở bước trước, $h_{t-1}^{dec}$, và so sánh nó với \textbf{từng trạng thái ẩn của Encoder}, $h_i^{enc}$, để tính ra một “điểm số tương hợp” (alignment score). Điểm số này đo lường mức độ “liên quan” của từ đầu vào thứ $i$ đối với việc sinh ra từ đầu ra thứ $t$. Có nhiều cách để định nghĩa hàm $\text{score}(h_{t-1}^{dec}, h_i^{enc})$, trong đó phổ biến là:
 \begin{itemize}
     \item \textbf{Additive Attention (\cite{bahdanau2014neural}):} Sử dụng một mạng nơ-ron nhỏ truyền thẳng (feed-forward) có một lớp ẩn. Cách này mạnh mẽ và linh hoạt.
         $$ \text{score}(h_{t-1}^{dec}, h_i^{enc}) = v_a^T \tanh(W_a [h_{t-1}^{dec}; h_i^{enc}]) $$
@@ -137,7 +137,7 @@ Sự lựa chọn hàm score ảnh hưởng đến độ phức tạp tính toá
 \paragraph{Bước 2: Chuẩn hóa thành trọng số (Softmax)}
 Các điểm số vừa tính được sẽ được đưa qua một hàm \textbf{softmax}. Điều này biến các điểm số thành một phân phối xác suất, gọi là \textbf{trọng số chú ý (attention weights)}, ký hiệu là $\alpha_{ti}$.
 $$ \alpha_{ti} = \frac{\exp(\text{score}(h_{t-1}^{dec}, h_i^{enc}))}{\sum_{j=1}^{T} \exp(\text{score}(h_{t-1}^{dec}, h_j^{enc}))} $$
-Tổng của tất cả các trọng số $\alpha_{ti}$ (với $i$ từ 1 đến $T$) bằng 1. Mỗi $\alpha_{ti}$ cho biết "mức độ chú ý" mà Decoder nên dành cho từ đầu vào thứ $i$ khi sinh ra từ đầu ra thứ $t$.
+Tổng của tất cả các trọng số $\alpha_{ti}$ (với $i$ từ 1 đến $T$) bằng 1. Vì sao lại là hàm mũ chứ không phải một cách chuẩn hóa khác, và vì sao cơ số $e$: xem mục~\ref{ssec:softmax}. Mỗi $\alpha_{ti}$ cho biết “mức độ chú ý” mà Decoder nên dành cho từ đầu vào thứ $i$ khi sinh ra từ đầu ra thứ $t$.
 
 \paragraph{Bước 3: Tính toán vector ngữ cảnh động (Context Vector)}
 Vector ngữ cảnh $c_t$ bây giờ không còn cố định nữa. Nó là một \textbf{tổng có trọng số (weighted sum)} của tất cả các trạng thái ẩn của Encoder, với các trọng số chính là các trọng số chú ý vừa tính được.
@@ -152,7 +152,7 @@ Trạng thái $h_t^{dec}$ này sau đó được dùng để dự đoán từ đ
 \subsubsection{Sức mạnh của Attention}
 \begin{itemize}
     \item \textbf{Phá vỡ nút thắt cổ chai:} Thông tin không còn bị nén vào một vector duy nhất. Decoder có quyền truy cập vào toàn bộ chuỗi đầu vào ở mọi thời điểm.
-    \item \textbf{Khả năng diễn giải (Interpretability):} Chúng ta có thể trực quan hóa ma trận trọng số chú ý để xem mô hình đang "nhìn" vào đâu khi dịch. Ví dụ, khi dịch từ "bạn", mô hình sẽ có trọng số chú ý cao nhất ở từ "you". Điều này giúp gỡ lỗi và hiểu mô hình tốt hơn.
+    \item \textbf{Khả năng diễn giải (Interpretability):} Chúng ta có thể trực quan hóa ma trận trọng số chú ý để xem mô hình đang “nhìn” vào đâu khi dịch. Ví dụ, khi dịch từ “bạn”, mô hình sẽ có trọng số chú ý cao nhất ở từ “you”. Điều này giúp gỡ lỗi và hiểu mô hình tốt hơn.
     \item \textbf{Hiệu năng vượt trội:} Các mô hình Seq2Seq với Attention đã ngay lập tức thiết lập một tiêu chuẩn mới về chất lượng cho dịch máy và nhiều bài toán chuỗi-sang-chuỗi khác, vượt xa các hệ thống thống kê trước đó.
 \end{itemize}
 

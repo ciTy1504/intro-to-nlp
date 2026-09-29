@@ -5,7 +5,7 @@
 \section{Phác thảo Quy trình Dự án NLP Tinh gọn}
 \label{sec:nlp_project_workflow}
 
-Chào mừng bạn đến với phần thực chiến của giáo trình. Trước khi chúng ta lao vào việc viết code và huấn luyện các mô hình phức tạp, điều quan trọng nhất là phải có một "tấm bản đồ" -- một quy trình làm việc có hệ thống để dẫn dắt dự án từ một ý tưởng mơ hồ đến một sản phẩm hữu ích.
+Chào mừng bạn đến với phần thực chiến của giáo trình. Trước khi chúng ta lao vào việc viết code và huấn luyện các mô hình phức tạp, điều quan trọng nhất là phải có một “tấm bản đồ” -- một quy trình làm việc có hệ thống để dẫn dắt dự án từ một ý tưởng mơ hồ đến một sản phẩm hữu ích.
 
 Việc thiếu một quy trình rõ ràng là một trong những nguyên nhân hàng đầu khiến các dự án học máy thất bại. Các đội nhóm có thể tốn hàng tháng trời để xây dựng một mô hình phức tạp chỉ để nhận ra rằng nó không giải quyết đúng bài toán kinh doanh, hoặc dữ liệu không đủ chất lượng.
 
@@ -23,9 +23,9 @@ Quy trình dưới đây được thiết kế theo một vòng lặp tinh gọn
 
 \subsubsection{1. Hiểu rõ Mục tiêu (Problem Framing)}
 \begin{itemize}
-    \item \textbf{Câu hỏi cần trả lời:} Chúng ta đang cố gắng giải quyết vấn đề kinh doanh/nghiên cứu nào? Tác động mong muốn là gì? (Ví dụ: "giảm 30\% thời gian phản hồi của nhân viên hỗ trợ", "tự động phân loại 80\% tin tức đầu vào").
+    \item \textbf{Câu hỏi cần trả lời:} Chúng ta đang cố gắng giải quyết vấn đề kinh doanh/nghiên cứu nào? Tác động mong muốn là gì? (Ví dụ: “giảm 30\% thời gian phản hồi của nhân viên hỗ trợ”, “tự động phân loại 80\% tin tức đầu vào”).
     \item \textbf{Xác định Input và Output:} Đầu vào của mô hình là gì (văn bản thô, bình luận, email)? Đầu ra mong muốn là gì (một nhãn, một đoạn văn bản tóm tắt, một câu trả lời)?
-    \item \textbf{Định hình bài toán NLP:} Ánh xạ vấn đề kinh doanh thành một bài toán NLP cụ thể. Ví dụ: "Giảm thời gian phản hồi" $\rightarrow$ "Xây dựng mô hình phân loại email để tự động định tuyến đến đúng phòng ban".
+    \item \textbf{Định hình bài toán NLP:} Ánh xạ vấn đề kinh doanh thành một bài toán NLP cụ thể. Ví dụ: “Giảm thời gian phản hồi” $\rightarrow$ “Xây dựng mô hình phân loại email để tự động định tuyến đến đúng phòng ban”.
 \end{itemize}
 
 \subsubsection{2. Định nghĩa Metric Thành công}
@@ -36,7 +36,7 @@ Quy trình dưới đây được thiết kế theo một vòng lặp tinh gọn
 
 \subsubsection{3. Thiết lập một Đường cơ sở (Baseline) Đơn giản}
 \begin{tcolorbox}[
-    title=Lời khuyên quan trọng: Bắt đầu một cách "ngu ngốc",
+    title=Lời khuyên quan trọng: Bắt đầu một cách “ngu ngốc”,
     colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries
 ]
 Đừng bao giờ bắt đầu một dự án bằng việc xây dựng một mô hình Transformer phức tạp. Hãy bắt đầu với giải pháp đơn giản nhất có thể. Một baseline tốt không chỉ cho bạn một điểm để so sánh, mà còn có thể đủ tốt để giải quyết 80\% vấn đề với 20\% công sức.
@@ -62,7 +62,7 @@ Baseline này sẽ là thước đo để bạn biết liệu những nỗ lực
     \item \textbf{Thu thập (Collection):} Lấy dữ liệu từ các nguồn (cơ sở dữ liệu, API, web scraping).
     \item \textbf{Làm sạch (Cleaning):} Xử lý các vấn đề như mã hóa ký tự, loại bỏ các thẻ HTML, chuẩn hóa văn bản.
     \item \textbf{Gán nhãn (Labeling):} Nếu là bài toán có giám sát, đây là bước cực kỳ quan trọng. Sử dụng các công cụ như `Label Studio` hoặc các kỹ thuật gán nhãn yếu (weak supervision).
-    \item \textbf{Phân chia Dữ liệu (Splitting):} Chia dữ liệu thành các tập Huấn luyện (Train), Đánh giá (Validation/Dev), và Kiểm tra (Test). \textbf{Không bao giờ} được "nhìn" vào tập Test trong quá trình phát triển.
+    \item \textbf{Phân chia Dữ liệu (Splitting):} Chia dữ liệu thành các tập Huấn luyện (Train), Đánh giá (Validation/Dev), và Kiểm tra (Test). \textbf{Không bao giờ} được “nhìn” vào tập Test trong quá trình phát triển.
 \end{itemize}
 
 \subsubsection{5. Huấn luyện Mô hình}
@@ -79,7 +79,7 @@ Baseline này sẽ là thước đo để bạn biết liệu những nỗ lực
     \item \textbf{Quy trình:}
         \begin{enumerate}
             \item Lấy một mẫu các dự đoán sai trên tập validation.
-            \item Phân loại các lỗi này thành các nhóm. Ví dụ: "mô hình sai ở các câu bị phủ định", "mô hình nhầm lẫn giữa hai lớp A và B", "lỗi do dữ liệu gán nhãn sai".
+            \item Phân loại các lỗi này thành các nhóm. Ví dụ: “mô hình sai ở các câu bị phủ định”, “mô hình nhầm lẫn giữa hai lớp A và B”, “lỗi do dữ liệu gán nhãn sai”.
             \item \textbf{Ưu tiên:} Tập trung nỗ lực vào việc giải quyết nhóm lỗi lớn nhất và có tác động nhất. Ví dụ, nếu mô hình thường sai ở các câu phủ định, bạn có thể cần thu thập thêm dữ liệu về loại câu này hoặc sử dụng kỹ thuật tăng cường dữ liệu.
         \end{enumerate}
 \end{itemize}

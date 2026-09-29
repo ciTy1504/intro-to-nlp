@@ -1,0 +1,113 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_pretraining/sec2_data.tex
+
+\section{Dữ liệu Tiền huấn luyện: Từ “Càng nhiều càng tốt” đến “Càng sạch càng tốt”}
+\label{sec:pretraining_data}
+
+Scaling laws coi $D$ như một con số. Nhưng 1T token lấy từ diễn đàn spam và 1T token lấy từ sách giáo khoa rõ ràng không tương đương. Từ 2020 đến 2025, cộng đồng dần nhận ra rằng \textbf{chất lượng và thành phần dữ liệu} có thể tạo ra khác biệt tương đương việc tăng gấp nhiều lần compute. Mục này đi theo dòng thời gian của các bộ dữ liệu mở có ảnh hưởng nhất, và rút ra các kỹ thuật cốt lõi từ mỗi bộ.
+
+\subsection{Pipeline xử lý dữ liệu web tổng quát}
+\label{ssec:data_pipeline}
+Nguồn dữ liệu lớn nhất và rẻ nhất là \textbf{Common Crawl} -- kho lưu trữ web công khai được thu thập định kỳ từ năm 2008, mỗi đợt (snapshot) có hàng tỷ trang. Biến dữ liệu thô này thành dữ liệu huấn luyện là một chuỗi các bước lọc, mỗi bước loại bỏ một phần đáng kể:
+
+\begin{enumerate}
+	\item \textbf{Trích xuất văn bản:} Lấy phần nội dung chính từ HTML, bỏ menu, quảng cáo, footer (các công cụ như \texttt{trafilatura}).
+	\item \textbf{Lọc URL:} Loại bỏ tên miền trong danh sách đen (người lớn, spam, lừa đảo).
+	\item \textbf{Nhận dạng ngôn ngữ:} Dùng bộ phân loại nhanh như fastText để giữ ngôn ngữ mục tiêu.
+	\item \textbf{Lọc heuristic:} Các luật đơn giản nhưng hiệu quả, ví dụ loại tài liệu có tỷ lệ ký tự đặc biệt quá cao, câu quá ngắn, quá nhiều dòng lặp lại, hoặc thiếu các từ dừng phổ biến.
+	\item \textbf{Khử trùng lặp (deduplication):} Trùng lặp chính xác (hash toàn văn bản hoặc chuỗi con dài qua suffix array) và \textbf{gần trùng lặp} (MinHash kết hợp Locality-Sensitive Hashing để tìm các tài liệu có độ tương đồng Jaccard cao giữa các tập n-gram).
+	\item \textbf{Lọc chất lượng bằng mô hình:} Một bộ phân loại (fastText, hoặc embedding + đầu phân loại) chấm điểm “chất lượng” hay “giá trị giáo dục” của từng tài liệu.
+	\item \textbf{Loại bỏ thông tin nhạy cảm và nội dung độc hại:} Ẩn email, số điện thoại (PII); lọc nội dung độc hại.
+	\item \textbf{Khử nhiễm benchmark (decontamination):} Loại các tài liệu trùng n-gram dài với bộ test của các benchmark đánh giá (xem mục~\ref{ssec:data_contamination}).
+	\item \textbf{Trộn và token hóa:} Kết hợp với các nguồn khác (mã nguồn, sách, bài báo khoa học, toán học) theo một tỷ lệ trộn (data mixture) được chọn cẩn thận.
+\end{enumerate}
+
+\paragraph{Vì sao khử trùng lặp quan trọng?} Lee et al. \cite{lee2022dedup} cho thấy các bộ dữ liệu phổ biến chứa rất nhiều văn bản gần trùng lặp; loại bỏ chúng giúp mô hình \textbf{sinh lại nguyên văn dữ liệu huấn luyện ít hơn khoảng 10 lần}, đạt perplexity tương đương hoặc tốt hơn với ít bước huấn luyện hơn, và giảm rò rỉ giữa tập huấn luyện và tập kiểm tra.
+
+\subsection{The Pile (2020): Đa dạng là sức mạnh}
+\label{ssec:the_pile}
+\textbf{The Pile} \cite{gao2020pile} của EleutherAI là bộ dữ liệu mở quy mô lớn đầu tiên được thiết kế có chủ đích cho LLM: 825 GiB văn bản tiếng Anh gồm \textbf{22 tập con} đa dạng -- từ Pile-CC (web đã lọc), PubMed Central, ArXiv, GitHub, StackExchange, FreeLaw, USPTO, Wikipedia, đến DM Mathematics, Ubuntu IRC và EuroParl.
+\begin{itemize}
+	\item \textbf{Giả thuyết:} Dữ liệu đa dạng, chất lượng cao từ nhiều miền giúp mô hình có kiến thức rộng và tổng quát hóa tốt hơn so với chỉ dùng web.
+	\item \textbf{Đóng góp phương pháp luận:} Đề xuất đánh giá bằng \emph{bits per byte} trên từng miền, cho phép so sánh mô hình dùng tokenizer khác nhau.
+	\item \textbf{Di sản:} Là nền tảng của GPT-Neo, GPT-J, Pythia và là bộ dữ liệu “chuẩn” cho nhiều nghiên cứu về tỷ lệ trộn dữ liệu (như DoReMi dưới đây).
+\end{itemize}
+
+\subsection{RefinedWeb (2023): Chỉ cần web, nếu lọc đủ kỹ}
+\label{ssec:refinedweb}
+Nhóm Falcon (TII) \cite{penedo2023refinedweb} thách thức giả thuyết của The Pile: \emph{liệu dữ liệu web đơn thuần, nếu được lọc và khử trùng lặp nghiêm ngặt, có thể tốt ngang hoặc hơn các bộ dữ liệu được tuyển chọn thủ công?}
+\begin{itemize}
+	\item \textbf{Pipeline MacroData Refinement (MDR):} lọc URL $\rightarrow$ trích xuất văn bản bằng trafilatura $\rightarrow$ nhận dạng ngôn ngữ $\rightarrow$ loại bỏ lặp lại và lọc chất lượng ở mức tài liệu $\rightarrow$ sửa lỗi ở mức dòng $\rightarrow$ khử trùng lặp gần đúng (MinHash) $\rightarrow$ khử trùng lặp chính xác theo chuỗi con. Toàn bộ quá trình loại bỏ gần \textbf{90\%} nội dung ban đầu của Common Crawl.
+	\item \textbf{Kết quả:} Khoảng 5T token chất lượng cao (công bố công khai 600B token). Mô hình huấn luyện chỉ trên RefinedWeb vượt các mô hình huấn luyện trên The Pile ở cùng quy mô, và là nền tảng của Falcon-40B/180B.
+	\item \textbf{Ý nghĩa:} Web là nguồn duy nhất có thể mở rộng lên hàng nghìn tỷ token; vì vậy đầu tư vào \emph{pipeline lọc} có lợi thế mở rộng hơn đầu tư vào \emph{tuyển chọn thủ công}.
+\end{itemize}
+
+\subsection{FineWeb và FineWeb-Edu (2024): Khoa học hóa quy trình lọc}
+\label{ssec:fineweb}
+Hugging Face \cite{penedo2024fineweb} xây dựng \textbf{FineWeb}: \textbf{15T token} từ \textbf{96 snapshot} Common Crawl. Điểm khác biệt lớn nhất là mọi quyết định trong pipeline đều được kiểm chứng bằng \emph{thí nghiệm loại bỏ (ablation)}: huấn luyện các mô hình nhỏ giống hệt nhau trên các phiên bản dữ liệu khác nhau rồi so sánh trên một bộ benchmark cố định. Một số phát hiện đáng chú ý:
+\begin{itemize}
+	\item \textbf{Trích xuất lại từ HTML gốc (WARC)} tốt hơn dùng sẵn văn bản đã trích xuất (WET) của Common Crawl.
+	\item \textbf{Khử trùng lặp riêng từng snapshot tốt hơn khử trùng lặp toàn cục:} Khử trùng lặp trên toàn bộ 96 snapshot thực chất giữ lại tỷ lệ lớn tài liệu chất lượng thấp -- những tài liệu “độc nhất” vì không ai sao chép chúng.
+	\item \textbf{Các bộ lọc heuristic nên được chọn dựa trên thống kê}, so sánh phân phối giữa dữ liệu “tốt” và “xấu” thay vì dựa vào cảm tính.
+\end{itemize}
+
+\paragraph{FineWeb-Edu: Để LLM chấm điểm dữ liệu cho LLM.}
+Nhóm tác giả dùng Llama-3-70B-Instruct chấm điểm “giá trị giáo dục” (thang 0--5) cho vài trăm nghìn mẫu, rồi huấn luyện một bộ phân loại nhỏ trên các nhãn này để chấm điểm toàn bộ 15T token. Giữ lại các tài liệu có điểm từ 3 trở lên tạo ra \textbf{FineWeb-Edu với 1.3T token}. Mô hình huấn luyện trên FineWeb-Edu cải thiện \textbf{vượt trội} trên các benchmark đòi hỏi kiến thức và suy luận: MMLU tăng từ 33\% lên 37\% và ARC tăng từ 46\% lên 57\% so với FineWeb; đáng chú ý hơn, nó đạt cùng mức MMLU với lượng token ít hơn khoảng \textbf{10 lần} so với bộ dữ liệu mở tốt thứ hai.
+
+\begin{center}
+\bookimage[0.75\textwidth]{fineweb_edu_pipeline}{Biểu đồ đường: độ chính xác MMLU (\%) theo số token huấn luyện (tỷ) của ba bộ dữ liệu -- FineWeb-Edu tăng nhanh và vượt hẳn, đạt mức 33.6\% chỉ với 38 tỷ token, trong khi FineWeb và Matrix cần khoảng 300 tỷ token mới đạt mức tương đương.}
+\captionof{figure}{Hiệu quả của việc lọc theo “giá trị giáo dục”: mô hình huấn luyện trên FineWeb-Edu đạt cùng mức MMLU với lượng token ít hơn gần 10 lần. Nguồn: Penedo et al.~\cite{penedo2024fineweb}.}
+\label{fig:fineweb_edu}
+\end{center}
+
+\subsection{DataComp-LM (2024): Biến tuyển chọn dữ liệu thành một benchmark}
+\label{ssec:dclm}
+Nếu các bộ dữ liệu trên là “sản phẩm”, thì \textbf{DCLM} \cite{li2024dclm} là một “cuộc thi” cho việc làm ra sản phẩm đó. Ý tưởng: cố định mã huấn luyện, kiến trúc và siêu tham số; người tham gia chỉ được thay đổi \emph{dữ liệu}; mọi đề xuất được đánh giá trên cùng 53 tác vụ downstream.
+\begin{itemize}
+	\item \textbf{DCLM-Pool:} 240T token trích xuất từ Common Crawl -- điểm xuất phát chung cho mọi đề xuất.
+	\item \textbf{Nhiều quy mô:} từ khoảng 400M đến 7B tham số, để kiểm tra xem kết luận ở quy mô nhỏ có còn đúng khi mở rộng.
+	\item \textbf{Phát hiện chính:} \emph{Lọc bằng mô hình là chìa khóa.} Một bộ phân loại fastText đơn giản -- mẫu dương lấy từ dữ liệu chỉ dẫn chất lượng cao (OpenHermes 2.5) và các câu trả lời được bình chọn cao trên diễn đàn ELI5 của Reddit, mẫu âm là dữ liệu web ngẫu nhiên -- vượt qua nhiều phương pháp phức tạp hơn.
+	\item \textbf{DCLM-Baseline:} Mô hình 7B huấn luyện trên 2.6T token đạt \textbf{64\% MMLU 5-shot}, cao hơn MAP-Neo 6.6 điểm với ít hơn 40\% compute, và ngang Llama 3 8B (63\% so với 66\%) với ít hơn 6.6 lần compute.
+\end{itemize}
+
+\subsection{DoReMi (2023): Tối ưu tỷ lệ trộn dữ liệu}
+\label{ssec:doremi}
+Khi có nhiều miền dữ liệu (web, code, sách, Wikipedia\ldots), ta phải chọn trọng số trộn $\alpha \in \Delta^k$ cho $k$ miền. Chọn thủ công là phỏng đoán; tối ưu trực tiếp trên mô hình lớn thì quá đắt. \textbf{DoReMi} (Domain Reweighting with Minimax Optimization) \cite{xie2023doremi} dùng mô hình nhỏ để tìm trọng số cho mô hình lớn:
+\begin{enumerate}
+	\item \textbf{Huấn luyện mô hình tham chiếu nhỏ} (280M tham số) với trọng số mặc định.
+	\item \textbf{Huấn luyện mô hình proxy nhỏ} cùng cỡ bằng \textbf{Group DRO} (Distributionally Robust Optimization theo nhóm): tại mỗi bước, tính \emph{loss vượt trội} (excess loss) của proxy so với tham chiếu trên từng miền,
+	\[
+	\lambda_t[i] = \max\Big(\ell_{\theta_t}(x) - \ell_{\text{ref}}(x),\, 0\Big) \quad \text{(trung bình trên các token của miền } i\text{)},
+	\]
+	rồi tăng trọng số cho các miền có loss vượt trội lớn theo cập nhật mũ $\alpha_t \propto \alpha_{t-1}\exp(\eta\,\lambda_t)$ (kèm làm trơn). Trực giác: ưu tiên những miền mà mô hình \emph{còn có thể học thêm}, bỏ qua những miền quá dễ (loss đã thấp) hoặc quá nhiễu (loss cao ở cả hai mô hình).
+	\item \textbf{Lấy trung bình trọng số} qua các bước huấn luyện proxy, dùng nó để huấn luyện mô hình lớn (8B, lớn gấp 30 lần).
+\end{enumerate}
+Trên The Pile, DoReMi tăng độ chính xác one-shot trung bình \textbf{6.5 điểm} và đạt độ chính xác của baseline với \textbf{ít hơn 2.6 lần số bước}. Đáng chú ý, perplexity cải thiện trên \emph{mọi} miền, kể cả những miền bị giảm trọng số.
+
+\subsection{Dữ liệu tổng hợp trong tiền huấn luyện}
+\label{ssec:synthetic_pretraining}
+Khi dữ liệu con người viết chất lượng cao dần cạn, dữ liệu do LLM sinh ra trở thành nguồn bổ sung hấp dẫn. Có hai trường phái chính:
+\begin{itemize}
+	\item \textbf{Kiểu “sách giáo khoa” (textbook-style):} Sinh ra văn bản hoàn toàn mới theo phong cách giáo trình, như dòng mô hình Phi \cite{gunasekar2023textbooks}.
+	\item \textbf{Kiểu “viết lại” (rephrasing):} Giữ nội dung của tài liệu web nhưng viết lại theo phong cách rõ ràng hơn (ví dụ dạng Wikipedia hoặc hỏi--đáp), như WRAP \cite{maini2024wrap}.
+\end{itemize}
+
+\paragraph{Nghiên cứu hệ thống của Kang et al. (2025).} Bài báo “Demystifying Synthetic Data in LLM Pre-training” \cite{kang2025synthetic} huấn luyện hơn 1000 mô hình với hơn 100 nghìn giờ GPU theo một giao thức thống nhất, và đưa ra các kết luận quan trọng:
+\begin{enumerate}
+	\item \textbf{Chỉ dùng dữ liệu viết lại} không giúp hội tụ nhanh hơn so với dữ liệu web tự nhiên.
+	\item \textbf{Trộn khoảng 1/3 dữ liệu viết lại với 2/3 dữ liệu web tự nhiên} giúp đạt cùng validation loss nhanh hơn \textbf{5--10 lần} ở ngân sách dữ liệu lớn. Tỷ lệ tối ưu hội tụ về khoảng 30\%, thay đổi theo kích thước mô hình và ngân sách dữ liệu.
+	\item \textbf{Dữ liệu kiểu sách giáo khoa thuần túy} cho loss cao hơn rõ rệt trên nhiều miền downstream, đặc biệt ở ngân sách dữ liệu nhỏ -- vì nó thiếu độ đa dạng của văn bản thật.
+	\item \textbf{Mô hình sinh lớn hơn không đảm bảo dữ liệu tốt hơn:} vượt quá khoảng 8B tham số, việc tăng kích thước mô hình sinh không còn cải thiện dữ liệu một cách ổn định.
+	\item \textbf{Về hiện tượng sụp đổ mô hình (model collapse):} Dữ liệu viết lại không cho thấy suy giảm ở các quy mô có thể dự đoán, trong khi hỗn hợp chứa dữ liệu kiểu sách giáo khoa có biểu hiện đúng như các lý thuyết về sụp đổ mô hình dự báo.
+\end{enumerate}
+
+\begin{tcolorbox}[title={Tổng kết: Những nguyên tắc về dữ liệu tiền huấn luyện năm 2026}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
+\begin{itemize}
+	\item \textbf{Web là xương sống}, nhưng chỉ sau khi đã lọc đi phần lớn (RefinedWeb, FineWeb).
+	\item \textbf{Khử trùng lặp} là bắt buộc; cách làm (theo snapshot hay toàn cục) cần được kiểm chứng bằng thí nghiệm.
+	\item \textbf{Lọc bằng mô hình} (bộ phân loại chất lượng/giáo dục, thường được gán nhãn bởi LLM mạnh) mang lại lợi ích lớn nhất (FineWeb-Edu, DCLM).
+	\item \textbf{Tỷ lệ trộn} nên được tối ưu bằng thí nghiệm ở quy mô nhỏ (DoReMi) thay vì phỏng đoán.
+	\item \textbf{Dữ liệu tổng hợp} là chất bổ sung, không phải chất thay thế: trộn ở tỷ lệ vừa phải, ưu tiên viết lại hơn là sinh mới hoàn toàn.
+	\item Mọi kết luận về dữ liệu cần \textbf{ablation có kiểm soát compute}, đúng như tinh thần của DCLM.
+\end{itemize}
+\end{tcolorbox}

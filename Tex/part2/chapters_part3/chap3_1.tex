@@ -7,7 +7,7 @@
 \subsection{Khái niệm và vai trò trong NLP hiện đại}
 \label{ssec:vector_db_concepts}
 
-Trong các chương trước, chúng ta đã thấy rằng "embedding" là ngôn ngữ của NLP hiện đại. Mọi thứ, từ một từ, một câu, đến một tài liệu hoàn chỉnh, đều có thể được biểu diễn bằng một vector dày đặc. Các hệ thống như RAG (mục \ref{sec:rag}) và Bộ nhớ Dài hạn cho Tác tử (mục \ref{ssec:agent_memory}) đều dựa trên một thao tác cốt lõi: **"Cho một vector truy vấn, hãy tìm các vector tương tự nhất trong một tập hợp hàng triệu, thậm chí hàng tỷ vector khác."**
+Trong các chương trước, chúng ta đã thấy rằng “embedding” là ngôn ngữ của NLP hiện đại. Mọi thứ, từ một từ, một câu, đến một tài liệu hoàn chỉnh, đều có thể được biểu diễn bằng một vector dày đặc. Các hệ thống như RAG (mục \ref{chap:rag}) và Bộ nhớ Dài hạn cho Tác tử (mục \ref{ssec:agent_memory}) đều dựa trên một thao tác cốt lõi: **“Cho một vector truy vấn, hãy tìm các vector tương tự nhất trong một tập hợp hàng triệu, thậm chí hàng tỷ vector khác.”**
 
 \paragraph{Vấn đề của Tìm kiếm Brute-force}
 Cách tiếp cận ngây thơ nhất là tính toán độ tương đồng (ví dụ: cosine similarity) giữa vector truy vấn và \textit{tất cả} các vector trong cơ sở dữ liệu, sau đó sắp xếp và lấy ra top-K kết quả. Phương pháp này có độ phức tạp $O(N \cdot d)$ (với $N$ là số vector, $d$ là số chiều). Với $N$ lớn, nó trở nên quá chậm để có thể sử dụng trong thực tế.
@@ -34,13 +34,13 @@ Một Cơ sở dữ liệu Vector là một hệ thống được tối ưu hóa
         \end{itemize}
     \item \textbf{ChromaDB:}
         \begin{itemize}
-            \item \textbf{Bản chất:} Một cơ sở dữ liệu vector mã nguồn mở, tập trung vào sự đơn giản và dễ sử dụng. Nó có thể chạy trực tiếp trong ứng dụng Python của bạn ("in-process") mà không cần một máy chủ riêng.
-            \item \textbf{Khi nào dùng?} Rất tuyệt vời cho việc phát triển nhanh, tạo mẫu (prototyping), và các ứng dụng quy mô nhỏ. Được mệnh danh là "SQLite của các vector".
+            \item \textbf{Bản chất:} Một cơ sở dữ liệu vector mã nguồn mở, tập trung vào sự đơn giản và dễ sử dụng. Nó có thể chạy trực tiếp trong ứng dụng Python của bạn (“in-process”) mà không cần một máy chủ riêng.
+            \item \textbf{Khi nào dùng?} Rất tuyệt vời cho việc phát triển nhanh, tạo mẫu (prototyping), và các ứng dụng quy mô nhỏ. Được mệnh danh là “SQLite của các vector”.
         \end{itemize}
     \item \textbf{Milvus / Weaviate:}
         \begin{itemize}
             \item \textbf{Bản chất:} Là các cơ sở dữ liệu vector mã nguồn mở, đầy đủ tính năng, được thiết kế cho các hệ thống production quy mô lớn. Chúng hoạt động như các dịch vụ độc lập.
-            \item \textbf{Tính năng nâng cao:} Hỗ trợ lọc metadata (ví dụ: "tìm các vector tương tự nhưng chỉ trong các tài liệu được tạo sau ngày X"), khả năng mở rộng (scaling), và độ sẵn sàng cao (high availability).
+            \item \textbf{Tính năng nâng cao:} Hỗ trợ lọc metadata (ví dụ: “tìm các vector tương tự nhưng chỉ trong các tài liệu được tạo sau ngày X”), khả năng mở rộng (scaling), và độ sẵn sàng cao (high availability).
             \item \textbf{Khi nào dùng?} Khi xây dựng các ứng dụng RAG hoặc tìm kiếm ngữ nghĩa cho production.
         \end{itemize}
     \item \textbf{Pinecone:}

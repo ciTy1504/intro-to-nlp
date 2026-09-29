@@ -1,0 +1,56 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_efficiency/sec4_serving.tex
+
+\section{Phục vụ LLM: Batching, PagedAttention và Offloading}
+\label{sec:llm_serving}
+
+\subsection{Các chỉ số của một hệ thống phục vụ LLM}
+\label{ssec:serving_metrics}
+Nhắc lại từ mục~\ref{ssec:kv_cache}: một yêu cầu đi qua pha \textbf{prefill} (xử lý song song toàn bộ prompt, tạo KV cache) rồi pha \textbf{decode} (sinh từng token). Tương ứng, người ta đo:
+\begin{itemize}
+	\item \textbf{TTFT (Time To First Token):} Thời gian tới token đầu tiên -- chủ yếu do pha prefill và thời gian xếp hàng quyết định.
+	\item \textbf{TPOT / ITL (Time Per Output Token / Inter-Token Latency):} Thời gian giữa hai token liên tiếp -- do pha decode quyết định, quyết định cảm giác “gõ chữ mượt”.
+	\item \textbf{Thông lượng (throughput):} Số token (hoặc yêu cầu) xử lý được mỗi giây.
+	\item \textbf{Goodput:} Số yêu cầu mỗi giây \emph{đồng thời thỏa mãn} các mục tiêu dịch vụ (SLO) về TTFT và TPOT -- chỉ số phản ánh đúng nhất chi phí phục vụ thực tế.
+\end{itemize}
+Thông lượng và độ trễ luôn giằng co nhau: batch càng lớn thì mỗi GPU phục vụ được nhiều người hơn, nhưng mỗi người chờ lâu hơn.
+
+\subsection{Batching liên tục (Continuous Batching)}
+\label{ssec:continuous_batching}
+Batching tĩnh truyền thống gom $B$ yêu cầu, chạy tới khi \emph{tất cả} sinh xong rồi mới nhận batch mới. Vì độ dài đầu ra chênh lệch rất lớn, các yêu cầu ngắn phải chờ yêu cầu dài nhất, và GPU lãng phí các “chỗ trống” của yêu cầu đã xong.
+
+\textbf{Orca} \cite{yu2022orca} đề xuất \textbf{lập lịch theo vòng lặp (iteration-level scheduling)}: bộ lập lịch ra quyết định sau \emph{mỗi} bước sinh token -- yêu cầu nào xong thì rời batch ngay, yêu cầu mới được thêm vào ngay. Để gộp các yêu cầu có độ dài khác nhau, Orca dùng \textbf{batching chọn lọc}: các phép toán không phụ thuộc độ dài (lớp tuyến tính, LayerNorm) được gộp phẳng theo token, riêng attention được tính riêng cho từng yêu cầu. Kỹ thuật này (còn gọi là \emph{continuous batching} hay \emph{in-flight batching}) là nền tảng của mọi engine phục vụ hiện đại.
+
+\subsection{PagedAttention và vLLM: Quản lý KV cache như bộ nhớ ảo}
+\label{ssec:pagedattention}
+
+\paragraph{Vấn đề.} Continuous batching khiến bộ nhớ KV cache thay đổi liên tục và không đoán trước được. Các hệ thống trước đó cấp phát cho mỗi yêu cầu một vùng nhớ \emph{liên tục} đủ cho \emph{độ dài tối đa có thể}, dẫn đến ba kiểu lãng phí: \textbf{dự trữ} (chỗ cho token chưa sinh), \textbf{phân mảnh trong} (cấp dư so với độ dài thực tế), và \textbf{phân mảnh ngoài} (các khoảng trống lẻ tẻ giữa các vùng). Kwon et al. \cite{kwon2023vllm} đo được rằng các hệ thống hiện có chỉ dùng thực sự 20--40\% bộ nhớ KV cache, tức 60--80\% bị lãng phí.
+
+\paragraph{Giải pháp: phân trang như hệ điều hành.}
+\begin{itemize}
+	\item KV cache của mỗi chuỗi được chia thành các \textbf{khối (block)} kích thước cố định (ví dụ 16 token mỗi khối). Các khối \emph{logic} liên tiếp của một chuỗi được ánh xạ tới các khối \emph{vật lý} bất kỳ trong GPU qua một \textbf{bảng khối (block table)} -- giống bảng trang của bộ nhớ ảo.
+	\item Khối vật lý mới chỉ được cấp khi khối cuối đã đầy, nên lãng phí chỉ còn nằm ở khối cuối cùng của mỗi chuỗi.
+	\item Nhân attention được viết lại (\textbf{PagedAttention}) để đọc Key/Value từ các khối không liền kề.
+	\item \textbf{Chia sẻ bộ nhớ:} nhiều chuỗi (ví dụ các mẫu song song của cùng một prompt, hoặc các nhánh beam search) có thể trỏ tới cùng một khối vật lý chứa tiền tố chung, dùng bộ đếm tham chiếu và cơ chế \textbf{copy-on-write} khi một chuỗi cần ghi khác đi.
+\end{itemize}
+
+\begin{center}
+\bookimage[0.85\textwidth]{pagedattention_block_table}{Sơ đồ kiến trúc hệ thống vLLM: bộ lập lịch (Scheduler) điều phối các worker, mỗi worker chứa một phần mô hình và một cache engine trên GPU; KV Cache Manager giữ các bảng khối (block tables) ánh xạ khối logic sang khối vật lý và điều khiển hai bộ cấp phát khối trên GPU và CPU.}
+\captionof{figure}{Kiến trúc vLLM: bộ lập lịch, KV Cache Manager với bảng khối, và các worker giữ các phần của mô hình. Nguồn: Kwon et al.~\cite{kwon2023vllm}.}
+\label{fig:pagedattention}
+\end{center}
+
+\paragraph{Kết quả.} Lãng phí bộ nhớ KV cache giảm xuống dưới 4\%, cho phép batch lớn hơn nhiều; vLLM đạt thông lượng cao hơn \textbf{2--4 lần} so với FasterTransformer và Orca ở cùng mức độ trễ, lợi ích càng lớn với chuỗi dài, mô hình lớn và thuật toán giải mã phức tạp.
+
+\paragraph{Prefix caching.} Mở rộng tự nhiên của việc chia sẻ khối: lưu lại KV cache của các tiền tố thường gặp (system prompt, tài liệu RAG, lịch sử hội thoại, few-shot examples) để các yêu cầu sau \emph{bỏ qua} phần prefill tương ứng. SGLang \cite{zheng2024sglang} tổ chức các tiền tố đã lưu thành một cây radix (\textbf{RadixAttention}) để tự động tìm tiền tố chung dài nhất. Với tác tử và RAG -- nơi prompt dài và lặp lại nhiều -- prefix caching thường giảm TTFT và chi phí đáng kể.
+
+\subsection{FlexGen: Phục vụ mô hình khổng lồ trên một GPU bằng offloading}
+\label{ssec:flexgen}
+Không phải ai cũng có cụm GPU. Với các tác vụ \textbf{không cần tương tác thời gian thực} (xử lý dữ liệu hàng loạt, đánh giá benchmark, trích xuất thông tin từ kho tài liệu), điều quan trọng là thông lượng, không phải độ trễ. \textbf{FlexGen} \cite{sheng2023flexgen} tối ưu cho kịch bản này:
+\begin{itemize}
+	\item \textbf{Offloading ba tầng:} Trọng số, kích hoạt và KV cache được phân bổ linh hoạt giữa GPU, RAM CPU và ổ đĩa.
+	\item \textbf{Tìm chính sách tối ưu bằng quy hoạch tuyến tính:} Xây dựng mô hình chi phí cho việc tính toán và truyền dữ liệu, rồi giải một bài toán quy hoạch tuyến tính để quyết định lưu tensor nào ở đâu, tính toán ở đâu, với kích thước batch bao nhiêu.
+	\item \textbf{Nén 4 bit} cả trọng số và KV cache với suy giảm chất lượng không đáng kể, giảm lượng dữ liệu phải di chuyển.
+	\item \textbf{Batch rất lớn:} Chấp nhận độ trễ cao để khấu hao chi phí truyền dữ liệu qua nhiều chuỗi.
+\end{itemize}
+Chạy OPT-175B trên \textbf{một GPU 16GB}, FlexGen lần đầu tiên đạt thông lượng sinh 1 token/giây với batch hiệu dụng 144 -- cao hơn nhiều lần so với các hệ thống offloading trước đó.

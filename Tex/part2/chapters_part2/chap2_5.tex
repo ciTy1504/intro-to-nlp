@@ -1,0 +1,216 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters_part2/chap2_5.tex
+% Cập nhật 2026: thực hành hậu huấn luyện với TRL
+
+\section{Huấn luyện Hậu kỳ với TRL: SFT, DPO và GRPO}
+\label{sec:posttraining_trl}
+
+Phần 1 đã trình bày lý thuyết của tinh chỉnh có giám sát (chương~\ref{chap:finetuning_alignment}), căn chỉnh theo sở thích (mục~\ref{sec:alignment_methods}) và học tăng cường cho suy luận (chương~\ref{chap:reasoning}). Trong thực tế, cả ba giai đoạn này đều có thể được thực hiện với thư viện \textbf{TRL} (Transformer Reinforcement Learning) của Hugging Face -- được xây dựng trên \texttt{transformers}, \texttt{accelerate} và \texttt{peft}, và tích hợp vLLM để sinh văn bản nhanh trong quá trình RL.
+
+\begin{tcolorbox}[title={Quy trình hậu huấn luyện điển hình}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\textbf{Mô hình nền} $\xrightarrow{\text{SFT}}$ \textbf{mô hình tuân theo chỉ dẫn} $\xrightarrow{\text{DPO/ORPO/KTO}}$ \textbf{mô hình được căn chỉnh} $\xrightarrow{\text{GRPO + phần thưởng kiểm chứng được}}$ \textbf{mô hình suy luận tốt hơn trên toán/mã}.
+
+Không phải dự án nào cũng cần đủ ba bước: nhiều bài toán doanh nghiệp chỉ cần SFT (thường với LoRA/QLoRA); GRPO chỉ đáng giá khi bạn có \emph{hàm thưởng tự động đáng tin cậy}.
+\end{tcolorbox}
+
+\subsection{Định dạng dữ liệu}
+\label{ssec:trl_data_formats}
+TRL chấp nhận cả định dạng văn bản thường lẫn định dạng hội thoại (danh sách các tin nhắn có \texttt{role} và \texttt{content}); với định dạng hội thoại, chat template của mô hình được áp dụng tự động.
+
+\begin{example}{Các định dạng dữ liệu cho SFT, DPO và GRPO}{ex:trl_formats}
+\begin{minted}{python}
+# SFT -- hội thoại (tính loss trên phần trả lời)
+{"prompt": [{"role": "user", "content": "Thủ đô của Pháp?"}],
+ "completion": [{"role": "assistant", "content": "Paris."}]}
+
+# DPO -- dữ liệu sở thích: cùng prompt, một câu được chọn, một câu bị loại
+{"prompt": [{"role": "user", "content": "Bầu trời màu gì?"}],
+ "chosen": [{"role": "assistant", "content": "Màu xanh."}],
+ "rejected": [{"role": "assistant", "content": "Màu xanh lá."}]}
+
+# GRPO -- chỉ cần prompt; các cột khác (ví dụ đáp án) được
+# truyền vào hàm thưởng dưới dạng tham số cùng tên
+{"prompt": [{"role": "user", "content": "12 * 7 = ?"}],
+ "ground_truth": "84"}
+\end{minted}
+\end{example}
+
+\subsection{Bước 1 -- SFT với LoRA và QLoRA}
+\label{ssec:trl_sft}
+
+\begin{example}{SFT với LoRA bằng SFTTrainer}{ex:trl_sft_lora}
+\begin{minted}{python}
+# pip install trl peft datasets
+from datasets import load_dataset
+from peft import LoraConfig
+from trl import SFTConfig, SFTTrainer
+
+dataset = load_dataset("trl-lib/Capybara", split="train")
+
+peft_config = LoraConfig(
+    r=16,
+    lora_alpha=32,                # hệ số tỷ lệ = alpha / r = 2
+    lora_dropout=0.05,
+    target_modules="all-linear",  # gắn LoRA vào mọi lớp tuyến tính
+    task_type="CAUSAL_LM",
+)
+
+training_args = SFTConfig(
+    output_dir="qwen3-0.6b-sft-lora",
+    learning_rate=1e-4,           # LoRA dùng LR lớn hơn full fine-tuning
+    num_train_epochs=1,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=4,
+    max_length=2048,
+    packing=True,                 # ghép nhiều mẫu ngắn vào một chuỗi
+    assistant_only_loss=True,     # chỉ tính loss trên lời của assistant
+)
+
+trainer = SFTTrainer(
+    model="Qwen/Qwen3-0.6B",
+    args=training_args,
+    train_dataset=dataset,
+    peft_config=peft_config,
+)
+trainer.train()
+trainer.save_model()
+\end{minted}
+\end{example}
+
+\paragraph{QLoRA: tinh chỉnh mô hình lớn trên một GPU.} Chỉ cần thêm cấu hình lượng tử hóa 4-bit NF4 (mục~\ref{ssec:reparam}); mô hình gốc được lưu ở 4 bit, adapter LoRA vẫn huấn luyện ở BF16.
+
+\begin{example}{QLoRA với SFTTrainer}{ex:trl_qlora}
+\begin{minted}{python}
+import torch
+from transformers import BitsAndBytesConfig
+
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",          # NormalFloat 4-bit
+    bnb_4bit_use_double_quant=True,     # lượng tử kép
+    bnb_4bit_compute_dtype=torch.bfloat16,
+)
+
+trainer = SFTTrainer(
+    model="Qwen/Qwen3-8B",
+    args=training_args,
+    train_dataset=dataset,
+    peft_config=peft_config,
+    quantization_config=bnb_config,
+)
+\end{minted}
+\end{example}
+
+\subsection{Bước 2 -- Căn chỉnh theo sở thích với DPO}
+\label{ssec:trl_dpo}
+\begin{example}{DPO với DPOTrainer}{ex:trl_dpo}
+\begin{minted}{python}
+from datasets import load_dataset
+from peft import LoraConfig
+from trl import DPOConfig, DPOTrainer
+
+dataset = load_dataset("trl-lib/ultrafeedback_binarized", split="train")
+
+training_args = DPOConfig(
+    output_dir="qwen3-0.6b-dpo",
+    beta=0.1,               # càng lớn càng bám sát mô hình tham chiếu
+    learning_rate=1e-5,     # (với LoRA); full fine-tuning thường ~5e-7
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=8,
+    max_length=2048,
+    # loss_type=["sigmoid"] là DPO gốc; TRL còn hỗ trợ "ipo",
+    # "sigmoid_norm" (SimPO), "robust", ... để thử nghiệm
+)
+
+trainer = DPOTrainer(
+    model="qwen3-0.6b-sft-lora",   # xuất phát từ mô hình đã SFT
+    args=training_args,
+    train_dataset=dataset,
+    peft_config=LoraConfig(target_modules="all-linear"),
+)
+trainer.train()
+\end{minted}
+\end{example}
+Khi không truyền \texttt{ref\_model}, TRL dùng chính mô hình ở trạng thái trước khi huấn luyện làm mô hình tham chiếu $\pi_{\text{ref}}$ (với LoRA, chỉ cần tắt adapter là có mô hình tham chiếu, không tốn thêm bộ nhớ). Các chỉ số cần theo dõi: \texttt{rewards/margins} (khoảng cách phần thưởng ngầm giữa câu được chọn và bị loại -- nên tăng dần) và \texttt{rewards/accuracies}. TRL cũng cung cấp \texttt{KTOTrainer} cho dữ liệu nhãn nhị phân và hỗ trợ ORPO (mục~\ref{sec:alignment_methods}).
+
+\subsection{Bước 3 -- Học tăng cường với GRPO và phần thưởng kiểm chứng được}
+\label{ssec:trl_grpo}
+Ví dụ dưới đây huấn luyện một mô hình nhỏ giải toán GSM8K. Hàm thưởng gồm hai phần: \textbf{thưởng định dạng} (suy nghĩ trong thẻ \texttt{<think>}, đáp án trong \texttt{\textbackslash boxed\{\}}) và \textbf{thưởng chính xác} (so khớp đáp số) -- đúng tinh thần của DeepSeek-R1-Zero (mục~\ref{ssec:r1_zero}).
+
+\begin{example}{GRPO trên GSM8K với hàm thưởng dựa trên luật}{ex:trl_grpo}
+\begin{minted}{python}
+import re
+from datasets import load_dataset
+from trl import GRPOConfig, GRPOTrainer
+
+SYSTEM = ("Suy nghĩ từng bước trong <think>...</think>, "
+          "sau đó ghi đáp số cuối cùng trong \\boxed{}.")
+
+def to_prompt(example):
+    # Đáp án của GSM8K nằm sau chuỗi "####"
+    answer = example["answer"].split("####")[-1].strip().replace(",", "")
+    return {
+        "prompt": [{"role": "system", "content": SYSTEM},
+                   {"role": "user", "content": example["question"]}],
+        "ground_truth": answer,
+    }
+
+dataset = load_dataset("openai/gsm8k", "main", split="train").map(to_prompt)
+
+def _text(completion):
+    # completion ở dạng hội thoại: [{"role": "assistant", "content": ...}]
+    return completion[0]["content"]
+
+def format_reward(completions, **kwargs):
+    pattern = re.compile(r"<think>.*?</think>.*\\boxed\{.+?\}", re.DOTALL)
+    return [1.0 if pattern.search(_text(c)) else 0.0 for c in completions]
+
+def accuracy_reward(completions, ground_truth, **kwargs):
+    rewards = []
+    for c, gt in zip(completions, ground_truth):
+        found = re.findall(r"\\boxed\{([^}]*)\}", _text(c))
+        pred = found[-1].strip().replace(",", "") if found else None
+        rewards.append(1.0 if pred == gt else 0.0)
+    return rewards
+
+training_args = GRPOConfig(
+    output_dir="qwen3-0.6b-grpo-gsm8k",
+    learning_rate=1e-6,
+    num_generations=8,             # G: số câu trả lời mỗi prompt
+    max_completion_length=1024,
+    per_device_train_batch_size=8,
+    beta=0.0,                      # không dùng KL -> không cần mô hình tham chiếu
+    loss_type="dapo",              # chuẩn hóa theo token (mục DAPO)
+    epsilon_high=0.28,             # Clip-Higher
+    use_vllm=True,                 # sinh văn bản nhanh bằng vLLM
+    vllm_mode="colocate",          # vLLM chạy chung GPU với trainer
+    logging_steps=10,
+)
+
+trainer = GRPOTrainer(
+    model="Qwen/Qwen3-0.6B",
+    reward_funcs=[format_reward, accuracy_reward],
+    reward_weights=[0.2, 1.0],
+    args=training_args,
+    train_dataset=dataset,
+)
+trainer.train()
+\end{minted}
+\end{example}
+Chạy trên nhiều GPU bằng \texttt{accelerate launch train\_grpo.py}. Các tham số liên hệ trực tiếp với lý thuyết:
+\begin{itemize}
+	\item \texttt{num\_generations} là kích thước nhóm $G$; nhóm quá nhỏ làm ước lượng advantage nhiễu.
+	\item \texttt{loss\_type}: \texttt{"grpo"} (chuẩn hóa theo từng câu trả lời như bài báo gốc), \texttt{"dapo"} (chuẩn hóa theo token), \texttt{"dr\_grpo"} (bỏ thiên lệch độ dài) -- xem mục~\ref{ssec:grpo_variants}.
+	\item \texttt{beta}: hệ số KL; nhiều công thức hiện đại đặt bằng 0 để tiết kiệm bộ nhớ.
+	\item \texttt{scale\_rewards}: có chia cho độ lệch chuẩn của nhóm hay không (Dr.~GRPO khuyến nghị không).
+\end{itemize}
+
+\begin{tcolorbox}[title={Kinh nghiệm thực chiến khi chạy GRPO}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{itemize}
+	\item \textbf{Kiểm tra hàm thưởng trước khi huấn luyện:} Chạy mô hình gốc trên vài chục prompt, in ra câu trả lời và phần thưởng. Hàm thưởng lỗi (ví dụ regex quá chặt) khiến mọi phần thưởng bằng 0 và mô hình không học gì.
+	\item \textbf{Chọn độ khó phù hợp:} Nếu mô hình gốc giải đúng gần 0\% hoặc gần 100\% số bài, hầu hết các nhóm có advantage bằng 0. Lọc dữ liệu về vùng mô hình giải đúng một phần.
+	\item \textbf{Theo dõi:} phần thưởng trung bình (nên tăng), độ dài câu trả lời, tỷ lệ bị cắt ngưỡng (clip ratio), entropy (giảm quá nhanh là dấu hiệu sụp đổ khám phá).
+	\item \textbf{Cảnh giác reward hacking:} Đọc mẫu đầu ra định kỳ -- mô hình rất giỏi tìm kẽ hở của hàm thưởng (ví dụ in nhiều \texttt{\textbackslash boxed\{\}} để “trúng” đáp án).
+	\item \textbf{Đánh giá độc lập:} Đo trên tập kiểm tra riêng bằng framework đánh giá chuẩn (mục~\ref{sec:lm_eval_practice}), không dùng phần thưởng huấn luyện làm thước đo.
+\end{itemize}
+\end{tcolorbox}

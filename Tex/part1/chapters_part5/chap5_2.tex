@@ -77,12 +77,13 @@ giúp đảm bảo rằng biểu diễn gốc không bị thay đổi, trong khi
 	Các module phụ được chèn song song với khối gốc (ví dụ MLP hoặc Attention block). Đầu ra của các nhánh này được cộng hoặc kết hợp bằng phép tổng có trọng số (weighted sum) hoặc cơ chế gating động.
 	\item \textbf{AttentionFusion, LeTS\cite{he2022towards}:}  
 	Thêm nhánh phụ vào các đầu attention head để hiệu chỉnh ma trận trọng số attention, cho phép mô hình tái phân phối trọng tâm chú ý phù hợp hơn với từng tác vụ.
-	\item \textbf{(IA \cite{liu2022ia3})$^3$ (Infused Adapter by Additive Scaling):}  
-	Thay vì cộng toàn bộ đầu ra, phương pháp này áp dụng các vector scale $\alpha, \beta$ lên các kích hoạt attention hoặc FFN theo từng chiều:  
+	\item \textbf{(IA)$^3$ -- Infused Adapter by Inhibiting and Amplifying Inner Activations \cite{liu2022ia3}:}
+	Thay vì cộng thêm một nhánh, (IA)$^3$ học ba vector \emph{nhân} $l_k, l_v \in \mathbb{R}^{d_k}$ và $l_{ff} \in \mathbb{R}^{d_{ff}}$ để khuếch đại hoặc kìm hãm từng chiều của Key, Value trong attention và của kích hoạt trung gian trong FFN:
 	\[
-	h' = \alpha \odot h_{\text{attn}} + \beta \odot h_{\text{ffn}},
+	\text{softmax}\!\left(\frac{Q\,(l_k \odot K)^\top}{\sqrt{d_k}}\right)(l_v \odot V), \qquad
+	\text{FFN}(x) = W_2\big(l_{ff} \odot \gamma(W_1 x)\big),
 	\]
-	cho phép điều chỉnh độ khuếch đại của từng chiều trong không gian đặc trưng.
+	với $\gamma$ là hàm kích hoạt. Các vector được khởi tạo bằng 1 nên ban đầu mô hình không đổi. Số tham số thêm vào chỉ khoảng 0.01\% mô hình, và vì là phép nhân theo chiều nên có thể gộp thẳng vào trọng số khi suy luận. Kết hợp với công thức huấn luyện T-Few, (IA)$^3$ trên T0-3B vượt học trong ngữ cảnh (few-shot ICL) của GPT-3 175B trên benchmark RAFT với chi phí suy luận thấp hơn nhiều bậc. (Về bản chất, (IA)$^3$ nằm giữa nhóm bổ sung và nhóm tinh chỉnh chọn lọc.)
 \end{itemize}
 
 \textbf{Phân tích ưu và nhược điểm.}
@@ -191,7 +192,7 @@ Về mặt hình học, adapter định nghĩa một không gian con (\textit{su
 Các phương pháp thuộc nhóm này không thay đổi bất kỳ trọng số nào của mô hình gốc, mà thay vào đó học một số ít vector embedding \textbf{mềm} (\textit{soft prompts} hoặc \textit{prefix vectors}) có khả năng điều hướng hành vi của mô hình.  
 Những vector này được chèn trực tiếp vào đầu chuỗi embedding đầu vào hoặc vào các tham số nội bộ của attention (key/value) để cung cấp ngữ cảnh điều khiển cho từng tác vụ.
 
-Trực giác của phương pháp là: thay vì huấn luyện lại mô hình, ta "gợi ý" mô hình thông qua các vector học được, khiến nó điều chỉnh cách xử lý đầu vào — tương tự như việc thay đổi câu lệnh nhắc (prompt) khi dùng mô hình ngôn ngữ lớn (LLM).
+Trực giác của phương pháp là: thay vì huấn luyện lại mô hình, ta “gợi ý” mô hình thông qua các vector học được, khiến nó điều chỉnh cách xử lý đầu vào — tương tự như việc thay đổi câu lệnh nhắc (prompt) khi dùng mô hình ngôn ngữ lớn (LLM).
 
 \textbf{Phân loại chính.}
 \begin{itemize}
@@ -204,8 +205,8 @@ Trực giác của phương pháp là: thay vì huấn luyện lại mô hình, 
 	trong đó $E(x) \in \mathbb{R}^{n \times d}$ là embedding gốc của chuỗi đầu vào gồm $n$ token.  
 	Mô hình backbone được giữ nguyên hoàn toàn, xử lý $E'(x)$ như một đầu vào mở rộng.
 	
-	\item \textbf{Prefix-Tuning}~\cite{li2021prefix}:  
-	Mở rộng ý tưởng trên bằng cách học thêm các vector prefix riêng biệt cho key và value trong mỗi tầng attention.  
+	\item \textbf{Prefix-Tuning}~\cite{li2021prefix}:
+	Mở rộng ý tưởng trên bằng cách học thêm các vector prefix riêng biệt cho key và value trong mỗi tầng attention (chỉ khoảng 0.1\% tham số). Tối ưu trực tiếp các prefix không ổn định, nên bài báo gốc tái tham số hóa chúng qua một MLP nhỏ khi huấn luyện, rồi bỏ MLP đi và chỉ giữ lại prefix sau khi huấn luyện xong.
 	Ở lớp $l$, ta có các vector:
 	\[
 	P^{(l)}_K, P^{(l)}_V \in \mathbb{R}^{m \times d},
@@ -220,9 +221,9 @@ Trực giác của phương pháp là: thay vì huấn luyện lại mô hình, 
 	Phiên bản P-Tuning v1 xem prompt như một dãy embedding được học trong không gian đầu vào.  
 	P-Tuning v2 mở rộng bằng cách \textbf{chèn prompt ở nhiều lớp} (\textit{multi-layer prompting}), tương tự Prefix-Tuning, giúp mô hình điều chỉnh biểu diễn trung gian và đạt hiệu năng gần tương đương với full fine-tuning.  
 	
-	\item \textbf{Các biến thể nâng cao (WARP, SPoT, IPT, PromptAdapter)\cite{gheini2022warp, vu2022spot, wang2022ipt, jia2022promptadapter}:}  
-	Các phương pháp này thêm cơ chế gating, re-weighting hoặc dùng prompt làm tín hiệu điều khiển attention.  
-	Ví dụ, SPoT (Soft Prompt Transfer) cho phép tái sử dụng prompt giữa các tác vụ gần nhau, trong khi PromptAdapter kết hợp ý tưởng adapter và prompt (adapter sinh prompt động theo ngữ cảnh).
+	\item \textbf{Các biến thể nâng cao (WARP, SPoT)}~\cite{gheini2022warp, vu2022spot}:
+	\textbf{WARP} (Word-level Adversarial ReProgramming) học các embedding “từ” đặc biệt chèn vào đầu vào -- cùng với một đầu ra dạng mẫu (verbalizer) học được -- để “lập trình lại” một mô hình đóng băng cho tác vụ mới với rất ít tham số.
+	\textbf{SPoT} (Soft Prompt Transfer) cho phép \emph{tái sử dụng} prompt đã học từ một tác vụ nguồn làm khởi tạo cho tác vụ đích, và dùng độ tương đồng giữa các prompt để chọn tác vụ nguồn phù hợp.
 \end{itemize}
 
 \textbf{Phân tích cơ chế toán học.}  
@@ -292,7 +293,7 @@ Kích thước của tập này thường chiếm dưới $1\%$ tổng tham số
 	trong đó chỉ $\Delta b$ được học.  
 	Kết quả cho thấy hiệu năng đáng ngạc nhiên trong các tác vụ GLUE và NLU.
 	
-	\item \textbf{LayerNorm Tuning (LN-Tuning)~\cite{ben-zaken2022ln-tuning}:}  
+	\item \textbf{LayerNorm Tuning (LN-Tuning):}
 	Chỉ cập nhật các tham số $\gamma, \beta$ trong Layer Normalization:  
 	\[
 	\text{LN}(x) = \gamma \frac{x - \mu}{\sigma} + \beta,
@@ -305,7 +306,7 @@ Kích thước của tập này thường chiếm dưới $1\%$ tổng tham số
 	\[
 	W'_{\text{attn}} = W_{\text{attn}} - \eta (M_h \odot \nabla_{W_{\text{attn}}} \mathcal{L}).
 	\]
-	Cách này cho phép mô hình chỉ tinh chỉnh các phần "thông tin chủ chốt" mà không ảnh hưởng toàn cục.
+	Cách này cho phép mô hình chỉ tinh chỉnh các phần “thông tin chủ chốt” mà không ảnh hưởng toàn cục.
 	
 	\item \textbf{Diff-Pruning / Fish-Mask / Lottery Ticket / Sparse Updates:}  
 	Các phương pháp này cố gắng \emph{tìm tập con tham số quan trọng nhất} để cập nhật.  
@@ -349,23 +350,25 @@ y' = (W_0 + \Delta W)x.
 \]
 Nếu giả sử $\Delta W$ có hạng thấp (low-rank), ta có thể xấp xỉ:
 \[
-\Delta W \approx B A, \quad A \in \mathbb{R}^{d_{\text{in}} \times r}, \ B \in \mathbb{R}^{r \times d_{\text{out}}}, \quad r \ll \min(d_{\text{in}}, d_{\text{out}}).
+\Delta W \approx B A, \quad B \in \mathbb{R}^{d_{\text{out}} \times r}, \ A \in \mathbb{R}^{r \times d_{\text{in}}}, \quad r \ll \min(d_{\text{in}}, d_{\text{out}}).
 \]
-Do đó:
+(Kiểm tra chiều: $A$ chiếu $x \in \mathbb{R}^{d_{\text{in}}}$ xuống $r$ chiều, $B$ chiếu ngược lên $d_{\text{out}}$ chiều, nên $BA \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$ cùng kích thước với $W_0$.) Do đó:
 \[
 y' = W_0 x + B (A x).
 \]
 Thay vì lưu trữ và huấn luyện $\Delta W \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$ (kích thước lớn), ta chỉ cần huấn luyện $A,B$ có tổng tham số $r(d_{\text{in}} + d_{\text{out}})$ — giảm mạnh chi phí bộ nhớ và tính toán.
 
-\textbf{LoRA (Low-Rank Adaptation)}~\cite{hu2021lora}.  
-Đây là phương pháp tiêu biểu và có ảnh hưởng lớn nhất của nhóm này.  
-LoRA áp dụng decomposition nói trên cho các ma trận trọng số trong attention (ví dụ $W_Q, W_V$):
+\textbf{LoRA (Low-Rank Adaptation)}~\cite{hu2021lora}.
+Đây là phương pháp tiêu biểu và có ảnh hưởng lớn nhất của nhóm này.
+LoRA áp dụng decomposition nói trên cho các ma trận trọng số tuyến tính trong Transformer (bài báo gốc dùng $W_Q, W_V$; thực hành hiện nay thường áp dụng cho \emph{tất cả} các phép chiếu attention và MLP):
 \[
-W' = W_0 + \alpha \cdot B A,
+W' = W_0 + \frac{\alpha}{r} \cdot B A,
 \]
-với $\alpha$ là hệ số tỉ lệ (\textit{scaling factor}) để điều chỉnh biên độ của cập nhật.  
-Chỉ hai ma trận nhỏ $A, B$ được huấn luyện, trong khi $W_0$ được giữ cố định.  
-Trong quá trình suy luận, có thể gộp lại thành $W_{\text{eff}} = W_0 + BA$ để không tăng độ trễ.  
+với $\alpha$ là hệ số tỉ lệ (\textit{scaling factor}); việc chia cho $r$ giúp giữ biên độ cập nhật ổn định khi thay đổi rank, nên không phải tinh chỉnh lại learning rate.
+\textbf{Khởi tạo:} $A$ khởi tạo ngẫu nhiên (Gaussian), còn $B = 0$, nên $\Delta W = 0$ ở bước đầu và mô hình xuất phát đúng từ $W_0$.
+Chỉ hai ma trận nhỏ $A, B$ được huấn luyện, trong khi $W_0$ được giữ cố định.
+Trong quá trình suy luận, có thể gộp lại thành $W_{\text{eff}} = W_0 + \frac{\alpha}{r}BA$ để không tăng độ trễ.
+Trên GPT-3 175B, LoRA giảm số tham số cần huấn luyện khoảng 10\,000 lần và bộ nhớ GPU khoảng 3 lần so với full fine-tuning, với chất lượng tương đương.
 
 Về mặt hình học, LoRA ép gradient chỉ di chuyển trong một \textit{low-dimensional subspace} của không gian tham số, giúp tránh overfitting và tăng tính ổn định.
 
@@ -382,7 +385,7 @@ Về mặt hình học, LoRA ép gradient chỉ di chuyển trong một \textit{
 	Áp dụng cấu trúc đại số hypercomplex để tái tham số hóa các trọng số.  
 	Mỗi tham số trong không gian thực được biểu diễn bằng tổ hợp các thành phần hypercomplex, cho phép chia sẻ cấu trúc giữa các chiều và giảm đáng kể số lượng tham số hiệu dụng.  
 	
-	\item \textbf{S4-based hoặc Structured Low-rank Adapters\cite{gupta2022s4adapter}:}  
+	\item \textbf{Structured Low-rank Adapters:}
 	Dựa trên ý tưởng sử dụng các ma trận có cấu trúc đặc biệt (structured matrices, ví dụ Toeplitz hoặc state-space S4) để thay thế cho các phép chiếu dense, giúp giảm chi phí mà vẫn duy trì khả năng biểu diễn tuần tự mạnh.
 	
 	\item \textbf{Intrinsic Reparametrization / Intrinsic-SAID:}  
@@ -395,11 +398,21 @@ Về mặt hình học, LoRA ép gradient chỉ di chuyển trong một \textit{
 	Đây là dạng \textit{subspace fine-tuning} hoặc \textit{intrinsic dimension optimization}\cite{aghajanyan2021intrinsic}, giúp giảm chi phí bộ nhớ và tính toán đáng kể.
 \end{itemize}
 
-\textbf{QLoRA (Quantized LoRA)}~\cite{dettmers2023qlora}.  
-Là mở rộng thực tiễn quan trọng, kết hợp hai ý tưởng:  
-(1) lượng tử hóa mô hình gốc xuống độ chính xác 4-bit (NF4) để giảm đáng kể bộ nhớ khi nạp mô hình,  
-(2) đồng thời huấn luyện các adapter LoRA ở độ chính xác cao (16-bit).  
-Cách tiếp cận này cho phép tinh chỉnh các mô hình rất lớn (tới 65B tham số) trên GPU phổ thông, mà vẫn giữ hiệu năng gần tương đương full fine-tuning.
+\textbf{DoRA (Weight-Decomposed Low-Rank Adaptation)}~\cite{liu2024dora}.
+Phân tích cách full fine-tuning thay đổi trọng số, các tác giả thấy nó điều chỉnh \emph{độ lớn} và \emph{hướng} của các cột trọng số theo những cách khác nhau, còn LoRA buộc hai thành phần này thay đổi cùng nhau. DoRA tách trọng số thành độ lớn và hướng:
+\[
+W' = m \cdot \frac{W_0 + BA}{\|W_0 + BA\|_c},
+\]
+trong đó $\|\cdot\|_c$ là chuẩn theo từng cột và $m$ là vector độ lớn học được; LoRA chỉ phụ trách phần hướng. DoRA thường cho kết quả tốt hơn LoRA ở cùng rank, vẫn gộp được vào trọng số khi suy luận.
+
+\textbf{QLoRA (Quantized LoRA)}~\cite{dettmers2023qlora}.
+Là mở rộng thực tiễn quan trọng nhất, cho phép tinh chỉnh mô hình 65B tham số trên \emph{một} GPU 48GB trong vòng 24 giờ. QLoRA kết hợp ba kỹ thuật:
+\begin{enumerate}
+	\item \textbf{NormalFloat 4-bit (NF4):} Trọng số đã huấn luyện xấp xỉ phân phối chuẩn quanh 0. NF4 đặt 16 mức lượng tử tại các \emph{điểm phân vị} của phân phối chuẩn, để mỗi mức chứa số trọng số xấp xỉ bằng nhau -- tối ưu về mặt lý thuyết thông tin cho dữ liệu phân phối chuẩn. Trọng số được lượng tử theo khối 64 phần tử, mỗi khối có một hằng số tỷ lệ riêng.
+	\item \textbf{Lượng tử kép (Double Quantization):} Chính các hằng số tỷ lệ (32-bit cho mỗi khối 64 trọng số) cũng tốn khoảng 0.5 bit/tham số. QLoRA lượng tử tiếp chúng xuống 8-bit theo khối 256, tiết kiệm khoảng 0.37 bit/tham số -- xấp xỉ 3GB với mô hình 65B.
+	\item \textbf{Paged Optimizers:} Dùng bộ nhớ hợp nhất (unified memory) của NVIDIA để tự động chuyển trạng thái optimizer sang RAM CPU khi GPU sắp tràn bộ nhớ (ví dụ khi gặp một batch có chuỗi rất dài), tránh lỗi hết bộ nhớ.
+\end{enumerate}
+Mô hình gốc được lưu ở NF4 và \emph{giải lượng tử} sang BF16 khi tính toán; adapter LoRA (ở BF16) được gắn vào \emph{mọi} lớp tuyến tính -- tác giả nhận thấy đây là điều kiện cần để đạt chất lượng ngang fine-tuning 16-bit. Mô hình Guanaco 65B huấn luyện bằng QLoRA đạt 99.3\% mức của ChatGPT trên benchmark Vicuna tại thời điểm công bố.
 
 \textbf{Đặc trưng toán học và trực giác.}  
 Các phương pháp này tận dụng thực tế rằng gradient của $\Delta W$ thường có \textbf{thứ hạng thấp}, do tương quan cao giữa các chiều trong không gian biểu diễn.  
@@ -447,14 +460,13 @@ Kết hợp các hướng này giúp tận dụng đồng thời nhiều ưu đi
 	Các phương pháp này huấn luyện nhiều adapter song song, đi kèm với \emph{gating mechanism} hoặc \emph{mixture controller} để kết hợp chúng một cách động.  
 	UniPELT, chẳng hạn, tích hợp ba dạng tinh chỉnh (adapter, prefix, LoRA) và học cơ chế trọng số để trộn chúng linh hoạt theo tác vụ.
 	
-	\item \textbf{Sparse-LoRA\cite{hu2022sparsellora} / KronA Variants} \textit{(Reparametrization + Selective)}:  
+	\item \textbf{Sparse-LoRA / KronA \cite{buczak2023krona}} \textit{(Reparametrization + Selective)}:
 	Áp dụng sparsity hoặc pruning trực tiếp trên các thành phần low-rank (ma trận $A,B$) trong LoRA hoặc Kron-based reparametrization.  
 	Điều này tạo ra các mô hình có chi phí cực thấp mà vẫn giữ được lợi ích của xấp xỉ hạng thấp.
 	
-	\item \textbf{Prompt Adapter / WARP \cite{gheini2022warp}/ Soft-Adapter} \textit{(Adapters + Soft Prompt)}:  
-	Kết hợp adapter như một mạng sinh hoặc điều khiển prompt mềm.  
-	Thay vì học prompt tĩnh, mô-đun adapter sinh prompt phụ thuộc vào ngữ cảnh hoặc tác vụ (\textit{context-dependent prompting}).  
-	WARP (Weighted Adapter-Routing Prompting) còn cho phép lựa chọn động giữa các prompt theo ngữ cảnh đầu vào.
+	\item \textbf{Prompt Adapter / Soft-Adapter} \textit{(Adapters + Soft Prompt)}:
+	Kết hợp adapter như một mạng sinh hoặc điều khiển prompt mềm.
+	Thay vì học prompt tĩnh, mô-đun adapter sinh prompt phụ thuộc vào ngữ cảnh hoặc tác vụ (\textit{context-dependent prompting}).
 \end{itemize}
 
 \textbf{Nhận xét:}  
@@ -504,7 +516,7 @@ Ta có thể nhận thấy một \emph{đường cong đánh đổi} (trade-off 
 	\item \textbf{Tài nguyên giới hạn (VRAM < 24GB):} sử dụng \textbf{QLoRA} hoặc \textbf{Prompt/Prefix-Tuning}.  
 	\item \textbf{Yêu cầu mô-đun hóa, rollback hoặc multi-task:} ưu tiên \textbf{Adapters} hoặc \textbf{UniPELT}-like hybrids.  
 	\item \textbf{Tinh chỉnh mô hình lớn (30B–70B):} \textbf{QLoRA} là giải pháp thực tiễn nhất (kết hợp 4-bit quantization và low-rank update).  
-	\item \textbf{Không có quyền truy cập trọng số (closed-weight model / API):} chỉ có thể dùng \textbf{Prompt-Tuning} hoặc \textbf{Prefix-Tuning}.  
+	\item \textbf{Không có quyền truy cập trọng số (closed-weight model / API):} Không thể dùng PEFT theo nghĩa trên, vì Prompt/Prefix-Tuning vẫn cần truy cập embedding và gradient của mô hình. Lựa chọn là prompt engineering, học trong ngữ cảnh, RAG, hoặc dịch vụ fine-tuning do chính nhà cung cấp mô hình cung cấp.
 	\item \textbf{Tối ưu chi phí inference:} dùng \textbf{mergeable LoRA} hoặc các kỹ thuật hybrid có thể gộp tham số vào backbone.  
 \end{itemize}
 
@@ -520,6 +532,22 @@ Trong thực tế, \textbf{LoRA/QLoRA} hiện là chuẩn vàng (de facto standa
 	\item \textbf{Prompt tuning}: số token prompt $k$ thường trong khoảng 10--200; multi-layer prompt (P-Tuning v2) tăng chi phí nhưng cải thiện hiệu năng.
 \end{itemize}
 
+\subsection{PEFT cho căn chỉnh sở thích: Những đánh đổi}
+\label{ssec:peft_alignment_tradeoffs}
+PEFT không chỉ dùng cho tác vụ có nhãn, mà còn ngày càng được dùng để \emph{căn chỉnh} mô hình (SFT, DPO -- mục~\ref{sec:alignment_methods}) với ngân sách nhỏ. Thakkar et al. (ACL 2024) \cite{thakkar2024deepdive} thực hiện hơn 300 thí nghiệm để hiểu các đánh đổi trong bối cảnh này, thay đổi ba trục:
+\begin{itemize}
+	\item \textbf{Bộ dữ liệu căn chỉnh:} HH-RLHF và BeaverTails;
+	\item \textbf{Kỹ thuật căn chỉnh:} SFT và DPO;
+	\item \textbf{Mô hình:} LLaMA-1, Vicuna-v1.3, Mistral-7B và Mistral-7B-Instruct, với LoRA và QLoRA.
+\end{itemize}
+Các phát hiện chính:
+\begin{enumerate}
+	\item \textbf{Dữ liệu giàu thông tin hơn giúp căn chỉnh tốt hơn:} độ “thông tin” của dữ liệu sở thích ảnh hưởng rõ rệt tới kết quả.
+	\item \textbf{SFT đôi khi vượt DPO:} trong một số tổ hợp (mô hình, dữ liệu), tinh chỉnh có giám sát đơn thuần cho kết quả tốt hơn tối ưu sở thích -- nên luôn có baseline SFT.
+	\item \textbf{Căn chỉnh theo một sở thích khác biệt} có thể cải thiện hiệu năng trên các tác vụ downstream.
+\end{enumerate}
+Bài học thực hành: khi dùng LoRA/QLoRA để căn chỉnh, hãy thử nghiệm có kiểm soát trên chính mô hình và dữ liệu của mình thay vì mặc định rằng DPO luôn tốt hơn SFT.
+
 \subsection{Kết luận và hướng nghiên cứu tương lai}
 \label{ssec:conclusion}
 PEFT đã làm thay đổi cách tiếp cận tùy biến các LLM: từ việc phải cập nhật \emph{toàn bộ} mô hình sang chỉ tinh chỉnh \emph{một vài phần nhỏ} với hiệu quả thực tế rất cao.  
@@ -531,4 +559,4 @@ Xu hướng hiện tại và tương lai bao gồm:
 	\item \textbf{Robustness \& Safety:} hiểu ảnh hưởng của PEFT lên tính an toàn, bias, và tổng quát hoá.
 \end{itemize}
 
-Tổng kết: \textbf{Không có một phương pháp PEFT "tốt nhất" cho mọi trường hợp}. Lựa chọn phụ thuộc vào ràng buộc tài nguyên, yêu cầu hiệu năng, và khả năng triển khai. Việc hiểu rõ 5 nhóm và các giao thoa giữa chúng (như trong sơ đồ) sẽ giúp chọn hoặc thiết kế chiến lược PEFT phù hợp.
+Tổng kết: \textbf{Không có một phương pháp PEFT “tốt nhất” cho mọi trường hợp}. Lựa chọn phụ thuộc vào ràng buộc tài nguyên, yêu cầu hiệu năng, và khả năng triển khai. Việc hiểu rõ 5 nhóm và các giao thoa giữa chúng (như trong sơ đồ) sẽ giúp chọn hoặc thiết kế chiến lược PEFT phù hợp.

@@ -4,7 +4,11 @@
 \section{Recipe 3: Fine-tuning một LLM cho Tác vụ Phân loại}
 \label{sec:recipe_classification_finetuning}
 
-\textbf{Mục tiêu:} Fine-tune một LLM lớn (ví dụ: Llama 2 7B) cho một tác vụ phân loại văn bản một cách hiệu quả về bộ nhớ bằng cách sử dụng QLoRA.
+\textbf{Mục tiêu:} Fine-tune một LLM lớn (ví dụ: Qwen3 8B hoặc Llama 3.1 8B) cho một tác vụ phân loại văn bản một cách hiệu quả về bộ nhớ bằng cách sử dụng QLoRA.
+
+\begin{tcolorbox}[colback=yellow!10!white, colframe=yellow!50!black, title={Khi nào \emph{không} nên dùng công thức này}, fonttitle=\bfseries]
+Với phần lớn bài toán phân loại, một mô hình encoder nhỏ (BERT/RoBERTa/PhoBERT, dưới 1B tham số) được tinh chỉnh toàn bộ vẫn là lựa chọn tốt nhất: rẻ hơn, nhanh hơn, dễ triển khai hơn và thường chính xác không kém. Hãy dùng LLM lớn khi nhãn phụ thuộc vào suy luận phức tạp, khi dữ liệu gán nhãn rất ít (tận dụng kiến thức nền), hoặc khi bạn cần một mô hình đa nhiệm duy nhất.
+\end{tcolorbox}
 
 \textbf{Thành phần chính:}
 \begin{itemize}
@@ -18,7 +22,7 @@
 \begin{enumerate}
     \item \textbf{Tải dữ liệu và tokenizer:} Tải một bộ dữ liệu phân loại và tokenizer tương ứng.
     \item \textbf{Tiền xử lý dữ liệu:} Tokenize văn bản.
-    \item \textbf{Tải mô hình cơ sở đã được lượng tử hóa:} Tải LLM với tùy chọn `load\_in\_4bit=True`.
+    \item \textbf{Tải mô hình cơ sở đã được lượng tử hóa:} Tải LLM với `BitsAndBytesConfig` ở chế độ NF4 4-bit.
     \item \textbf{Áp dụng cấu hình PEFT (LoRA):} Bọc mô hình cơ sở bằng một `PeftModel`.
     \item \textbf{Thiết lập `Trainer`:} Định nghĩa `TrainingArguments` và `Trainer`, truyền vào hàm `compute\_metrics`.
     \item \textbf{Huấn luyện:} Bắt đầu quá trình fine-tuning.
@@ -45,9 +49,9 @@
     
     # Bước 2: Tải dữ liệu và tokenizer
     dataset = load_dataset("yelp_review_full")
-    model_id = "meta-llama/Llama-2-7b-hf" # Cần quyền truy cập
+    model_id = "Qwen/Qwen3-8B"  # hoặc meta-llama/Llama-3.1-8B
     tokenizer = AutoTokenizer.from_pretrained(model_id)
-    tokenizer.pad_token = tokenizer.eos_token # Llama không có pad token
+    tokenizer.pad_token = tokenizer.eos_token # nhiều LLM không có pad token riêng
     
     def tokenize_function(examples):
         return tokenizer(examples["text"], padding="max_length", truncation=True)
@@ -61,7 +65,8 @@
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_compute_dtype=torch.bfloat16,
     )
     model = AutoModelForSequenceClassification.from_pretrained(
         model_id,
@@ -72,7 +77,8 @@
     model.config.pad_token_id = model.config.eos_token_id
     
     # Bước 4: Áp dụng cấu hình PEFT (LoRA)
-    lora_config = LoraConfig(r=8, lora_alpha=16, lora_dropout=0.05, task_type="SEQ_CLS")
+    lora_config = LoraConfig(r=16, lora_alpha=32, lora_dropout=0.05,
+                             target_modules="all-linear", task_type="SEQ_CLS")
     peft_model = get_peft_model(model, lora_config)
     peft_model.print_trainable_parameters()
     
@@ -84,12 +90,12 @@
         return metric.compute(predictions=predictions, references=labels)
     
     training_args = TrainingArguments(
-        output_dir="llama-7b-lora-classification",
+        output_dir="qlora-classification",
         learning_rate=2e-4,
         per_device_train_batch_size=4,
         per_device_eval_batch_size=4,
         num_train_epochs=1,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
     )
@@ -100,7 +106,7 @@
         train_dataset=small_train_dataset,
         eval_dataset=small_eval_dataset,
         compute_metrics=compute_metrics,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
     )
     
     # Bước 6: Huấn luyện

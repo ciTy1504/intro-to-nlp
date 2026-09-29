@@ -24,22 +24,22 @@ Giả thuyết cho rằng: để có thể dự đoán văn bản một cách hi
 \end{tcolorbox}
 
 \subsubsection{Các bằng chứng gián tiếp}
-Mặc dù chúng ta không thể "nhìn" trực tiếp vào các trọng số và thấy một "mô hình thế giới" rõ ràng, có nhiều bằng chứng gián tiếp cho thấy các LLM lớn đang học được những biểu diễn như vậy:
+Mặc dù chúng ta không thể “nhìn” trực tiếp vào các trọng số và thấy một “mô hình thế giới” rõ ràng, có nhiều bằng chứng gián tiếp cho thấy các LLM lớn đang học được những biểu diễn như vậy:
 \paragraph{Biểu diễn không gian và thời gian}
 \begin{itemize}
-    \item Các nhà nghiên cứu đã phát hiện ra các nơ-ron hoặc các hướng (directions) trong không gian kích hoạt của LLM dường như tương ứng với các khái niệm trong thế giới thực. Ví dụ, có những nơ-ron chỉ "kích hoạt" mạnh khi mô hình xử lý các văn bản liên quan đến một địa điểm địa lý cụ thể như "Tháp Eiffel" hoặc một mốc thời gian cụ thể.
-    \item Yann LeCun đã đưa ra ví dụ: để dự đoán từ cuối cùng trong câu "John cầm quả bóng, đi vào phòng khách, đặt quả bóng xuống, rồi đi vào bếp. Quả bóng đang ở...", mô hình phải có một biểu diễn nội tại về không gian, về các đối tượng và vị trí của chúng.
+    \item Các nhà nghiên cứu đã phát hiện ra các nơ-ron hoặc các hướng (directions) trong không gian kích hoạt của LLM dường như tương ứng với các khái niệm trong thế giới thực. Ví dụ, có những nơ-ron chỉ “kích hoạt” mạnh khi mô hình xử lý các văn bản liên quan đến một địa điểm địa lý cụ thể như “Tháp Eiffel” hoặc một mốc thời gian cụ thể.
+    \item Yann LeCun đã đưa ra ví dụ: để dự đoán từ cuối cùng trong câu “John cầm quả bóng, đi vào phòng khách, đặt quả bóng xuống, rồi đi vào bếp. Quả bóng đang ở...”, mô hình phải có một biểu diễn nội tại về không gian, về các đối tượng và vị trí của chúng.
 \end{itemize}
 
 \paragraph{Mô phỏng các thực thể}
 \begin{itemize}
-    \item Khi một LLM tương tác trong một vai trò (ví dụ: "hãy đóng vai Napoleon"), nó có thể duy trì sự nhất quán về kiến thức, tính cách, và các mối quan hệ của nhân vật đó trong một cuộc hội thoại dài. Điều này cho thấy nó không chỉ lấy ra các thông tin rời rạc, mà dường như đang "mô phỏng" một mô hình về thực thể "Napoleon".
+    \item Khi một LLM tương tác trong một vai trò (ví dụ: “hãy đóng vai Napoleon”), nó có thể duy trì sự nhất quán về kiến thức, tính cách, và các mối quan hệ của nhân vật đó trong một cuộc hội thoại dài. Điều này cho thấy nó không chỉ lấy ra các thông tin rời rạc, mà dường như đang “mô phỏng” một mô hình về thực thể “Napoleon”.
 \end{itemize}
 
 \paragraph{Mô hình Othello-GPT}
 Một nghiên cứu nổi tiếng đã huấn luyện một Transformer nhỏ chỉ để chơi cờ Othello (cờ lật). Mô hình chỉ nhận vào chuỗi các nước đi hợp lệ và dự đoán nước đi hợp lệ tiếp theo.
 \begin{itemize}
-    \item \textbf{Kết quả đáng kinh ngạc:} Sau khi huấn luyện, các nhà nghiên cứu đã tìm thấy một biểu diễn rõ ràng của \textbf{trạng thái bàn cờ Othello} bên trong các kích hoạt của mô hình. Tức là, mô hình đã tự học cách xây dựng một "mô hình thế giới" (bàn cờ) để có thể chơi tốt, mặc dù nó chưa bao giờ được "nhìn thấy" bàn cờ một cách trực tiếp.
+    \item \textbf{Kết quả đáng kinh ngạc:} Sau khi huấn luyện, các nhà nghiên cứu đã tìm thấy một biểu diễn rõ ràng của \textbf{trạng thái bàn cờ Othello} bên trong các kích hoạt của mô hình. Tức là, mô hình đã tự học cách xây dựng một “mô hình thế giới” (bàn cờ) để có thể chơi tốt, mặc dù nó chưa bao giờ được “nhìn thấy” bàn cờ một cách trực tiếp.
 \end{itemize}
 
 \begin{center}
@@ -54,9 +54,9 @@ Việc các LLM có thể xây dựng mô hình thế giới nội tại mở ra
 
 \subsubsection{Cải thiện khả năng Suy luận và Lập kế hoạch}
 \begin{itemize}
-    \item Nếu một Tác tử AI có một mô hình thế giới nội tại tốt, nó có thể thực hiện "mô phỏng trong tâm trí" (mental simulation).
-    \item Trước khi thực hiện một hành động trong thế giới thực, nó có thể "chạy thử" hành động đó trên mô hình thế giới của mình để dự đoán kết quả.
-    \item Điều này cho phép nó lập kế hoạch một cách hiệu quả hơn nhiều, lường trước các hậu quả, và tránh các sai lầm tốn kém, tương tự như cách con người suy nghĩ "nếu... thì...".
+    \item Nếu một Tác tử AI có một mô hình thế giới nội tại tốt, nó có thể thực hiện “mô phỏng trong tâm trí” (mental simulation).
+    \item Trước khi thực hiện một hành động trong thế giới thực, nó có thể “chạy thử” hành động đó trên mô hình thế giới của mình để dự đoán kết quả.
+    \item Điều này cho phép nó lập kế hoạch một cách hiệu quả hơn nhiều, lường trước các hậu quả, và tránh các sai lầm tốn kém, tương tự như cách con người suy nghĩ “nếu... thì...”.
 \end{itemize}
 
 \subsubsection{Mô hình Thế giới Đa phương thức}
@@ -69,7 +69,7 @@ Việc các LLM có thể xây dựng mô hình thế giới nội tại mở ra
 \subsubsection{Hướng tới Trí tuệ Nhân tạo Tổng quát (AGI)}
 \begin{itemize}
     \item Nhiều nhà nghiên cứu hàng đầu tin rằng khả năng xây dựng và sử dụng các mô hình thế giới là một trong những thành phần cốt lõi của trí thông minh thực sự.
-    \item Một hệ thống AGI trong tương lai có thể sẽ bao gồm một LLM lớn đóng vai trò là "giao diện" ngôn ngữ, kết hợp với một mô hình thế giới mạnh mẽ cho phép nó hiểu sâu, suy luận, và lập kế hoạch trong một môi trường phức tạp.
+    \item Một hệ thống AGI trong tương lai có thể sẽ bao gồm một LLM lớn đóng vai trò là “giao diện” ngôn ngữ, kết hợp với một mô hình thế giới mạnh mẽ cho phép nó hiểu sâu, suy luận, và lập kế hoạch trong một môi trường phức tạp.
 \end{itemize}
 
 Mặc dù vẫn còn là một lĩnh vực đầy tranh cãi và câu hỏi mở, giả thuyết về Mô hình Thế giới cung cấp một lăng kính mạnh mẽ để hiểu về những khả năng đáng kinh ngạc của LLM. Nó gợi ý rằng chúng ta có thể đang vô tình xây dựng được những thứ phức tạp hơn nhiều so với những gì chúng ta nghĩ ban đầu, mở ra một tương lai đầy tiềm năng cho các hệ thống AI có khả năng lý luận và tương tác với thế giới một cách sâu sắc.
@@ -80,9 +80,9 @@ Mặc dù vẫn còn là một lĩnh vực đầy tranh cãi và câu hỏi mở
 \bigskip
 
 \begin{center}
-	\textbf{\Large KẾT THÚC CHƯƠNG 7}
+	\textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
 \end{center}
 
-\textit{Trong chương này, chúng ta đã mở rộng tầm nhìn vượt ra ngoài một LLM đơn lẻ để khám phá cách xây dựng các hệ thống AI thực sự toàn diện. Chúng ta đã học cách làm cho các mô hình trở nên tinh gọn và hiệu quả hơn thông qua tối ưu hóa, dạy chúng cách hiểu thế giới đa phương thức, và trao cho chúng khả năng hành động như một tác tử thông minh. Chúng ta cũng đã suy ngẫm về khả năng sâu xa của LLM trong việc xây dựng các mô hình thế giới nội tại.}
+\textit{Trong chương này, chúng ta đã mở rộng tầm nhìn vượt ra ngoài một LLM đơn lẻ để khám phá cách xây dựng các hệ thống AI thực sự toàn diện. Chúng ta đã dạy chúng cách hiểu thế giới đa phương thức, và trao cho chúng khả năng hành động như một tác tử thông minh. Chúng ta cũng đã suy ngẫm về khả năng sâu xa của LLM trong việc xây dựng các mô hình thế giới nội tại.}
 
-\textit{Chúng ta đã lắp ráp nên những hệ thống AI vô cùng phức tạp và mạnh mẽ, từ những trợ lý có thể "nhìn" và thảo luận về hình ảnh, đến những tác tử có thể tự lập kế hoạch và sử dụng công cụ. Nhưng một câu hỏi tối quan trọng vẫn còn đó: Làm thế nào để chúng ta đo lường và so sánh chúng một cách khoa học? Liệu một hệ thống Agentic có thực sự "thông minh" hơn một hệ thống RAG không, và dựa trên tiêu chí nào? Chương cuối cùng của Phần 1 sẽ đi sâu vào lý thuyết và thực hành của việc đánh giá, cung cấp cho chúng ta những công cụ cần thiết để định lượng sự tiến bộ và hiểu rõ những giới hạn của các hệ thống AI phức tạp này.}
+\textit{Chúng ta đã lắp ráp nên những hệ thống AI vô cùng phức tạp và mạnh mẽ, từ những trợ lý có thể “nhìn” và thảo luận về hình ảnh, đến những tác tử có thể tự lập kế hoạch và sử dụng công cụ. Nhưng một câu hỏi tối quan trọng vẫn còn đó: Làm thế nào để chúng ta đo lường và so sánh chúng một cách khoa học? Liệu một hệ thống Agentic có thực sự “thông minh” hơn một hệ thống RAG không, và dựa trên tiêu chí nào? Chương cuối cùng của Phần 1 sẽ đi sâu vào lý thuyết và thực hành của việc đánh giá, cung cấp cho chúng ta những công cụ cần thiết để định lượng sự tiến bộ và hiểu rõ những giới hạn của các hệ thống AI phức tạp này.}

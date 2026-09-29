@@ -1,6 +1,6 @@
 # Bách Khoa Toàn Thư Về Lý Thuyết & Thực Chiến NLP
 
-> Một hướng dẫn toàn diện từ nền tảng lý thuyết đến kỹ thuật thực chiến trong Xử lý Ngôn ngữ Tự nhiên (NLP), cập nhật các mô hình hiện đại, các nghiên cứu mới nhất (đến 2025), LLMs, và các chiến lược MLOps.
+> Một hướng dẫn toàn diện từ nền tảng lý thuyết đến kỹ thuật thực chiến trong Xử lý Ngôn ngữ Tự nhiên (NLP), cập nhật các mô hình hiện đại, các nghiên cứu mới nhất (đến 2026), LLMs, và các chiến lược MLOps.
 
 ---
 
@@ -18,13 +18,17 @@ Nội dung tài liệu gồm hai phần chính:
 ## Cấu trúc tài liệu
 
 - **Phần I: Lý Thuyết NLP**
-  - Nhập môn & các nguyên lý nền tảng
-  - Biểu diễn văn bản và mô hình thống kê
-  - Kiến trúc mạng nơ-ron kinh điển
-  - Kỷ nguyên Transformer và LLMs
-  - Tinh chỉnh và căn chỉnh mô hình
-  - Kiến trúc nâng cao, hệ thống đa phương thức
-  - Lý thuyết đánh giá và benchmark
+  1. Nhập môn & các nguyên lý nền tảng
+  2. Biểu diễn văn bản và mô hình thống kê
+  3. Kiến trúc mạng nơ-ron kinh điển
+  4. Kỷ nguyên Transformer và LLMs (ngữ cảnh dài, MoE, GQA/MLA)
+  5. Tiền huấn luyện LLM: scaling laws, dữ liệu, bộ tối ưu
+  6. Tinh chỉnh và căn chỉnh mô hình (PEFT, RLHF, DPO/KTO/ORPO/GRPO)
+  7. Mô hình suy luận và tính toán lúc suy luận (PRM, test-time compute, RLVR)
+  8. Tìm kiếm và sinh tăng cường (RAG)
+  9. Hiệu quả LLM: chưng cất, lượng tử hóa, phục vụ
+  10. Hệ thống nâng cao: đa phương thức, tác tử, world models
+  11. Lý thuyết đánh giá và benchmark
 
 - **Phần II: Thực Chiến NLP**
   - Quy trình làm việc và công cụ xử lý dữ liệu
@@ -37,7 +41,7 @@ Nội dung tài liệu gồm hai phần chính:
 
 - **Toàn diện:** Bao quát từ lý thuyết cơ bản đến kỹ thuật tiên tiến.
 - **Thực chiến:** Hướng dẫn cụ thể các bước dự án NLP, từ thu thập dữ liệu đến triển khai mô hình.
-- **Cập nhật:** Bao gồm các mô hình LLM hiện đại và các kỹ thuật fine-tuning như LoRA, QLoRA, Prompt-based tuning, In-context Learning.
+- **Cập nhật (2026):** Bao gồm scaling laws và dữ liệu tiền huấn luyện (Chinchilla, FineWeb, DCLM, DoReMi), các bộ tối ưu mới (Sophia, Adam-mini, Muon), kiến trúc hiện đại (GQA, MLA, MoE, FlashAttention, YaRN), PEFT (LoRA/DoRA/QLoRA), căn chỉnh (RLHF, DPO, KTO, ORPO), mô hình suy luận và học tăng cường với phần thưởng kiểm chứng được (GRPO, DeepSeek-R1), tối ưu suy luận (GPTQ/AWQ, PagedAttention, speculative decoding) và đánh giá hiện đại (HELM, Chatbot Arena, SWE-bench, GAIA).
 - **MLOps:** Hướng dẫn triển khai, giám sát, tối ưu hóa và vận hành mô hình NLP/Large Language Models.
 - **Đa phương thức:** Hỗ trợ xử lý và sinh dữ liệu văn bản, hình ảnh, âm thanh (multimodal).
 

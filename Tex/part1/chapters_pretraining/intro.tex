@@ -1,0 +1,16 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_pretraining/intro.tex
+% Chương mới (cập nhật 2026) -- trục Pretraining + Optimization của LLM Research Reading List
+
+\chapter{TIỀN HUẤN LUYỆN LLM: QUY LUẬT MỞ RỘNG, DỮ LIỆU VÀ TỐI ƯU HÓA}
+\label{chap:pretraining}
+
+Chương~\ref{chap:transformer_llms} đã cho chúng ta bản thiết kế của một LLM. Nhưng bản thiết kế chưa phải là ngôi nhà. Giữa một kiến trúc Transformer trên giấy và một mô hình như Llama 3 hay DeepSeek-V3 là hàng tháng trời chạy trên hàng chục nghìn GPU, tiêu tốn hàng triệu đô-la. Với chi phí như vậy, không ai có thể “thử và sai” ở quy mô thật. Mọi quyết định phải được đưa ra \emph{trước} khi bấm nút huấn luyện.
+
+Chương này trả lời ba câu hỏi mà mọi đội tiền huấn luyện đều phải trả lời:
+\begin{enumerate}
+	\item \textbf{Nên làm mô hình lớn đến đâu và cho nó học bao nhiêu token?} -- Các \textbf{quy luật mở rộng (scaling laws)} cho phép dự đoán loss của mô hình lớn từ những thí nghiệm nhỏ (mục~\ref{sec:scaling_laws}).
+	\item \textbf{Cho nó học dữ liệu gì?} -- Từ The Pile đến FineWeb và DCLM, câu chuyện của dữ liệu tiền huấn luyện là câu chuyện chuyển từ “càng nhiều càng tốt” sang “càng sạch, càng có chọn lọc càng tốt” (mục~\ref{sec:pretraining_data}).
+	\item \textbf{Tối ưu bằng thuật toán nào?} -- Adam và AdamW đã thống trị gần một thập kỷ; Sophia, Adam-mini và đặc biệt là Muon đang thách thức vị thế đó (mục~\ref{sec:llm_optimizers}).
+\end{enumerate}
+Cuối chương, chúng ta ghép tất cả lại qua hai “công thức” huấn luyện được công bố chi tiết nhất: Llama 3 và DeepSeek-V3 (mục~\ref{sec:pretraining_case_studies}).

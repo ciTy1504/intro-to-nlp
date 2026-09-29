@@ -31,15 +31,17 @@
 	làm sạch và gán nhãn (Pandas, Polars, Label Studio, Snorkel, LLM-based), 
 	tăng cường dữ liệu, và quản lý phiên bản với DVC.
 	
-	\item \textbf{Chương 2 – Huấn luyện và Đánh giá Mô hình:} 
-	Làm chủ hệ sinh thái Hugging Face (`transformers`, `datasets`, `accelerate`, `evaluate`), 
-	xây dựng các hàm đánh giá thực tế (`compute\_metrics`), theo dõi thí nghiệm 
-	(Weights \& Biases, MLflow), và huấn luyện phân tán với DeepSpeed.
+	\item \textbf{Chương 2 – Huấn luyện và Đánh giá Mô hình:}
+	Làm chủ hệ sinh thái Hugging Face (`transformers`, `datasets`, `accelerate`, `evaluate`),
+	xây dựng các hàm đánh giá thực tế (`compute\_metrics`), theo dõi thí nghiệm
+	(Weights \& Biases, MLflow), huấn luyện phân tán với DeepSpeed,
+	toàn bộ chuỗi hậu huấn luyện với TRL (SFT/QLoRA, DPO, GRPO),
+	và đánh giá tái lập được với LM Evaluation Harness.
 	
-	\item \textbf{Chương 3 – Tối ưu hóa, Triển khai và Vận hành (MLOps):} 
-	Tìm hiểu về Cơ sở dữ liệu Vector, các thư viện tối ưu hóa (`bitsandbytes`, `peft`, ONNX),
-	đóng gói và phục vụ mô hình (FastAPI, Docker), các framework chuyên dụng (vLLM, BentoML), 
-	và vòng đời MLOps hoàn chỉnh (giám sát, tái huấn luyện).
+	\item \textbf{Chương 3 – Tối ưu hóa, Triển khai và Vận hành (MLOps):}
+	Tìm hiểu về Cơ sở dữ liệu Vector, các thư viện tối ưu hóa (`bitsandbytes`, `peft`, AWQ/GPTQ, ONNX),
+	đóng gói và phục vụ mô hình (FastAPI, Docker), các framework chuyên dụng (vLLM với prefix caching
+	và giải mã suy đoán, SGLang, BentoML, Triton), và vòng đời MLOps hoàn chỉnh (giám sát, tái huấn luyện).
 	
 	\item \textbf{Chương 4 – Công thức Xây dựng các Ứng dụng Phổ biến (Recipes):} 
 	Hướng dẫn từng bước để xây dựng các ứng dụng thực tế: Tìm kiếm Ngữ nghĩa, 

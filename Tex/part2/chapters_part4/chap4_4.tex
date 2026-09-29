@@ -77,13 +77,13 @@
         model_checkpoint, num_labels=len(label_names),
     )
     
-    args = TrainingArguments("roberta-ner", evaluation_strategy="epoch", learning_rate=2e-5)
+    args = TrainingArguments("roberta-ner", eval_strategy="epoch", learning_rate=2e-5)
     trainer = Trainer(
         model, args,
         train_dataset=tokenized_datasets["train"],
         eval_dataset=tokenized_datasets["validation"],
         data_collator=data_collator,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         compute_metrics=compute_metrics
     )
     trainer.train()

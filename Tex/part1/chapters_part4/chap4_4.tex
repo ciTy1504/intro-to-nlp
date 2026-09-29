@@ -16,23 +16,56 @@ Hãy nhớ lại công thức của Self-Attention: $\text{softmax}\left(\frac{Q
     \item Nếu $n = 4096$, ma trận chú ý có $4096^2 \approx 16.7$ triệu phần tử.
     \item Nếu $n = 100,000$ (độ dài một cuốn sách nhỏ), ma trận chú ý sẽ có $10$ tỷ phần tử!
 \end{itemize}
-Việc lưu trữ và tính toán trên ma trận khổng lồ này là bất khả thi với các phần cứng hiện tại. Đây chính là "nút thắt cổ chai bậc hai", giới hạn hầu hết các mô hình Transformer ban đầu ở độ dài ngữ cảnh là 512 hoặc 1024 token.
+Việc lưu trữ và tính toán trên ma trận khổng lồ này là bất khả thi với các phần cứng hiện tại. Đây chính là “nút thắt cổ chai bậc hai”, giới hạn hầu hết các mô hình Transformer ban đầu ở độ dài ngữ cảnh là 512 hoặc 1024 token.
 
-Để phá vỡ rào cản này và xử lý các tài liệu dài, các nhà nghiên cứu đã phát triển nhiều phương pháp để làm cho cơ chế chú ý trở nên "hiệu quả" hơn. Hướng tiếp cận phổ biến nhất là \textbf{Chú ý Thưa thớt (Sparse Attention)}.
+Để phá vỡ rào cản này và xử lý các tài liệu dài, các nhà nghiên cứu đã phát triển nhiều phương pháp để làm cho cơ chế chú ý trở nên “hiệu quả” hơn. Hướng tiếp cận phổ biến nhất là \textbf{Chú ý Thưa thớt (Sparse Attention)}.
 \subsubsection{Giải pháp từ Kỹ thuật Tối ưu: FlashAttention}
-Trước khi đi vào các phương pháp xấp xỉ, cần phải nhắc đến một cuộc cách mạng về mặt triển khai: \textbf{FlashAttention} (Dao et al., 2022)\cite{dao2022flashattention}. FlashAttention không thay đổi kiến trúc Transformer, mà thay đổi \textbf{cách tính toán} cơ chế chú ý trên phần cứng GPU.
+\label{sssec:flashattention}
+Trước khi đi vào các phương pháp xấp xỉ, cần phải nhắc đến một cuộc cách mạng về mặt triển khai: \textbf{FlashAttention} (Dao et al., 2022) \cite{dao2022flashattention}. FlashAttention không thay đổi kiến trúc Transformer và không xấp xỉ gì cả -- nó tính \textbf{chính xác} cùng một kết quả -- mà thay đổi \textbf{cách tính toán} attention để phù hợp với phần cứng GPU.
 
-\begin{itemize}
-    \item \textbf{Vấn đề cốt lõi:} Nút thắt cổ chai của attention không chỉ là số phép tính $O(n^2)$, mà còn là việc truy cập bộ nhớ. Việc đọc và ghi ma trận chú ý $n \times n$ khổng lồ từ bộ nhớ chính (HBM) của GPU ra bộ nhớ đệm (SRAM) cực kỳ chậm.
-    \item \textbf{Giải pháp của FlashAttention:} Nó sử dụng các kỹ thuật thông minh như \textbf{tiling} (chia nhỏ ma trận thành các khối) và \textbf{recomputation} (tính toán lại một số giá trị thay vì lưu trữ) để thực hiện toàn bộ phép tính chú ý trong bộ nhớ SRAM tốc độ cao của GPU mà không cần phải ghi toàn bộ ma trận chú ý ra HBM.
-    \item \textbf{Kết quả:} FlashAttention có thể tính toán cơ chế chú ý \textbf{chính xác (exact attention)} nhanh hơn tới 3 lần và yêu cầu bộ nhớ chỉ $O(n)$ thay vì $O(n^2)$.
-\end{itemize}
-Sự ra đời của FlashAttention và các phiên bản kế nhiệm (FlashAttention-2) đã giúp các mô hình Transformer gốc có thể xử lý ngữ cảnh dài hơn đáng kể (ví dụ, từ 2k lên 8k, 16k, hoặc 32k) mà không cần phải thay đổi kiến trúc. Nó là một trong những nền tảng kỹ thuật quan trọng nhất cho các LLM hiện đại.
+\paragraph{Quan sát then chốt: nút thắt là bộ nhớ, không phải FLOPs.}
+GPU có một \textbf{phân cấp bộ nhớ}: bộ nhớ SRAM nằm ngay trên chip chỉ có dung lượng rất nhỏ (cỡ vài chục MB) nhưng tốc độ truy xuất cao hơn khoảng một bậc độ lớn so với bộ nhớ HBM (High Bandwidth Memory -- chính là “VRAM” 40--80GB mà ta vẫn nói tới). Trong cách cài đặt thông thường, mỗi bước của attention (nhân $QK^\top$, chia tỷ lệ, mask, softmax, dropout, nhân với $V$) đều đọc ma trận $n\times n$ từ HBM, tính trên SRAM rồi ghi trả lại HBM. Phần lớn thời gian bị tiêu tốn vào việc \emph{di chuyển dữ liệu}, chứ không phải vào phép tính. Các phép toán như vậy được gọi là \textbf{bị giới hạn bởi bộ nhớ (memory-bound)}.
+
+\begin{center}
+\bookimage[0.95\textwidth]{flashattention_memory_hierarchy}{Sơ đồ minh họa cách FlashAttention chia Key và Value thành hai khối, tính từng khối điểm attention và softmax chưa chuẩn hóa trong SRAM (các ô viền đứt) mà không lưu ma trận attention ra HBM, rồi hiệu chỉnh lại mẫu số khi gộp kết quả của các khối.}
+\captionof{figure}{FlashAttention tính attention theo khối: các đại lượng trong ô viền đứt chỉ tồn tại trong SRAM, không bao giờ được ghi ra HBM; kết quả từng khối được gộp lại bằng cách hiệu chỉnh mẫu số của softmax. Nguồn: Dao~\cite{dao2024flashattention2}.}
+\label{fig:flashattention}
+\end{center}
+
+\paragraph{Hai kỹ thuật cốt lõi.}
+\begin{enumerate}
+	\item \textbf{Tiling (chia khối):} Chia $Q, K, V$ thành các khối theo chiều dài chuỗi, nạp từng cặp khối vào SRAM để tính attention. Khó khăn là softmax cần chuẩn hóa trên \emph{cả hàng}, trong khi ta chỉ nhìn thấy một khối. FlashAttention giải quyết bằng cách lưu hai thống kê nhỏ cho mỗi hàng -- giá trị lớn nhất $m(x)$ và log-sum-exp $\ell(x)$ -- cho phép “ghép” softmax của hai đoạn vector:
+	\[
+	\ell\big([x^{(1)}, x^{(2)}]\big) = \log\left(e^{\ell(x^{(1)})} + e^{\ell(x^{(2)})}\right),
+	\]
+	và cập nhật dần đầu ra sau mỗi khối mà không bao giờ phải tạo ra toàn bộ ma trận $n\times n$.
+	\item \textbf{Recomputation (tính lại ở lượt ngược):} Thay vì lưu ma trận attention cho backward pass, chỉ lưu đầu ra và các thống kê $\ell(x)$ (kích thước $O(n)$), rồi \emph{tính lại} attention theo khối khi lan truyền ngược. Số FLOPs tăng lên, nhưng số lần truy cập HBM giảm mạnh nên tổng thời gian vẫn nhanh hơn.
+\end{enumerate}
+
+\paragraph{Phân tích độ phức tạp IO.}
+Với $M$ là dung lượng SRAM và $d$ là số chiều đầu, attention chuẩn cần $\Theta(nd + n^2)$ lần truy cập HBM, còn FlashAttention cần $\Theta(n^2 d^2 M^{-1})$ lần. Vì $d^2$ thường nhỏ hơn $M$ nhiều lần, FlashAttention truy cập HBM ít hơn đáng kể. Bộ nhớ phụ trội giảm từ $O(n^2)$ xuống $O(n)$.
+
+\paragraph{Kết quả.} Nhanh hơn 3 lần khi huấn luyện GPT-2 (ngữ cảnh 1K), 15\% nhanh hơn kỷ lục MLPerf 1.1 cho BERT-large, và lần đầu tiên cho phép Transformer đạt kết quả tốt hơn ngẫu nhiên trên các bài Path-X (16K) và Path-256 (64K).
+
+\paragraph{FlashAttention-2 \cite{dao2024flashattention2}.}
+FlashAttention-1 vẫn chỉ đạt khoảng 25--40\% hiệu suất sử dụng FLOPs lý thuyết của GPU. Phiên bản 2 cải tiến ba điểm:
+\begin{enumerate}
+	\item \textbf{Giảm phép toán không phải nhân ma trận:} Các phép như chia tỷ lệ lại đầu ra sau mỗi khối được gộp hoặc bỏ đi, vì chúng rất đắt trên GPU so với phép nhân ma trận đã được tối ưu.
+	\item \textbf{Song song hóa theo chiều dài chuỗi:} Đảo thứ tự hai vòng lặp (vòng ngoài duyệt khối Query, vòng trong duyệt khối Key/Value) để các khối Query độc lập với nhau, từ đó chạy song song trên nhiều luồng GPU -- hữu ích khi batch nhỏ nhưng chuỗi dài.
+	\item \textbf{Phân chia công việc hợp lý:} Tối ưu cách chia việc giữa các luồng trong cùng một lớp attention để giảm giao tiếp.
+\end{enumerate}
+Kết quả là nhanh hơn khoảng 2 lần so với FlashAttention-1, đạt tới khoảng 225 token/giây/GPU A100 khi huấn luyện mô hình kiểu GPT (72\% hiệu suất FLOPs). FlashAttention-2 cũng hỗ trợ trực tiếp MQA/GQA (mục~\ref{sec:modern_decoder_attention}). Thế hệ tiếp theo (FlashAttention-3) tận dụng thêm định dạng FP8 và khả năng xử lý bất đồng bộ của GPU H100.
+
+\begin{tcolorbox}[title={Bài học từ FlashAttention}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+Đừng chỉ đếm FLOPs. Một thuật toán có \emph{nhiều} phép tính hơn (tính lại ở backward) vẫn có thể \emph{nhanh} hơn nếu nó tôn trọng phân cấp bộ nhớ. Câu hỏi “nó giải quyết nút thắt nào?” trong danh sách đọc nghiên cứu có câu trả lời rõ ràng ở đây: nút thắt IO, không phải nút thắt tính toán.
+\end{tcolorbox}
+
+Sự ra đời của FlashAttention đã giúp Transformer tiêu chuẩn xử lý ngữ cảnh dài hơn đáng kể mà không cần thay đổi kiến trúc, và hiện được tích hợp mặc định trong PyTorch (\texttt{scaled\_dot\_product\_attention}), vLLM, và hầu hết các framework huấn luyện.
 \subsection{Lý thuyết về Chú ý Thưa thớt (Sparse Attention)}
 \label{ssec:sparse_attention_theory}
 
 \subsubsection{Trực giác cốt lõi}
-Ý tưởng trung tâm của Sparse Attention là: \textbf{một token không cần phải chú ý đến tất cả các token khác trong chuỗi}. Hầu hết thông tin quan trọng đều đến từ các token lân cận (ngữ cảnh cục bộ) hoặc một vài token "quan trọng" đặc biệt trên toàn chuỗi.
+Ý tưởng trung tâm của Sparse Attention là: \textbf{một token không cần phải chú ý đến tất cả các token khác trong chuỗi}. Hầu hết thông tin quan trọng đều đến từ các token lân cận (ngữ cảnh cục bộ) hoặc một vài token “quan trọng” đặc biệt trên toàn chuỗi.
 
 Thay vì tính toán một ma trận chú ý $n \times n$ dày đặc, các mô hình Sparse Attention chỉ tính toán và lưu trữ một số lượng nhỏ các điểm chú ý, làm cho chi phí giảm từ $O(n^2)$ xuống gần như tuyến tính, $O(n \log n)$ hoặc $O(n)$.
 
@@ -61,14 +94,14 @@ Longformer (Beltagy et al., 2020) \cite{beltagy2020longformer} đề xuất mộ
 
 \paragraph{2. Chú ý Cửa sổ trượt Giãn cách (Dilated Sliding Window)}
 \begin{itemize}
-    \item \textbf{Cơ chế:} Để mở rộng "trường tiếp nhận" (receptive field) mà không tăng chi phí, Longformer sử dụng các cửa sổ trượt có "lỗ" (gaps) ở các lớp khác nhau. Ví dụ, ở một lớp, cửa sổ có thể chú ý đến các token cách nhau 1 vị trí, ở lớp khác, cách nhau 2 vị trí, v.v.
+    \item \textbf{Cơ chế:} Để mở rộng “trường tiếp nhận” (receptive field) mà không tăng chi phí, Longformer sử dụng các cửa sổ trượt có “lỗ” (gaps) ở các lớp khác nhau. Ví dụ, ở một lớp, cửa sổ có thể chú ý đến các token cách nhau 1 vị trí, ở lớp khác, cách nhau 2 vị trí, v.v.
     \item \textbf{Mục đích:} Giúp thông tin từ các token xa hơn có thể được tích hợp vào biểu diễn của một token mà không cần kết nối trực tiếp.
 \end{itemize}
 
 \paragraph{3. Chú ý Toàn cục (Global Attention)}
 \begin{itemize}
     \item \textbf{Cơ chế:} Một số ít các token được chọn trước được phép chú ý đến \textbf{tất cả} các token khác trong chuỗi, và ngược lại, tất cả các token khác cũng được phép chú ý đến chúng.
-    \item \textbf{Mục đích:} Các token toàn cục này hoạt động như một "trung tâm thông tin", tổng hợp và phân phối thông tin trên toàn bộ chuỗi. Các token này thường được chọn một cách đặc biệt, ví dụ như token `[CLS]` trong các tác vụ phân loại.
+    \item \textbf{Mục đích:} Các token toàn cục này hoạt động như một “trung tâm thông tin”, tổng hợp và phân phối thông tin trên toàn bộ chuỗi. Các token này thường được chọn một cách đặc biệt, ví dụ như token `[CLS]` trong các tác vụ phân loại.
 \end{itemize}
 
 Bằng cách kết hợp các mẫu này, Longformer giảm độ phức tạp tính toán xuống $O(n \cdot w)$, gần như tuyến tính với độ dài chuỗi $n$, cho phép nó xử lý các chuỗi lên tới 4096 token hoặc hơn.
@@ -84,22 +117,40 @@ Các tác giả đã chứng minh về mặt lý thuyết rằng một mô hình
 \subsection{Các phương pháp khác: Thoát khỏi Self-Attention Bậc hai}
 \label{ssec:other_long_context_methods}
 
-Sparse Attention là một hướng tiếp cận, nhưng không phải là duy nhất. Một hướng đi khác, cấp tiến hơn, là đặt câu hỏi: "Liệu chúng ta có thực sự cần cơ chế chú ý bậc hai không?". Điều này đã dẫn đến sự ra đời của các kiến trúc hoàn toàn mới.
+Sparse Attention là một hướng tiếp cận, nhưng không phải là duy nhất. Một hướng đi khác, cấp tiến hơn, là đặt câu hỏi: “Liệu chúng ta có thực sự cần cơ chế chú ý bậc hai không?”. Điều này đã dẫn đến sự ra đời của các kiến trúc hoàn toàn mới.
 \subsubsection{Cải tiến Mã hóa Vị trí (Positional Encoding)}
+\label{sssec:pe_long_context}
 Một hướng quan trọng khác để giúp Transformer xử lý ngữ cảnh dài là cải tiến cách nó hiểu về vị trí của token.
 \paragraph{ALiBi (Attention with Linear Biases)}
 Thay vì thêm mã hóa vị trí vào embedding, ALiBi \cite{press2021train} trực tiếp sửa đổi ma trận điểm chú ý.
 \begin{itemize}
-    \item \textbf{Cơ chế:} Trước khi qua softmax, điểm chú ý giữa token $i$ và $j$ sẽ bị trừ đi một "án phạt" (penalty) tỷ lệ thuận với khoảng cách của chúng: $\text{score}(i, j) - m \cdot |i - j|$. Trong đó, $m$ là một hệ số học được cho mỗi "đầu" chú ý.
-    \item \textbf{Trực giác:} "Các từ càng xa nhau thì càng ít liên quan".
+    \item \textbf{Cơ chế:} Trước khi qua softmax, điểm chú ý giữa token $i$ và $j$ sẽ bị trừ đi một “án phạt” (penalty) tỷ lệ thuận với khoảng cách của chúng: $\text{score}(i, j) - m \cdot |i - j|$. Trong đó, $m$ là một hệ số học được cho mỗi “đầu” chú ý.
+    \item \textbf{Trực giác:} “Các từ càng xa nhau thì càng ít liên quan”.
     \item \textbf{Lợi ích:} ALiBi cho thấy khả năng \textbf{ngoại suy (extrapolation)} ấn tượng. Một mô hình được huấn luyện trên ngữ cảnh 2048 token với ALiBi có thể hoạt động tốt trên ngữ cảnh 4096 token hoặc dài hơn mà không cần fine-tuning.
 \end{itemize}
 
-\paragraph{RoPE Scaling}
-Các mô hình sử dụng Rotary Position Embedding (RoPE) như Llama thường gặp khó khăn khi ngoại suy ra các chuỗi dài hơn độ dài huấn luyện. Các kỹ thuật RoPE Scaling giải quyết vấn đề này.
+\paragraph{RoPE Scaling: từ Position Interpolation đến YaRN}
+Các mô hình sử dụng Rotary Position Embedding (RoPE) như Llama, Qwen, DeepSeek thường suy giảm nghiêm trọng khi gặp chuỗi dài hơn độ dài huấn luyện $L$. Nhắc lại, RoPE xoay cặp chiều thứ $d$ của Query/Key tại vị trí $m$ một góc $m\theta_d$ với
+\[
+\theta_d = b^{-2d/|D|}, \qquad \lambda_d = \frac{2\pi}{\theta_d} = 2\pi\, b^{2d/|D|},
+\]
+trong đó $b$ là cơ số (thường $b = 10000$), $|D|$ là số chiều của một đầu attention, và $\lambda_d$ là \textbf{bước sóng} -- số token cần để chiều $d$ quay đủ một vòng. Các chiều có $d$ nhỏ quay rất nhanh (tần số cao, mã hóa vị trí cục bộ), các chiều có $d$ lớn quay rất chậm (tần số thấp, mã hóa vị trí xa).
+
 \begin{itemize}
-    \item \textbf{Vấn đề:} RoPE sử dụng các hàm sin/cos với tần số phụ thuộc vào vị trí. Khi vị trí vượt quá giới hạn huấn luyện, các tần số này bắt đầu lặp lại hoặc tạo ra các mẫu không ổn định.
-    \item \textbf{Giải pháp (ví dụ:\cite{bloc972023ntkaware}, YaRN \cite{peng2023yarn}):} Các kỹ thuật này sửa đổi "bước sóng" (wavelength) của các hàm sin/cos, về cơ bản là "kéo dãn" không gian vị trí để có thể chứa các chuỗi dài hơn mà không phá vỡ các mối quan hệ tương đối đã học được ở cự ly gần.
+	\item \textbf{Vấn đề ngoại suy:} Khi $m > L$, các chiều tần số thấp rơi vào những góc quay mà mô hình \emph{chưa từng thấy} khi huấn luyện, khiến điểm attention trở nên bất thường.
+	\item \textbf{Position Interpolation (PI) \cite{chen2023extending}:} Muốn mở rộng lên $L' = sL$, chỉ cần “nén” vị trí: thay $m$ bằng $m/s$. Mọi vị trí mới đều nằm trong dải góc đã thấy. Chỉ cần khoảng 1000 bước tinh chỉnh là đủ đưa LLaMA lên 32K token. Nhược điểm: nén \emph{đều} mọi chiều làm mất độ phân giải ở các chiều tần số cao -- mô hình khó phân biệt hai token đứng cạnh nhau.
+	\item \textbf{NTK-aware scaling \cite{bloc972023ntkaware}:} Thay vì nén vị trí, tăng cơ số $b' = b \cdot s^{|D|/(|D|-2)}$, khiến các chiều tần số thấp bị kéo dãn nhiều còn các chiều tần số cao gần như giữ nguyên.
+	\item \textbf{YaRN \cite{peng2023yarn}} kết hợp hai ý tưởng trên một cách có nguyên tắc:
+	\begin{enumerate}
+		\item \textbf{NTK-by-parts:} Với mỗi chiều, tính tỷ lệ $r(d) = L/\lambda_d$ (số vòng quay trong ngữ cảnh gốc) và một hàm dốc
+		\[
+		\gamma(r) = \begin{cases} 0 & r < \alpha \\ 1 & r > \beta \\ \dfrac{r-\alpha}{\beta-\alpha} & \text{ngược lại}\end{cases}, \qquad
+		\theta'_d = \big(1-\gamma(r(d))\big)\frac{\theta_d}{s} + \gamma(r(d))\,\theta_d .
+		\]
+		Chiều quay nhiều vòng ($r > \beta$) được \emph{giữ nguyên}; chiều chưa quay hết một vòng ($r < \alpha$) được \emph{nội suy} như PI; ở giữa thì pha trộn tuyến tính (với Llama, tác giả dùng $\alpha=1, \beta=32$).
+		\item \textbf{Nhiệt độ attention:} Chia logit attention cho $t$ với $\sqrt{1/t} = 0.1 \ln s + 1$, bù lại việc phân phối attention bị “làm phẳng” khi ngữ cảnh dài ra.
+	\end{enumerate}
+	YaRN mở rộng Llama 2 lên 64K--128K token chỉ với khoảng 0.1\% lượng dữ liệu tiền huấn luyện ban đầu, cần ít hơn 10 lần số token và 2.5 lần số bước so với các phương pháp trước. Đây là kỹ thuật được Qwen và DeepSeek-V3 dùng để mở rộng ngữ cảnh lên 128K.
 \end{itemize}
 \subsubsection{Mô hình Trạng thái (State Space Models - SSMs) và Mamba}
 Đây là một trong những hướng nghiên cứu thú vị và hứa hẹn nhất gần đây.
@@ -111,7 +162,7 @@ $$ y(t) = \mathbf{C}h(t) + \mathbf{D}x(t) $$
 Trong đó $\mathbf{A, B, C, D}$ là các ma trận tham số.
 
 \paragraph{Thách thức và Giải pháp}
-Việc áp dụng trực tiếp SSMs vào học sâu là rất khó khăn về mặt tính toán. Các mô hình như S4 (Structured State Space for Sequence Modeling) \cite{gu2021efficiently} đã giải quyết vấn đề này bằng cách tìm ra một cách hiệu quả để "rời rạc hóa" (discretize) các công thức liên tục này, cho phép chúng được tính toán như một phép tích chập lớn trong quá trình huấn luyện (rất nhanh và song song) và như một RNN trong quá trình suy luận (hiệu quả về bộ nhớ).
+Việc áp dụng trực tiếp SSMs vào học sâu là rất khó khăn về mặt tính toán. Các mô hình như S4 (Structured State Space for Sequence Modeling) \cite{gu2021efficiently} đã giải quyết vấn đề này bằng cách tìm ra một cách hiệu quả để “rời rạc hóa” (discretize) các công thức liên tục này, cho phép chúng được tính toán như một phép tích chập lớn trong quá trình huấn luyện (rất nhanh và song song) và như một RNN trong quá trình suy luận (hiệu quả về bộ nhớ).
 
 \paragraph{Mamba: SSMs có Chọn lọc (Selective SSMs)}
 Mamba (Gu \& Dao, 2023) \cite{gu2023mamba} là một bước đột phá lớn dựa trên SSMs. Nó nhận ra rằng một hạn chế của các SSMs trước đó là các ma trận $\mathbf{A, B, C, D}$ là \textbf{cố định}, không phụ thuộc vào đầu vào. Điều này có nghĩa là mô hình không thể thay đổi hành vi của mình dựa trên nội dung cụ thể mà nó đang xử lý.
@@ -130,8 +181,8 @@ Mamba kế thừa những ưu điểm này và thêm vào đó khả năng chọ
 ]
 Mamba có khả năng \textbf{chọn lọc} thông tin. Dựa trên token đầu vào hiện tại, nó có thể quyết định:
 \begin{enumerate}
-    \item \textbf{Tập trung:} Nếu một thông tin quan trọng xuất hiện, nó có thể "mở cổng" để cho thông tin đó đi vào trạng thái ẩn.
-    \item \textbf{Lãng quên:} Nếu thông tin hiện tại không còn liên quan, nó có thể "nén" hoặc "quên" đi trạng thái ẩn cũ và đặt lại.
+    \item \textbf{Tập trung:} Nếu một thông tin quan trọng xuất hiện, nó có thể “mở cổng” để cho thông tin đó đi vào trạng thái ẩn.
+    \item \textbf{Lãng quên:} Nếu thông tin hiện tại không còn liên quan, nó có thể “nén” hoặc “quên” đi trạng thái ẩn cũ và đặt lại.
 \end{enumerate}
 Khả năng chọn lọc này cho phép Mamba nén ngữ cảnh một cách linh hoạt, chỉ giữ lại những gì cần thiết, một khả năng mà các mô hình tích chập hay RNN tuyến tính trước đó không có được.
 \end{tcolorbox}
@@ -143,11 +194,31 @@ Khả năng chọn lọc này cho phép Mamba nén ngữ cảnh một cách linh
 \end{itemize}
 Mamba và các kiến trúc dựa trên SSMs đang nổi lên như một đối thủ cạnh tranh thực sự với Transformer, đặc biệt là trong các kịch bản yêu cầu ngữ cảnh cực dài và hiệu quả tính toán cao.
 
-\subsubsection{Các hướng tiếp cận khác}
-Ngoài ra, còn có các hướng tiếp cận khác như:
+\subsection{Phân tán chuỗi dài trên nhiều thiết bị: Ring Attention}
+\label{ssec:ring_attention}
+FlashAttention giải quyết bài toán bộ nhớ \emph{trên một GPU}, nhưng với ngữ cảnh hàng triệu token, ngay cả các kích hoạt $O(n)$ của một lớp cũng không vừa một thiết bị. \textbf{Ring Attention} \cite{liu2023ring} phân tán chính \emph{chiều dài chuỗi} ra nhiều thiết bị mà vẫn tính attention \textbf{chính xác}.
+
+\begin{enumerate}
+	\item \textbf{Tính theo khối (Blockwise Transformer):} Chuỗi được chia thành $N$ khối; attention và FFN được tính theo từng khối để không bao giờ cần giữ toàn bộ kích hoạt của cả chuỗi.
+	\item \textbf{Xếp thiết bị thành vòng:} Mỗi thiết bị giữ một khối Query của riêng mình. Các khối Key/Value được \emph{chuyền vòng} từ thiết bị này sang thiết bị kế tiếp.
+	\item \textbf{Chồng lấp tính toán và giao tiếp:} Trong lúc thiết bị $i$ tính attention giữa khối Query của nó với khối KV vừa nhận, nó đồng thời gửi khối KV đó đi tiếp. Sau $N-1$ lượt chuyền, mọi cặp (Query, KV) đều đã được tính. Nếu thời gian tính một khối lớn hơn thời gian truyền một khối, giao tiếp gần như không tốn thêm thời gian.
+\end{enumerate}
+Bộ nhớ trên mỗi thiết bị chỉ phụ thuộc kích thước khối, nên độ dài ngữ cảnh tối đa tăng \textbf{tuyến tính theo số thiết bị}. Ý tưởng tương tự -- thường gọi là \textbf{Context Parallelism} -- là một trong bốn chiều song song (cùng với tensor, pipeline và data parallelism) được dùng để huấn luyện Llama 3.1 405B với ngữ cảnh 128K \cite{grattafiori2024llama3}.
+
+\begin{center}
+\bookimage[0.75\textwidth]{ring_attention_overview}{Sơ đồ Ring Attention gồm hai phần: (a) mỗi thiết bị giữ một khối Query và tính attention cùng feedforward theo khối, trong khi các khối Key-Value được chuyền sang thiết bị kế tiếp; (b) vòng lặp ngoài duyệt các khối Query, vòng lặp trong duyệt các khối Key-Value, vừa tính vừa gửi khối KV cho thiết bị sau và nhận khối KV từ thiết bị trước.}
+\captionof{figure}{Ring Attention: phân tán chuỗi dài theo vòng, chồng lấp giao tiếp khối KV với tính toán attention theo khối. Nguồn: Liu et al.~\cite{liu2023ring}.}
+\label{fig:ring_attention}
+\end{center}
+
+\subsection{Xu hướng 2025--2026: Attention lai và Attention thưa học được}
+\label{ssec:hybrid_attention_trends}
+Khi các mô hình suy luận sinh ra chuỗi suy nghĩ dài hàng chục nghìn token và tác tử cần giữ lịch sử rất dài, chi phí KV cache và attention bậc hai lại trở thành vấn đề thời sự. Các hướng tiếp cận nổi bật gồm:
 \begin{itemize}
-    \item \textbf{Tích chập có cửa sổ lớn (Large Kernel Convolutions):} Sử dụng các lớp tích chập 1D nhưng với kích thước kernel rất lớn để mô phỏng sự tương tác tầm xa.
-    \item \textbf{Phương pháp đệ quy (Recurrence):} Cố gắng đưa trở lại một số dạng của cơ chế RNN để nén thông tin từ các đoạn (chunks) văn bản dài.
+	\item \textbf{Xen kẽ attention cục bộ và toàn cục:} Phần lớn các lớp chỉ dùng cửa sổ trượt ngắn (sliding window), thỉnh thoảng mới có một lớp full attention -- ví dụ họ Gemma. KV cache của các lớp cục bộ có kích thước cố định.
+	\item \textbf{Kiến trúc lai tuyến tính + softmax:} Thay phần lớn lớp attention bằng các lớp có trạng thái kích thước cố định (họ SSM/Mamba ở mục trước, hoặc các biến thể “linear attention” có cổng như Gated DeltaNet), chỉ giữ lại một tỷ lệ nhỏ lớp softmax attention đầy đủ để đảm bảo khả năng truy hồi chính xác. Qwen3-Next và MiniMax là các ví dụ tiêu biểu.
+	\item \textbf{Attention thưa học được:} Thay vì mẫu thưa cố định kiểu Longformer, mô hình học cách chọn ra top-$k$ token (hoặc khối token) quan trọng cho từng Query bằng một bộ chỉ mục nhẹ, như Native Sparse Attention và DeepSeek Sparse Attention của DeepSeek.
 \end{itemize}
+Điểm chung của các hướng này là một sự đánh đổi đã quen thuộc: \emph{hy sinh một phần khả năng truy hồi chính xác trên toàn ngữ cảnh để đổi lấy bộ nhớ và tốc độ}. Việc đánh giá chúng vì vậy cần các benchmark ngữ cảnh dài được thiết kế cẩn thận (chương~\ref{chap:evaluation}), không chỉ perplexity.
 
 Việc xử lý ngữ cảnh dài vẫn là một trong những lĩnh vực nghiên cứu năng động nhất, hứa hẹn sẽ mở khóa nhiều khả năng mới cho các mô hình ngôn ngữ trong tương lai.

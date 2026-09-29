@@ -15,13 +15,13 @@ Khi bạn bắt đầu một dự án NLP, bạn sẽ không chỉ huấn luyệ
 Nếu chỉ dựa vào việc ghi chép thủ công hoặc đặt tên file một cách lộn xộn (ví dụ: `model\_final.pt`, `model\_final\_v2.pt`, `model\_final\_really\_final.pt`), bạn sẽ nhanh chóng lạc vào một mớ hỗn độn.
 
 \begin{tcolorbox}[
-    title=Vấn đề: "Mớ hỗn độn của Thí nghiệm",
+    title=Vấn đề: “Mớ hỗn độn của Thí nghiệm”,
     colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
 ]
 Làm thế nào để so sánh hiệu năng giữa lần chạy tuần trước và lần chạy hôm nay? Siêu tham số nào đã tạo ra mô hình tốt nhất? Bộ dữ liệu nào đã được sử dụng cho phiên bản mô hình đang chạy trên production? Nếu không có một hệ thống theo dõi, việc trả lời những câu hỏi này là gần như không thể, làm cản trở sự tiến bộ và tính tái lập.
 \end{tcolorbox}
 
-Các công cụ Theo dõi và Quản lý Thí nghiệm (Experiment Tracking and Management) ra đời để giải quyết vấn đề này. Chúng hoạt động như một "cuốn sổ tay phòng thí nghiệm" tự động cho các dự án học máy. Chúng ta sẽ tìm hiểu hai công cụ phổ biến nhất: Weights \& Biases và MLflow.
+Các công cụ Theo dõi và Quản lý Thí nghiệm (Experiment Tracking and Management) ra đời để giải quyết vấn đề này. Chúng hoạt động như một “cuốn sổ tay phòng thí nghiệm” tự động cho các dự án học máy. Chúng ta sẽ tìm hiểu hai công cụ phổ biến nhất: Weights \& Biases và MLflow.
 
 \subsection{Weights \& Biases (W\&B): Một Nền tảng Toàn diện và Trực quan}
 \label{ssec:wandb}
@@ -47,8 +47,8 @@ Weights \& Biases (thường được gọi là `wandb`) là một nền tảng 
         \end{itemize}
     \item \textbf{Lưu trữ và Quản lý Hiện vật (Artifacts):}
         \begin{itemize}
-            \item `wandb` Artifacts là một hệ thống quản lý phiên bản cho các "hiện vật" của pipeline học máy, như các bộ dữ liệu, các mô hình đã được huấn luyện, và các bảng đánh giá.
-            \item Nó giúp bạn theo dõi toàn bộ "dòng dõi" (lineage) của một mô hình: nó được huấn luyện từ bộ dữ liệu nào, bởi lần chạy thí nghiệm nào.
+            \item `wandb` Artifacts là một hệ thống quản lý phiên bản cho các “hiện vật” của pipeline học máy, như các bộ dữ liệu, các mô hình đã được huấn luyện, và các bảng đánh giá.
+            \item Nó giúp bạn theo dõi toàn bộ “dòng dõi” (lineage) của một mô hình: nó được huấn luyện từ bộ dữ liệu nào, bởi lần chạy thí nghiệm nào.
         \end{itemize}
     \item \textbf{Báo cáo và Cộng tác (Reports):}
         \begin{itemize}

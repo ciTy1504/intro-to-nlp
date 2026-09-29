@@ -7,7 +7,7 @@
 
 Kiến trúc Transformer gốc mà chúng ta vừa phân tích là một mô hình Encoder-Decoder hoàn chỉnh, được thiết kế cho các tác vụ chuỗi-sang-chuỗi (sequence-to-sequence). Tuy nhiên, các nhà nghiên cứu nhanh chóng nhận ra rằng bằng cách chỉ sử dụng một phần của kiến trúc này -- hoặc chỉ Encoder, hoặc chỉ Decoder -- họ có thể tạo ra các mô hình được chuyên môn hóa cao và cực kỳ hiệu quả cho các loại tác vụ khác nhau.
 
-Sự phân tách này đã khai sinh ra ba "họ" kiến trúc chính, định hình nên toàn bộ bối cảnh của các Mô hình Ngôn ngữ Lớn (LLMs) ngày nay. Hiểu rõ ba họ kiến trúc này là chìa khóa để lựa chọn mô hình phù hợp cho ứng dụng của bạn.
+Sự phân tách này đã khai sinh ra ba “họ” kiến trúc chính, định hình nên toàn bộ bối cảnh của các Mô hình Ngôn ngữ Lớn (LLMs) ngày nay. Hiểu rõ ba họ kiến trúc này là chìa khóa để lựa chọn mô hình phù hợp cho ứng dụng của bạn.
 
 \subsection{Họ Mô hình chỉ Encoder (Encoder-Only): Bậc thầy của Hiểu ngôn ngữ}
 \subsubsection{Kiến trúc và Đặc trưng Chung}
@@ -193,13 +193,13 @@ Các mô hình Encoder-Only như BERT và họ hàng của nó được xem là 
 	title=Triết lý của Decoder-Only,
 	colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
 	]
-	"Để viết tiếp một câu chuyện, tôi chỉ cần biết những gì đã được viết \textbf{trước đó}. Tôi không được phép nhìn vào tương lai."
+	“Để viết tiếp một câu chuyện, tôi chỉ cần biết những gì đã được viết \textbf{trước đó}. Tôi không được phép nhìn vào tương lai.”
 \end{tcolorbox}
 \subsubsection{Kiến trúc và Mục tiêu Huấn luyện Nền tảng}
 \paragraph{Kiến trúc Tự hồi quy (Auto-regressive Architecture)}
 \begin{itemize}
 	\item \textbf{Cấu tạo:} Một chuỗi các khối Decoder của Transformer xếp chồng lên nhau. Quan trọng là, chúng \textbf{không có Encoder} và do đó cũng \textbf{không có lớp Cross-Attention}. Mỗi khối Decoder bao gồm các lớp con chính: Masked Multi-Head Self-Attention, Feed-Forward Network (FFN), và Layer Normalization. Các khối này được lặp lại nhiều lần (thường từ 12 đến 96 lớp tùy mô hình), với các embedding đầu vào (word embeddings + positional encodings) ở dưới cùng và một lớp dự đoán đầu ra (linear projection + softmax) ở trên cùng.
-	\item \textbf{Tính một chiều (Unidirectionality):} Đây là đặc điểm nhận dạng. Chúng sử dụng \textbf{Masked Self-Attention}. Tại mỗi vị trí, một từ chỉ có thể "chú ý" đến chính nó và các từ đứng trước nó. Nó không thể nhìn thấy các từ ở phía sau, đảm bảo rằng việc dự đoán chỉ dựa trên thông tin quá khứ. Mặt nạ (mask) là một ma trận tam giác dưới, nơi các giá trị ở trên đường chéo chính bị đặt thành $-\infty$ để loại bỏ chú ý đến tương lai.
+	\item \textbf{Tính một chiều (Unidirectionality):} Đây là đặc điểm nhận dạng. Chúng sử dụng \textbf{Masked Self-Attention}. Tại mỗi vị trí, một từ chỉ có thể “chú ý” đến chính nó và các từ đứng trước nó. Nó không thể nhìn thấy các từ ở phía sau, đảm bảo rằng việc dự đoán chỉ dựa trên thông tin quá khứ. Mặt nạ (mask) là một ma trận tam giác dưới, nơi các giá trị ở trên đường chéo chính bị đặt thành $-\infty$ để loại bỏ chú ý đến tương lai.
 	\item \textbf{Dòng chảy:} Mô hình nhận vào một chuỗi các từ (prompt) và nhiệm vụ của nó là dự đoán từ \textbf{tiếp theo có khả năng nhất}. Từ được dự đoán sau đó được nối vào chuỗi đầu vào, và quá trình này lặp lại để sinh ra từ tiếp theo, cứ thế tiếp tục. Trong suy luận, có thể sử dụng các kỹ thuật như beam search hoặc sampling (e.g., top-k, nucleus sampling) để đa dạng hóa đầu ra.
 \end{itemize}
 
@@ -251,12 +251,12 @@ P(x_{t+1}|x_{\leq t}) = \text{softmax}(W_{\text{out}} h_t)
 	\mathcal{L} = -\frac{1}{N} \sum_{i=1}^N \log P(x_i | x_{1:i-1})
 	\]
 	Trong đó $N$ là độ dài chuỗi, và huấn luyện bằng gradient descent (thường Adam optimizer) trên batch lớn.
-	\item \textbf{Sức mạnh của Quy mô:} Bằng cách cố gắng dự đoán từ tiếp theo trên một kho văn bản khổng lồ (hàng nghìn tỷ từ), mô hình buộc phải học một lượng kiến thức khổng lồ về thế giới, về ngữ pháp, ngữ nghĩa, và các mẫu hình lý luận để có thể đưa ra dự đoán tốt. Đây là nền tảng cho các "khả năng nổi trội" (emergent abilities) của LLMs, như in-context learning, nơi mô hình học từ vài ví dụ trong prompt mà không cần cập nhật trọng số.
+	\item \textbf{Sức mạnh của Quy mô:} Bằng cách cố gắng dự đoán từ tiếp theo trên một kho văn bản khổng lồ (hàng nghìn tỷ từ), mô hình buộc phải học một lượng kiến thức khổng lồ về thế giới, về ngữ pháp, ngữ nghĩa, và các mẫu hình lý luận để có thể đưa ra dự đoán tốt. Đây là nền tảng cho các “khả năng nổi trội” (emergent abilities) của LLMs, như in-context learning, nơi mô hình học từ vài ví dụ trong prompt mà không cần cập nhật trọng số.
 	\item \textbf{Quy trình Huấn luyện Chi tiết:} 
 	\begin{itemize}
 		\item \textbf{Pre-training Phase:} Huấn luyện từ đầu (from scratch) trên dữ liệu thô lớn (e.g., CommonCrawl, books, web text). Sử dụng tokenizer (e.g., BPE hoặc WordPiece) để chuyển văn bản thành token. Batch size lớn (hàng nghìn sequences), context length lên đến 8192+ token ở mô hình mới.
-		\item \textbf{Optimization:} Sử dụng mixed precision (FP16), gradient checkpointing để tiết kiệm bộ nhớ. Learning rate scheduler (e.g., cosine decay). Thường cần supercomputers với hàng nghìn GPU, thời gian huấn luyện hàng tháng.
-		\item \textbf{Data Preprocessing:} Lọc dữ liệu để loại bỏ duplicate, low-quality text. Sử dụng techniques như deduplication, quality filtering dựa trên perplexity hoặc classifiers.
+		\item \textbf{Optimization:} Sử dụng mixed precision (BF16, và gần đây là FP8), gradient checkpointing để tiết kiệm bộ nhớ, bộ tối ưu AdamW (hoặc các bộ tối ưu mới như Muon), lịch learning rate cosine hoặc warmup-stable-decay. Thường cần hàng nghìn đến hàng chục nghìn GPU, thời gian huấn luyện hàng tháng. Chi tiết ở chương~\ref{chap:pretraining}.
+		\item \textbf{Data Preprocessing:} Lọc dữ liệu để loại bỏ trùng lặp và văn bản chất lượng thấp: khử trùng lặp (MinHash), lọc chất lượng bằng heuristic hoặc bộ phân loại (ví dụ bộ phân loại “tính giáo dục” của FineWeb-Edu), cân bằng tỷ lệ các miền dữ liệu. Chất lượng dữ liệu được xem là yếu tố quyết định ngang với quy mô mô hình (mục~\ref{sec:pretraining_data}).
 		\item \textbf{Fine-tuning Phase (Optional):} Sau pre-training, fine-tune cho các task cụ thể, nhưng trong decoder-only, thường dùng instruction tuning hoặc RLHF để align với human preferences.
 	\end{itemize}
 	\item \textbf{RLHF (Reinforcement Learning from Human Feedback):} Một phần quan trọng trong training hiện đại. Sử dụng PPO (Proximal Policy Optimization) để tinh chỉnh mô hình dựa trên feedback con người, giảm hallucination và tăng usefulness.
@@ -268,18 +268,20 @@ P(x_{t+1}|x_{\leq t}) = \text{softmax}(W_{\text{out}} h_t)
 	\label{fig:gpt_clm}
 \end{center}
 \subsubsection{Các Cải tiến Kiến trúc Hiện đại}
-Các mô hình Decoder-Only hiện đại không chỉ đơn thuần lặp lại cấu trúc Transformer gốc mà đã có nhiều điều chỉnh nhằm tăng hiệu quả huấn luyện và suy luận:
+Các mô hình Decoder-Only hiện đại không chỉ đơn thuần lặp lại cấu trúc Transformer gốc mà đã có nhiều điều chỉnh nhằm tăng hiệu quả huấn luyện và suy luận. Mục này chỉ điểm danh; mỗi cải tiến được phân tích chi tiết ở các mục sau của chương:
 \begin{itemize}
-	\item \textbf{Rotary Positional Embedding (RoPE)} \cite{su2021rope}:  
-	Thay thế positional encoding kiểu sin/cosine bằng phép quay tuyến tính trong không gian vector, giúp mô hình mở rộng context window dễ dàng hơn.
-	\item \textbf{FlashAttention} \cite{dao2022flashattention}:  
-	Thuật toán tính attention hiệu quả hơn về bộ nhớ và tốc độ, giảm độ phức tạp truy cập bộ nhớ trong GPU.
-	\item \textbf{Grouped-Query Attention (GQA)} và \textbf{Multi-Query Attention (MQA)}:  
-	Giúp giảm kích thước KV cache trong suy luận mà không ảnh hưởng nhiều đến chất lượng, được dùng trong GPT-4, LLaMA 2/3.
-	\item \textbf{Mixture of Experts (MoE)} \cite{shazeer2017outrageously,jiang2023mistral}:  
-	Chỉ kích hoạt một phần nhỏ “experts” tại mỗi token → tăng số tham số hiệu dụng mà không tăng chi phí inference.
-	\item \textbf{ALiBi, YaRN, và NTK Scaling:}  
-	Các phương pháp mở rộng context window lên hàng trăm nghìn token mà không cần tái huấn luyện mô hình từ đầu.
+	\item \textbf{Pre-Norm với RMSNorm và FFN dạng SwiGLU} \cite{zhang2019rmsnorm, shazeer2020glu}:
+	Chuẩn hóa đặt \emph{trước} mỗi lớp con giúp huấn luyện mạng rất sâu ổn định hơn; SwiGLU thay cho ReLU trong FFN. Đây là “khối chuẩn” của Llama, Qwen, DeepSeek, Mistral (mục~\ref{sec:modern_decoder_attention}).
+	\item \textbf{Rotary Positional Embedding (RoPE)} \cite{su2021rope}:
+	Thay thế positional encoding kiểu sin/cosine bằng phép quay trong không gian vector; kết hợp với Position Interpolation/YaRN để mở rộng context window (mục~\ref{sec:long_context_transformers}).
+	\item \textbf{FlashAttention} \cite{dao2022flashattention, dao2024flashattention2}:
+	Tính attention \emph{chính xác} nhưng nhận biết phân cấp bộ nhớ GPU (IO-aware), giảm bộ nhớ từ $O(n^2)$ xuống $O(n)$.
+	\item \textbf{Multi-Query Attention (MQA), Grouped-Query Attention (GQA) và Multi-head Latent Attention (MLA)} \cite{shazeer2019fast, ainslie2023gqa, deepseekai2024v2}:
+	Giảm kích thước KV cache khi suy luận. GQA được dùng trong Llama 2 70B, Llama 3, Mistral, Qwen; MLA được dùng trong DeepSeek-V2/V3 và Kimi K2 (mục~\ref{sec:modern_decoder_attention}).
+	\item \textbf{Mixture of Experts (MoE)} \cite{shazeer2017outrageously, fedus2022switch, jiang2024mixtral, dai2024deepseekmoe}:
+	Chỉ kích hoạt một phần nhỏ “chuyên gia” tại mỗi token $\rightarrow$ tăng tổng số tham số mà chi phí tính toán trên mỗi token gần như không đổi (mục~\ref{sec:mixture_of_experts}).
+	\item \textbf{Dự đoán đa token (Multi-Token Prediction -- MTP)} \cite{gloeckle2024mtp, deepseekai2024v3}:
+	Ngoài token kế tiếp, mô hình học dự đoán thêm token ở các vị trí xa hơn; vừa làm tín hiệu huấn luyện dày hơn, vừa có thể tái sử dụng làm bộ nháp cho giải mã suy đoán.
 \end{itemize}
 
 \paragraph{Các Token Đặc Biệt trong Decoder-Only Models}
@@ -292,7 +294,7 @@ Trong các mô hình Decoder-Only, tokenization đóng vai trò quan trọng, v�
 	\item \textbf{UNK (Unknown) Token:} \texttt{[UNK]}. Thay thế các từ ngoài từ vựng. Trong training, giúp xử lý rare words.
 	\item \textbf{Other Special Tokens:} Trong các mô hình như GPT, có thể có \texttt{<|endoftext|>} làm EOS. Trong instruction-tuned models (e.g., ChatGPT), có system/user/assistant tokens để phân biệt vai trò: \texttt{[INST]} cho instruction, \texttt{[/INST]} để kết thúc. Trong multimodal models (e.g., GPT-4o), có image tokens như \texttt{<img>} để nhúng hình ảnh vào sequence.
 	\item \textbf{Vai Trò trong Training:} Các token này được huấn luyện như token thông thường. Ví dụ, loss chỉ tính trên token thực, bỏ qua PAD. Causal mask đảm bảo không leak thông tin từ PAD hoặc future tokens.
-	\item \textbf{Tokenizer Specifics:} Sử dụng Byte-Pair Encoding (BPE) hoặc SentencePiece. Từ vựng thường 50k-100k token, bao gồm subwords để xử lý out-of-vocab. Ví dụ: "transformer" có thể thành "trans" + "former".
+	\item \textbf{Tokenizer Specifics:} Sử dụng Byte-Pair Encoding (BPE) hoặc SentencePiece. Từ vựng thường 50k-100k token, bao gồm subwords để xử lý out-of-vocab. Ví dụ: “transformer” có thể thành “trans” + “former”.
 \end{itemize}
 
 \paragraph{Công thức tổng quát của Khối Decoder trong Encoder–Decoder}
@@ -315,22 +317,25 @@ Họ mô hình GPT của OpenAI không chỉ định hình nên kiến trúc Dec
 	\item \textbf{GPT (2018) \cite{radford2018improving}:} Bài báo gốc chứng minh rằng một mô hình Transformer chỉ-Decoder được huấn luyện trước có thể được tinh chỉnh hiệu quả cho các tác vụ NLU. Với 117M tham số, nó sử dụng pre-training trên BooksCorpus và fine-tuning cho downstream tasks.
 	\item \textbf{GPT-2 (2019) \cite{radford2019language}:} Gây tiếng vang lớn khi cho thấy việc tăng quy mô (lên tới 1.5 tỷ tham số) có thể tạo ra một mô hình có khả năng sinh văn bản mạch lạc đáng kinh ngạc mà không cần tinh chỉnh (zero-shot). Nó huấn luyện trên WebText (8M documents), chứng minh scaling laws.
 	\item \textbf{GPT-3 (2020) \cite{brown2020language}:} Mở ra kỷ nguyên LLM thực sự với 175 tỷ tham số. GPT-3 lần đầu tiên thể hiện rõ các \textbf{khả năng nổi trội (emergent abilities)}, đặc biệt là \textbf{học trong ngữ cảnh (in-context learning)}, cho phép nó thực hiện các tác vụ chỉ bằng cách cung cấp vài ví dụ trong prompt (few-shot). Huấn luyện trên 45TB dữ liệu lọc.
-	\item \textbf{InstructGPT \& ChatGPT \cite{ouyang2022training}:} Đánh dấu một bước ngoặt từ "mô hình ngôn ngữ" sang "trợ lý AI" bằng cách sử dụng các kỹ thuật căn chỉnh (alignment) như \textbf{Instruction Tuning} (huấn luyện trên dataset instruction-response) và \textbf{RLHF} (Reinforcement Learning from Human Feedback) để làm cho mô hình hữu ích, trung thực và an toàn hơn. RLHF sử dụng reward model từ human rankings.
-	\item \textbf{GPT-4 \& GPT-4o (2023-2024) \cite{openai2023gpt4, openai2024gpt4o}:} Là các mô hình SOTA hiện tại, không chỉ mạnh mẽ hơn về ngôn ngữ mà còn trở thành các mô hình \textbf{đa phương thức (multimodal)}, có khả năng hiểu và xử lý cả văn bản, hình ảnh, và âm thanh. GPT-4o tối ưu hóa cho real-time interaction, với context window lên đến 128k tokens.
+	\item \textbf{InstructGPT \& ChatGPT \cite{ouyang2022training}:} Đánh dấu một bước ngoặt từ “mô hình ngôn ngữ” sang “trợ lý AI” bằng cách sử dụng các kỹ thuật căn chỉnh (alignment) như \textbf{Instruction Tuning} (huấn luyện trên dataset instruction-response) và \textbf{RLHF} (Reinforcement Learning from Human Feedback) để làm cho mô hình hữu ích, trung thực và an toàn hơn. RLHF sử dụng reward model từ human rankings.
+	\item \textbf{GPT-4 \& GPT-4o (2023-2024) \cite{openai2023gpt4, openai2024gpt4o}:} Đánh dấu bước chuyển sang các mô hình \textbf{đa phương thức (multimodal)}, có khả năng hiểu và xử lý cả văn bản, hình ảnh, và âm thanh. GPT-4o tối ưu hóa cho tương tác thời gian thực, với context window 128k tokens.
+	\item \textbf{Các mô hình suy luận (2024--2026):} Từ o1 (9/2024), OpenAI mở ra dòng mô hình được huấn luyện bằng học tăng cường để “suy nghĩ” bằng một chuỗi suy luận dài trước khi trả lời, tức là \textbf{đổi thêm tính toán lúc suy luận (test-time compute) lấy độ chính xác}. Hướng đi này nhanh chóng được cộng đồng mở tái hiện (DeepSeek-R1 \cite{deepseekai2025r1}) và trở thành tiêu chuẩn cho các mô hình hàng đầu. Tháng 8/2025, OpenAI cũng phát hành \textbf{gpt-oss} -- cặp mô hình MoE trọng số mở (120B và 20B). Toàn bộ chủ đề này được trình bày ở chương~\ref{chap:reasoning}.
 \end{itemize}
 \paragraph{2. Làn sóng LLMs Mã nguồn mở và các đối thủ cạnh tranh}
 Sự thành công của GPT đã thúc đẩy một làn sóng nghiên cứu và phát triển LLMs trên toàn thế giới, với nhiều mô hình mã nguồn mở mạnh mẽ.
 \begin{itemize}
-	\item \textbf{LLaMA (Meta) \cite{touvron2023llama}:} Họ mô hình LLaMA (và các phiên bản kế nhiệm LLaMA 2, LLaMA 3) đã "dân chủ hóa" LLMs, cung cấp các mô hình mã nguồn mở có hiệu năng cực kỳ cạnh tranh, tạo điều kiện cho một hệ sinh thái ứng dụng và nghiên cứu khổng lồ. LLaMA 3 (2024) với 70B/405B tham số, huấn luyện trên 15T tokens, hỗ trợ multilingual.
-	\item \textbf{Mistral (Pháp):} Nổi lên như một đối thủ đáng gờm với các mô hình hiệu năng cao nhưng kích thước nhỏ gọn (ví dụ: Mistral 7B \cite{jiang2023mistral}). Họ cũng đi tiên phong trong việc thương mại hóa kiến trúc \textbf{Mixture of Experts (MoE)} với mô hình Mixtral, giúp tăng đáng kể số lượng tham số mà không tăng chi phí suy luận tương ứng. MoE kích hoạt chỉ một phần experts per token.
-	\item \textbf{Claude (Anthropic):} Được biết đến với "cửa sổ ngữ cảnh" (context window) rất lớn (lên đến 200k tokens) và tập trung mạnh vào sự an toàn thông qua phương pháp \textbf{Constitutional AI} \cite{bai2022constitutional}, nơi mô hình tuân thủ các nguyên tắc đạo đức được định nghĩa.
-	\item \textbf{Các mô hình đáng chú ý khác:}
+	\item \textbf{LLaMA (Meta) \cite{touvron2023llama, grattafiori2024llama3}:} Họ mô hình LLaMA đã “dân chủ hóa” LLMs, cung cấp các mô hình trọng số mở có hiệu năng cạnh tranh, tạo điều kiện cho một hệ sinh thái ứng dụng và nghiên cứu khổng lồ. Llama 3 (4/2024) có các bản 8B và 70B; Llama 3.1 (7/2024) bổ sung bản \textbf{405B tham số dày đặc}, huấn luyện trên khoảng 15.6T token với ngữ cảnh 128K -- công thức huấn luyện của nó được phân tích ở chương~\ref{chap:pretraining}. Llama 4 (4/2025) chuyển sang kiến trúc MoE và đa phương thức ngay từ đầu.
+	\item \textbf{Mistral (Pháp):} Nổi lên với các mô hình hiệu năng cao nhưng kích thước nhỏ gọn (Mistral 7B \cite{jiang2023mistral}) và đưa kiến trúc \textbf{Mixture of Experts (MoE)} vào dòng mô hình mở với Mixtral 8x7B \cite{jiang2024mixtral}.
+	\item \textbf{Claude (Anthropic):} Được biết đến với cửa sổ ngữ cảnh lớn, năng lực lập trình và tác tử mạnh, và tập trung vào an toàn thông qua phương pháp \textbf{Constitutional AI} \cite{bai2022constitutional}.
+	\item \textbf{Gemini và Gemma (Google) \cite{geminiteam2023gemini}:} Gemini được thiết kế \textbf{đa phương thức ngay từ đầu} (natively multimodal) với ba cỡ Ultra/Pro/Nano; Gemini Ultra là mô hình đầu tiên vượt ngưỡng 90\% trên MMLU. Các thế hệ sau (1.5, 2.x) mở rộng ngữ cảnh lên hàng triệu token và bổ sung chế độ “thinking”. Gemma là dòng trọng số mở cỡ nhỏ.
+	\item \textbf{Làn sóng mô hình mở từ Trung Quốc (2024--2026):} Đây là nơi có nhiều đổi mới kiến trúc được công bố chi tiết nhất:
 	\begin{itemize}
-		\item \textbf{Google:} Gemma (mã nguồn mở, 2B-7B), Gemini (mô hình SOTA cạnh tranh với GPT-4, multimodal với native audio/video).
-		\item \textbf{Cohere:} Command R(+), tập trung vào các ứng dụng doanh nghiệp và Retrieval-Augmented Generation (RAG), với tool-use capabilities.
-		\item \textbf{Các mô hình từ Trung Quốc:} Qwen (Alibaba, multilingual), Yi (01.ai, 34B+), Baichuan, InternLM, DeepSeek (math-focused), thể hiện sự tiến bộ nhanh chóng của cộng đồng AI Trung Quốc với dữ liệu lớn từ web Trung.
-		\item \textbf{TII (UAE):} Falcon (40B/180B), huấn luyện trên RefinedWeb dataset.
+		\item \textbf{DeepSeek:} DeepSeek-V2 \cite{deepseekai2024v2} giới thiệu Multi-head Latent Attention và DeepSeekMoE; DeepSeek-V3 \cite{deepseekai2024v3} (671B tổng tham số, 37B kích hoạt) huấn luyện với FP8, cân bằng tải không cần hàm mất mát phụ và MTP; DeepSeek-R1 \cite{deepseekai2025r1} chứng minh khả năng suy luận có thể được “khơi dậy” bằng học tăng cường thuần túy.
+		\item \textbf{Qwen (Alibaba):} Qwen2.5 và Qwen3 \cite{yang2025qwen3} cung cấp đủ dải kích thước dày đặc và MoE, hỗ trợ chuyển đổi giữa chế độ “suy nghĩ” và “không suy nghĩ” trong cùng một mô hình.
+		\item \textbf{Kimi K2 (Moonshot AI) \cite{kimiteam2025k2}:} MoE 1 nghìn tỷ tham số (32B kích hoạt), huấn luyện 15.5T token bằng bộ tối ưu MuonClip mà không gặp đột biến loss nào.
+		\item Ngoài ra còn GLM (Zhipu), MiniMax, InternLM, Yi\ldots
 	\end{itemize}
+	\item \textbf{TII (UAE):} Falcon (40B/180B), huấn luyện trên bộ dữ liệu RefinedWeb \cite{penedo2023refinedweb}.
 \end{itemize}
 \paragraph{3. Các mô hình Decoder-Only chuyên biệt}
 Bên cạnh các LLM đa dụng, nhiều mô hình được huấn luyện đặc biệt cho các miền cụ thể.
@@ -358,17 +363,17 @@ Các nghiên cứu gần đây đề xuất trích xuất \textit{last hidden st
 	\end{itemize}
 	\textbf{Điểm yếu:}
 	\begin{itemize}
-		\item \textbf{Hiểu ngữ cảnh không sâu bằng Encoder-Only:} Do bản chất một chiều, biểu diễn của một từ không được "nhìn thấy" các từ phía sau. Điều này làm chúng kém tối ưu hơn cho các tác vụ NLU thuần túy so với BERT/RoBERTa, mặc dù có thể dùng cho classification bằng prompt.
-		\item \textbf{Dễ "ảo giác" (Hallucination):} Có xu hướng bịa đặt thông tin một cách tự tin, do thiếu grounding. Giải quyết bằng RAG hoặc verification.
-		\item \textbf{Quá trình sinh tuần tự là chậm:} Autoregressive generation O(n) time, nhưng có optimizations như speculative decoding.
-		\item \textbf{Bộ nhớ cao:} Context window lớn đòi hỏi KV cache lớn trong inference.
+		\item \textbf{Hiểu ngữ cảnh không sâu bằng Encoder-Only:} Do bản chất một chiều, biểu diễn của một từ không được “nhìn thấy” các từ phía sau. Điều này làm chúng kém tối ưu hơn cho các tác vụ NLU thuần túy so với BERT/RoBERTa, mặc dù có thể dùng cho classification bằng prompt.
+		\item \textbf{Dễ “ảo giác” (Hallucination):} Có xu hướng bịa đặt thông tin một cách tự tin, do thiếu grounding. Giải quyết bằng RAG hoặc verification.
+		\item \textbf{Quá trình sinh tuần tự là chậm:} Mỗi token mới cần một lượt forward, nên sinh $n$ token cần $n$ lượt; các kỹ thuật như giải mã suy đoán (speculative decoding) giảm số lượt này (chương~\ref{chap:efficiency}).
+		\item \textbf{Bộ nhớ cao:} Context window lớn đòi hỏi KV cache lớn trong inference -- động lực của GQA, MLA và PagedAttention.
 	\end{itemize}
 	\textbf{Ứng dụng điển hình:}
 	\begin{itemize}
 		\item \textbf{Hệ thống Đối thoại và Trợ lý ảo (Chatbots):} ChatGPT, Claude, Gemini, với multi-turn conversations.
 		\item \textbf{Sáng tạo nội dung:} Viết văn, làm thơ, soạn email, tóm tắt văn bản (abstractive summarization), story generation.
 		\item \textbf{Lập trình và Sinh mã (Code Generation):} GitHub Copilot, autocompletion, debugging.
-		\item \textbf{Giải quyết vấn đề thông qua Prompting:} Bất kỳ tác vụ nào có thể được định dạng dưới dạng "đầu vào -> đầu ra văn bản", từ dịch máy, trả lời câu hỏi, đến lý luận toán học, agent-based systems.
+		\item \textbf{Giải quyết vấn đề thông qua Prompting:} Bất kỳ tác vụ nào có thể được định dạng dưới dạng “đầu vào -> đầu ra văn bản”, từ dịch máy, trả lời câu hỏi, đến lý luận toán học, agent-based systems.
 		\item \textbf{Multimodal Extensions:} Image captioning, visual QA in GPT-4V.
 	\end{itemize}
 \end{tcolorbox}

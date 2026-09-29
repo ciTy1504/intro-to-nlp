@@ -6,15 +6,15 @@
 
 Dữ liệu là nguồn sống của các mô hình học máy. Trước khi có thể làm sạch hay gán nhãn, chúng ta phải có được dữ liệu thô. Trong nhiều trường hợp, dữ liệu không có sẵn trong một cơ sở dữ liệu gọn gàng, mà nằm rải rác trên Internet. Mục này sẽ giới thiệu các công cụ và kỹ thuật phổ biến để thu thập dữ liệu văn bản từ các nguồn trực tuyến.
 
-\subsection{Sử dụng APIs: Cách tiếp cận "Lịch sự" và Đáng tin cậy}
+\subsection{Sử dụng APIs: Cách tiếp cận “Lịch sự” và Đáng tin cậy}
 \label{ssec:apis}
 \begin{itemize}
-    \item \textbf{API là gì?} Giao diện Lập trình Ứng dụng (Application Programming Interface - API) là một tập hợp các quy tắc và giao thức cho phép các ứng dụng phần mềm khác nhau "nói chuyện" với nhau. Rất nhiều nền tảng lớn (Twitter, Reddit, Wikipedia, các trang tin tức) cung cấp API để các nhà phát triển có thể truy cập dữ liệu của họ một cách có cấu trúc và được cho phép.
+    \item \textbf{API là gì?} Giao diện Lập trình Ứng dụng (Application Programming Interface - API) là một tập hợp các quy tắc và giao thức cho phép các ứng dụng phần mềm khác nhau “nói chuyện” với nhau. Rất nhiều nền tảng lớn (Twitter, Reddit, Wikipedia, các trang tin tức) cung cấp API để các nhà phát triển có thể truy cập dữ liệu của họ một cách có cấu trúc và được cho phép.
     \item \textbf{Tại sao nên ưu tiên?}
         \begin{itemize}
             \item \textbf{Có cấu trúc:} Dữ liệu trả về thường ở định dạng chuẩn như JSON, rất dễ phân tích.
             \item \textbf{Đáng tin cậy:} Ít bị ảnh hưởng bởi những thay đổi về giao diện của trang web.
-            \item \textbf{"Lịch sự":} Bạn đang tuân thủ các quy tắc do nhà cung cấp dịch vụ đặt ra, tránh được các vấn đề pháp lý và kỹ thuật.
+            \item \textbf{“Lịch sự”:} Bạn đang tuân thủ các quy tắc do nhà cung cấp dịch vụ đặt ra, tránh được các vấn đề pháp lý và kỹ thuật.
         \end{itemize}
     \item \textbf{Công cụ:} Thư viện `requests` của Python là công cụ tiêu chuẩn để thực hiện các yêu cầu HTTP đến các API.
 \end{itemize}
@@ -46,7 +46,7 @@ Dữ liệu là nguồn sống của các mô hình học máy. Trước khi có
         print(f"Lỗi khi gọi API: {e}")
 
     \end{minted}
-    \textbf{Lưu ý quan trọng:} Hầu hết các API thương mại sẽ yêu cầu bạn đăng ký để nhận một "API key" (khóa xác thực) và có thể giới hạn số lượng yêu cầu bạn có thể thực hiện trong một khoảng thời gian (rate limiting).
+    \textbf{Lưu ý quan trọng:} Hầu hết các API thương mại sẽ yêu cầu bạn đăng ký để nhận một “API key” (khóa xác thực) và có thể giới hạn số lượng yêu cầu bạn có thể thực hiện trong một khoảng thời gian (rate limiting).
 \end{example}
 
 \subsection{Web Scraping: Trích xuất Dữ liệu từ HTML}
@@ -113,7 +113,7 @@ Khi bạn cần cào dữ liệu từ hàng nghìn hoặc hàng triệu trang we
     \item \textbf{Các thành phần chính:} Một dự án Scrapy bao gồm:
         \begin{itemize}
             \item \textbf{Spiders (Nhện):} Là các lớp Python bạn viết để định nghĩa cách cào một trang web cụ thể: bắt đầu từ URL nào, đi theo các liên kết nào, và trích xuất dữ liệu gì.
-            \item \textbf{Items:} Định nghĩa cấu trúc của dữ liệu bạn muốn trích xuất (ví dụ: một item "Bài viết" có các trường "tiêu đề", "tác giả", "nội dung").
+            \item \textbf{Items:} Định nghĩa cấu trúc của dữ liệu bạn muốn trích xuất (ví dụ: một item “Bài viết” có các trường “tiêu đề”, “tác giả”, “nội dung”).
             \item \textbf{Pipelines:} Xử lý các item sau khi chúng được trích xuất (ví dụ: làm sạch dữ liệu, lưu vào cơ sở dữ liệu, loại bỏ các mục trùng lặp).
             \item \textbf{Middlewares:} Can thiệp vào quá trình gửi yêu cầu và nhận phản hồi (ví dụ: để xoay vòng proxy, thay đổi user-agent).
         \end{itemize}

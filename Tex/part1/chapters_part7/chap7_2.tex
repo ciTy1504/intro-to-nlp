@@ -12,32 +12,32 @@ Lĩnh vực này đã có những bước nhảy vọt phi thường, đặc bi�
 \subsection{Nền tảng: Xây dựng cầu nối giữa Ảnh và Chữ}
 \label{ssec:multimodal_foundations}
 
-Để một mô hình có thể hiểu cả ảnh và chữ, nó cần một "ngôn ngữ chung" - một không gian biểu diễn nơi cả ảnh và chữ đều có thể được ánh xạ vào và so sánh với nhau. Hai đột phá nền tảng đã tạo ra cây cầu này là Vision Transformer (ViT) và Contrastive Learning (CLIP).
+Để một mô hình có thể hiểu cả ảnh và chữ, nó cần một “ngôn ngữ chung” - một không gian biểu diễn nơi cả ảnh và chữ đều có thể được ánh xạ vào và so sánh với nhau. Hai đột phá nền tảng đã tạo ra cây cầu này là Vision Transformer (ViT) và Contrastive Learning (CLIP).
 
-\subsubsection{Vision Transformer (ViT): "Đọc" ảnh như đọc một câu}
+\subsubsection{Vision Transformer (ViT): “Đọc” ảnh như đọc một câu}
 \paragraph{Vấn đề với CNN}
 Các mạng CNN (đã học ở mục \ref{sec:cnn_for_nlp}) xử lý ảnh bằng cách trượt các bộ lọc nhỏ, xây dựng các đặc trưng từ cục bộ (cạnh, góc) đến toàn cục (mắt, mũi, khuôn mặt). Cách tiếp cận này rất hiệu quả nhưng lại có một sự khác biệt về kiến trúc so với Transformer đang thống trị NLP.
 
-\paragraph{Giải pháp của ViT: Biến ảnh thành một chuỗi các "từ"}
+\paragraph{Giải pháp của ViT: Biến ảnh thành một chuỗi các “từ”}
 Vision Transformer (Dosovitskiy et al., 2020) đã đưa ra một ý tưởng cấp tiến:
 \begin{tcolorbox}[
     title=Trực giác của Vision Transformer,
     colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
 ]
-"Điều gì sẽ xảy ra nếu chúng ta coi một bức ảnh không phải là một lưới pixel, mà là một \textbf{chuỗi các mảnh vá (sequence of patches)}? Nếu vậy, chúng ta có thể đưa chuỗi các mảnh vá này vào một kiến trúc Transformer tiêu chuẩn, giống hệt như cách chúng ta xử lý một chuỗi các từ."
+“Điều gì sẽ xảy ra nếu chúng ta coi một bức ảnh không phải là một lưới pixel, mà là một \textbf{chuỗi các mảnh vá (sequence of patches)}? Nếu vậy, chúng ta có thể đưa chuỗi các mảnh vá này vào một kiến trúc Transformer tiêu chuẩn, giống hệt như cách chúng ta xử lý một chuỗi các từ.”
 \end{tcolorbox}
 
 \paragraph{Cơ chế hoạt động}
 \begin{enumerate}
     \item \textbf{Phân mảnh Ảnh (Image Patching):} Một bức ảnh đầu vào (ví dụ: $224 \times 224$ pixel) được chia thành một lưới các mảnh vá không chồng chéo có kích thước cố định (ví dụ: $16 \times 16$ pixel). Điều này tạo ra một chuỗi gồm $(224/16)^2 = 14 \times 14 = 196$ mảnh vá.
-    \item \textbf{Nhúng Mảnh vá (Patch Embedding):} Mỗi mảnh vá được "làm phẳng" (flatten) thành một vector dài và sau đó được chiếu qua một lớp tuyến tính để tạo ra một "patch embedding" có số chiều phù hợp với Transformer (ví dụ: 768 chiều).
+    \item \textbf{Nhúng Mảnh vá (Patch Embedding):} Mỗi mảnh vá được “làm phẳng” (flatten) thành một vector dài và sau đó được chiếu qua một lớp tuyến tính để tạo ra một “patch embedding” có số chiều phù hợp với Transformer (ví dụ: 768 chiều).
     \item \textbf{Thêm Token Phân loại và Mã hóa Vị trí:} Tương tự như BERT, một token `[CLS]` có thể học được sẽ được chèn vào đầu chuỗi. Sau đó, các vector mã hóa vị trí (positional encodings) được cộng vào mỗi patch embedding để cung cấp thông tin về vị trí tương đối của các mảnh vá.
-    \item \textbf{Đưa vào Transformer Encoder:} Chuỗi các patch embedding này giờ đây được xử lý bởi một chuỗi các khối Transformer Encoder tiêu chuẩn. Cơ chế Self-Attention sẽ cho phép mỗi mảnh vá "chú ý" đến tất cả các mảnh vá khác để học các mối quan hệ không gian.
+    \item \textbf{Đưa vào Transformer Encoder:} Chuỗi các patch embedding này giờ đây được xử lý bởi một chuỗi các khối Transformer Encoder tiêu chuẩn. Cơ chế Self-Attention sẽ cho phép mỗi mảnh vá “chú ý” đến tất cả các mảnh vá khác để học các mối quan hệ không gian.
 \end{enumerate}
 
 \begin{center}
     \includegraphics[width=1.0\textwidth]{vision_transformer_vit.png}
-    \captionof{figure}{Kiến trúc của Vision Transformer (ViT). Ảnh được chia thành các mảnh vá, mỗi mảnh được nhúng và xử lý như một "token" trong một chuỗi bởi một Transformer Encoder tiêu chuẩn.}
+    \captionof{figure}{Kiến trúc của Vision Transformer (ViT). Ảnh được chia thành các mảnh vá, mỗi mảnh được nhúng và xử lý như một “token” trong một chuỗi bởi một Transformer Encoder tiêu chuẩn.}
     \label{fig:vision_transformer_vit}
 \end{center}
 
@@ -45,10 +45,10 @@ ViT đã chứng minh rằng một kiến trúc dựa hoàn toàn trên Transfor
 
 \subsubsection{CLIP: Học sự tương đồng giữa Ảnh và Chữ bằng Contrastive Learning}
 \paragraph{Vấn đề}
-Chúng ta đã có Image Encoder (ViT) và Text Encoder (Transformer). Làm thế nào để chúng "nói chuyện" với nhau? Làm thế nào để mô hình biết rằng bức ảnh một chú chó và câu "a photo of a dog" là cùng một khái niệm?
+Chúng ta đã có Image Encoder (ViT) và Text Encoder (Transformer). Làm thế nào để chúng “nói chuyện” với nhau? Làm thế nào để mô hình biết rằng bức ảnh một chú chó và câu “a photo of a dog” là cùng một khái niệm?
 
 \paragraph{Giải pháp của CLIP (Contrastive Language-Image Pre-training)}
-CLIP (Radford et al., 2021) từ OpenAI đã giải quyết vấn đề này bằng một phương pháp huấn luyện quy mô lớn dựa trên \textbf{Học Tương phản (Contrastive Learning)}, một ý tưởng tương tự như Mạng Siamese (mục \ref{sec:siamese_networks}).
+CLIP (Radford et al., 2021) từ OpenAI đã giải quyết vấn đề này bằng một phương pháp huấn luyện quy mô lớn dựa trên \textbf{Học Tương phản (Contrastive Learning)}, một ý tưởng tương tự như Mạng Siamese (mục \ref{ssec:siamese_networks}).
 
 \paragraph{Cơ chế hoạt động}
 \begin{enumerate}
@@ -75,7 +75,7 @@ CLIP (Radford et al., 2021) từ OpenAI đã giải quyết vấn đề này b�
     \label{fig:clip_contrastive_learning}
 \end{center}
 
-Sau khi huấn luyện, CLIP có khả năng zero-shot đáng kinh ngạc trong việc phân loại ảnh. Ví dụ, để phân loại một ảnh, bạn chỉ cần nhúng ảnh đó và so sánh độ tương đồng của nó với các vector văn bản được tạo từ các prompt như "a photo of a dog", "a photo of a cat",... và chọn prompt có độ tương đồng cao nhất.
+Sau khi huấn luyện, CLIP có khả năng zero-shot đáng kinh ngạc trong việc phân loại ảnh. Ví dụ, để phân loại một ảnh, bạn chỉ cần nhúng ảnh đó và so sánh độ tương đồng của nó với các vector văn bản được tạo từ các prompt như “a photo of a dog”, “a photo of a cat”,... và chọn prompt có độ tương đồng cao nhất.
 
 Quan trọng hơn, CLIP đã tạo ra một \textbf{không gian embedding đa phương thức được căn chỉnh (aligned multimodal embedding space)} mạnh mẽ, là nền tảng cho các mô hình thế hệ tiếp theo.
 
@@ -87,7 +87,7 @@ Với các khối xây dựng là Image Encoder và không gian đa phương th�
 \begin{itemize}
     \item \textbf{Kiến trúc (Alayrac et al., 2022):} Flamingo giữ một LLM văn bản (ví dụ: Chinchilla) và một Vision Encoder (ví dụ: ViT) đã được huấn luyện trước và \textbf{đóng băng (frozen)} chúng.
     \item \textbf{Cơ chế kết nối:} Nó chèn các lớp \textbf{Cross-Attention} đặc biệt vào giữa các lớp của LLM.
-    \item \textbf{Dòng chảy dữ liệu:} Khi xử lý văn bản, các token văn bản sẽ đi qua các lớp Transformer của LLM như bình thường. Tại các lớp Cross-Attention, các token văn bản này sẽ đóng vai trò là \textbf{Query}, trong khi các đặc trưng hình ảnh từ Vision Encoder sẽ đóng vai trò là \textbf{Key} và \textbf{Value}. Điều này cho phép các token văn bản "nhìn" vào hình ảnh và rút ra các thông tin thị giác liên quan khi cần thiết.
+    \item \textbf{Dòng chảy dữ liệu:} Khi xử lý văn bản, các token văn bản sẽ đi qua các lớp Transformer của LLM như bình thường. Tại các lớp Cross-Attention, các token văn bản này sẽ đóng vai trò là \textbf{Query}, trong khi các đặc trưng hình ảnh từ Vision Encoder sẽ đóng vai trò là \textbf{Key} và \textbf{Value}. Điều này cho phép các token văn bản “nhìn” vào hình ảnh và rút ra các thông tin thị giác liên quan khi cần thiết.
     \item \textbf{Lợi ích:} Rất hiệu quả về mặt tham số vì chỉ cần huấn luyện các lớp Cross-Attention mới.
 \end{itemize}
 
@@ -99,15 +99,26 @@ LLaVA (Large Language and Vision Assistant - Liu et al., 2023) đưa ra một c�
         \begin{enumerate}
             \item Ảnh được đưa qua Vision Encoder để tạo ra một chuỗi các patch embedding.
             \item Một \textbf{lớp chiếu tuyến tính (projection layer)} nhỏ duy nhất được huấn luyện để \textbf{ánh xạ (map)} các patch embedding này vào cùng một không gian với các word embedding của LLM.
-            \item Các patch embedding đã được chiếu này sau đó được coi như các "từ" đặc biệt và được \textbf{chèn trực tiếp} vào chuỗi văn bản đầu vào của LLM.
+            \item Các patch embedding đã được chiếu này sau đó được coi như các “từ” đặc biệt và được \textbf{chèn trực tiếp} vào chuỗi văn bản đầu vào của LLM.
         \end{enumerate}
     \item \textbf{Quá trình huấn luyện 2 giai đoạn:}
         \begin{enumerate}
-            \item \textbf{Giai đoạn 1 (Căn chỉnh đặc trưng):} Đóng băng cả Vision Encoder và LLM, chỉ huấn luyện lớp chiếu tuyến tính trên một bộ dữ liệu lớn gồm các cặp (ảnh, mô tả). Giai đoạn này dạy cho lớp chiếu cách "dịch" đặc trưng ảnh thành "ngôn ngữ" mà LLM có thể hiểu.
+            \item \textbf{Giai đoạn 1 (Căn chỉnh đặc trưng):} Đóng băng cả Vision Encoder và LLM, chỉ huấn luyện lớp chiếu tuyến tính trên một bộ dữ liệu lớn gồm các cặp (ảnh, mô tả). Giai đoạn này dạy cho lớp chiếu cách “dịch” đặc trưng ảnh thành “ngôn ngữ” mà LLM có thể hiểu.
             \item \textbf{Giai đoạn 2 (Tinh chỉnh End-to-End):} Mở đóng băng các trọng số của LLM và fine-tune toàn bộ mô hình (hoặc chỉ lớp chiếu và LLM) trên một bộ dữ liệu nhỏ hơn, chất lượng cao hơn gồm các chỉ dẫn đa phương thức phức tạp (ví dụ: các cuộc trò chuyện về hình ảnh).
         \end{enumerate}
     \item \textbf{Lợi ích:} Kiến trúc cực kỳ đơn giản, dễ triển khai và tận dụng được sức mạnh của các LLM và Vision Encoder đã có sẵn. LLaVA đã trở thành một trong những kiến trúc nền tảng cho các MLLM mã nguồn mở.
 \end{itemize}
+
+\subsubsection{Gemini: Đa phương thức ngay từ đầu (Natively Multimodal)}
+\label{sssec:gemini}
+Flamingo và LLaVA đều là cách tiếp cận \textbf{“lắp ghép”}: lấy một LLM văn bản đã huấn luyện sẵn, rồi gắn thêm bộ mã hóa ảnh qua cross-attention hoặc lớp chiếu. \textbf{Gemini} \cite{geminiteam2023gemini} của Google đi theo hướng ngược lại: huấn luyện \emph{một} mô hình trên dữ liệu đa phương thức \textbf{ngay từ giai đoạn tiền huấn luyện}.
+\begin{itemize}
+	\item \textbf{Kiến trúc:} Transformer decoder (với các cải tiến về kiến trúc và tối ưu để huấn luyện ổn định trên TPU, dùng attention hiệu quả như multi-query attention), ngữ cảnh 32K token.
+	\item \textbf{Đầu vào xen kẽ:} Văn bản, ảnh (ảnh tự nhiên, biểu đồ, ảnh chụp màn hình, PDF), âm thanh (đặc trưng trích xuất trực tiếp từ tín hiệu 16kHz) và video (chuỗi các khung hình) được đưa vào cùng một chuỗi token; mô hình còn có thể \emph{sinh ảnh} bằng các token ảnh rời rạc.
+	\item \textbf{Ba kích cỡ:} Ultra (tác vụ phức tạp nhất), Pro (cân bằng hiệu năng--chi phí để triển khai rộng), và Nano (1.8B và 3.25B tham số, được chưng cất từ mô hình lớn hơn và lượng tử hóa 4 bit để chạy trên điện thoại).
+	\item \textbf{Kết quả:} Gemini Ultra đạt kết quả tốt nhất thời điểm đó trên 30/32 benchmark được báo cáo, và là mô hình đầu tiên vượt ngưỡng chuyên gia con người trên MMLU (hơn 90\%).
+\end{itemize}
+\textbf{Vì sao “đa phương thức từ đầu” quan trọng?} Khi các phương thức được học cùng nhau từ đầu, mô hình có thể suy luận \emph{xuyên phương thức} tự nhiên hơn (ví dụ đọc biểu đồ trong ảnh rồi làm toán, hiểu âm thanh mà không cần chuyển thành văn bản trước). Đổi lại, chi phí và độ phức tạp của tiền huấn luyện tăng lên nhiều. Đến năm 2025--2026, hướng “đa phương thức từ đầu” đã trở nên phổ biến ở các mô hình hàng đầu (các thế hệ Gemini sau, GPT-4o, Llama 4), trong khi cách tiếp cận lắp ghép kiểu LLaVA vẫn là lựa chọn hiệu quả cho cộng đồng mã nguồn mở với ngân sách hạn chế.
 
 Sự kết hợp giữa Ngôn ngữ và Thị giác đang mở ra một kỷ nguyên mới của AI, nơi các mô hình có thể tương tác với thế giới một cách phong phú và tự nhiên hơn rất nhiều.
 
@@ -119,7 +130,7 @@ Nếu các mô hình ở mục trước tập trung vào việc \textit{hiểu} 
 \subsubsection{Sinh Ảnh từ Văn bản (Text-to-Image)}
 Đây là lĩnh vực đã tạo ra một cuộc cách mạng trong ngành công nghiệp sáng tạo, cho phép bất kỳ ai cũng có thể tạo ra các tác phẩm nghệ thuật kỹ thuật số chỉ bằng ngôn ngữ.
 \begin{itemize}
-    \item \textbf{Bài toán:} Cho một câu mô tả bằng văn bản (prompt), ví dụ "một phi hành gia đang cưỡi ngựa trên sao Hỏa theo phong cách siêu thực", mô hình phải tạo ra một bức ảnh hoàn toàn mới khớp với mô tả đó.
+    \item \textbf{Bài toán:} Cho một câu mô tả bằng văn bản (prompt), ví dụ “một phi hành gia đang cưỡi ngựa trên sao Hỏa theo phong cách siêu thực”, mô hình phải tạo ra một bức ảnh hoàn toàn mới khớp với mô tả đó.
     \item \textbf{Kiến trúc cốt lõi: Mô hình Khuếch tán (Diffusion Models)} Các mô hình thành công nhất hiện nay như DALL-E 2, Midjourney, và Stable Diffusion thường dựa trên kiến trúc này.
         \begin{enumerate}
             \item \textbf{Mã hóa Văn bản:} Prompt được đưa qua một bộ mã hóa văn bản mạnh mẽ (thường là một phần của mô hình CLIP) để tạo ra một vector embedding giàu ngữ nghĩa.
@@ -136,7 +147,7 @@ Nếu các mô hình ở mục trước tập trung vào việc \textit{hiểu} 
 Là một bước tiến tự nhiên nhưng khó hơn rất nhiều so với sinh ảnh.
 \begin{itemize}
     \item \textbf{Thách thức chính:} Ngoài việc tạo ra các khung hình (frames) chất lượng cao, mô hình còn phải đảm bảo \textbf{tính nhất quán về mặt thời gian (temporal consistency)}. Các đối tượng và bối cảnh phải duy trì sự logic và liền mạch từ khung hình này sang khung hình tiếp theo.
-    \item \textbf{Hướng tiếp cận:} Các mô hình tiên tiến như Sora (OpenAI) hay Lumiere (Google) mở rộng ý tưởng của mô hình khuếch tán sang không-thời gian. Chúng không xử lý từng khung hình riêng lẻ mà xử lý một loạt các khung hình hoặc toàn bộ "patch" không-thời gian cùng lúc để đảm bảo sự mượt mà và nhất quán của chuyển động và bối cảnh.
+    \item \textbf{Hướng tiếp cận:} Các mô hình tiên tiến như Sora (OpenAI) hay Lumiere (Google) mở rộng ý tưởng của mô hình khuếch tán sang không-thời gian. Chúng không xử lý từng khung hình riêng lẻ mà xử lý một loạt các khung hình hoặc toàn bộ “patch” không-thời gian cùng lúc để đảm bảo sự mượt mà và nhất quán của chuyển động và bối cảnh.
 \end{itemize}
 
 Việc làm chủ khả năng sinh đa phương thức không chỉ mở ra những ứng dụng sáng tạo mới mà còn là một bước tiến quan trọng hướng tới các hệ thống AI có khả năng tương tác và sáng tạo trong một thế giới đa dạng về phương thức như thế giới của chúng ta.

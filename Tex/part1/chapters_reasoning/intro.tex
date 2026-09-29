@@ -1,0 +1,16 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_reasoning/intro.tex
+% Chương mới (cập nhật 2026) -- trục Reasoning / Test-time compute + RL post-training của LLM Research Reading List
+
+\chapter{MÔ HÌNH SUY LUẬN VÀ TÍNH TOÁN LÚC SUY LUẬN}
+\label{chap:reasoning}
+
+Suốt nhiều năm, con đường duy nhất để mô hình “thông minh hơn” là làm nó \emph{lớn hơn} và cho nó học \emph{nhiều hơn} -- tức là tăng compute ở giai đoạn tiền huấn luyện (chương~\ref{chap:pretraining}). Giai đoạn 2024--2026 chứng kiến sự trỗi dậy của một trục mở rộng thứ hai: \textbf{cho mô hình suy nghĩ lâu hơn khi trả lời}. Các mô hình suy luận như OpenAI o1 hay DeepSeek-R1 sinh ra hàng nghìn, thậm chí hàng chục nghìn token “suy nghĩ” trước khi đưa ra câu trả lời, và độ chính xác của chúng trên các bài toán khó tăng đều đặn theo lượng tính toán bỏ ra lúc suy luận.
+
+Ở chương~\ref{chap:finetuning_alignment}, chúng ta đã thấy Chain-of-Thought, Self-Consistency và Tree of Thoughts -- những kỹ thuật \emph{prompting} khơi gợi suy luận. Chương này đi sâu hơn một bậc, trả lời bốn câu hỏi:
+\begin{enumerate}
+	\item \textbf{Làm sao biết một lời giải đúng?} -- Mô hình kiểm chứng theo kết quả và theo quá trình (mục~\ref{sec:verifiers}).
+	\item \textbf{Nên tiêu tính toán lúc suy luận như thế nào cho hiệu quả?} -- Quy luật mở rộng tính toán lúc suy luận (mục~\ref{sec:test_time_compute}).
+	\item \textbf{Mô hình có thể tự học cách suy luận từ chính các lời giải của nó không?} -- STaR, ReST$^{EM}$, Quiet-STaR (mục~\ref{sec:self_improvement}).
+	\item \textbf{Làm sao huấn luyện ra một mô hình suy luận thực thụ?} -- Học tăng cường với phần thưởng kiểm chứng được, từ GRPO đến DeepSeek-R1 và các biến thể (mục~\ref{sec:rl_reasoning}).
+\end{enumerate}

@@ -13,16 +13,16 @@ Một mô hình ngôn ngữ cơ sở (base model) được huấn luyện trư�
 \begin{example}{Hành vi của một Base LLM}{ex:base_llm_behavior}
     Nếu bạn đưa cho một base LLM (như GPT-3 gốc) một prompt:
 
-    \textbf{Prompt:} `Dịch câu sau sang tiếng Pháp: "Hello, how are you?"`
+    \textbf{Prompt:} `Dịch câu sau sang tiếng Pháp: “Hello, how are you?”`
 
     Mô hình có thể sẽ tiếp tục prompt này theo cách nó thường thấy trên Internet, ví dụ:
 
     \textbf{Đầu ra có thể có của Base LLM:}
-    `Dịch câu sau sang tiếng Đức: "Good morning."`
-    `Dịch câu sau sang tiếng Tây Ban Nha: "Thank you."`
+    `Dịch câu sau sang tiếng Đức: “Good morning.”`
+    `Dịch câu sau sang tiếng Tây Ban Nha: “Thank you.”`
     `Liệt kê 10 thành phố lớn nhất thế giới.`
 
-    Nó hiểu rằng đây là một mẫu câu hỏi trong một bài kiểm tra hoặc một trang web học ngôn ngữ, và nó chỉ đơn giản là "hoàn thành" cái mẫu đó, thay vì thực sự thực hiện yêu cầu dịch. Nó thiếu khả năng "hiểu ý định" (intent understanding).
+    Nó hiểu rằng đây là một mẫu câu hỏi trong một bài kiểm tra hoặc một trang web học ngôn ngữ, và nó chỉ đơn giản là “hoàn thành” cái mẫu đó, thay vì thực sự thực hiện yêu cầu dịch. Nó thiếu khả năng “hiểu ý định” (intent understanding).
 \end{example}
 
 Để biến một base LLM thành một trợ lý hữu ích, chúng ta cần dạy cho nó một kỹ năng mới: \textbf{tuân theo chỉ dẫn (instruction following)}. Đây chính là mục tiêu của Tinh chỉnh theo chỉ dẫn.
@@ -34,10 +34,10 @@ Một mô hình ngôn ngữ cơ sở (base model) được huấn luyện trư�
     title=Triết lý của Instruction Tuning,
     colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
 ]
-Chúng ta sẽ tiếp tục tinh chỉnh (fine-tune) mô hình ngôn ngữ cơ sở trên một bộ dữ liệu lớn, đa dạng bao gồm các cặp \textbf{(Chỉ dẫn, Kết quả mong muốn)}. Bằng cách cho mô hình xem hàng ngàn ví dụ về cách thực hiện các mệnh lệnh, nó sẽ học được một siêu-kỹ năng tổng quát: "Khi người dùng đưa ra một chỉ dẫn, nhiệm vụ của tôi là thực hiện nó một cách hữu ích và trực tiếp, thay vì chỉ hoàn thành câu."
+Chúng ta sẽ tiếp tục tinh chỉnh (fine-tune) mô hình ngôn ngữ cơ sở trên một bộ dữ liệu lớn, đa dạng bao gồm các cặp \textbf{(Chỉ dẫn, Kết quả mong muốn)}. Bằng cách cho mô hình xem hàng ngàn ví dụ về cách thực hiện các mệnh lệnh, nó sẽ học được một siêu-kỹ năng tổng quát: “Khi người dùng đưa ra một chỉ dẫn, nhiệm vụ của tôi là thực hiện nó một cách hữu ích và trực tiếp, thay vì chỉ hoàn thành câu.”
 \end{tcolorbox}
 
-Về mặt kỹ thuật, Instruction Tuning là một quá trình fine-tuning có giám sát. Mô hình được huấn luyện để tối thiểu hóa hàm mất mát (thường là Cross-Entropy) trên phần "kết quả mong muốn" của các ví dụ. Quá trình này điều chỉnh các trọng số của mô hình để nó có xu hướng sinh ra các câu trả lời tuân theo chỉ dẫn.
+Về mặt kỹ thuật, Instruction Tuning là một quá trình fine-tuning có giám sát. Mô hình được huấn luyện để tối thiểu hóa hàm mất mát (thường là Cross-Entropy) trên phần “kết quả mong muốn” của các ví dụ. Quá trình này điều chỉnh các trọng số của mô hình để nó có xu hướng sinh ra các câu trả lời tuân theo chỉ dẫn.
 
 \subsection{Xây dựng Bộ dữ liệu Chỉ dẫn: Chìa khóa thành công}
 \label{ssec:instruction_dataset_building}
@@ -55,15 +55,15 @@ Một mẫu dữ liệu chỉ dẫn lý tưởng thường có ba phần:
 \begin{example}{Các loại mẫu dữ liệu chỉ dẫn}{ex:instruction_data_examples}
     \textbf{1. Mẫu không có đầu vào (Input-free):}
     \begin{itemize}
-        \item \textbf{Instruction:} "Viết một bài thơ haiku về mùa thu."
-        \item \textbf{Output:} "Lá vàng rơi nhẹ, \\ Heo may se sắt se lòng, \\ Chờ đông lạnh về."
+        \item \textbf{Instruction:} “Viết một bài thơ haiku về mùa thu.”
+        \item \textbf{Output:} “Lá vàng rơi nhẹ, \\ Heo may se sắt se lòng, \\ Chờ đông lạnh về.”
     \end{itemize}
 
     \textbf{2. Mẫu có đầu vào (With Input):}
     \begin{itemize}
-        \item \textbf{Instruction:} "Tóm tắt đoạn văn sau thành một câu."
-        \item \textbf{Input:} "[Một đoạn văn dài về lịch sử của Trí tuệ Nhân tạo...]"
-        \item \textbf{Output:} "Trí tuệ Nhân tạo đã phát triển qua nhiều giai đoạn, từ logic biểu tượng đến học sâu, với Transformer là kiến trúc thống trị hiện nay."
+        \item \textbf{Instruction:} “Tóm tắt đoạn văn sau thành một câu.”
+        \item \textbf{Input:} “[Một đoạn văn dài về lịch sử của Trí tuệ Nhân tạo...]”
+        \item \textbf{Output:} “Trí tuệ Nhân tạo đã phát triển qua nhiều giai đoạn, từ logic biểu tượng đến học sâu, với Transformer là kiến trúc thống trị hiện nay.”
     \end{itemize}
 \end{example}
 
@@ -71,7 +71,7 @@ Một mẫu dữ liệu chỉ dẫn lý tưởng thường có ba phần:
 Để mô hình có khả năng tổng quát hóa, bộ dữ liệu phải cực kỳ đa dạng:
 \begin{itemize}
     \item \textbf{Đa dạng về Tác vụ:} Bao gồm tất cả các loại tác vụ NLP có thể tưởng tượng được: tóm tắt, dịch thuật, hỏi-đáp (mở, đóng), phân loại, trích xuất thông tin, viết sáng tạo, viết lại văn bản, suy luận logic, giải toán, sinh mã nguồn, v.v.
-    \item \textbf{Đa dạng về Ngôn ngữ:} Bao gồm các chỉ dẫn được diễn đạt theo nhiều cách khác nhau (ví dụ: "Tóm tắt đoạn sau", "Cho tôi một bản tóm tắt", "Nội dung chính của đoạn này là gì?").
+    \item \textbf{Đa dạng về Ngôn ngữ:} Bao gồm các chỉ dẫn được diễn đạt theo nhiều cách khác nhau (ví dụ: “Tóm tắt đoạn sau”, “Cho tôi một bản tóm tắt”, “Nội dung chính của đoạn này là gì?”).
     \item \textbf{Đa dạng về Độ dài và Độ phức tạp:} Từ các chỉ dẫn ngắn gọn đến các yêu cầu phức tạp, nhiều bước.
 \end{itemize}
 
@@ -98,15 +98,15 @@ Bằng cách lặp lại quy trình này, người ta có thể tạo ra một b
 Instruction Tuning có một tác động sâu sắc, làm thay đổi cơ bản hành vi của LLM.
 
 \subsubsection{Tăng cường khả năng tuân theo mệnh lệnh và ''Tính hữu ích''}
-Đây là tác động rõ ràng nhất. Sau khi được tinh chỉnh, mô hình học được cách trở thành một "trợ lý". Nó hiểu rằng khi người dùng đưa ra một prompt, đó là một yêu cầu cần được thực hiện, chứ không phải một chuỗi cần được hoàn thành. Điều này làm cho mô hình trở nên \textbf{hữu ích (helpful)} hơn rất nhiều.
+Đây là tác động rõ ràng nhất. Sau khi được tinh chỉnh, mô hình học được cách trở thành một “trợ lý”. Nó hiểu rằng khi người dùng đưa ra một prompt, đó là một yêu cầu cần được thực hiện, chứ không phải một chuỗi cần được hoàn thành. Điều này làm cho mô hình trở nên \textbf{hữu ích (helpful)} hơn rất nhiều.
 
 \subsubsection{Cải thiện khả năng Tổng quát hóa Zero-shot}
 Một kết quả đáng ngạc nhiên là Instruction Tuning trên một tập hợp các tác vụ đa dạng sẽ cải thiện đáng kể hiệu năng của mô hình trên các \textbf{tác vụ hoàn toàn mới, chưa từng thấy (unseen tasks)} ở dạng zero-shot.
 \begin{itemize}
-    \item \textbf{Lý do:} Bằng cách học cách tuân theo hàng ngàn loại chỉ dẫn khác nhau, mô hình không chỉ học cách làm từng tác vụ riêng lẻ, mà còn học được một "meta-skill" về cách "học để học" từ chỉ dẫn. Nó học được cách suy luận ra ý định đằng sau một chỉ dẫn mới và thực hiện nó một cách hợp lý.
+    \item \textbf{Lý do:} Bằng cách học cách tuân theo hàng ngàn loại chỉ dẫn khác nhau, mô hình không chỉ học cách làm từng tác vụ riêng lẻ, mà còn học được một “meta-skill” về cách “học để học” từ chỉ dẫn. Nó học được cách suy luận ra ý định đằng sau một chỉ dẫn mới và thực hiện nó một cách hợp lý.
 \end{itemize}
 
 \subsubsection{Cầu nối đến sự Căn chỉnh (Alignment)}
-Instruction Tuning là bước đầu tiên và thiết yếu trong một quy trình lớn hơn gọi là \textbf{căn chỉnh (alignment)} -- làm cho hành vi của LLM phù hợp với các giá trị và mục tiêu của con người. Bằng cách dạy mô hình tuân theo chỉ dẫn, chúng ta đã đặt nền móng để sau này có thể dạy nó tuân theo các chỉ dẫn phức tạp hơn, chẳng hạn như "Hãy trả lời một cách trung thực" hoặc "Đừng đưa ra các nội dung độc hại".
+Instruction Tuning là bước đầu tiên và thiết yếu trong một quy trình lớn hơn gọi là \textbf{căn chỉnh (alignment)} -- làm cho hành vi của LLM phù hợp với các giá trị và mục tiêu của con người. Bằng cách dạy mô hình tuân theo chỉ dẫn, chúng ta đã đặt nền móng để sau này có thể dạy nó tuân theo các chỉ dẫn phức tạp hơn, chẳng hạn như “Hãy trả lời một cách trung thực” hoặc “Đừng đưa ra các nội dung độc hại”.
 
 Tóm lại, Instruction Tuning là một bước chuyển đổi, biến một mô hình ngôn ngữ thô thành một nền tảng có khả năng tương tác và thực thi, mở đường cho các ứng dụng thực tế và là tiền đề cho các kỹ thuật căn chỉnh phức tạp hơn mà chúng ta sẽ khám phá trong phần tiếp theo.

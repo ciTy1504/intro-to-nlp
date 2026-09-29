@@ -11,13 +11,61 @@ Một trong những thách thức lớn nhất là quản lý bộ nhớ của \
 \subsubsection{vLLM: Tối ưu hóa cho Thông lượng}
 \begin{itemize}
     \item \textbf{Mục đích chính:} Một thư viện phục vụ LLM cực kỳ nhanh, được tối ưu hóa cho thông lượng cao.
-    \item \textbf{Phát kiến cốt lõi: PagedAttention.} Lấy cảm hứng từ cơ chế phân trang (paging) trong các hệ điều hành, PagedAttention quản lý KV Cache trong các "trang" (pages) bộ nhớ không liền kề.
-    \item \textbf{Lợi ích của PagedAttention:}
-        \begin{itemize}
-            \item \textbf{Giảm lãng phí bộ nhớ:} Loại bỏ gần như hoàn toàn sự phân mảnh bộ nhớ bên trong và lãng phí do phải cấp phát bộ nhớ dự phòng.
-            \item \textbf{Batching hiệu quả hơn:} Cho phép các thuật toán batching thông minh hơn, có thể xử lý nhiều chuỗi hơn cùng lúc.
-        \end{itemize}
-    \item \textbf{Kết quả:} vLLM có thể đạt được thông lượng cao hơn nhiều lần (lên đến 24x) so với các cách triển khai tiêu chuẩn (như của Hugging Face) mà không cần thay đổi mô hình.
+    \item \textbf{Phát kiến cốt lõi: PagedAttention} (xem phân tích ở mục~\ref{ssec:pagedattention}). Lấy cảm hứng từ cơ chế phân trang (paging) trong các hệ điều hành, PagedAttention quản lý KV Cache trong các “trang” (pages) bộ nhớ không liền kề, giảm lãng phí bộ nhớ từ 60--80\% xuống dưới 4\% và nhờ đó tăng thông lượng \textbf{2--4 lần} so với các hệ thống phục vụ trước đó ở cùng mức độ trễ.
+    \item \textbf{Các tính năng quan trọng khác:} batching liên tục (mục~\ref{ssec:continuous_batching}), \textbf{prefix caching} (tái dùng KV cache của tiền tố chung -- rất hiệu quả cho RAG và tác tử), song song tensor/pipeline, hỗ trợ mô hình đã lượng tử hóa (AWQ, GPTQ, FP8), giải mã suy đoán, và API tương thích OpenAI.
+\end{itemize}
+
+\begin{example}{Khởi chạy một máy chủ vLLM và gọi bằng client OpenAI}{ex:vllm_serve}
+\begin{minted}{bash}
+pip install vllm
+
+# Máy chủ tương thích OpenAI, chạy trên 2 GPU
+vllm serve Qwen/Qwen3-8B \
+  --tensor-parallel-size 2 \
+  --max-model-len 32768 \
+  --gpu-memory-utilization 0.90
+\end{minted}
+\begin{minted}{python}
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY")
+resp = client.chat.completions.create(
+    model="Qwen/Qwen3-8B",
+    messages=[{"role": "user", "content": "Giải thích PagedAttention ngắn gọn."}],
+)
+print(resp.choices[0].message.content)
+\end{minted}
+\end{example}
+
+\paragraph{Bật giải mã suy đoán}
+Giải mã suy đoán (mục~\ref{sec:speculative_decoding}) giảm độ trễ khi tải không quá cao. vLLM cấu hình nó qua một đối tượng JSON:
+\begin{example}{Giải mã suy đoán trong vLLM}{ex:vllm_specdec}
+\begin{minted}{bash}
+# Dùng một mô hình nháp nhỏ hơn cùng họ
+vllm serve Qwen/Qwen3-8B \
+  --speculative-config '{"method": "draft_model",
+                         "model": "Qwen/Qwen3-0.6B",
+                         "num_speculative_tokens": 4}'
+\end{minted}
+\begin{minted}{python}
+# Hoặc ở chế độ offline; ngoài "draft_model" còn có "ngram"
+# (không cần mô hình nháp), "eagle3", và "mtp" nếu mô hình hỗ trợ.
+from vllm import LLM
+
+llm = LLM(
+    model="Qwen/Qwen3-8B",
+    speculative_config={"method": "ngram", "num_speculative_tokens": 4,
+                        "prompt_lookup_max": 4},
+)
+\end{minted}
+\end{example}
+Hãy đo trước và sau: tăng tốc phụ thuộc vào tỷ lệ chấp nhận $\alpha$ và mức tải; ở batch lớn, giải mã suy đoán có thể \emph{giảm} thông lượng tổng.
+
+\subsubsection{SGLang: Tối ưu cho các chương trình LLM có cấu trúc}
+\begin{itemize}
+	\item \textbf{RadixAttention:} Tự động lưu và tái dùng KV cache của mọi tiền tố đã gặp bằng cây radix \cite{zheng2024sglang} -- đặc biệt hiệu quả cho tác tử nhiều lượt, RAG với tài liệu lặp lại, và các vòng lặp tự sửa.
+	\item \textbf{Ngôn ngữ điều khiển sinh:} Cung cấp cú pháp để mô tả luồng sinh phức tạp (rẽ nhánh, gọi song song, ràng buộc theo ngữ pháp/JSON) và biên dịch chúng thành lịch chạy hiệu quả.
+	\item Cũng cung cấp máy chủ tương thích OpenAI, nên có thể thay thế vLLM mà gần như không đổi mã phía client.
 \end{itemize}
 
 \subsubsection{BentoML: Chuẩn hóa Vòng đời Phục vụ}
@@ -26,7 +74,7 @@ Một trong những thách thức lớn nhất là quản lý bộ nhớ của \
     \item \textbf{Triết lý:} Tách biệt logic nghiệp vụ (business logic) khỏi logic phục vụ mô hình (model serving logic).
     \item \textbf{Các thành phần:}
         \begin{itemize}
-            \item \textbf{Bentos:} Một định dạng đóng gói tiêu chuẩn ("build target") chứa mã nguồn, các mô hình, các file phụ thuộc, và cấu hình. Một "Bento" có thể được build thành một container Docker hoặc triển khai lên các nền tảng serverless.
+            \item \textbf{Bentos:} Một định dạng đóng gói tiêu chuẩn (“build target”) chứa mã nguồn, các mô hình, các file phụ thuộc, và cấu hình. Một “Bento” có thể được build thành một container Docker hoặc triển khai lên các nền tảng serverless.
             \item \textbf{Runners:} Một lớp trừu tượng để chạy các mô hình, có khả năng tối ưu hóa cho các loại phần cứng khác nhau.
             \item \textbf{Adapters:} Xử lý việc chuyển đổi giữa dữ liệu thô (HTTP requests) và các định dạng mà mô hình có thể hiểu (tensor, DataFrame).
         \end{itemize}

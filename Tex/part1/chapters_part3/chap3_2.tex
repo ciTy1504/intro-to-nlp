@@ -11,11 +11,11 @@ Trong khi Word2Vec học biểu diễn cho từng từ riêng lẻ, một câu h
 
 Ý tưởng cốt lõi của Autoencoder rất đơn giản nhưng vô cùng hiệu quả: Thay vì cố gắng dự đoán một nhãn bên ngoài, mô hình được giao một nhiệm vụ \textbf{tự giám sát} (self-supervised): \textit{hãy học cách tái tạo lại chính xác những gì nó nhìn thấy}.
 
-Để làm được điều này một cách có ý nghĩa, kiến trúc của Autoencoder được thiết kế có chủ đích theo dạng "đồng hồ cát" (hourglass) gồm hai phần đối xứng:
+Để làm được điều này một cách có ý nghĩa, kiến trúc của Autoencoder được thiết kế có chủ đích theo dạng “đồng hồ cát” (hourglass) gồm hai phần đối xứng:
 
 \begin{itemize}
-    \item \textbf{Bộ mã hóa (Encoder):} Phần đầu vào của "đồng hồ cát", có nhiệm vụ nhận một vector đầu vào $\mathbf{x}$ có số chiều lớn (ví dụ, một vector Bag-of-Words cho một câu) và \textbf{nén} nó xuống một vector biểu diễn ẩn $\mathbf{z}$ có số chiều nhỏ hơn nhiều. Vector $\mathbf{z}$ này được gọi là \textbf{biểu diễn tiềm ẩn} (latent representation) hoặc \textit{code}.
-    \item \textbf{Bộ giải mã (Decoder):} Phần đầu ra của "đồng hồ cát", nhận vector nén $\mathbf{z}$ và cố gắng \textbf{giải nén} nó để tái tạo lại vector đầu vào ban đầu, ký hiệu là $\hat{\mathbf{x}}$.
+    \item \textbf{Bộ mã hóa (Encoder):} Phần đầu vào của “đồng hồ cát”, có nhiệm vụ nhận một vector đầu vào $\mathbf{x}$ có số chiều lớn (ví dụ, một vector Bag-of-Words cho một câu) và \textbf{nén} nó xuống một vector biểu diễn ẩn $\mathbf{z}$ có số chiều nhỏ hơn nhiều. Vector $\mathbf{z}$ này được gọi là \textbf{biểu diễn tiềm ẩn} (latent representation) hoặc \textit{code}.
+    \item \textbf{Bộ giải mã (Decoder):} Phần đầu ra của “đồng hồ cát”, nhận vector nén $\mathbf{z}$ và cố gắng \textbf{giải nén} nó để tái tạo lại vector đầu vào ban đầu, ký hiệu là $\hat{\mathbf{x}}$.
 \end{itemize}
 
 \paragraph{Huấn luyện}
@@ -29,10 +29,10 @@ Trong quá trình huấn luyện, lỗi này được lan truyền ngược (\te
 \label{fig:autoencoder_structure}
 \end{center}
 
-\subsection{Sức mạnh của "Nút cổ chai" và việc học biểu diễn}
-Điểm mấu chốt làm cho Autoencoder trở nên hữu ích chính là lớp ẩn ở giữa có số chiều nhỏ, hay còn gọi là \textbf{"nút cổ chai" (bottleneck)}. Lớp này buộc mạng phải học một dạng nén dữ liệu thông minh.
+\subsection{Sức mạnh của “Nút cổ chai” và việc học biểu diễn}
+Điểm mấu chốt làm cho Autoencoder trở nên hữu ích chính là lớp ẩn ở giữa có số chiều nhỏ, hay còn gọi là \textbf{“nút cổ chai” (bottleneck)}. Lớp này buộc mạng phải học một dạng nén dữ liệu thông minh.
 
-Nếu không có nút cổ chai (tức là số chiều của $\mathbf{z}$ bằng hoặc lớn hơn số chiều của $\mathbf{x}$), mạng sẽ rất dễ dàng học được một \textbf{ánh xạ đồng nhất} (identity function) tầm thường. Nó chỉ đơn giản là sao chép đầu vào ra đầu ra mà không cần phải "hiểu" bất kỳ cấu trúc tiềm ẩn nào của dữ liệu. Một mô hình như vậy sẽ tái tạo đầu vào một cách hoàn hảo nhưng biểu diễn ẩn $\mathbf{z}$ sẽ không có giá trị tổng quát hóa.
+Nếu không có nút cổ chai (tức là số chiều của $\mathbf{z}$ bằng hoặc lớn hơn số chiều của $\mathbf{x}$), mạng sẽ rất dễ dàng học được một \textbf{ánh xạ đồng nhất} (identity function) tầm thường. Nó chỉ đơn giản là sao chép đầu vào ra đầu ra mà không cần phải “hiểu” bất kỳ cấu trúc tiềm ẩn nào của dữ liệu. Một mô hình như vậy sẽ tái tạo đầu vào một cách hoàn hảo nhưng biểu diễn ẩn $\mathbf{z}$ sẽ không có giá trị tổng quát hóa.
 
 Ngược lại, sự tồn tại của nút cổ chai đặt ra một thách thức: làm thế nào để đi qua một không gian hẹp như vậy mà vẫn giữ đủ thông tin để tái tạo lại đầu ra một cách chính xác? Điều này buộc bộ mã hóa phải học cách:
 \begin{itemize}
@@ -66,11 +66,11 @@ Việc áp dụng Autoencoder cho văn bản đòi hỏi một số lựa chọn
         \item \textbf{Cross-Entropy:} Một lựa chọn tốt hơn khi xem vector BoW (đã được chuẩn hóa) như một phân phối xác suất đa thức trên từ vựng. Hàm mất mát này sẽ cố gắng làm cho phân phối xác suất tái tạo $\hat{\mathbf{x}}$ gần với phân phối gốc $\mathbf{x}$ nhất có thể, thường cho kết quả tốt hơn trong thực tế.
     \end{itemize}
 \end{itemize}
-Sự kết hợp giữa biểu diễn đầu vào và hàm mất mát sẽ định hình những gì mà biểu diễn tiềm ẩn $\mathbf{z}$ học được. Ví dụ, với BoW và Cross-Entropy, $\mathbf{z}$ sẽ là một "bản tóm tắt chủ đề" hiệu quả của văn bản.
+Sự kết hợp giữa biểu diễn đầu vào và hàm mất mát sẽ định hình những gì mà biểu diễn tiềm ẩn $\mathbf{z}$ học được. Ví dụ, với BoW và Cross-Entropy, $\mathbf{z}$ sẽ là một “bản tóm tắt chủ đề” hiệu quả của văn bản.
 \end{tcolorbox}
 Trong NLP, Autoencoder và các biến thể của nó mở ra nhiều ứng dụng quan trọng:
 \begin{itemize}
-    \item \textbf{Học biểu diễn cho Câu/Đoạn văn:} Đây là ứng dụng cơ bản nhất, tạo ra các "sentence embeddings" chất lượng cao từ dữ liệu không gán nhãn, có thể được dùng cho các tác vụ phân cụm, tìm kiếm ngữ nghĩa, hoặc làm đặc trưng đầu vào cho các mô hình có giám sát.
+    \item \textbf{Học biểu diễn cho Câu/Đoạn văn:} Đây là ứng dụng cơ bản nhất, tạo ra các “sentence embeddings” chất lượng cao từ dữ liệu không gán nhãn, có thể được dùng cho các tác vụ phân cụm, tìm kiếm ngữ nghĩa, hoặc làm đặc trưng đầu vào cho các mô hình có giám sát.
     \item \textbf{Khởi tạo Trọng số (Pre-training):} Trước kỷ nguyên Transformer, các Autoencoder xếp chồng (Stacked Autoencoders) được dùng để khởi tạo trọng số cho từng lớp của một mạng nơ-ron sâu. Việc này giúp quá trình huấn luyện hội tụ nhanh hơn và tốt hơn.
     \item \textbf{Sinh Văn bản (Text Generation):} Mặc dù Autoencoder cơ bản là mô hình phân biệt, các biến thể của nó là nền tảng cho các mô hình sinh.
 \end{itemize}
@@ -78,9 +78,9 @@ Trong NLP, Autoencoder và các biến thể của nó mở ra nhiều ứng d�
 Một số biến thể phổ biến và có sức ảnh hưởng lớn bao gồm:
 
 \begin{itemize}
-    \item \textbf{Denoising Autoencoder (DAE) \cite{vincent2008extracting}:} Một ý tưởng đơn giản nhưng cực kỳ mạnh mẽ. Thay vì học cách tái tạo lại đầu vào $\mathbf{x}$, DAE được huấn luyện để tái tạo $\mathbf{x}$ từ một phiên bản đã bị làm hỏng (corrupted) của nó, $\tilde{\mathbf{x}}$ (ví dụ: một vài từ bị xóa hoặc thay thế ngẫu nhiên). Điều này buộc mô hình học được các biểu diễn \textbf{bền vững (robust)} hơn, không chỉ là nén mà còn phải "hiểu" để có thể "sửa lỗi".
+    \item \textbf{Denoising Autoencoder (DAE) \cite{vincent2008extracting}:} Một ý tưởng đơn giản nhưng cực kỳ mạnh mẽ. Thay vì học cách tái tạo lại đầu vào $\mathbf{x}$, DAE được huấn luyện để tái tạo $\mathbf{x}$ từ một phiên bản đã bị làm hỏng (corrupted) của nó, $\tilde{\mathbf{x}}$ (ví dụ: một vài từ bị xóa hoặc thay thế ngẫu nhiên). Điều này buộc mô hình học được các biểu diễn \textbf{bền vững (robust)} hơn, không chỉ là nén mà còn phải “hiểu” để có thể “sửa lỗi”.
     \item \textbf{Variational Autoencoder (VAE) \cite{kingma2013auto}:} Một bước nhảy vọt về mặt lý thuyết, biến Autoencoder thành một mô hình \textbf{sinh (generative model)} thực thụ. Thay vì mã hóa đầu vào thành một vector điểm $\mathbf{z}$ duy nhất, VAE mã hóa nó thành một \textbf{phân phối xác suất} (thường là phân phối Gaussian) trong không gian tiềm ẩn. Sau khi huấn luyện, chúng ta có thể lấy mẫu một vector $\mathbf{z}$ ngẫu nhiên từ phân phối này và đưa qua Decoder để sinh ra một mẫu dữ liệu mới hoàn toàn nhưng vẫn tương tự dữ liệu huấn luyện. Chúng ta sẽ thảo luận kỹ hơn về VAE trong Mục \ref{ssec:vae_for_text}.
-    \item \textbf{Sequence-to-Sequence Autoencoder:} Thay vì dùng các lớp kết nối đầy đủ (fully-connected) cho văn bản dạng Bag-of-Words, biến thể này sử dụng các kiến trúc tuần tự như \textbf{RNN/LSTM} cho cả Encoder và Decoder. Encoder đọc một chuỗi từ và nén nó thành một vector "tư tưởng" (thought vector), sau đó Decoder sẽ cố gắng tái tạo lại chính chuỗi từ đó từ vector này. Đây chính là tiền đề cho kiến trúc Encoder-Decoder trong các bài toán Seq2Seq như dịch máy.
+    \item \textbf{Sequence-to-Sequence Autoencoder:} Thay vì dùng các lớp kết nối đầy đủ (fully-connected) cho văn bản dạng Bag-of-Words, biến thể này sử dụng các kiến trúc tuần tự như \textbf{RNN/LSTM} cho cả Encoder và Decoder. Encoder đọc một chuỗi từ và nén nó thành một vector “tư tưởng” (thought vector), sau đó Decoder sẽ cố gắng tái tạo lại chính chuỗi từ đó từ vector này. Đây chính là tiền đề cho kiến trúc Encoder-Decoder trong các bài toán Seq2Seq như dịch máy.
 \end{itemize}
 
-Tóm lại, Autoencoder là một công cụ học phi giám sát nền tảng, cung cấp một phương pháp hiệu quả để học các biểu diễn nén, giàu ngữ nghĩa cho các đơn vị văn bản lớn hơn từ. Ý tưởng về việc học thông qua tái tạo và nén qua "nút cổ chai" là một trong những khái niệm có sức ảnh hưởng sâu rộng trong học sâu hiện đại.
+Tóm lại, Autoencoder là một công cụ học phi giám sát nền tảng, cung cấp một phương pháp hiệu quả để học các biểu diễn nén, giàu ngữ nghĩa cho các đơn vị văn bản lớn hơn từ. Ý tưởng về việc học thông qua tái tạo và nén qua “nút cổ chai” là một trong những khái niệm có sức ảnh hưởng sâu rộng trong học sâu hiện đại.

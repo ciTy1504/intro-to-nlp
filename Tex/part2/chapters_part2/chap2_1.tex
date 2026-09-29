@@ -29,7 +29,7 @@ Hãy cùng tìm hiểu vai trò của từng thư viện.
     \item \textbf{Các thành phần chính:}
         \begin{itemize}
             \item \textbf{`pipeline`:} Một API cấp cao, cực kỳ dễ sử dụng để thực hiện các tác vụ NLP phổ biến chỉ trong vài dòng code. Rất tuyệt vời cho việc thử nghiệm nhanh và tạo demo.
-            \item \textbf{`AutoModel`, `AutoTokenizer`:} Các lớp "tự động" thông minh. Bạn chỉ cần cung cấp tên của một mô hình trên Hub (ví dụ: `"bert-base-uncased"`), các lớp này sẽ tự động tìm, tải về và khởi tạo đúng kiến trúc mô hình và tokenizer tương ứng.
+            \item \textbf{`AutoModel`, `AutoTokenizer`:} Các lớp “tự động” thông minh. Bạn chỉ cần cung cấp tên của một mô hình trên Hub (ví dụ: `“bert-base-uncased”`), các lớp này sẽ tự động tìm, tải về và khởi tạo đúng kiến trúc mô hình và tokenizer tương ứng.
             \item \textbf{`Trainer` API:} Một API huấn luyện cấp cao, mạnh mẽ, giúp xử lý tất cả các công việc phức tạp của vòng lặp huấn luyện (training loop) như tối ưu hóa, lên lịch tốc độ học (learning rate scheduling), đánh giá, và lưu trữ mô hình.
         \end{itemize}
 \end{itemize}
@@ -96,7 +96,7 @@ Hãy cùng tìm hiểu vai trò của từng thư viện.
 \label{ssec:hf_accelerate}
 \begin{itemize}
     \item \textbf{Mục đích:} Cung cấp một lớp trừu tượng (abstraction layer) đơn giản để bạn có thể chạy cùng một đoạn code huấn luyện trên các môi trường phần cứng khác nhau (một GPU, nhiều GPU, TPU) mà \textbf{không cần thay đổi code}.
-    \item \textbf{Triết lý:} "Write your PyTorch code once, run it anywhere."
+    \item \textbf{Triết lý:} “Write your PyTorch code once, run it anywhere.”
     \item \textbf{Cơ chế hoạt động:} `accelerate` sẽ tự động xử lý các công việc phức tạp ở phía sau như:
         \begin{itemize}
             \item Đặt các tensor và mô hình lên đúng thiết bị (device placement).
@@ -113,7 +113,7 @@ Hãy cùng tìm hiểu vai trò của từng thư viện.
     \item \textbf{Các tính năng chính:}
         \begin{itemize}
             \item \textbf{Thư viện Metric lớn:} Cung cấp các cách triển khai đã được kiểm chứng cho hàng chục metric phổ biến (BLEU, ROUGE, F1, Accuracy, Perplexity, ...).
-            \item \textbf{Giao diện đơn giản:} Chỉ cần `evaluate.load("tên\_metric")` để tải metric, sau đó dùng `.add\_batch()` và `.compute()` để tính toán.
+            \item \textbf{Giao diện đơn giản:} Chỉ cần `evaluate.load(“tên\_metric”)` để tải metric, sau đó dùng `.add\_batch()` và `.compute()` để tính toán.
             \item \textbf{Hỗ trợ phân tán:} Tự động xử lý việc tổng hợp các dự đoán và nhãn từ nhiều GPU khi sử dụng với `accelerate`.
         \end{itemize}
 \end{itemize}

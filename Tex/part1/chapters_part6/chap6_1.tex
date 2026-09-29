@@ -9,10 +9,10 @@
 	title=Trực giác cốt lõi của RAG,
 	colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries
 	]
-	Thay vì buộc LLM phải "nhớ" mọi thứ, hãy cho nó làm một "bài kiểm tra mở sách" (open-book exam). Khi nhận được một câu hỏi, thay vì trả lời ngay lập tức từ trí nhớ, hệ thống RAG trước hết sẽ \textbf{tìm kiếm (retrieve)} các thông tin liên quan nhất từ một cơ sở tri thức bên ngoài (ví dụ: tài liệu công ty, Wikipedia, các file PDF). Sau đó, nó sẽ cung cấp các thông tin đã tìm được này, cùng với câu hỏi gốc, cho LLM để \textbf{sinh ra (generate)} một câu trả lời dựa trên các bằng chứng đó.
+	Thay vì buộc LLM phải “nhớ” mọi thứ, hãy cho nó làm một “bài kiểm tra mở sách” (open-book exam). Khi nhận được một câu hỏi, thay vì trả lời ngay lập tức từ trí nhớ, hệ thống RAG trước hết sẽ \textbf{tìm kiếm (retrieve)} các thông tin liên quan nhất từ một cơ sở tri thức bên ngoài (ví dụ: tài liệu công ty, Wikipedia, các file PDF). Sau đó, nó sẽ cung cấp các thông tin đã tìm được này, cùng với câu hỏi gốc, cho LLM để \textbf{sinh ra (generate)} một câu trả lời dựa trên các bằng chứng đó.
 \end{tcolorbox}
 
-RAG biến LLM từ một "nhà hiền triết" biết tuốt (nhưng đôi khi đãng trí và bịa chuyện) thành một "nhà nghiên cứu" tài ba, có khả năng tìm kiếm, tổng hợp và trả lời dựa trên các nguồn thông tin xác thực.
+RAG biến LLM từ một “nhà hiền triết” biết tuốt (nhưng đôi khi đãng trí và bịa chuyện) thành một “nhà nghiên cứu” tài ba, có khả năng tìm kiếm, tổng hợp và trả lời dựa trên các nguồn thông tin xác thực.
 
 \subsection{Tại sao và Khi nào chúng ta cần RAG?}
 \label{ssec:why_rag}
@@ -21,7 +21,7 @@ Trước khi đi sâu vào kỹ thuật, điều quan trọng là phải hiểu 
 \paragraph{Các vấn đề cố hữu của LLM}
 Các mô hình ngôn ngữ lớn, dù mạnh mẽ đến đâu, vẫn đối mặt với ba thách thức lớn:
 \begin{itemize}
-	\item \textbf{Bịa đặt thông tin (Hallucination):} LLM có xu hướng tự "sáng tạo" ra các thông tin không có thật một cách rất tự tin, gây ra rủi ro nghiêm trọng trong các ứng dụng đòi hỏi tính chính xác.
+	\item \textbf{Bịa đặt thông tin (Hallucination):} LLM có xu hướng tự “sáng tạo” ra các thông tin không có thật một cách rất tự tin, gây ra rủi ro nghiêm trọng trong các ứng dụng đòi hỏi tính chính xác.
 	\item \textbf{Giới hạn tri thức (Knowledge Cutoff):} Tri thức của LLM bị đóng băng tại thời điểm nó được huấn luyện. Nó không biết về các sự kiện, dữ liệu hoặc thông tin mới xuất hiện sau ngày đó.
 	\item \textbf{Thiếu tính kiểm chứng (Lack of Verifiability):} Khi LLM đưa ra một câu trả lời, rất khó để truy ngược lại nguồn thông tin mà nó đã sử dụng, khiến việc xác thực trở nên bất khả thi.
 \end{itemize}
@@ -36,13 +36,13 @@ RAG được thiết kế để giải quyết trực tiếp cả ba vấn đề
 
 \subsection{Kiến trúc RAG Cơ bản (The Naive RAG Pipeline)}
 \label{ssec:naive_rag}
-Một hệ thống RAG cơ bản, thường được gọi là "Naive" hay "Vanilla" RAG, bao gồm hai giai đoạn chính: \textbf{Lập chỉ mục (Indexing)} và \textbf{Truy vấn (Querying)}. Đây là nền tảng để hiểu tất cả các kỹ thuật nâng cao sau này.
+Một hệ thống RAG cơ bản, thường được gọi là “Naive” hay “Vanilla” RAG, bao gồm hai giai đoạn chính: \textbf{Lập chỉ mục (Indexing)} và \textbf{Truy vấn (Querying)}. Đây là nền tảng để hiểu tất cả các kỹ thuật nâng cao sau này.
 
 \paragraph{Giai đoạn 1: Lập chỉ mục (Offline)}
 Giai đoạn này được thực hiện một lần hoặc định kỳ để chuẩn bị cơ sở tri thức. Nó giống như việc chúng ta sắp xếp và tạo mục lục cho một thư viện.
 \begin{enumerate}
 	\item \textbf{Tải Dữ liệu (Load):} Tải các tài liệu từ nguồn (PDF, TXT, HTML, v.v.).
-	\item \textbf{Phân mảnh (Chunk/Split):} Chia các tài liệu dài thành các đoạn nhỏ hơn, gọi là các "chunk". Trong kiến trúc cơ bản, đây thường là \textit{fixed-size chunking} (chia thành các đoạn có kích thước cố định).
+	\item \textbf{Phân mảnh (Chunk/Split):} Chia các tài liệu dài thành các đoạn nhỏ hơn, gọi là các “chunk”. Trong kiến trúc cơ bản, đây thường là \textit{fixed-size chunking} (chia thành các đoạn có kích thước cố định).
 	\item \textbf{Nhúng (Embed):} Sử dụng một mô hình nhúng (embedding model, ví dụ: các bi-encoder từ `sentence-transformers`) để chuyển mỗi chunk thành một vector số (embedding). Vector này nắm bắt ngữ nghĩa của chunk đó.
 	\item \textbf{Lưu trữ (Store):} Lưu trữ các chunk và các vector embedding tương ứng của chúng vào một \textbf{Cơ sở dữ liệu Vector} (Vector Database) như FAISS, ChromaDB, hoặc pgvector.
 \end{enumerate}
@@ -73,10 +73,10 @@ Giai đoạn này xảy ra mỗi khi người dùng đặt câu hỏi.
 
 \subsection{Bài học từ các Công cụ Tìm kiếm: Kiến trúc Phân tầng của Google}
 \label{ssec:lesson_from_google}
-Để hiểu tại sao các hệ thống RAG hiện đại được thiết kế theo một cách cụ thể, sẽ rất hữu ích khi nhìn vào "người khổng lồ" trong lĩnh vực tìm kiếm: Google. Kiến trúc của Google Search là một ví dụ điển hình về một hệ thống retrieval đa tầng (multi-stage), nơi mỗi tầng sẽ lọc và tinh chỉnh kết quả, cân bằng giữa tốc độ và độ chính xác.
+Để hiểu tại sao các hệ thống RAG hiện đại được thiết kế theo một cách cụ thể, sẽ rất hữu ích khi nhìn vào “người khổng lồ” trong lĩnh vực tìm kiếm: Google. Kiến trúc của Google Search là một ví dụ điển hình về một hệ thống retrieval đa tầng (multi-stage), nơi mỗi tầng sẽ lọc và tinh chỉnh kết quả, cân bằng giữa tốc độ và độ chính xác.
 
 \paragraph{Kiến trúc Phân tầng (A Tiered Architecture)}
-Một truy vấn trên Google không chỉ đơn giản là "tìm và trả về". Nó đi qua một "phễu" tinh vi gồm nhiều giai đoạn:
+Một truy vấn trên Google không chỉ đơn giản là “tìm và trả về”. Nó đi qua một “phễu” tinh vi gồm nhiều giai đoạn:
 \begin{enumerate}
 	\item \textbf{Crawl \& Indexing (Thu thập và Lập chỉ mục):} 
 	Trước khi bất kỳ truy vấn nào được xử lý, Googlebot liên tục \emph{crawl} web, tải về nội dung và phân tích cấu trúc trang. Dữ liệu sau đó được chuẩn hoá và lưu trong nhiều loại chỉ mục:
@@ -119,5 +119,5 @@ Một truy vấn trên Google không chỉ đơn giản là "tìm và trả về
 	title=Bài học cốt lõi cho RAG từ Google,
 	colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
 	]
-	Xây dựng một hệ thống retrieval mạnh mẽ không phải là việc chọn một thuật toán duy nhất. Đó là việc xây dựng một \textbf{pipeline đa tầng}. Chúng ta chấp nhận sử dụng các phương pháp "đủ tốt" và nhanh ở giai đoạn đầu để lọc số lượng lớn, sau đó mới đầu tư tài nguyên tính toán vào các phương pháp chính xác cao cho một số lượng nhỏ các ứng viên hứa hẹn nhất. Triết lý "lọc rộng rồi tinh chỉnh sâu" này chính là nền tảng cho các hệ thống RAG hiện đại.
+	Xây dựng một hệ thống retrieval mạnh mẽ không phải là việc chọn một thuật toán duy nhất. Đó là việc xây dựng một \textbf{pipeline đa tầng}. Chúng ta chấp nhận sử dụng các phương pháp “đủ tốt” và nhanh ở giai đoạn đầu để lọc số lượng lớn, sau đó mới đầu tư tài nguyên tính toán vào các phương pháp chính xác cao cho một số lượng nhỏ các ứng viên hứa hẹn nhất. Triết lý “lọc rộng rồi tinh chỉnh sâu” này chính là nền tảng cho các hệ thống RAG hiện đại.
 \end{tcolorbox}

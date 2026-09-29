@@ -1,0 +1,175 @@
+% !TEX root = ../main.tex
+% File: chapters_part1/chap4_6.tex
+% Nội dung cho Chương 4, Phần 6 -- Cập nhật 2026 theo LLM Research Reading List (trục Architecture)
+
+\section{Khối Decoder Hiện đại: Từ Multi-Head đến Grouped-Query và Latent Attention}
+\label{sec:modern_decoder_attention}
+
+Nếu đặt sơ đồ Transformer năm 2017 cạnh kiến trúc của Llama 3, Qwen3 hay DeepSeek-V3, bạn sẽ thấy “bộ xương” vẫn giống nhau: embedding, $L$ khối lặp lại gồm attention và FFN, rồi lớp chiếu ra từ vựng. Nhưng gần như \emph{mọi chi tiết} bên trong khối đã được thay thế. Mục này đi qua những thay đổi đó theo đúng thứ tự mà áp lực thực tế đã tạo ra chúng: trước hết là \textbf{ổn định huấn luyện} ở độ sâu lớn, sau đó là \textbf{chi phí bộ nhớ khi suy luận} -- thứ mà ở kỷ nguyên LLM đã trở thành nút thắt số một.
+
+\subsection{Khối chuẩn của LLM hiện đại: Pre-Norm, RMSNorm và SwiGLU}
+\label{ssec:modern_block}
+
+\paragraph{Pre-Norm thay cho Post-Norm.}
+Transformer gốc đặt LayerNorm \emph{sau} phép cộng phần dư (Post-LN):
+\[
+x_{l+1} = \text{Norm}\big(x_l + F(x_l)\big).
+\]
+Các LLM hiện đại đặt chuẩn hóa \emph{trước} lớp con (Pre-LN) và thêm một lớp chuẩn hóa cuối cùng trước đầu ra:
+\[
+x_{l+1} = x_l + F\big(\text{Norm}(x_l)\big).
+\]
+Khác biệt nhìn thì nhỏ, hệ quả thì không.
+
+\textbf{Đường đi của gradient.} Khai triển đệ quy công thức Pre-LN cho một đẳng thức rất gọn:
+\[
+x_L = x_0 + \sum_{l=0}^{L-1} F_l\big(\text{Norm}(x_l)\big) .
+\]
+Nghĩa là \textbf{luồng phần dư (residual stream)} chỉ là một phép cộng thuần túy chạy suốt từ đầu vào tới đầu ra; mỗi lớp con \emph{đọc} từ luồng đó (qua Norm) rồi \emph{cộng thêm} phần đóng góp của mình vào. Đạo hàm vì thế luôn chứa một số hạng đơn vị:
+\[
+\frac{\partial x_L}{\partial x_0} = I + \sum_{l} \frac{\partial F_l}{\partial x_0} ,
+\]
+nên dù các lớp con có làm gì đi nữa, gradient vẫn có một con đường đi thẳng về đầu vào mà không bị nhân với bất kỳ ma trận nào. Với Post-LN thì không: mỗi lớp chèn một phép chuẩn hóa \emph{chắn ngang} đường phần dư, và gradient buộc phải đi qua Jacobian của $L$ phép chuẩn hóa liên tiếp.
+
+\textbf{Hệ quả đo được.} Xiong và cộng sự \cite{xiong2020layernorm} phân tích bằng lý thuyết trường trung bình và chỉ ra rằng ngay tại thời điểm khởi tạo, gradient ở các lớp gần đầu ra của Post-LN đã lớn bất thường, trong khi Pre-LN cho gradient “hiền” ở mọi độ sâu. Điều này giải thích một hiện tượng mà ai từng huấn luyện Transformer đều gặp: \textbf{Post-LN gần như bắt buộc phải có giai đoạn warmup} learning rate, bỏ warmup là phân kỳ; còn Pre-LN huấn luyện được \emph{không cần} warmup và chịu được learning rate lớn hơn. Ở độ sâu vài chục lớp đây là chuyện tiện lợi; ở hàng trăm lớp, nó là chuyện có huấn luyện nổi hay không.
+
+\textbf{Cái giá của Pre-LN.} Vì mỗi lớp cộng thêm phần đóng góp của nó vào một luồng phần dư không bao giờ được chuẩn hóa lại, độ lớn của $x_l$ \emph{tăng dần theo độ sâu}. Hệ quả là đóng góp tương đối của các lớp cuối ngày càng nhỏ so với thứ đã tích lũy trong luồng, và toàn khối \textbf{bắt buộc} phải kết thúc bằng một lớp chuẩn hóa cuối cùng (final norm) trước đầu ra -- đây là chi tiết không được phép quên khi tự cài đặt. Đổi lại, Post-LN nếu huấn luyện thành công đôi khi cho chất lượng nhỉnh hơn ở độ sâu vừa phải; đó là lý do BERT vẫn dùng Post-LN, còn từ GPT-2 trở đi thì gần như mọi mô hình đều chuyển sang Pre-LN.
+
+\paragraph{RMSNorm \cite{zhang2019rmsnorm}.} LayerNorm làm hai việc: \emph{trừ trung bình} (re-centering) và \emph{chia độ lệch chuẩn} (re-scaling). Zhang \& Sennrich đặt câu hỏi việc nào mới thật sự có tác dụng, và câu trả lời là việc thứ hai. RMSNorm bỏ hẳn bước trừ trung bình lẫn tham số dịch $\beta$:
+\[
+\text{RMSNorm}(x) = \frac{x}{\sqrt{\frac{1}{d}\sum_{i=1}^{d} x_i^2 + \epsilon}} \odot g,
+\]
+với $g$ là vector hệ số học được. Lợi ích rất cụ thể: bớt một lượt duyệt qua vector để tính trung bình -- chuẩn hóa là toán tử \emph{giới hạn bởi băng thông bộ nhớ} nên bớt một lượt đọc là tiết kiệm thật, số tham số giảm từ $2d$ xuống $d$, và đường truyền ngược cũng ngắn hơn. Cái mất là RMSNorm không còn bất biến khi cộng một hằng số vào mọi chiều của $x$; thực nghiệm cho thấy điều đó không gây vấn đề gì. Một lưu ý khi cài đặt: phép chuẩn hóa thường được tính ở \texttt{fp32} rồi mới ép về \texttt{bf16}, vì tổng bình phương trên hàng nghìn chiều rất dễ mất chính xác.
+
+\paragraph{FFN dạng SwiGLU \cite{shazeer2020glu}.} Thay vì $\text{FFN}(x) = W_2\,\text{ReLU}(W_1 x)$, các mô hình hiện đại dùng một biến thể có cổng (gated linear unit):
+\[
+\text{FFN}_{\text{SwiGLU}}(x) = W_2\Big(\text{Swish}(W_1 x) \odot W_3 x\Big), \qquad \text{Swish}(z) = z\cdot\sigma(z).
+\]
+Nhánh $W_3 x$ đóng vai trò “cổng” điều tiết từng chiều của nhánh kích hoạt. Vì có ba ma trận thay vì hai, kích thước ẩn thường được giảm từ $4d$ xuống khoảng $\tfrac{8}{3}d$ để giữ nguyên số tham số.
+
+\begin{tcolorbox}[title={Công thức “chuẩn” của một khối decoder năm 2026}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{align*}
+h &= x + \text{Attention}\big(\text{RMSNorm}(x)\big) \qquad \text{(RoPE, causal mask, GQA hoặc MLA)}\\
+x' &= h + \text{FFN}\big(\text{RMSNorm}(h)\big) \qquad\;\;\; \text{(SwiGLU, hoặc MoE gồm nhiều FFN SwiGLU)}
+\end{align*}
+Không bias trong các phép chiếu tuyến tính, embedding đầu vào và đầu ra có thể dùng chung (weight tying) ở mô hình nhỏ. Đây là cấu hình của Llama 3, Qwen2.5/Qwen3, Mistral và (với MLA + MoE) DeepSeek-V3.
+\end{tcolorbox}
+
+\subsection{KV Cache: Nút thắt bộ nhớ khi suy luận}
+\label{ssec:kv_cache}
+
+Khi sinh văn bản tự hồi quy, tại bước $t$ mô hình chỉ cần tính Query cho \emph{token mới}, nhưng phải so khớp nó với Key và Value của \emph{tất cả} các token trước đó. Tính lại $K, V$ cho toàn bộ tiền tố ở mỗi bước là lãng phí, nên ta lưu chúng lại -- gọi là \textbf{KV cache}. Kích thước KV cache cho mỗi token là
+\[
+\text{KV}_{\text{token}} = 2 \times L \times n_{kv} \times d_h \times (\text{số byte mỗi phần tử}),
+\]
+với $L$ là số lớp, $n_{kv}$ là số đầu Key/Value, $d_h$ là số chiều mỗi đầu, và hệ số 2 ứng với K và V.
+
+\begin{example}{Tính KV cache của một mô hình 70B}{ex:kv_cache_70b}
+Một mô hình 70B kiểu Llama có $L = 80$ lớp, $d_{\text{model}} = 8192$, 64 đầu attention nên $d_h = 128$, lưu ở BF16 (2 byte).
+\begin{itemize}
+	\item \textbf{Nếu dùng Multi-Head Attention} ($n_{kv} = 64$): $2 \times 80 \times 64 \times 128 \times 2 \approx 2.5$ MB cho \emph{mỗi token}. Một yêu cầu dài 32K token chiếm khoảng 80 GB -- nhiều hơn cả bộ nhớ một GPU A100/H100 80GB, chưa kể trọng số mô hình.
+	\item \textbf{Nếu dùng Grouped-Query Attention với 8 đầu KV} (cấu hình thực tế của Llama 2 70B và Llama 3 70B): $2 \times 80 \times 8 \times 128 \times 2 \approx 0.31$ MB/token, tức giảm 8 lần -- yêu cầu 32K token chỉ còn khoảng 10 GB.
+\end{itemize}
+Bài học: ở kỷ nguyên LLM, số lượng yêu cầu phục vụ đồng thời (và do đó chi phí mỗi token) bị giới hạn bởi KV cache nhiều hơn bởi trọng số.
+\end{example}
+
+Quá trình suy luận vì thế có hai pha với đặc tính rất khác nhau: \textbf{prefill} (xử lý song song toàn bộ prompt, nặng về tính toán) và \textbf{decode} (sinh từng token, nặng về băng thông bộ nhớ vì phải đọc toàn bộ trọng số và KV cache cho mỗi token). Sự khác biệt này sẽ dẫn tới các kiến trúc phục vụ tách rời prefill/decode ở chương~\ref{chap:efficiency}. Còn ở mức kiến trúc mô hình, câu hỏi đặt ra là: \emph{có cần tới $n_h$ bộ Key/Value riêng biệt không?}
+
+\subsection{Multi-Query và Grouped-Query Attention}
+\label{ssec:mqa_gqa}
+
+\paragraph{Multi-Query Attention (MQA) \cite{shazeer2019fast}.} Mọi đầu Query dùng chung \textbf{một} cặp Key/Value duy nhất ($n_{kv} = 1$). KV cache giảm $n_h$ lần và tốc độ giải mã tăng mạnh, nhưng chất lượng giảm và huấn luyện kém ổn định hơn.
+
+\paragraph{Grouped-Query Attention (GQA) \cite{ainslie2023gqa}.} Đây là điểm trung gian: chia $n_h$ đầu Query thành $G$ nhóm, mỗi nhóm dùng chung một cặp Key/Value.
+\begin{itemize}
+	\item $G = n_h$: trở về Multi-Head Attention.
+	\item $G = 1$: trở thành Multi-Query Attention.
+	\item $1 < G < n_h$ (ví dụ $G = 8$): chất lượng gần MHA, tốc độ gần MQA.
+\end{itemize}
+
+\begin{center}
+\bookimage[0.85\textwidth]{mha_gqa_mqa_comparison}{Hình so sánh ba cơ chế attention đặt cạnh nhau: Multi-head attention (mỗi query head có key và value head riêng), Grouped-query attention (các query head được chia nhóm, mỗi nhóm dùng chung một key head và value head), và Multi-query attention (tất cả query head dùng chung một key và value head duy nhất) -- Hình 2 trong bài báo GQA của Ainslie et al. 2023.}
+\captionof{figure}{Multi-Head, Grouped-Query và Multi-Query Attention. Nguồn: Ainslie et al.~\cite{ainslie2023gqa}.}
+\label{fig:mha_gqa_mqa}
+\end{center}
+
+\paragraph{Uptraining: biến checkpoint MHA thành GQA.} Đóng góp thực tiễn quan trọng của bài báo GQA là không cần huấn luyện lại từ đầu. Với một checkpoint MHA có sẵn:
+\begin{enumerate}
+	\item \textbf{Chuyển đổi:} Với mỗi nhóm, lấy \textbf{trung bình (mean-pool)} các ma trận chiếu Key (và Value) của các đầu trong nhóm để tạo ra ma trận Key/Value dùng chung. Mean-pooling giữ lại nhiều thông tin hơn so với chọn ngẫu nhiên một đầu hoặc khởi tạo lại.
+	\item \textbf{Tiền huấn luyện thêm:} Tiếp tục huấn luyện với chỉ khoảng $\alpha = 5\%$ lượng compute tiền huấn luyện ban đầu để mô hình thích nghi với cấu trúc mới.
+\end{enumerate}
+Trên T5-XXL, GQA-8 sau uptraining đạt chất lượng gần MHA nhưng tốc độ suy luận gần MQA. GQA nhanh chóng trở thành mặc định: Llama 2 70B, Llama 3, Mistral, Qwen đều dùng.
+
+\subsection{Multi-head Latent Attention (MLA)}
+\label{ssec:mla}
+
+GQA tiết kiệm bộ nhớ bằng cách \emph{bớt số đầu} Key/Value, đồng nghĩa với việc giảm khả năng biểu diễn. \textbf{Multi-head Latent Attention} của DeepSeek-V2 \cite{deepseekai2024v2} đi theo hướng khác: giữ đủ $n_h$ đầu, nhưng \textbf{nén} Key và Value chung vào một vector ẩn hạng thấp, và chỉ lưu vector ẩn này.
+
+\paragraph{Nén Key-Value hạng thấp.} Với trạng thái ẩn $h_t \in \mathbb{R}^{d}$ của token $t$:
+\begin{align*}
+c_t^{KV} &= W^{DKV} h_t, &&\text{(nén xuống } d_c \ll n_h d_h\text{)}\\
+k_t^{C} &= W^{UK} c_t^{KV}, \quad v_t^{C} = W^{UV} c_t^{KV}. &&\text{(giải nén thành đủ } n_h \text{ đầu)}
+\end{align*}
+Khi suy luận chỉ cần lưu $c_t^{KV}$. (Query cũng được nén tương tự để giảm bộ nhớ kích hoạt khi huấn luyện, nhưng Query không nằm trong KV cache.)
+
+\paragraph{Vấn đề với RoPE và giải pháp “RoPE tách rời”.} RoPE nhân Key với một ma trận quay \emph{phụ thuộc vị trí}. Nếu áp RoPE lên $k_t^C$, ma trận nằm giữa $c_t^{KV}$ và Key cuối cùng sẽ phụ thuộc vào vị trí của token đang sinh, và ta buộc phải giải nén lại toàn bộ Key của tiền tố ở mỗi bước -- mất hết lợi ích của cache. MLA giải quyết bằng cách tách phần mang thông tin vị trí ra thành một nhánh riêng có số chiều nhỏ $d_h^R$:
+\begin{align*}
+q_{t,i}^{R} &= \text{RoPE}\big(W^{QR} c_t^{Q}\big)_i, \qquad
+k_t^{R} = \text{RoPE}\big(W^{KR} h_t\big) \quad \text{(dùng chung cho mọi đầu)},\\
+q_{t,i} &= \big[q_{t,i}^{C};\, q_{t,i}^{R}\big], \qquad\qquad\;\; k_{t,i} = \big[k_{t,i}^{C};\, k_t^{R}\big].
+\end{align*}
+Cache lúc này gồm $c_t^{KV}$ và $k_t^R$, tức $(d_c + d_h^R)$ phần tử mỗi lớp mỗi token.
+
+\begin{table}[H]
+\centering
+\caption{Kích thước KV cache trên mỗi token (số phần tử) của các cơ chế attention, với $L$ lớp, $n_h$ đầu, $d_h$ chiều mỗi đầu, $G$ nhóm. Số liệu MLA theo cấu hình DeepSeek-V2 ($d_c = 4d_h$, $d_h^R = d_h/2$) \cite{deepseekai2024v2}.}
+\label{tab:kv_cache_comparison}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Cơ chế} & \textbf{KV cache mỗi token} & \textbf{Năng lực biểu diễn} \\
+\midrule
+Multi-Head Attention (MHA) & $2\, n_h\, d_h\, L$ & Mạnh \\
+Grouped-Query Attention (GQA) & $2\, G\, d_h\, L$ & Trung bình \\
+Multi-Query Attention (MQA) & $2\, d_h\, L$ & Yếu \\
+Multi-head Latent Attention (MLA) & $(d_c + d_h^R)\, L \approx \tfrac{9}{2}\, d_h\, L$ & Mạnh hơn \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+KV cache của MLA chỉ tương đương GQA với khoảng 2.25 nhóm, nhưng theo báo cáo của DeepSeek, chất lượng còn nhỉnh hơn MHA. So với mô hình dày đặc DeepSeek 67B trước đó, DeepSeek-V2 giảm 93.3\% KV cache và tăng thông lượng sinh tối đa lên 5.76 lần. MLA tiếp tục được dùng trong DeepSeek-V3 và Kimi K2.
+
+\begin{center}
+\bookimage[0.95\textwidth]{mla_vs_mha_gqa_mqa}{Hình minh họa so sánh Multi-Head Attention (MHA), Grouped-Query Attention (GQA), Multi-Query Attention (MQA) và Multi-head Latent Attention (MLA), trong đó MLA nén key và value chung vào một vector ẩn (latent) và chỉ lưu vector ẩn đó vào KV cache khi suy luận (Hình 3 trong bài báo DeepSeek-V2).}
+\captionof{figure}{So sánh MHA, GQA, MQA và MLA: phần được tô đậm là những gì cần lưu trong KV cache. Nguồn: DeepSeek-AI~\cite{deepseekai2024v2}.}
+\label{fig:mla_comparison}
+\end{center}
+
+\subsection{Dự đoán Đa Token (Multi-Token Prediction)}
+\label{ssec:mtp}
+
+Mục tiêu dự đoán token kế tiếp chỉ cung cấp một tín hiệu học cho mỗi vị trí. \textbf{Multi-Token Prediction (MTP)} \cite{gloeckle2024mtp} bổ sung các “đầu” phụ dự đoán các token xa hơn ($t+2, t+3, \dots$), buộc biểu diễn ẩn phải “lập kế hoạch” trước vài bước. Gloeckle et al. cho thấy lợi ích rõ nhất ở mô hình lớn và ở các tác vụ sinh mã.
+
+DeepSeek-V3 \cite{deepseekai2024v3} dùng một biến thể giữ nguyên chuỗi nhân quả: module MTP thứ $k$ kết hợp biểu diễn ở độ sâu $k-1$ tại vị trí $i$ với embedding của token $t_{i+k}$,
+\[
+h_i'^{\,k} = M_k\Big[\text{RMSNorm}\big(h_i^{k-1}\big);\ \text{RMSNorm}\big(\text{Emb}(t_{i+k})\big)\Big],
+\]
+cho qua một khối Transformer riêng rồi dự đoán $t_{i+k+1}$ bằng lớp đầu ra dùng chung. Tổng loss là $\mathcal{L} = \mathcal{L}_{\text{main}} + \frac{\lambda}{D}\sum_{k=1}^{D}\mathcal{L}^{k}_{\text{MTP}}$ (DeepSeek-V3 dùng $D = 1$). Khi suy luận, có thể bỏ module MTP đi, hoặc dùng nó làm \textbf{bộ nháp cho giải mã suy đoán}: báo cáo cho thấy token thứ hai được chấp nhận 85--90\% số lần, tăng tốc độ sinh khoảng 1.8 lần (xem giải mã suy đoán ở chương~\ref{chap:efficiency}).
+
+\begin{tcolorbox}[title={Tổng kết: áp dụng bốn câu hỏi của danh sách đọc}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
+\begin{itemize}
+	\item \textbf{Thay đổi giả định nào?} GQA/MLA bác bỏ giả định “mỗi đầu attention cần Key/Value độc lập đầy đủ”. MTP bác bỏ giả định “mỗi vị trí chỉ cần một mục tiêu dự đoán”.
+	\item \textbf{Giải quyết nút thắt nào?} Băng thông bộ nhớ và dung lượng KV cache khi decode.
+	\item \textbf{Đánh đổi gì?} GQA đổi một ít năng lực biểu diễn; MLA đổi độ phức tạp cài đặt (RoPE tách rời, thêm phép chiếu); MTP đổi thêm compute huấn luyện.
+	\item \textbf{Bằng chứng?} GQA có ablation số nhóm và so sánh cùng compute uptraining; MLA có so sánh trực tiếp với MHA/GQA/MQA trong phụ lục của DeepSeek-V2.
+\end{itemize}
+\end{tcolorbox}
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Chương này đã là một chuyến đi sâu vào trái tim của NLP hiện đại. Chúng ta đã mổ xẻ kiến trúc Transformer, hiểu được sức mạnh của cơ chế Tự chú ý, và phân loại ba họ mô hình chính -- Encoder-Only, Decoder-Only, và Encoder-Decoder. Chúng ta cũng đã khám phá các kỹ thuật cho phép các mô hình này xử lý ngữ cảnh dài (FlashAttention, YaRN, Ring Attention), mở rộng quy mô thưa thớt (MoE) và tiết kiệm bộ nhớ khi suy luận (GQA, MLA). Nhưng một kiến trúc tốt mới chỉ là bản thiết kế. Câu hỏi tiếp theo là: với một ngân sách tính toán cho trước, nên làm mô hình lớn đến đâu, cho nó học bao nhiêu dữ liệu, dữ liệu nào, và tối ưu bằng thuật toán gì? Đó là chủ đề của chương tiếp theo: tiền huấn luyện LLM.}

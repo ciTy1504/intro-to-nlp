@@ -5,7 +5,7 @@
 \section{Các Benchmark Kinh điển và Hiện đại}
 \label{sec:benchmarks}
 
-Một metric riêng lẻ chỉ đo lường một khía cạnh của mô hình. Để có một đánh giá toàn diện, cộng đồng nghiên cứu đã tạo ra các \textbf{benchmark} -- những bộ sưu tập các bộ dữ liệu và tác vụ được tiêu chuẩn hóa. Các benchmark đóng vai trò như những "kỳ thi Olympic" cho các mô hình NLP, cho phép các nhà nghiên cứu so sánh một cách công bằng và theo dõi sự tiến bộ của toàn ngành.
+Một metric riêng lẻ chỉ đo lường một khía cạnh của mô hình. Để có một đánh giá toàn diện, cộng đồng nghiên cứu đã tạo ra các \textbf{benchmark} -- những bộ sưu tập các bộ dữ liệu và tác vụ được tiêu chuẩn hóa. Các benchmark đóng vai trò như những “kỳ thi Olympic” cho các mô hình NLP, cho phép các nhà nghiên cứu so sánh một cách công bằng và theo dõi sự tiến bộ của toàn ngành.
 
 Sự phát triển của các benchmark cũng phản ánh sự tiến hóa của chính các mô hình NLP.
 
@@ -24,12 +24,12 @@ Trước khi các LLM lớn với khả năng zero-shot ra đời, các mô hìn
             \item \textbf{Phân loại câu đơn:} SST-2 (cảm xúc), CoLA (tính đúng ngữ pháp).
         \end{itemize}
     \item \textbf{Đánh giá:} Một mô hình được fine-tune riêng cho từng tác vụ. Điểm số cuối cùng là điểm trung bình trên tất cả các tác vụ.
-    \item \textbf{Tác động:} GLUE đã trở thành một "thước đo vàng" để đánh giá các mô hình như BERT, RoBERTa. Tuy nhiên, các mô hình nhanh chóng đạt đến và \textbf{vượt qua cả hiệu năng của con người} trên benchmark này vào khoảng năm 2019, cho thấy nó đã trở nên quá "dễ".
+    \item \textbf{Tác động:} GLUE đã trở thành một “thước đo vàng” để đánh giá các mô hình như BERT, RoBERTa. Tuy nhiên, các mô hình nhanh chóng đạt đến và \textbf{vượt qua cả hiệu năng của con người} trên benchmark này vào khoảng năm 2019, cho thấy nó đã trở nên quá “dễ”.
 \end{itemize}
 
 \subsubsection{SuperGLUE: Nâng cấp Độ khó}
 \begin{itemize}
-    \item \textbf{Động lực:} Do GLUE đã bị "chinh phục", SuperGLUE được tạo ra với các tác vụ khó hơn, đòi hỏi khả năng suy luận phức tạp hơn.
+    \item \textbf{Động lực:} Do GLUE đã bị “chinh phục”, SuperGLUE được tạo ra với các tác vụ khó hơn, đòi hỏi khả năng suy luận phức tạp hơn.
     \item \textbf{Cấu trúc:} Nó cũng là một bộ sưu tập các tác vụ đa dạng, nhưng tập trung nhiều hơn vào:
         \begin{itemize}
             \item \textbf{Hỏi-đáp yêu cầu suy luận:} BoolQ, MultiRC.
@@ -47,18 +47,34 @@ Với sự ra đời của các LLM có khả năng few-shot, mô hình đánh g
 \begin{itemize}
     \item \textbf{Tên đầy đủ:} Massive Multitask Language Understanding.
     \item \textbf{Triết lý:} Một LLM mạnh phải có kiến thức sâu rộng trên nhiều lĩnh vực chuyên môn, tương tự như các kỳ thi chuẩn hóa của con người.
-    \item \textbf{Cấu trúc:} MMLU bao gồm gần 16,000 câu hỏi trắc nghiệm được lấy từ các kỳ thi thực tế, bao phủ 57 môn học khác nhau, từ các môn cơ bản (toán tiểu học) đến các môn chuyên ngành cấp độ đại học và chuyên nghiệp (luật, y, kỹ thuật).
+    \item \textbf{Cấu trúc:} MMLU \cite{hendrycks2021mmlu} bao gồm 15\,908 câu hỏi trắc nghiệm 4 lựa chọn được lấy từ các nguồn thi thực tế, bao phủ 57 môn học khác nhau, từ các môn cơ bản (toán tiểu học) đến các môn chuyên ngành cấp độ đại học và chuyên nghiệp (luật, y, kỹ thuật).
     \item \textbf{Đánh giá:} Các mô hình được đánh giá ở chế độ \textbf{few-shot (thường là 5-shot)}. Prompt sẽ bao gồm 5 câu hỏi và câu trả lời mẫu từ một môn học, sau đó là câu hỏi thực sự cần trả lời.
-    \item \textbf{Tác động:} MMLU đã trở thành một trong những benchmark quan trọng nhất để đo lường kiến thức và khả năng suy luận của các LLM hàng đầu. Việc một mô hình đạt điểm cao trên MMLU là một minh chứng mạnh mẽ cho năng lực của nó.
+    \item \textbf{Tác động:} MMLU đã trở thành một trong những benchmark quan trọng nhất để đo lường kiến thức của các LLM. Tuy nhiên, đến 2024--2025 các mô hình hàng đầu đã vượt 90\% và benchmark gần như \textbf{bão hòa}, cộng thêm lo ngại nhiễm bẩn dữ liệu (mục~\ref{ssec:data_contamination}). Các phiên bản khó hơn như MMLU-Pro (10 lựa chọn, nhiều câu cần suy luận hơn) và GPQA (câu hỏi cấp tiến sĩ được thiết kế để khó tra cứu trên Google) được dùng thay thế.
 \end{itemize}
 
 \subsubsection{Big-Bench: Khám phá Giới hạn của LLMs}
 \begin{itemize}
     \item \textbf{Tên đầy đủ:} Beyond the Imitation Game benchmark.
     \item \textbf{Triết lý:} Các benchmark hiện có vẫn còn hạn chế. Chúng ta cần một bộ sưu tập các tác vụ cực kỳ đa dạng và sáng tạo để thăm dò các khả năng và những điểm yếu bất ngờ của LLM.
-    \item \textbf{Cấu trúc:} Một sự hợp tác khổng lồ của cộng đồng, tạo ra hơn 200 tác vụ rất đa dạng, bao gồm logic, lý luận toán học, hiểu biết vật lý trực quan, nhận biết định kiến xã hội, và nhiều tác vụ sáng tạo khác mà máy tính trước đây chưa từng làm tốt.
-    \item \textbf{Đánh giá:} Chủ yếu ở chế độ \textbf{zero-shot}, để kiểm tra khả năng giải quyết vấn đề "ngay từ đầu" của mô hình.
-    \item \textbf{Tác động:} Big-Bench đã giúp các nhà nghiên cứu xác định được các "khả năng nổi trội" (emergent abilities) -- các khả năng chỉ xuất hiện khi mô hình đạt đến một quy mô đủ lớn.
+    \item \textbf{Cấu trúc:} Một sự hợp tác khổng lồ của cộng đồng \cite{srivastava2023bigbench} -- 450 tác giả từ 132 tổ chức -- tạo ra 204 tác vụ rất đa dạng, bao gồm logic, lý luận toán học, hiểu biết vật lý trực quan, nhận biết định kiến xã hội, và nhiều tác vụ sáng tạo khác mà máy tính trước đây chưa từng làm tốt.
+    \item \textbf{Đánh giá:} Ở cả chế độ zero-shot và few-shot, có kèm điểm của các chuyên gia con người làm mốc so sánh.
+    \item \textbf{Tác động:} Big-Bench đã giúp các nhà nghiên cứu nghiên cứu cách năng lực thay đổi theo quy mô, bao gồm các “khả năng nổi trội” (emergent abilities) -- các khả năng có vẻ chỉ “bứt phá” khi mô hình đạt đến một quy mô đủ lớn, thay vì cải thiện dần đều -- hay việc thiên kiến xã hội thường tăng theo quy mô trong các ngữ cảnh mơ hồ. Tập con 23 tác vụ khó nhất, \textbf{BIG-Bench Hard (BBH)}, trở thành một chuẩn đo phổ biến cho Chain-of-Thought.
+\end{itemize}
+
+\subsubsection{GSM8K và MATH: Đánh giá Suy luận Toán học}
+\label{sssec:gsm8k_math}
+\begin{itemize}
+	\item \textbf{GSM8K} \cite{cobbe2021gsm8k}: 8.5 nghìn bài toán đố cấp tiểu học (7.5 nghìn huấn luyện, 1 nghìn kiểm tra), mỗi bài cần 2--8 bước tính số học cơ bản, đáp án là một con số. Đơn giản về kiến thức nhưng đòi hỏi suy luận nhiều bước không sai sót -- benchmark “kinh điển” của Chain-of-Thought. Đến nay đã gần như bão hòa với mô hình lớn.
+	\item \textbf{MATH} \cite{hendrycks2021math}: 12\,500 bài toán thi đấu cấp trung học (AMC, AIME\ldots), trải trên 7 môn (Tiền đại số, Đại số, Lý thuyết số, Tổ hợp--Xác suất, Hình học, Đại số trung cấp, Tiền giải tích) và 5 mức độ khó, kèm lời giải từng bước viết bằng \LaTeX. Khi ra đời, ngay cả các mô hình lớn nhất cũng chỉ đạt điểm rất thấp; tập con 500 bài \textbf{MATH-500} (mục~\ref{ssec:prm}) hiện là chuẩn đo chính cho các mô hình suy luận, bên cạnh các đề thi mới như AIME để tránh nhiễm bẩn.
+\end{itemize}
+\textbf{Chấm điểm:} So khớp đáp án cuối cùng sau khi chuẩn hóa (ví dụ \texttt{1/2} và \texttt{0.5}, hay các biểu thức toán tương đương) -- chi tiết nhỏ này có thể làm lệch kết quả vài điểm phần trăm giữa các framework đánh giá khác nhau.
+
+\subsubsection{TruthfulQA: Đo lường sự Trung thực}
+\label{sssec:truthfulqa}
+\begin{itemize}
+	\item \textbf{Ý tưởng \cite{lin2022truthfulqa}:} Mô hình được huấn luyện để bắt chước văn bản của con người sẽ bắt chước cả những \textbf{ngộ nhận phổ biến} của con người (“imitative falsehoods”).
+	\item \textbf{Cấu trúc:} 817 câu hỏi trên 38 chủ đề (sức khỏe, pháp luật, tài chính, chính trị\ldots), được thiết kế có chủ đích để nhiều người trả lời sai do niềm tin sai lầm, ví dụ về mê tín hay thuyết âm mưu.
+	\item \textbf{Phát hiện gây chú ý:} Mô hình tốt nhất lúc công bố chỉ trung thực ở 58\% câu hỏi so với 94\% của con người, và \textbf{mô hình càng lớn thường càng kém trung thực} -- vì chúng học thuộc các ngộ nhận phổ biến tốt hơn. Đây là ví dụ điển hình của \emph{inverse scaling}, và cho thấy tăng quy mô đơn thuần không giải quyết được vấn đề trung thực; cần căn chỉnh (InstructGPT đã cải thiện đáng kể trên TruthfulQA, mục~\ref{sssec:instructgpt}).
 \end{itemize}
 
 \subsubsection{HumanEval: Đánh giá Năng lực Sinh mã nguồn}
@@ -75,4 +91,18 @@ Với sự ra đời của các LLM có khả năng few-shot, mô hình đánh g
     \label{fig:llm_benchmarks_timeline}
 \end{center}
 
-Việc chuyển từ các benchmark như GLUE sang MMLU/Big-Bench không chỉ là một sự thay đổi về quy mô, mà còn là một sự thay đổi cơ bản trong cách chúng ta hiểu và đo lường "trí thông minh" của các mô hình ngôn ngữ.
+Việc chuyển từ các benchmark như GLUE sang MMLU/Big-Bench không chỉ là một sự thay đổi về quy mô, mà còn là một sự thay đổi cơ bản trong cách chúng ta hiểu và đo lường “trí thông minh” của các mô hình ngôn ngữ.
+
+\subsection{HELM: Đánh giá Toàn diện thay vì một Con số}
+\label{ssec:helm}
+Mỗi benchmark trên chỉ đo \emph{một} khía cạnh (thường là độ chính xác) trên \emph{một} kiểu tác vụ. Khi so sánh hai mô hình, các bài báo lại thường chọn những benchmark khác nhau, khiến việc so sánh gần như bất khả thi. \textbf{HELM} (Holistic Evaluation of Language Models) \cite{liang2022helm} của Stanford đề xuất một khung đánh giá có hệ thống dựa trên ba nguyên tắc:
+\begin{enumerate}
+	\item \textbf{Phân loại không gian đánh giá trước, rồi mới chọn tập con:} Định nghĩa rõ các \emph{kịch bản} (scenario = tác vụ + miền + ngôn ngữ, ví dụ “hỏi đáp về y tế bằng tiếng Anh”) và các \emph{thước đo}; thừa nhận công khai những gì \emph{chưa} được đánh giá.
+	\item \textbf{Đa thước đo:} Với mỗi kịch bản, đo \textbf{7 thước đo}: độ chính xác, hiệu chỉnh (calibration -- mô hình có biết khi nào nó không chắc?), độ bền vững (robustness -- khi đầu vào bị biến đổi nhẹ), công bằng, thiên kiến, độc hại, và hiệu quả (chi phí, độ trễ). Một mô hình chính xác nhất chưa chắc đã tốt nhất trên các thước đo còn lại.
+	\item \textbf{Chuẩn hóa điều kiện:} Mọi mô hình được đánh giá trên cùng kịch bản, cùng cách prompt, cùng số ví dụ few-shot.
+\end{enumerate}
+Phiên bản đầu tiên đánh giá 30 mô hình nổi bật trên 16 kịch bản cốt lõi (cộng thêm 26 kịch bản mục tiêu). Trước HELM, trung bình mỗi mô hình chỉ được đánh giá trên 17.9\% các kịch bản cốt lõi này; HELM nâng con số đó lên 96\%. Tinh thần của HELM -- \emph{minh bạch, đa chiều, tái lập được} -- là nền tảng của các bảng xếp hạng hiện đại.
+
+\begin{tcolorbox}[title={Bối cảnh benchmark năm 2026}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+Các benchmark “kinh điển” của kỷ nguyên LLM đầu (MMLU, GSM8K, HumanEval) đã gần bão hòa. Cộng đồng chuyển sang: (1) \textbf{benchmark khó hơn} như GPQA, MMLU-Pro, AIME, Humanity's Last Exam; (2) \textbf{benchmark liên tục làm mới} (dùng câu hỏi ra đời sau thời điểm thu thập dữ liệu huấn luyện) để chống nhiễm bẩn; (3) \textbf{đánh giá bằng sở thích con người} như Chatbot Arena (mục~\ref{sec:llm_as_a_judge}); và (4) \textbf{đánh giá tác tử} trên các nhiệm vụ nhiều bước thực tế như SWE-bench và GAIA (mục~\ref{sec:agent_evaluation}).
+\end{tcolorbox}

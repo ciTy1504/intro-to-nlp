@@ -1,0 +1,319 @@
+LLM RESEARCH READING LIST — 2026
+====================================
+Mục tiêu: xây mental model trước, sau đó đọc paper theo từng trục.
+Ký hiệu:
+[CORE] = nên đọc kỹ
+[IMPORTANT] = đọc kỹ nếu đi sâu
+[REFERENCE] = đọc để tra cứu / skim
+
+Lưu ý: Danh sách ưu tiên nền tảng + các hướng còn hữu ích để hiểu frontier. Không cần đọc theo thứ tự tuyệt đối.
+
+1. ARCHITECTURE
+----------------
+[CORE] Attention Is All You Need — Transformer
+https://arxiv.org/abs/1706.03762
+
+[CORE] GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints
+https://arxiv.org/abs/2305.13245
+
+[CORE] Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity
+https://arxiv.org/abs/2101.03961
+
+[CORE] DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model
+https://arxiv.org/abs/2405.04434
+
+[IMPORTANT] DeepSeek-V3 Technical Report — MoE, MLA, training/system co-design
+https://arxiv.org/abs/2412.19437
+
+[CORE] FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness
+https://arxiv.org/abs/2205.14135
+
+[CORE] FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning
+https://arxiv.org/abs/2307.08691
+
+[IMPORTANT] YaRN: Efficient Context Window Extension of Large Language Models
+https://arxiv.org/abs/2309.00071
+
+[IMPORTANT] Ring Attention with Blockwise Transformers for Near-Infinite Context
+https://arxiv.org/abs/2310.01889
+
+[IMPORTANT] Gemini: A Family of Highly Capable Multimodal Models
+https://arxiv.org/abs/2312.11830
+
+2. OPTIMIZATION
+----------------
+[CORE] Adam: A Method for Stochastic Optimization
+https://arxiv.org/abs/1412.6980
+
+[CORE] Decoupled Weight Decay Regularization (AdamW)
+https://arxiv.org/abs/1711.05101
+
+[IMPORTANT] Sophia: A Scalable Stochastic Second-order Optimizer for Language Model Pre-training
+https://arxiv.org/abs/2305.14342
+
+[IMPORTANT] Adam-mini: Use Fewer Learning Rates To Gain More
+https://arxiv.org/abs/2406.16793
+
+[IMPORTANT] Muon is Scalable for LLM Training
+https://arxiv.org/abs/2502.XXXXX
+NOTE: search arXiv for the latest Muon/Scion/orthogonalized optimizer variants before taking notes;
+the exact paper family is evolving quickly.
+
+[IMPORTANT] The Road Less Traveled: ... / optimizer scaling literature
+https://arxiv.org/search/?query=Muon+optimizer&searchtype=all
+
+3. PRETRAINING
+--------------
+[CORE] Scaling Laws for Neural Language Models
+https://arxiv.org/abs/2001.08361
+
+[CORE] Training Compute-Optimal Large Language Models (Chinchilla)
+https://arxiv.org/abs/2203.15556
+
+[CORE] Llama 3 Herd of Models — data, scaling, training recipe
+https://arxiv.org/abs/2407.21783
+
+[IMPORTANT] Demystifying Synthetic Data in LLM Pre-training: A Systematic Study of Scaling Laws, Benefits, and Pitfalls
+https://arxiv.org/abs/2510.01631
+
+[IMPORTANT] FineWeb: Decanting the Web for the Finest Text Data at Scale
+https://arxiv.org/abs/2406.17557
+
+[IMPORTANT] The RefinedWeb Dataset for Falcon LLM
+https://arxiv.org/abs/2306.01116
+
+[IMPORTANT] The Pile: An 800GB Dataset of Diverse Text for Language Modeling
+https://arxiv.org/abs/2101.00027
+
+[IMPORTANT] DoReMi: Optimizing Data Mixtures Speeds Up Language Model Pretraining
+https://arxiv.org/abs/2305.10429
+
+[IMPORTANT] DataComp-LM: In Search of the Next Generation of Training Data
+https://arxiv.org/abs/2406.11794
+
+4. FINE-TUNING / PEFT
+----------------------
+[CORE] LoRA: Low-Rank Adaptation of Large Language Models
+https://arxiv.org/abs/2106.09685
+
+[CORE] QLoRA: Efficient Finetuning of Quantized LLMs
+https://arxiv.org/abs/2305.14314
+
+[IMPORTANT] Prefix-Tuning: Optimizing Continuous Prompts for Generation
+https://arxiv.org/abs/2101.00190
+
+[IMPORTANT] Parameter-Efficient Transfer Learning for NLP (Adapters)
+https://arxiv.org/abs/1902.00751
+
+[IMPORTANT] IA3: Few-Shot Parameter-Efficient Fine-Tuning is Better and Faster
+https://arxiv.org/abs/2205.05638
+
+[IMPORTANT] A Deep Dive into the Trade-Offs of Parameter-Efficient Fine-Tuning
+https://arxiv.org/abs/2406.04879
+
+[IMPORTANT] Fine-tuning Large Language Models for Domain Specific Applications
+https://arxiv.org/abs/2312.12740
+
+5. POST-TRAINING
+----------------
+[CORE] Training Language Models to Follow Instructions with Human Feedback (InstructGPT)
+https://arxiv.org/abs/2203.02155
+
+[CORE] Direct Preference Optimization: Your Language Model is Secretly a Reward Model
+https://arxiv.org/abs/2305.18290
+
+[CORE] DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models
+https://arxiv.org/abs/2402.03300
+
+[IMPORTANT] DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning
+https://arxiv.org/abs/2501.12948
+
+[IMPORTANT] GRPO / Group Relative Policy Optimization
+Read via DeepSeekMath paper above; understand group-relative advantages, no separate value model, and verifiable rewards.
+
+[IMPORTANT] KTO: Model Alignment as Prospect Theoretic Optimization
+https://arxiv.org/abs/2402.01306
+
+[IMPORTANT] ORPO: Monolithic Preference Optimization without Reference Model
+https://arxiv.org/abs/2403.07691
+
+6. REASONING / TEST-TIME COMPUTE
+---------------------------------
+[CORE] Let's Verify Step by Step
+https://arxiv.org/abs/2305.20050
+
+[CORE] Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters
+https://arxiv.org/abs/2408.03314
+
+[IMPORTANT] Tree of Thoughts: Deliberate Problem Solving with Large Language Models
+https://arxiv.org/abs/2305.10601
+
+[IMPORTANT] Self-Consistency Improves Chain of Thought Reasoning in Language Models
+https://arxiv.org/abs/2203.11171
+
+[IMPORTANT] STaR: Self-Taught Reasoner Bootstrapping Reasoning With Reasoning
+https://arxiv.org/abs/2203.14465
+
+[IMPORTANT] ReST^EM: Reinforced Self-Training with Expectation-Maximization
+https://arxiv.org/abs/2312.08935
+
+[IMPORTANT] Quiet-STaR: Language Models Can Teach Themselves to Think Before Speaking
+https://arxiv.org/abs/2403.09629
+
+7. DISTILLATION
+---------------
+[CORE] Distilling the Knowledge in a Neural Network
+https://arxiv.org/abs/1503.02531
+
+[CORE] Distilling Step-by-Step: Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes
+https://arxiv.org/abs/2305.02301
+
+[IMPORTANT] MiniLLM: Knowledge Distillation of Large Language Models
+https://arxiv.org/abs/2306.08543
+
+[IMPORTANT] GKD: Generalized Knowledge Distillation for Language Model Alignment
+https://arxiv.org/abs/2306.08507
+
+[IMPORTANT] Knowledge-Augmented Reasoning Distillation for Small Language Models
+https://arxiv.org/abs/2305.18395
+
+[IMPORTANT] Reinforcement-aware Knowledge Distillation for LLM Reasoning
+https://arxiv.org/abs/2602.22495
+
+8. INFERENCE / SERVING
+----------------------
+[CORE] Fast Inference from Transformers via Speculative Decoding
+https://arxiv.org/abs/2211.17192
+
+[CORE] FlashAttention-2
+https://arxiv.org/abs/2307.08691
+
+[IMPORTANT] SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models
+https://arxiv.org/abs/2211.10438
+
+[IMPORTANT] LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale
+https://arxiv.org/abs/2208.07339
+
+[IMPORTANT] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration
+https://arxiv.org/abs/2306.00978
+
+[IMPORTANT] GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers
+https://arxiv.org/abs/2210.17323
+
+[IMPORTANT] FlexGen: High-Throughput Generative Inference of Large Language Models with a Single GPU
+https://arxiv.org/abs/2303.06865
+
+[IMPORTANT] vLLM: Easy, Fast, and Cheap LLM Serving with PagedAttention
+https://arxiv.org/abs/2309.06180
+
+[IMPORTANT] PagedAttention / KV-cache systems
+https://arxiv.org/abs/2309.06180
+
+[IMPORTANT] SpecInfer: Accelerating Large Language Model Serving with Tree-based Speculative Inference and Verification
+https://arxiv.org/abs/2305.09781
+
+[IMPORTANT] Mooncake: A KVCache-centric Disaggregated Architecture for LLM Serving
+https://arxiv.org/abs/2407.00079
+
+[IMPORTANT] P/D-Serve: Serving Disaggregated Large Language Model at Scale
+https://arxiv.org/abs/2408.08147
+
+9. EVALUATION
+--------------
+[CORE] HELM: Holistic Evaluation of Language Models
+https://arxiv.org/abs/2211.09110
+
+[CORE] Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena
+https://arxiv.org/abs/2306.05685
+
+[IMPORTANT] LM Evaluation Harness
+https://arxiv.org/abs/2403.13762
+
+[IMPORTANT] TruthfulQA: Measuring How Models Mimic Human Falsehoods
+https://arxiv.org/abs/2109.07958
+
+[IMPORTANT] GSM8K: Training Verifiers to Solve Math Word Problems
+https://arxiv.org/abs/2110.14168
+
+[IMPORTANT] MATH: Measuring Mathematical Problem Solving With the Mathematics Dataset
+https://arxiv.org/abs/2103.03874
+
+[IMPORTANT] BIG-bench: A Collaborative Benchmark for Measuring LLM Capabilities
+https://arxiv.org/abs/2206.04615
+
+[IMPORTANT] MMLU: Measuring Massive Multitask Language Understanding
+https://arxiv.org/abs/2009.03300
+
+[IMPORTANT] AgentBench: Evaluating LLMs as Agents
+https://arxiv.org/abs/2308.03688
+
+[IMPORTANT] GAIA: A Benchmark for General AI Assistants
+https://arxiv.org/abs/2311.12983
+
+[IMPORTANT] SWE-bench: Can Language Models Resolve Real-World GitHub Issues?
+https://arxiv.org/abs/2310.06770
+
+10. META / SURVEYS — đọc khi muốn dựng mental map
+-----------------------------------------------
+[REFERENCE] A Survey of Large Language Models
+https://arxiv.org/abs/2303.18223
+
+[REFERENCE] Efficient Transformers: A Survey
+https://arxiv.org/abs/2009.06732
+
+[REFERENCE] A Survey on Large Language Model Evaluation
+https://arxiv.org/search/?query=large+language+model+evaluation&searchtype=all
+
+[REFERENCE] A Survey on Knowledge Distillation for Large Language Models
+https://arxiv.org/search/?query=knowledge+distillation+large+language+models&searchtype=all
+
+11. SUGGESTED ORDER
+-------------------
+Phase 1 — Core mental model:
+1. Attention Is All You Need
+2. GQA
+3. Switch Transformer
+4. DeepSeek-V2
+5. FlashAttention + FlashAttention-2
+6. Scaling Laws
+7. Chinchilla
+8. LoRA
+9. QLoRA
+10. InstructGPT
+11. DPO
+12. DeepSeekMath / GRPO
+13. DeepSeek-R1
+14. Speculative Decoding
+15. vLLM / PagedAttention
+16. HELM
+17. LLM-as-a-Judge
+
+Phase 2 — Go deep:
+18. YaRN / long context
+19. DeepSeek-V3
+20. Sophia
+21. Adam-mini
+22. Muon optimizer literature
+23. DoReMi / DataComp-LM
+24. synthetic data scaling
+25. reasoning + test-time compute
+26. distillation
+27. quantization
+28. disaggregated serving
+29. agent evaluation
+
+Phase 3 — Keep current:
+Mỗi tuần chỉ cần scan arXiv cho các keyword:
+architecture, MoE, MLA, attention, optimizer, Muon, pretraining,
+synthetic data, SFT, PEFT, LoRA, QLoRA, DPO, GRPO, RL,
+reasoning, test-time compute, distillation, quantization,
+speculative decoding, KV cache, serving, evaluation, agents.
+
+RULE:
+Đừng đọc paper mới chỉ vì nó mới.
+Đọc để trả lời:
+- Nó thay đổi assumption nào?
+- Nó giải quyết bottleneck nào?
+- Nó trade cái gì để lấy cái gì?
+- Có scaling law / ablation / compute-matched comparison không?
+- Có code / reproducibility không?

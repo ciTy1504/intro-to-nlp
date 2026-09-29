@@ -17,7 +17,7 @@
 \begin{enumerate}
     \item \textbf{Thiết lập Môi trường:} Cài đặt thư viện và API keys.
     \item \textbf{Định nghĩa Công cụ:} Tạo một hoặc nhiều công cụ mà agent có thể sử dụng.
-    \item \textbf{Khởi tạo LLM và Agent:} Chọn một LLM và sử dụng các hàm của LangChain để "trang bị" công cụ cho nó.
+    \item \textbf{Khởi tạo LLM và Agent:} Chọn một LLM và sử dụng các hàm của LangChain để “trang bị” công cụ cho nó.
     \item \textbf{Thực thi Agent:} Đưa ra một câu hỏi và quan sát vòng lặp `Thought-Action-Observation`.
 \end{enumerate}
 
@@ -91,3 +91,13 @@ manner.
 
 > Finished chain.
 \end{verbatim}
+
+\begin{tcolorbox}[title={Cập nhật 2026: Tác tử hiện đại không còn “diễn kịch” ReAct bằng text}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+Công thức ReAct ở trên rất tốt để \emph{hiểu} vòng lặp Suy nghĩ--Hành động--Quan sát (mục~\ref{ssec:react_framework}), nhưng cách triển khai thực tế hiện nay khác ở ba điểm:
+\begin{enumerate}
+	\item \textbf{Gọi công cụ có cấu trúc (native tool calling):} Thay vì bắt mô hình in ra chuỗi \texttt{Action: ...} rồi tự phân tích bằng regex (rất dễ vỡ), ta khai báo công cụ dưới dạng \emph{JSON schema} và mô hình trả về lời gọi công cụ có cấu trúc. Mọi API hiện đại và các engine mở (vLLM, SGLang) đều hỗ trợ, thường với ràng buộc ngữ pháp để đảm bảo JSON hợp lệ.
+	\item \textbf{Model Context Protocol (MCP):} Một chuẩn mở để mô tả và kết nối công cụ/nguồn dữ liệu với LLM. Thay vì viết lại adapter cho từng framework, bạn dựng một “MCP server” cho hệ thống của mình và mọi client hỗ trợ MCP đều dùng được.
+	\item \textbf{Mô hình suy luận thay cho prompt ReAct:} Các mô hình suy luận (chương~\ref{chap:reasoning}) đã được huấn luyện để tự lập kế hoạch và tự sửa sai; phần “Thought” viết tay trong prompt trở nên ít cần thiết. Việc cần làm nhiều hơn là thiết kế \textbf{bộ công cụ tốt}, \textbf{giới hạn số vòng lặp}, và \textbf{cơ chế phê duyệt} cho các hành động khó đảo ngược.
+\end{enumerate}
+Khi đánh giá tác tử, hãy dùng các benchmark chuyên biệt (mục~\ref{sec:agent_evaluation}) và nhớ rằng điểm số phụ thuộc mạnh vào “giàn giáo” quanh mô hình, không chỉ vào mô hình.
+\end{tcolorbox}

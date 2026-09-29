@@ -35,12 +35,12 @@ Sau khi đã học được không gian embedding tốt này, việc đo độ t
 \subsubsection{Kiến trúc Mạng Siamese}
 \label{ssec:siamese_architecture}
 
-Cái tên "Siamese" (cặp song sinh dính liền) mô tả rất chính xác kiến trúc của nó. Mạng Siamese bao gồm hai "nhánh" (towers) mạng nơ-ron giống hệt nhau, xử lý hai đầu vào một cách song song.
+Cái tên “Siamese” (cặp song sinh dính liền) mô tả rất chính xác kiến trúc của nó. Mạng Siamese bao gồm hai “nhánh” (towers) mạng nơ-ron giống hệt nhau, xử lý hai đầu vào một cách song song.
 
 \paragraph{Hai nhánh, một bộ não}
 \begin{itemize}
     \item Mạng bao gồm hai bộ mã hóa (encoder) có \textbf{kiến trúc y hệt nhau}.
-    \item Quan trọng nhất, hai bộ mã hóa này \textbf{chia sẻ cùng một bộ trọng số (share weights)}. Điều này có nghĩa là chúng ta chỉ có một "bộ não" duy nhất, được áp dụng cho cả hai câu đầu vào.
+    \item Quan trọng nhất, hai bộ mã hóa này \textbf{chia sẻ cùng một bộ trọng số (share weights)}. Điều này có nghĩa là chúng ta chỉ có một “bộ não” duy nhất, được áp dụng cho cả hai câu đầu vào.
     \item Việc chia sẻ trọng số đảm bảo rằng hai câu giống hệt nhau sẽ luôn được ánh xạ tới cùng một điểm trong không gian embedding. Nó cũng làm cho mô hình hiệu quả hơn nhiều về mặt tham số.
     \item Bộ mã hóa này có thể là bất kỳ kiến trúc nào có khả năng biến một chuỗi thành một vector, ví dụ như một mạng LSTM, GRU, hoặc CNN đã được học ở các phần trước.
 \end{itemize}
@@ -92,7 +92,7 @@ Hãy xem hàm mất mát này hoạt động như thế nào trong hai trường
             \item Điều này \textbf{đẩy hai vector ra xa nhau} cho đến khi khoảng cách giữa chúng ít nhất là bằng lề $m$. Nếu chúng đã đủ xa ($D_W > m$), loss sẽ bằng 0 và mô hình không cần phải làm gì thêm.
         \end{itemize}
 \end{enumerate}
-Lề $m$ đóng vai trò như một "vùng an toàn", nó yêu cầu các cặp không tương tự phải cách nhau một khoảng tối thiểu, tạo ra sự phân tách rõ ràng trong không gian embedding.
+Lề $m$ đóng vai trò như một “vùng an toàn”, nó yêu cầu các cặp không tương tự phải cách nhau một khoảng tối thiểu, tạo ra sự phân tách rõ ràng trong không gian embedding.
 
 \subsubsection{Triplet Loss: Một sự thay thế nâng cao}
 \label{ssec:triplet_loss}
@@ -136,7 +136,7 @@ Các kiến trúc truyền thống như RNN và CNN gặp khó khăn trong việ
 \subsubsection{Nguyên lý Cốt lõi của GNN: Lan truyền Thông điệp (Message Passing)}
 \label{ssec:gnn_message_passing}
 
-Để hiểu GNN, trước hết ta cần hiểu cách nó "suy nghĩ" về một đồ thị. Một đồ thị bao gồm các \textbf{nút (nodes)} và các \textbf{cạnh (edges)} nối giữa chúng. Trong GNN, mỗi nút có một vector đặc trưng (node feature vector) riêng. Mục tiêu của GNN là học một hàm để tính toán một \textbf{vector biểu diễn (node representation/embedding)} cho mỗi nút, sao cho vector này không chỉ chứa thông tin của chính nút đó mà còn tóm tắt được thông tin từ \textbf{cấu trúc lân cận} của nó.
+Để hiểu GNN, trước hết ta cần hiểu cách nó “suy nghĩ” về một đồ thị. Một đồ thị bao gồm các \textbf{nút (nodes)} và các \textbf{cạnh (edges)} nối giữa chúng. Trong GNN, mỗi nút có một vector đặc trưng (node feature vector) riêng. Mục tiêu của GNN là học một hàm để tính toán một \textbf{vector biểu diễn (node representation/embedding)} cho mỗi nút, sao cho vector này không chỉ chứa thông tin của chính nút đó mà còn tóm tắt được thông tin từ \textbf{cấu trúc lân cận} của nó.
 
 GNN thực hiện điều này thông qua một quy trình lặp đi lặp lại gọi là \textbf{Lan truyền Thông điệp (Message Passing)} hoặc \textbf{Tổng hợp Lân cận (Neighborhood Aggregation)}.
 
@@ -146,8 +146,8 @@ GNN thực hiện điều này thông qua một quy trình lặp đi lặp lại
 ]
 Hãy tưởng tượng mỗi nút trong đồ thị là một người. Tại mỗi vòng, mỗi người sẽ làm hai việc:
 \begin{enumerate}
-    \item \textbf{Gửi thư:} Gửi một bản sao "trạng thái" hiện tại của mình cho tất cả những người hàng xóm.
-    \item \textbf{Cập nhật bản thân:} Nhận tất cả "thư" từ hàng xóm, tổng hợp chúng lại thành một thông điệp duy nhất, và sau đó kết hợp thông điệp này với trạng thái cũ của mình để tạo ra một trạng thái mới, thông thái hơn.
+    \item \textbf{Gửi thư:} Gửi một bản sao “trạng thái” hiện tại của mình cho tất cả những người hàng xóm.
+    \item \textbf{Cập nhật bản thân:} Nhận tất cả “thư” từ hàng xóm, tổng hợp chúng lại thành một thông điệp duy nhất, và sau đó kết hợp thông điệp này với trạng thái cũ của mình để tạo ra một trạng thái mới, thông thái hơn.
 \end{enumerate}
 Khi quá trình này lặp lại nhiều lần, thông tin từ những nút ở xa sẽ dần dần lan truyền khắp đồ thị. Một nút sau $k$ vòng lặp sẽ có một vector biểu diễn chứa thông tin từ tất cả các nút cách nó $k$ bước chân.
 \end{tcolorbox}
@@ -155,7 +155,7 @@ Khi quá trình này lặp lại nhiều lần, thông tin từ những nút ở
 Về mặt kỹ thuật, một lớp GNN thực hiện 3 bước:
 \begin{enumerate}
     \item \textbf{Thu thập (Gather):} Với mỗi nút, thu thập vector đặc trưng từ tất cả các nút hàng xóm trực tiếp của nó.
-    \item \textbf{Tổng hợp (Aggregate):} Áp dụng một hàm tổng hợp (ví dụ: `SUM`, `MEAN`, `MAX`) lên các vector đã thu thập để tạo ra một "thông điệp" lân cận duy nhất. Hàm này phải không nhạy cảm với thứ tự của các hàng xóm.
+    \item \textbf{Tổng hợp (Aggregate):} Áp dụng một hàm tổng hợp (ví dụ: `SUM`, `MEAN`, `MAX`) lên các vector đã thu thập để tạo ra một “thông điệp” lân cận duy nhất. Hàm này phải không nhạy cảm với thứ tự của các hàng xóm.
     \item \textbf{Cập nhật (Update):} Kết hợp thông điệp lân cận với vector đặc trưng hiện tại của nút (thường thông qua một mạng nơ-ron nhỏ) để tạo ra vector đặc trưng mới cho nút đó ở lớp tiếp theo.
 \end{enumerate}
 
@@ -165,7 +165,7 @@ Về mặt kỹ thuật, một lớp GNN thực hiện 3 bước:
     \label{fig:gnn_message_passing}
 \end{center}
 
-Bằng cách xếp chồng nhiều lớp GNN, một nút có thể tích hợp thông tin từ các hàng xóm ngày càng xa, cho phép mô hình có được "cái nhìn toàn cảnh" về vị trí và vai trò của mỗi nút trong toàn bộ đồ thị.
+Bằng cách xếp chồng nhiều lớp GNN, một nút có thể tích hợp thông tin từ các hàng xóm ngày càng xa, cho phép mô hình có được “cái nhìn toàn cảnh” về vị trí và vai trò của mỗi nút trong toàn bộ đồ thị.
 
 \subsubsection{Huấn luyện GNN}
 Quá trình huấn luyện một GNN phụ thuộc vào tác vụ cụ thể ở cấp độ đồ thị, nút, hoặc cạnh.
@@ -195,14 +195,14 @@ GNN được sử dụng để giải quyết hai bài toán chính:
 \paragraph{Phân tích Cú pháp dựa trên Đồ thị (Graph-based Parsing)}
 Như đã đề cập, cây cú pháp phụ thuộc của một câu là một đồ thị. Chúng ta có thể áp dụng GNN trực tiếp lên cấu trúc này.
 \begin{itemize}
-    \item \textbf{Biểu diễn ngữ nghĩa dựa trên cấu trúc (Structure-aware Semantic Representation):} Thay vì chỉ dựa vào thứ tự tuần tự như LSTM, GNN cho phép một từ được biểu diễn bởi một vector tổng hợp thông tin từ các từ "quản lý" và "phụ thuộc" của nó. Ví dụ, vector của một động từ sẽ được "làm giàu" bởi thông tin từ chủ ngữ và tân ngữ của nó. Các biểu diễn này thường nắm bắt ngữ nghĩa chức năng tốt hơn.
+    \item \textbf{Biểu diễn ngữ nghĩa dựa trên cấu trúc (Structure-aware Semantic Representation):} Thay vì chỉ dựa vào thứ tự tuần tự như LSTM, GNN cho phép một từ được biểu diễn bởi một vector tổng hợp thông tin từ các từ “quản lý” và “phụ thuộc” của nó. Ví dụ, vector của một động từ sẽ được “làm giàu” bởi thông tin từ chủ ngữ và tân ngữ của nó. Các biểu diễn này thường nắm bắt ngữ nghĩa chức năng tốt hơn.
     \item \textbf{Cải thiện các tác vụ hạ nguồn:} Các biểu diễn giàu cú pháp này sau đó có thể được sử dụng để cải thiện hiệu năng của các tác vụ như Trích xuất Quan hệ hay Phân tích Cảm xúc.
 \end{itemize}
 
 \paragraph{Mô hình hóa Hội thoại (Dialogue Modeling)}
 Một cuộc hội thoại, đặc biệt là với nhiều người tham gia, không phải là một chuỗi tuyến tính.
 \begin{itemize}
-    \item \textbf{Xây dựng Đồ thị Hội thoại (Dialogue Graph):} Chúng ta có thể xây dựng một đồ thị trong đó các nút là các lượt lời (utterances), và các cạnh biểu diễn các mối quan hệ như "ai trả lời ai" hoặc "các lượt lời của cùng một người".
+    \item \textbf{Xây dựng Đồ thị Hội thoại (Dialogue Graph):} Chúng ta có thể xây dựng một đồ thị trong đó các nút là các lượt lời (utterances), và các cạnh biểu diễn các mối quan hệ như “ai trả lời ai” hoặc “các lượt lời của cùng một người”.
     \item \textbf{Ứng dụng GNN:} GNN có thể được chạy trên đồ thị này để học biểu diễn cho mỗi lượt lời, có tính đến toàn bộ lịch sử tương tác. Điều này rất hữu ích cho các tác vụ như tóm tắt hội thoại, theo dõi trạng thái hội thoại (dialogue state tracking), hoặc xác định cảm xúc trong các cuộc trò chuyện phức tạp.
 \end{itemize}
 
@@ -211,7 +211,7 @@ Một cuộc hội thoại, đặc biệt là với nhiều người tham gia, k
 
 Sự ra đời của Transformer (sẽ học ở chương sau) đã thống trị NLP với khả năng nắm bắt phụ thuộc tầm xa trong chuỗi. Tuy nhiên, Transformer vốn không được thiết kế để xử lý thông tin cấu trúc tường minh. Điều này đã dẫn đến một hướng nghiên cứu sôi nổi: \textbf{kết hợp GNN và Transformer}.
 \begin{itemize}
-    \item \textbf{Ý tưởng:} Sử dụng Transformer để có được các biểu diễn từ ban đầu, giàu ngữ cảnh tuần tự. Sau đó, xây dựng một đồ thị (ví dụ: đồ thị cú pháp) lên trên các từ này và sử dụng GNN để "tinh chỉnh" (refine) các biểu diễn đó bằng cách cho chúng lan truyền thông tin qua cấu trúc đồ thị.
+    \item \textbf{Ý tưởng:} Sử dụng Transformer để có được các biểu diễn từ ban đầu, giàu ngữ cảnh tuần tự. Sau đó, xây dựng một đồ thị (ví dụ: đồ thị cú pháp) lên trên các từ này và sử dụng GNN để “tinh chỉnh” (refine) các biểu diễn đó bằng cách cho chúng lan truyền thông tin qua cấu trúc đồ thị.
     \item \textbf{Kết quả:} Các mô hình lai ghép này thường cho kết quả tốt hơn trên các tác vụ đòi hỏi cả sự hiểu biết về cấu trúc và ngữ cảnh, ví dụ như các bài toán suy luận phức tạp.
 \end{itemize}
 

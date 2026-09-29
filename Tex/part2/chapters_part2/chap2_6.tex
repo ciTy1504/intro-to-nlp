@@ -1,0 +1,76 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters_part2/chap2_6.tex
+% Cập nhật 2026: đánh giá tái lập được
+
+\section{Đánh giá Tái lập được với LM Evaluation Harness}
+\label{sec:lm_eval_practice}
+
+Mục~\ref{ssec:lm_eval_harness} đã chỉ ra rằng điểm số benchmark cực kỳ nhạy với thiết lập đánh giá. Cách phòng vệ tốt nhất là dùng một framework chuẩn thay vì tự viết vòng lặp đánh giá cho mỗi tác vụ.
+
+\subsection{Cài đặt và chạy thử}
+\label{ssec:lm_eval_setup}
+\begin{example}{Đánh giá một mô hình Hugging Face}{ex:lm_eval_basic}
+\begin{minted}{bash}
+pip install "lm_eval[hf]"
+
+lm-eval --model hf \
+  --model_args pretrained=Qwen/Qwen3-0.6B,dtype=bfloat16 \
+  --tasks hellaswag,arc_challenge,gsm8k \
+  --num_fewshot 5 \
+  --batch_size auto \
+  --output_path results/qwen3-0.6b \
+  --log_samples
+\end{minted}
+\end{example}
+\begin{itemize}
+	\item \texttt{--batch\_size auto} tự dò kích thước batch lớn nhất vừa bộ nhớ.
+	\item \texttt{--log\_samples} lưu lại \emph{từng} prompt và đầu ra của mô hình. Hãy luôn bật tùy chọn này: phần lớn các kết quả “bất thường” hóa ra là do prompt hoặc cách tách đáp án, chứ không phải do mô hình.
+	\item Với mô hình đã instruction-tuned, thêm \texttt{--apply\_chat\_template} để dùng đúng chat template; nếu không, bạn đang đánh giá mô hình ở một định dạng mà nó chưa từng thấy khi huấn luyện.
+\end{itemize}
+
+\subsection{Đánh giá nhanh hơn bằng vLLM và đánh giá qua API}
+\label{ssec:lm_eval_vllm}
+Với các tác vụ cần \emph{sinh văn bản} (GSM8K, MATH, IFEval), backend vLLM nhanh hơn nhiều lần nhờ continuous batching (mục~\ref{ssec:continuous_batching}).
+\begin{example}{Đánh giá với backend vLLM và với máy chủ tương thích OpenAI}{ex:lm_eval_vllm}
+\begin{minted}{bash}
+# Cách 1: vLLM chạy trực tiếp trong tiến trình đánh giá
+pip install "lm_eval[vllm]"
+lm-eval --model vllm \
+  --model_args pretrained=Qwen/Qwen3-8B,tensor_parallel_size=2,dtype=auto \
+  --tasks gsm8k --batch_size auto
+
+# Cách 2: đánh giá một máy chủ đang chạy (vLLM, SGLang, hoặc dịch vụ khác)
+lm-eval --model local-chat-completions \
+  --model_args model=Qwen/Qwen3-8B,base_url=http://localhost:8000/v1/chat/completions \
+  --tasks gsm8k --apply_chat_template
+\end{minted}
+\end{example}
+
+\subsection{Đọc kết quả một cách nghiêm túc}
+\label{ssec:lm_eval_reading}
+\begin{itemize}
+	\item \textbf{Luôn báo cáo sai số chuẩn:} Harness in ra \texttt{stderr} cho mỗi tác vụ. Chênh lệch 0.5 điểm trên một tác vụ có sai số chuẩn 1.2 điểm là \emph{không có ý nghĩa}.
+	\item \textbf{Ghi lại toàn bộ cấu hình:} phiên bản harness, tên tác vụ, \texttt{num\_fewshot}, có dùng chat template hay không, và phiên bản mô hình. Kết quả không kèm các thông tin này thì không thể tái lập.
+	\item \textbf{So sánh trong cùng một lần chạy:} Muốn so sánh mô hình A và B, hãy chạy cả hai bằng cùng lệnh, cùng phiên bản, cùng phần cứng -- đừng lấy số của A từ bài báo và số của B từ máy bạn.
+	\item \textbf{Kiểm tra nhiễm bẩn:} Nếu mô hình của bạn được tinh chỉnh trên dữ liệu công khai, hãy kiểm tra trùng lặp n-gram giữa dữ liệu huấn luyện và tập kiểm tra (mục~\ref{ssec:data_contamination}).
+	\item \textbf{Bổ sung đánh giá riêng cho bài toán của bạn:} Benchmark công khai chỉ là mốc tham chiếu; thứ quyết định là một bộ kiểm tra nội bộ phản ánh đúng dữ liệu người dùng thật, kết hợp với LLM-as-a-judge cho các tác vụ mở (mục~\ref{sec:llm_as_a_judge}).
+\end{itemize}
+
+\begin{tcolorbox}[title={Một quy trình đánh giá tối thiểu cho dự án thực tế}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
+\begin{enumerate}
+	\item \textbf{Bộ kiểm tra nội bộ} (100--500 mẫu thật, có nhãn) -- chạy mỗi lần thay đổi mô hình hoặc prompt.
+	\item \textbf{2--3 benchmark công khai liên quan} qua \texttt{lm-eval} -- phát hiện suy giảm năng lực chung sau khi tinh chỉnh.
+	\item \textbf{Kiểm tra hồi quy an toàn} -- một tập prompt nhạy cảm cố định.
+	\item \textbf{Đánh giá A/B với người dùng thật} trước khi phát hành rộng.
+\end{enumerate}
+\end{tcolorbox}
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Chương này đã trang bị cho bạn một bộ công cụ thực chiến hoàn chỉnh: hệ sinh thái Hugging Face, các quy trình đánh giá đáng tin cậy, quản lý thí nghiệm, huấn luyện phân tán, và toàn bộ chuỗi hậu huấn luyện hiện đại (SFT, DPO, GRPO) cùng cách đánh giá tái lập được. Với những kỹ năng này, bạn đã sẵn sàng để đối mặt với những thách thức phức tạp hơn trong việc triển khai và vận hành các hệ thống NLP trong môi trường production, chủ đề của chương tiếp theo.}

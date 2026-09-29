@@ -10,13 +10,13 @@ Khi quy mô của các mô hình ngôn ngữ tăng từ hàng trăm triệu lên
 
 \subsection{Các Mô hình Song song (Parallelism Paradigms)}
 \label{ssec:parallelism_paradigms}
-Có nhiều cách khác nhau để "chia nhỏ" quá trình huấn luyện. Ba chiến lược chính là:
+Có nhiều cách khác nhau để “chia nhỏ” quá trình huấn luyện. Ba chiến lược chính là:
 
 \begin{enumerate}
     \item \textbf{Data Parallelism (DP) - Song song Dữ liệu:}
         \begin{itemize}
             \item \textbf{Ý tưởng:} Đây là chiến lược phổ biến và đơn giản nhất. Mỗi GPU sẽ giữ một \textbf{bản sao đầy đủ của mô hình}. Dữ liệu huấn luyện (batch) sẽ được chia nhỏ ra, và mỗi GPU sẽ xử lý một phần của batch đó.
-            \item \textbf{Quy trình:} Các GPU tính toán gradient một cách độc lập trên phần dữ liệu của mình, sau đó chúng "giao tiếp" với nhau để đồng bộ hóa và tính trung bình các gradient trước khi cập nhật trọng số.
+            \item \textbf{Quy trình:} Các GPU tính toán gradient một cách độc lập trên phần dữ liệu của mình, sau đó chúng “giao tiếp” với nhau để đồng bộ hóa và tính trung bình các gradient trước khi cập nhật trọng số.
             \item \textbf{Hạn chế:} Không giải quyết được vấn đề bộ nhớ. Nếu mô hình quá lớn để vừa trên một GPU, DP sẽ không hoạt động.
         \end{itemize}
     \item \textbf{Tensor Parallelism (TP) - Song song Tensor:}
@@ -29,7 +29,7 @@ Có nhiều cách khác nhau để "chia nhỏ" quá trình huấn luyện. Ba c
         \begin{itemize}
             \item \textbf{Ý tưởng:} Chia các \textbf{lớp (layers)} của mô hình ra nhiều GPU.
             \item \textbf{Quy trình:} GPU 1 sẽ xử lý các lớp đầu tiên (ví dụ: 0-11), sau đó chuyển kết quả đầu ra cho GPU 2 để xử lý các lớp tiếp theo (ví dụ: 12-23), và cứ thế tiếp tục. Nó hoạt động giống như một dây chuyền lắp ráp.
-            \item \textbf{Hạn chế:} Có thể gây ra "bong bóng" (bubbles), tức là thời gian chờ khi các GPU ở đầu đường ống phải đợi các GPU ở cuối hoàn thành công việc.
+            \item \textbf{Hạn chế:} Có thể gây ra “bong bóng” (bubbles), tức là thời gian chờ khi các GPU ở đầu đường ống phải đợi các GPU ở cuối hoàn thành công việc.
         \end{itemize}
 \end{enumerate}
 
@@ -45,7 +45,7 @@ Như đã giới thiệu ở mục \ref{ssec:hf_accelerate}, `accelerate` cung c
     \item \textbf{Cách hoạt động:}
         \begin{enumerate}
             \item Bạn viết một kịch bản huấn luyện PyTorch tiêu chuẩn.
-            \item Chạy lệnh `accelerate config` trong terminal để thiết lập môi trường của bạn (ví dụ: "sử dụng 2 GPU trên máy này", "sử dụng precision fp16").
+            \item Chạy lệnh `accelerate config` trong terminal để thiết lập môi trường của bạn (ví dụ: “sử dụng 2 GPU trên máy này”, “sử dụng precision fp16”).
             \item Chạy kịch bản của bạn bằng lệnh `accelerate launch your\_script.py`.
         \end{enumerate}
     \item \textbf{Tích hợp với `Trainer`:} `Trainer` của Hugging Face đã tích hợp sẵn `accelerate`. Khi bạn chạy một kịch bản `Trainer` với `accelerate launch`, nó sẽ tự động áp dụng chiến lược Data Parallelism (DP) trên các GPU có sẵn.
@@ -94,13 +94,3 @@ Sức mạnh của hệ sinh thái Hugging Face là việc tích hợp các côn
 `Trainer` và `accelerate` sẽ tự động xử lý tất cả các chi tiết phức tạp của việc khởi tạo và chạy DeepSpeed.
 
 Ngoài ZeRO, DeepSpeed còn cung cấp nhiều tính năng tối ưu hóa khác như \textbf{Offloading} (chuyển bớt các tham số không dùng đến từ VRAM sang CPU RAM hoặc NVMe) và các kernel hiệu năng cao. Bằng cách kết hợp các công cụ như `accelerate` và `DeepSpeed`, việc huấn luyện các mô hình ngôn ngữ lớn không còn là đặc quyền của một vài phòng thí nghiệm AI lớn, mà đã trở nên dễ tiếp cận hơn với cộng đồng nghiên cứu và các doanh nghiệp.
-
-\bigskip
-\hrule
-\bigskip
-
-\begin{center}
-    \textbf{\Large KẾT THÚC CHƯƠNG 2}
-\end{center}
-
-\textit{Chương 2 đã trang bị cho bạn một bộ công cụ thực chiến hoàn chỉnh, từ việc làm quen với hệ sinh thái Hugging Face, xây dựng các quy trình đánh giá đáng tin cậy, đến việc quản lý các thí nghiệm một cách khoa học và huấn luyện các mô hình trên quy mô lớn. Với những kỹ năng này, bạn đã sẵn sàng để đối mặt với những thách thức phức tạp hơn trong việc triển khai và vận hành các hệ thống NLP trong môi trường production, chủ đề của chương tiếp theo.}

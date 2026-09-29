@@ -7,22 +7,22 @@
 
 Sau khi đã qua bước Tinh chỉnh theo chỉ dẫn (Instruction Tuning), mô hình của chúng ta đã học được cách tuân theo mệnh lệnh. Tuy nhiên, nó vẫn có thể tạo ra các kết quả không mong muốn:
 \begin{itemize}
-    \item \textbf{Không hữu ích (Unhelpful):} Trả lời "Tôi không biết" quá thường xuyên, hoặc đưa ra các câu trả lời không liên quan.
+    \item \textbf{Không hữu ích (Unhelpful):} Trả lời “Tôi không biết” quá thường xuyên, hoặc đưa ra các câu trả lời không liên quan.
     \item \textbf{Không trung thực (Dishonest) / Bịa đặt (Hallucination):} Tự tin bịa đặt thông tin, trích dẫn các nguồn không tồn tại.
     \item \textbf{Độc hại (Harmful):} Tạo ra các nội dung nguy hiểm, thiên vị, hoặc xúc phạm, ngay cả khi không được yêu cầu trực tiếp.
 \end{itemize}
 
-Vấn đề là, các khái niệm như "hữu ích", "trung thực", "vô hại" rất phức tạp, mơ hồ và phụ thuộc vào ngữ cảnh. Chúng ta không thể định nghĩa chúng bằng một hàm mất mát đơn giản. Chúng ta cần một cách để truyền đạt những sở thích (preferences) tinh tế của con người vào mô hình. Đây là lúc các phương pháp \textbf{Căn chỉnh (Alignment)} phát huy tác dụng.
+Vấn đề là, các khái niệm như “hữu ích”, “trung thực”, “vô hại” rất phức tạp, mơ hồ và phụ thuộc vào ngữ cảnh. Chúng ta không thể định nghĩa chúng bằng một hàm mất mát đơn giản. Chúng ta cần một cách để truyền đạt những sở thích (preferences) tinh tế của con người vào mô hình. Đây là lúc các phương pháp \textbf{Căn chỉnh (Alignment)} phát huy tác dụng.
 
 \subsection{Mục tiêu Căn chỉnh: Bộ ba H (The 3 H's)}
 \label{ssec:alignment_goals}
-Mục tiêu cuối cùng của quá trình căn chỉnh thường được tóm gọn trong bộ ba nguyên tắc, được đề xuất bởi các nhà nghiên cứu tại Anthropic, thường được gọi là "HHH":
+Mục tiêu cuối cùng của quá trình căn chỉnh thường được tóm gọn trong bộ ba nguyên tắc, được đề xuất bởi các nhà nghiên cứu tại Anthropic, thường được gọi là “HHH”:
 \begin{enumerate}
     \item \textbf{Helpful (Hữu ích):} Mô hình nên cố gắng thực hiện ý định của người dùng một cách hiệu quả và đầy đủ. Nó nên tuân theo chỉ dẫn, thay vì lảng tránh hoặc từ chối một cách không cần thiết.
     \item \textbf{Honest (Trung thực):} Mô hình không nên cố ý lừa dối hoặc bịa đặt thông tin. Khi không chắc chắn, nó nên thể hiện sự không chắc chắn đó thay vì đưa ra một câu trả lời sai một cách tự tin.
     \item \textbf{Harmless (Vô hại):} Mô hình không nên gây ra tác hại, dù là cho người dùng trực tiếp hay cho xã hội nói chung. Nó phải từ chối các yêu cầu tạo ra nội dung nguy hiểm, phi đạo đức, hoặc bất hợp pháp.
 \end{enumerate}
-Việc cân bằng ba mục tiêu này là một thách thức lớn (ví dụ, một câu trả lời hoàn toàn trung thực có thể gây tổn thương và không "vô hại"). Các phương pháp căn chỉnh dưới đây là nỗ lực để đạt được sự cân bằng này.
+Việc cân bằng ba mục tiêu này là một thách thức lớn (ví dụ, một câu trả lời hoàn toàn trung thực có thể gây tổn thương và không “vô hại”). Các phương pháp căn chỉnh dưới đây là nỗ lực để đạt được sự cân bằng này.
 
 \subsection{Học Tăng cường từ Phản hồi Con người (RLHF)}
 \label{ssec:rlhf}
@@ -144,8 +144,22 @@ Quy trình RLHF bao gồm ba giai đoạn chính: (1) Tinh chỉnh có giám sá
 \end{itemize}
 
 
-\paragraph{Ghi chú:}  
+\paragraph{Ghi chú:}
 Trong các nghiên cứu gần đây, giai đoạn (3) có thể được thay thế bằng phương pháp \textbf{Direct Preference Optimization (DPO)} \cite{rafailov2023direct}, giúp tối ưu trực tiếp từ dữ liệu so sánh $(y^+, y^-)$ mà không cần huấn luyện Reward Model riêng biệt, đồng thời loại bỏ nhu cầu triển khai toàn bộ pipeline học tăng cường phức tạp.
+
+\subsubsection{InstructGPT: Công thức RLHF kinh điển trong thực tế}
+\label{sssec:instructgpt}
+Bài báo InstructGPT \cite{ouyang2022training} là bản mô tả chi tiết đầu tiên về việc áp dụng ba bước trên cho một LLM thực sự (GPT-3), và vẫn là tài liệu tham chiếu chuẩn cho RLHF.
+\begin{itemize}
+	\item \textbf{Dữ liệu:} Prompt được lấy từ API của OpenAI và do người gán nhãn tự viết. Khoảng 13 nghìn prompt cho SFT, 33 nghìn prompt cho huấn luyện RM, và 31 nghìn prompt (không cần nhãn) cho giai đoạn PPO. Khoảng 40 người gán nhãn được tuyển chọn qua bài kiểm tra về khả năng nhận diện nội dung nhạy cảm.
+	\item \textbf{Huấn luyện reward model hiệu quả:} Với mỗi prompt, người gán nhãn xếp hạng $K$ câu trả lời ($K$ từ 4 đến 9), tạo ra $\binom{K}{2}$ cặp so sánh. Tất cả các cặp của \emph{cùng một prompt} được đưa vào như một phần tử batch duy nhất -- nếu xáo trộn các cặp như dữ liệu độc lập, RM nhanh chóng bị quá khớp. RM có 6B tham số (dùng RM 175B không ổn định).
+	\item \textbf{Mục tiêu PPO-ptx:} Để giảm “thuế căn chỉnh” (alignment tax -- hiện tượng mô hình kém đi trên các benchmark NLP công khai sau RLHF), InstructGPT trộn thêm gradient tiền huấn luyện vào mục tiêu RL:
+	\[
+	\text{objective}(\phi) = \mathbb{E}_{(x,y)\sim D_{\pi_\phi^{\text{RL}}}}\Big[r_\theta(x,y) - \beta \log\frac{\pi_\phi^{\text{RL}}(y\mid x)}{\pi^{\text{SFT}}(y\mid x)}\Big] + \gamma\, \mathbb{E}_{x\sim D_{\text{pretrain}}}\Big[\log \pi_\phi^{\text{RL}}(x)\Big].
+	\]
+	\item \textbf{Kết quả nổi bật:} Người gán nhãn \textbf{ưa thích câu trả lời của InstructGPT 1.3B hơn GPT-3 175B} -- mô hình nhỏ hơn hơn 100 lần. InstructGPT trung thực hơn trên TruthfulQA, ít bịa đặt hơn trong các tác vụ đóng, và sinh ít nội dung độc hại hơn khi được yêu cầu cư xử tôn trọng; trong khi PPO-ptx giữ được hiệu năng trên các benchmark công khai.
+\end{itemize}
+Bài học quan trọng nhất: \emph{căn chỉnh không chỉ là vấn đề an toàn -- nó là cách hiệu quả về chi phí nhất để làm cho mô hình hữu ích hơn}, hiệu quả hơn nhiều so với việc tăng kích thước mô hình.
 
 \subsection{Các phương pháp thay thế: Hướng tới sự Đơn giản và Ổn định}
 \label{ssec:rlhf_alternatives}
@@ -223,6 +237,58 @@ Mặc dù RLHF đã chứng minh hiệu quả vượt trội trong việc căn c
 \noindent
 Tóm lại, DPO có thể được hiểu là một \textbf{phiên bản rút gọn, ổn định và dễ huấn luyện hơn của RLHF}, trong đó phần “RL” được thay thế hoàn toàn bằng một hàm mất mát xác suất mềm dựa trên dữ liệu sở thích con người.
 
+\subsubsection{KTO: Căn chỉnh chỉ với tín hiệu “tốt / không tốt”}
+\label{ssec:kto}
+DPO cần dữ liệu \emph{cặp} $(y^+, y^-)$ cho cùng một prompt -- loại dữ liệu đắt và hiếm. Trong thực tế, phản hồi phổ biến hơn nhiều là tín hiệu nhị phân: người dùng bấm “thích” hoặc “không thích” một câu trả lời. \textbf{KTO} (Kahneman--Tversky Optimization) \cite{ethayarajh2024kto} tận dụng được loại dữ liệu này.
+
+\paragraph{Cảm hứng từ lý thuyết triển vọng.} Kahneman và Tversky chỉ ra con người đánh giá kết quả \emph{tương đối so với một điểm tham chiếu}, và “sợ mất” hơn “thích được” (loss aversion). Các tác giả nhận thấy nhiều hàm mất mát căn chỉnh (kể cả DPO) ngầm mô phỏng những thiên kiến này, và thiết kế một hàm mất mát mô phỏng chúng một cách tường minh.
+
+\paragraph{Công thức.} Với “phần thưởng ngầm” $r_\theta(x,y) = \log\frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}$ như trong DPO, và điểm tham chiếu $z_0$ là ước lượng của $\text{KL}\big(\pi_\theta(y'\mid x)\,\|\,\pi_{\text{ref}}(y'\mid x)\big)$ (tính trên các cặp prompt--câu trả lời không khớp trong batch, không lan truyền gradient):
+\[
+v(x,y) = \begin{cases}
+\lambda_D\, \sigma\big(\beta\,(r_\theta(x,y) - z_0)\big) & \text{nếu } y \text{ là câu trả lời mong muốn},\\
+\lambda_U\, \sigma\big(\beta\,(z_0 - r_\theta(x,y))\big) & \text{nếu } y \text{ là câu trả lời không mong muốn},
+\end{cases}
+\qquad
+\mathcal{L}_{\text{KTO}} = \mathbb{E}_{x,y}\big[\lambda_y - v(x,y)\big].
+\]
+Trực giác: đẩy phần thưởng ngầm của câu trả lời tốt lên \emph{trên} điểm tham chiếu, và của câu trả lời xấu xuống \emph{dưới}. Hai hệ số $\lambda_D, \lambda_U$ cho phép bù trừ khi số mẫu tốt và xấu chênh lệch nhau.
+
+\paragraph{Kết quả.} KTO ngang hoặc vượt DPO ở các quy mô từ 1B đến 30B tham số, dù chỉ dùng tín hiệu yếu hơn; vẫn hoạt động khi dữ liệu mất cân bằng nặng giữa mẫu tốt và mẫu xấu; và ở quy mô đủ lớn có thể bỏ qua bước SFT.
+
+\subsubsection{ORPO: Gộp SFT và căn chỉnh làm một, không cần mô hình tham chiếu}
+\label{ssec:orpo}
+Cả RLHF, DPO lẫn KTO đều cần hai giai đoạn (SFT rồi căn chỉnh) và một mô hình tham chiếu $\pi_{\text{ref}}$ nằm trong bộ nhớ. \textbf{ORPO} (Odds Ratio Preference Optimization) \cite{hong2024orpo} bắt đầu từ một quan sát: trong SFT, xác suất của cả câu trả lời \emph{được chọn} lẫn \emph{bị loại} đều tăng lên, vì chúng cùng miền và cùng văn phong. Chỉ cần một hình phạt nhỏ đối với phong cách bị loại \emph{ngay trong lúc SFT} là đủ để căn chỉnh.
+
+\paragraph{Công thức.} Dùng xác suất chuẩn hóa theo độ dài $P_\theta(y\mid x) = \exp\big(\frac{1}{m}\sum_{t=1}^{m}\log P_\theta(y_t\mid x, y_{<t})\big)$ và định nghĩa \emph{odds}:
+\[
+\text{odds}_\theta(y\mid x) = \frac{P_\theta(y\mid x)}{1 - P_\theta(y\mid x)}, \qquad
+\mathcal{L}_{\text{OR}} = -\log\sigma\left(\log\frac{\text{odds}_\theta(y_w\mid x)}{\text{odds}_\theta(y_l\mid x)}\right),
+\]
+\[
+\mathcal{L}_{\text{ORPO}} = \mathbb{E}_{(x, y_w, y_l)}\big[\mathcal{L}_{\text{SFT}} + \lambda\cdot\mathcal{L}_{\text{OR}}\big].
+\]
+$\mathcal{L}_{\text{SFT}}$ là loss negative log-likelihood thông thường trên câu trả lời được chọn $y_w$; $\mathcal{L}_{\text{OR}}$ làm tăng tỷ số odds giữa $y_w$ và $y_l$. Dùng tỷ số odds thay vì tỷ số xác suất cho gradient “mềm” hơn, tránh việc đè bẹp xác suất của $y_l$ quá mạnh.
+
+\paragraph{Kết quả.} Chỉ với một giai đoạn huấn luyện trên UltraFeedback, Mistral-ORPO 7B đạt tới 12.20\% trên AlpacaEval 2.0, 66.19\% trên IFEval và 7.32 trên MT-Bench, vượt nhiều mô hình lớn hơn tại thời điểm công bố.
+
+\begin{table}[H]
+\centering
+\caption{So sánh các phương pháp căn chỉnh theo sở thích.}
+\label{tab:alignment_methods_comparison}
+\begin{tabularx}{\textwidth}{@{}lXccc@{}}
+\toprule
+\textbf{Phương pháp} & \textbf{Dữ liệu cần} & \textbf{Reward model} & \textbf{Mô hình tham chiếu} & \textbf{Số giai đoạn} \\
+\midrule
+RLHF (PPO) & Xếp hạng/cặp so sánh + prompt & Có & Có & 3 \\
+DPO & Cặp $(y^+, y^-)$ & Không & Có & 2 (SFT + DPO) \\
+KTO & Nhãn nhị phân tốt/xấu & Không & Có & 1--2 \\
+ORPO & Cặp $(y_w, y_l)$ & Không & Không & 1 \\
+GRPO (RL) & Prompt + hàm thưởng (thường kiểm chứng được) & Tùy chọn & Có (cho KL) & 2+ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
 
 \subsubsection{Constitutional AI (CAI)}
 \label{ssec:cai}
@@ -292,85 +358,62 @@ Thay vì yêu cầu con người gán nhãn hoặc xếp hạng thủ công cho 
 \noindent
 Tóm lại, Constitutional AI có thể xem là một \textbf{“bước tiến tự chủ” của RLHF}, trong đó con người không còn phải trực tiếp gán nhãn cho dữ liệu phản hồi, mà thay vào đó mô hình học cách \emph{tự phản tư} và \emph{tự sửa chữa} theo các nguyên tắc hiến pháp được định nghĩa trước.
 
-\subsubsection{Group Relative Policy Optimization (GRPO) \cite{verl2024, grpo2024}}
+\subsubsection{Group Relative Policy Optimization (GRPO)}
+\label{ssec:grpo}
 
+\textbf{GRPO} được giới thiệu trong DeepSeekMath \cite{shao2024deepseekmath} và trở nên nổi tiếng nhờ DeepSeek-R1 \cite{deepseekai2025r1}. Mục này trình bày thuật toán; vai trò của nó trong việc huấn luyện các mô hình suy luận được phân tích sâu ở chương~\ref{chap:reasoning}.
+
+\paragraph{Động cơ: bỏ mô hình giá trị của PPO.}
+PPO (bước 3 của RLHF) cần một \textbf{mô hình giá trị} (critic) $V_\psi$ để ước lượng advantage. Với LLM, critic thường lớn ngang mô hình chính sách, nên tốn gấp đôi bộ nhớ và tính toán. Hơn nữa, khi phần thưởng chỉ được trao ở \emph{token cuối cùng} (câu trả lời đúng hay sai), việc học một hàm giá trị chính xác cho \emph{từng token} là rất khó. GRPO thay critic bằng một baseline đơn giản: \textbf{điểm trung bình của một nhóm câu trả lời cho cùng câu hỏi}.
+
+\paragraph{Thuật toán.} Với mỗi câu hỏi $q$:
+\begin{enumerate}
+	\item Lấy mẫu một nhóm $G$ câu trả lời $\{o_1, \dots, o_G\}$ từ chính sách cũ $\pi_{\theta_{\text{old}}}$.
+	\item Chấm điểm từng câu trả lời để có phần thưởng $\{r_1, \dots, r_G\}$ -- bằng reward model, hoặc bằng \textbf{luật kiểm chứng} (so khớp đáp án toán, chạy test case của mã).
+	\item Tính advantage \textbf{tương đối trong nhóm} (với giám sát theo kết quả -- outcome supervision -- mọi token của $o_i$ nhận cùng một advantage):
+	\[
+	\hat{A}_{i,t} = \frac{r_i - \text{mean}(\{r_1,\dots,r_G\})}{\text{std}(\{r_1,\dots,r_G\})}.
+	\]
+	\item Cập nhật chính sách bằng cách cực đại hóa
+	\[
+	\mathcal{J}_{\text{GRPO}}(\theta) = \mathbb{E}\left[\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|o_i|}\sum_{t=1}^{|o_i|}\Big\{\min\big(\rho_{i,t}\hat{A}_{i,t},\ \text{clip}(\rho_{i,t}, 1-\epsilon, 1+\epsilon)\,\hat{A}_{i,t}\big) - \beta\, \mathbb{D}_{\text{KL}}\big[\pi_\theta \,\|\, \pi_{\text{ref}}\big]\Big\}\right],
+	\]
+	với tỷ số xác suất theo từng token $\rho_{i,t} = \dfrac{\pi_\theta(o_{i,t}\mid q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t}\mid q, o_{i,<t})}$.
+\end{enumerate}
+
+\paragraph{Hai chi tiết khác PPO kinh điển.}
 \begin{itemize}
-    \item \textbf{Ý tưởng cốt lõi:}  
-    Group Relative Policy Optimization (GRPO) là một biến thể mới của \textbf{Proximal Policy Optimization (PPO)} được thiết kế đặc biệt cho các mô hình ngôn ngữ lớn (LLMs).  
-    Thay vì cần một \textbf{mạng giá trị (value network / critic)} để ước lượng lợi ích (advantage), GRPO sử dụng \textbf{sự khác biệt tương đối giữa các phản hồi trong cùng một nhóm (group)} để tính toán advantage.  
-    Mục tiêu là: \textit{“thưởng” cho các phản hồi tốt hơn trung bình và “phạt” cho các phản hồi kém hơn trung bình.}
-
-    \item \textbf{Cơ chế:}  
-    Giả sử với mỗi prompt $x$, ta sinh ra một nhóm gồm $G$ câu trả lời $\{y_1, y_2, \dots, y_G\}$ từ chính sách hiện tại $\pi_{\theta}(\cdot|x)$.  
-    Mỗi câu trả lời được chấm điểm bởi mô hình phần thưởng $r_{\phi}(x, y_i)$.  
-    Sau đó, GRPO tính \textbf{advantage} của mỗi phản hồi dựa trên phần thưởng tương đối trong nhóm:
-    \[
-        \bar{r} = \frac{1}{G} \sum_{i=1}^G r_{\phi}(x, y_i), 
-        \quad
-        \sigma_r = \sqrt{\frac{1}{G} \sum_{i=1}^G (r_{\phi}(x, y_i) - \bar{r})^2},
-    \]
-    \[
-        A_i = \frac{r_{\phi}(x, y_i) - \bar{r}}{\sigma_r + \epsilon}
-    \]
-    Trong đó $A_i$ thể hiện mức độ tốt hơn (hoặc tệ hơn) của phản hồi $y_i$ so với trung bình nhóm.
-
-    \item \textbf{Hàm mất mát của GRPO:}  
-    GRPO kế thừa hàm mất mát của PPO nhưng thay thế advantage cổ điển bằng advantage theo nhóm:
-    \[
-        L_{\text{GRPO}}(\theta)
-        = - \mathbb{E}_{x, y_i \sim \pi_{\theta}} \left[
-            \min \left(
-                r_t(\theta) A_i,\;
-                \mathrm{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) A_i
-            \right)
-        \right],
-    \]
-    với 
-    \[
-        r_t(\theta) = \frac{\pi_{\theta}(y_i|x)}{\pi_{\text{old}}(y_i|x)}.
-    \]
-    Trong một số triển khai, một \textbf{hình phạt KL-divergence} được thêm vào để ngăn chính sách đi quá xa khỏi mô hình tham chiếu (thường là SFT):
-    \[
-        L_{\text{KL}} = -\beta \, D_{\mathrm{KL}}\big(\pi_{\theta}(\cdot|x) \,\|\, \pi_{\text{ref}}(\cdot|x)\big).
-    \]
-    Hàm mất mát cuối cùng là tổng hợp của hai thành phần:
-    \[
-        L_{\text{total}} = L_{\text{GRPO}} + L_{\text{KL}}.
-    \]
-
-    \item \textbf{Quy trình huấn luyện:}
-    \begin{enumerate}
-        \item Lấy một prompt $x$ từ tập dữ liệu.
-        \item Mô hình chính sách $\pi_{\theta}$ sinh ra một nhóm $G$ câu trả lời $\{y_1, \dots, y_G\}$.
-        \item Mô hình phần thưởng $r_{\phi}$ chấm điểm từng phản hồi.
-        \item Tính advantage $A_i$ cho mỗi phản hồi theo công thức ở trên.
-        \item Cập nhật các trọng số của mô hình chính sách bằng cách cực tiểu hóa $L_{\text{total}}$.
-    \end{enumerate}
-
-    \item \textbf{Ưu điểm:}
-    \begin{itemize}
-        \item Không cần mạng giá trị (critic), giúp giảm chi phí tính toán và bộ nhớ.
-        \item Đơn giản và ổn định hơn PPO trong huấn luyện LLM.
-        \item Phù hợp với bài toán sinh văn bản, nơi mỗi prompt có thể được xem như một “tập mẫu độc lập”.
-    \end{itemize}
-
-    \item \textbf{Nhược điểm:}
-    \begin{itemize}
-        \item Độ ổn định phụ thuộc vào kích thước nhóm $G$ – nhóm quá nhỏ sẽ gây nhiễu trong ước lượng advantage.
-        \item Dễ gặp “length bias”: các câu trả lời dài có thể nhận reward cao hơn một cách không mong muốn.
-        \item Khi toàn bộ nhóm đều có reward thấp, quá trình cập nhật sẽ kém hiệu quả.
-    \end{itemize}
-
-    \item \textbf{Kết quả:}
-    GRPO đang được ứng dụng trong các hệ thống huấn luyện LLM mới, chẳng hạn như \textbf{Verl} (2024) và \textbf{Hugging Face TRL v0.9+}, như một giải pháp thay thế hiệu quả và đơn giản hơn PPO cho giai đoạn RLHF.
+	\item \textbf{KL nằm trong loss, không nằm trong phần thưởng.} InstructGPT trừ KL vào phần thưởng ở từng token; GRPO cộng trực tiếp số hạng KL vào mục tiêu, để không làm phức tạp việc tính advantage.
+	\item \textbf{Bộ ước lượng KL không chệch và luôn dương:}
+	\[
+	\mathbb{D}_{\text{KL}}\big[\pi_\theta\|\pi_{\text{ref}}\big] \approx \frac{\pi_{\text{ref}}(o_{i,t}\mid q, o_{i,<t})}{\pi_\theta(o_{i,t}\mid q, o_{i,<t})} - \log\frac{\pi_{\text{ref}}(o_{i,t}\mid q, o_{i,<t})}{\pi_\theta(o_{i,t}\mid q, o_{i,<t})} - 1.
+	\]
 \end{itemize}
+
+\paragraph{Kết quả gốc.} Áp dụng GRPO lên DeepSeekMath-Instruct 7B chỉ với khoảng 144 nghìn câu hỏi dạng chuỗi suy luận từ GSM8K và MATH, độ chính xác tăng từ 82.9\% lên 88.2\% trên GSM8K và từ 46.8\% lên 51.7\% trên MATH -- kể cả trên các bài ngoài miền huấn luyện.
+
+\paragraph{Ưu điểm.}
+\begin{itemize}
+	\item Không cần mô hình giá trị $\Rightarrow$ tiết kiệm đáng kể bộ nhớ và tính toán.
+	\item Advantage tương đối trong nhóm khớp tự nhiên với cách reward model được huấn luyện (so sánh giữa các câu trả lời cho cùng câu hỏi).
+	\item Kết hợp rất tốt với \textbf{phần thưởng kiểm chứng được} (RLVR -- Reinforcement Learning with Verifiable Rewards), không cần reward model nơ-ron dễ bị “hack”.
+\end{itemize}
+
+\paragraph{Nhược điểm và các biến thể (chi tiết ở chương~\ref{chap:reasoning}).}
+\begin{itemize}
+	\item \textbf{Nhóm có phương sai bằng 0:} Nếu cả $G$ câu trả lời đều đúng (hoặc đều sai), advantage bằng 0 và câu hỏi không đóng góp tín hiệu học. DAPO \cite{yu2025dapo} lọc bỏ các nhóm này (dynamic sampling).
+	\item \textbf{Thiên lệch độ dài và độ khó:} Chuẩn hóa theo $1/|o_i|$ và chia cho độ lệch chuẩn tạo ra thiên lệch -- ví dụ câu trả lời sai nhưng dài bị phạt nhẹ hơn trên mỗi token. Dr.~GRPO \cite{liu2025drgrpo} bỏ hai phép chuẩn hóa này.
+	\item \textbf{Tỷ số quan trọng theo token gây nhiễu,} đặc biệt với mô hình MoE; GSPO \cite{zheng2025gspo} chuyển sang tỷ số ở mức cả chuỗi.
+\end{itemize}
+
+GRPO hiện được hỗ trợ sẵn trong các framework phổ biến như TRL của Hugging Face (\texttt{GRPOTrainer}) và verl \cite{sheng2024hybridflow}. Hướng dẫn thực hành ở mục~\ref{sec:posttraining_trl} (Phần 2).
 
 \bigskip
 \hrule
 \bigskip
 
 \begin{center}
-    \textbf{\Large KẾT THÚC CHƯƠNG 5}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
 \end{center}
 
-\textit{Chương này đã trang bị cho bạn những kỹ thuật thiết yếu để biến một mô hình nền tảng thô thành một công cụ hữu ích và an toàn. Chúng ta đã đi từ các phương pháp tinh chỉnh kinh điển, đến các kỹ thuật PEFT hiệu quả, và khám phá sức mạnh của việc "trò chuyện" với mô hình thông qua Prompt Engineering. Cuối cùng, chúng ta đã tìm hiểu các quy trình phức tạp như RLHF và DPO để căn chỉnh hành vi của mô hình với sở thích của con người. Với một mô hình đã được tinh chỉnh và căn chỉnh, chúng ta đã có một "bộ não" AI mạnh mẽ. Tuy nhiên, để giải quyết các vấn đề phức tạp trong thế giới thực, bộ não này cần có khả năng truy cập kiến thức bên ngoài, sử dụng công cụ, và thậm chí tương tác với các phương thức khác như hình ảnh. Chương tiếp theo sẽ khám phá các hệ thống và kiến trúc nâng cao kết hợp LLM với các thành phần bên ngoài, tạo ra các ứng dụng AI thực sự toàn diện.}
+\textit{Chương này đã trang bị cho bạn những kỹ thuật thiết yếu để biến một mô hình nền thô thành một công cụ hữu ích và an toàn: từ các phương pháp tinh chỉnh kinh điển và thích ứng miền, các kỹ thuật PEFT hiệu quả (LoRA, DoRA, QLoRA), sức mạnh của Prompt Engineering, đến các phương pháp căn chỉnh -- RLHF theo công thức InstructGPT, DPO, KTO, ORPO và GRPO. Nhưng một câu hỏi lớn vẫn còn bỏ ngỏ: làm thế nào để mô hình không chỉ \emph{trả lời theo ý con người}, mà còn \emph{suy luận đúng} trên những bài toán khó? Chương tiếp theo sẽ khám phá cuộc cách mạng lớn nhất của giai đoạn 2024--2026: mô hình suy luận và tính toán lúc suy luận.}

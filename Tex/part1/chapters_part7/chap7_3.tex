@@ -5,7 +5,7 @@
 \section{Hệ thống Tác tử (Agentic Systems) với LLMs}
 \label{sec:agentic_systems}
 
-Cho đến nay, chúng ta chủ yếu xem LLM như một bộ não xử lý thông tin và sinh ra văn bản. Nhưng điều gì sẽ xảy ra nếu chúng ta trao cho bộ não đó "tay chân" để tương tác với thế giới bên ngoài? Đây chính là ý tưởng đằng sau các \textbf{Hệ thống Tác tử (Agentic Systems)}.
+Cho đến nay, chúng ta chủ yếu xem LLM như một bộ não xử lý thông tin và sinh ra văn bản. Nhưng điều gì sẽ xảy ra nếu chúng ta trao cho bộ não đó “tay chân” để tương tác với thế giới bên ngoài? Đây chính là ý tưởng đằng sau các \textbf{Hệ thống Tác tử (Agentic Systems)}.
 
 Một Tác tử LLM (LLM Agent) không chỉ đơn thuần trả lời một câu hỏi. Nó là một hệ thống tự hành có khả năng:
 \begin{itemize}
@@ -15,7 +15,7 @@ Một Tác tử LLM (LLM Agent) không chỉ đơn thuần trả lời một câ
     \item \textbf{Quan sát (Observe)} kết quả của các hành động và \textbf{tự sửa lỗi (self-correct)} nếu cần.
 \end{itemize}
 
-Về cơ bản, chúng ta đang cố gắng xây dựng một vòng lặp, trong đó LLM đóng vai trò là "bộ não" ra quyết định, và các công cụ bên ngoài là "cơ thể" thực thi.
+Về cơ bản, chúng ta đang cố gắng xây dựng một vòng lặp, trong đó LLM đóng vai trò là “bộ não” ra quyết định, và các công cụ bên ngoài là “cơ thể” thực thi.
 
 \subsection{Vòng lặp Suy luận-Hành động: Khung sườn ReAct}
 \label{ssec:react_framework}
@@ -30,30 +30,30 @@ ReAct đề xuất rằng để hoàn thành một mục tiêu, một Tác tử 
 \end{tcolorbox}
 
 \subsubsection{Cơ chế hoạt động}
-ReAct hoạt động bằng cách dạy cho LLM sinh ra các "lượt lời" có một định dạng đặc biệt, bao gồm:
+ReAct hoạt động bằng cách dạy cho LLM sinh ra các “lượt lời” có một định dạng đặc biệt, bao gồm:
 \begin{enumerate}
     \item \textbf{Thought (Suy tưởng):} Một đoạn văn bản mô tả dòng suy nghĩ của Tác tử, phân tích tình hình hiện tại, và quyết định bước tiếp theo. Đây là phần suy luận.
     \item \textbf{Action (Hành động):} Một lệnh gọi đến một công cụ cụ thể. Ví dụ: `search[thủ đô của Pháp]` hoặc `calculate[2*5]`.
-    \item \textbf{Observation (Quan sát):} Sau khi hệ thống thực thi hành động (ví dụ: chạy công cụ tìm kiếm), kết quả trả về sẽ được chèn vào prompt dưới dạng một "quan sát".
+    \item \textbf{Observation (Quan sát):} Sau khi hệ thống thực thi hành động (ví dụ: chạy công cụ tìm kiếm), kết quả trả về sẽ được chèn vào prompt dưới dạng một “quan sát”.
 \end{enumerate}
 
 LLM sau đó sẽ lặp lại vòng lặp `(Thought, Action, Observation)` này cho đến khi nó có đủ thông tin để đưa ra câu trả lời cuối cùng.
 
 \begin{example}{Minh họa vòng lặp ReAct}{ex:react_loop}
-    \textbf{Mục tiêu:} "Tác giả của cuốn sách 'The Hobbit' sinh ở quốc gia nào?"
+    \textbf{Mục tiêu:} “Tác giả của cuốn sách 'The Hobbit' sinh ở quốc gia nào?”
     
     \textbf{Vòng 1:}
     \begin{itemize}
         \item \textbf{Thought:} Tôi cần tìm tác giả của 'The Hobbit' trước. Sau đó tôi sẽ tìm nơi sinh của tác giả đó.
         \item \textbf{Action:} `search[tác giả của The Hobbit]`
-        \item \textbf{Observation:} (Hệ thống chạy tìm kiếm và trả về) "J.R.R. Tolkien là tác giả của The Hobbit."
+        \item \textbf{Observation:} (Hệ thống chạy tìm kiếm và trả về) “J.R.R. Tolkien là tác giả của The Hobbit.”
     \end{itemize}
 
     \textbf{Vòng 2:}
     \begin{itemize}
         \item \textbf{Thought:} OK, tác giả là J.R.R. Tolkien. Bây giờ tôi cần tìm nơi ông ấy sinh ra.
         \item \textbf{Action:} `search[nơi sinh của J.R.R. Tolkien]`
-        \item \textbf{Observation:} (Hệ thống chạy tìm kiếm và trả về) "J.R.R. Tolkien sinh tại Bloemfontein, Orange Free State (nay là một phần của Nam Phi)."
+        \item \textbf{Observation:} (Hệ thống chạy tìm kiếm và trả về) “J.R.R. Tolkien sinh tại Bloemfontein, Orange Free State (nay là một phần của Nam Phi).”
     \end{itemize}
     
     \textbf{Vòng 3:}
@@ -63,7 +63,7 @@ LLM sau đó sẽ lặp lại vòng lặp `(Thought, Action, Observation)` này 
     \end{itemize}
 \end{example}
 
-ReAct đã chứng minh rằng việc buộc LLM phải "nói ra suy nghĩ của mình" (verbalize its thoughts) giúp nó lập kế hoạch và phục hồi sau lỗi tốt hơn đáng kể.
+ReAct đã chứng minh rằng việc buộc LLM phải “nói ra suy nghĩ của mình” (verbalize its thoughts) giúp nó lập kế hoạch và phục hồi sau lỗi tốt hơn đáng kể.
 
 \subsection{Lập kế hoạch và Sử dụng Công cụ (Planning \& Tool Use)}
 \label{ssec:planning_tool_use}
@@ -89,8 +89,8 @@ ReAct đã chứng minh rằng việc buộc LLM phải "nói ra suy nghĩ của
             \item \textbf{Môi trường thực thi mã nguồn:} Viết và chạy một đoạn mã Python để thực hiện các phép tính phức tạp.
             \item \textbf{Các hệ thống RAG:} Sử dụng tìm kiếm trên tài liệu như một công cụ.
         \end{itemize}
-    \item \textbf{Cơ chế hoạt động:} LLM được dạy (thông qua fine-tuning hoặc prompting) cách sinh ra các lệnh gọi công cụ theo một định dạng cụ thể (ví dụ: JSON hoặc lời gọi hàm). Một bộ điều phối (orchestrator) bên ngoài sẽ phân tích đầu ra của LLM, thực thi lệnh gọi công cụ tương ứng, và trả kết quả về cho LLM dưới dạng một "Observation".
-    \item \textbf{Function Calling:} Các API LLM hiện đại (như của OpenAI, Google) đã tích hợp sẵn khả năng "Function Calling", giúp chuẩn hóa và đơn giản hóa quá trình này.
+    \item \textbf{Cơ chế hoạt động:} LLM được dạy (thông qua fine-tuning hoặc prompting) cách sinh ra các lệnh gọi công cụ theo một định dạng cụ thể (ví dụ: JSON hoặc lời gọi hàm). Một bộ điều phối (orchestrator) bên ngoài sẽ phân tích đầu ra của LLM, thực thi lệnh gọi công cụ tương ứng, và trả kết quả về cho LLM dưới dạng một “Observation”.
+    \item \textbf{Function Calling:} Các API LLM hiện đại (như của OpenAI, Google) đã tích hợp sẵn khả năng “Function Calling”, giúp chuẩn hóa và đơn giản hóa quá trình này.
 \end{itemize}
 
 \subsection{Bộ nhớ cho Tác tử (Agent Memory)}
@@ -123,10 +123,27 @@ Một Tác tử thông minh không chỉ thực thi, mà còn có khả năng nh
     \item \textbf{Cơ chế:} Đây là một vòng lặp meta-suy luận.
         \begin{enumerate}
             \item \textbf{Tạo đầu ra ban đầu:} Tác tử tạo ra một kế hoạch hoặc một câu trả lời.
-            \item \textbf{Tự phê bình (Self-critique):} Sau đó, hệ thống sẽ đưa chính đầu ra đó trở lại cho LLM với một prompt khác, yêu cầu nó đóng vai một "người phê bình" và tìm ra các lỗi, điểm yếu, hoặc các giả định sai lầm trong đầu ra ban đầu.
+            \item \textbf{Tự phê bình (Self-critique):} Sau đó, hệ thống sẽ đưa chính đầu ra đó trở lại cho LLM với một prompt khác, yêu cầu nó đóng vai một “người phê bình” và tìm ra các lỗi, điểm yếu, hoặc các giả định sai lầm trong đầu ra ban đầu.
             \item \textbf{Sửa đổi (Refinement):} Dựa trên những lời phê bình, Tác tử sẽ được yêu cầu sửa đổi lại kế hoạch hoặc câu trả lời của mình.
         \end{enumerate}
     \item \textbf{Lợi ích:} Kỹ thuật này giúp cải thiện đáng kể độ tin cậy và chất lượng của các hệ thống Tác tử, đặc biệt là trong các nhiệm vụ phức tạp đòi hỏi sự chính xác cao.
 \end{itemize}
+
+\subsection{Tác tử trong thực tế 2025--2026}
+\label{ssec:modern_agents}
+Bốn thay đổi lớn đã định hình lại cách xây dựng tác tử kể từ khi ReAct ra đời:
+\begin{itemize}
+	\item \textbf{Gọi công cụ có cấu trúc:} Công cụ được khai báo bằng JSON schema và mô hình trả về lời gọi có cấu trúc, thay cho việc phân tích văn bản tự do bằng regex. Nhiều mô hình được huấn luyện riêng cho kỹ năng này trong giai đoạn hậu huấn luyện.
+	\item \textbf{Chuẩn hóa kết nối công cụ:} Các giao thức mở như \textbf{Model Context Protocol (MCP)} cho phép mô tả công cụ và nguồn dữ liệu một lần, dùng lại với nhiều mô hình và nhiều ứng dụng -- giảm mạnh chi phí tích hợp.
+	\item \textbf{Mô hình suy luận làm “bộ não”:} Với các mô hình được huấn luyện bằng học tăng cường để suy luận dài (chương~\ref{chap:reasoning}), phần lập kế hoạch và tự phê bình dịch chuyển từ prompt thủ công vào bên trong mô hình. Trọng tâm kỹ thuật chuyển sang \emph{thiết kế bộ công cụ}, \emph{quản lý ngữ cảnh} (nén, tóm tắt, bộ nhớ ngoài) và \emph{kiểm soát rủi ro}.
+	\item \textbf{Mở rộng miền hành động:} Ngoài API, tác tử nay còn thao tác trực tiếp với \textbf{máy tính} (chụp màn hình, di chuột, gõ phím) và với \textbf{kho mã nguồn} (đọc/sửa file, chạy test) -- được đo bằng các benchmark như SWE-bench (mục~\ref{ssec:swebench}).
+\end{itemize}
+\begin{tcolorbox}[title={An toàn cho tác tử: ba nguyên tắc tối thiểu}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{enumerate}
+	\item \textbf{Đặc quyền tối thiểu:} Mỗi công cụ chỉ được cấp quyền đủ dùng; tách riêng quyền đọc và quyền ghi.
+	\item \textbf{Phê duyệt cho hành động khó đảo ngược:} Gửi email, thanh toán, xóa dữ liệu, đẩy mã lên nhánh chính -- nên yêu cầu người xác nhận.
+	\item \textbf{Coi nội dung lấy từ bên ngoài là dữ liệu, không phải chỉ thị:} Trang web hay tài liệu mà tác tử đọc có thể chứa \textbf{prompt injection} nhằm chiếm quyền điều khiển; cần tách rõ ranh giới giữa chỉ thị của người dùng và nội dung được truy xuất, đồng thời giới hạn hành động mà tác tử có thể thực hiện dựa trên nội dung đó.
+\end{enumerate}
+\end{tcolorbox}
 
 Việc kết hợp các thành phần này -- ReAct, Lập kế hoạch, Sử dụng Công cụ, Bộ nhớ, và Tự sửa lỗi -- cho phép chúng ta xây dựng các hệ thống Tác tử ngày càng tự chủ và mạnh mẽ, đánh dấu một bước tiến lớn trong hành trình hướng tới Trí tuệ Nhân tạo Tổng quát.

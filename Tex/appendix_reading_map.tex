@@ -1,0 +1,182 @@
+% !TEX root = main.tex
+% Phụ lục: ánh xạ danh sách đọc nghiên cứu LLM 2026 sang các mục trong sách.
+
+\chapter*{Phụ lục A: Bản đồ Danh sách đọc 2026 \texorpdfstring{$\rightarrow$}{->} Chương mục}
+\addcontentsline{toc}{chapter}{Phụ lục A: Bản đồ Danh sách đọc 2026}
+\markboth{Phụ lục A: Bản đồ Danh sách đọc}{}
+
+Bản cập nhật 2026 của cuốn sách được rà soát theo một danh sách đọc nghiên cứu LLM gồm mười trục. Bảng dưới đây cho biết mỗi bài báo được trình bày ở đâu, để bạn có thể đọc paper gốc song song với phần lý thuyết tương ứng.
+
+\begin{tcolorbox}[title={Cách dùng bảng này}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+Với mỗi bài báo, hãy tự trả lời năm câu hỏi của danh sách đọc: (1) Nó thay đổi \emph{giả định} nào? (2) Nó giải quyết \emph{nút thắt} nào? (3) Nó \emph{đánh đổi} gì để lấy gì? (4) Có \emph{scaling law / ablation / so sánh cùng compute} không? (5) Có \emph{mã nguồn và khả năng tái lập} không? Các mục trong sách đều được viết theo khung câu hỏi này.
+\end{tcolorbox}
+
+\section*{1. Kiến trúc}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+Attention Is All You Need \cite{vaswani2017attention} & Mục~\ref{sec:vanilla_transformer} \\
+GQA \cite{ainslie2023gqa}; MQA \cite{shazeer2019fast} & Mục~\ref{ssec:mqa_gqa} \\
+DeepSeek-V2 (MLA) \cite{deepseekai2024v2} & Mục~\ref{ssec:mla} \\
+DeepSeek-V3 \cite{deepseekai2024v3} & Mục~\ref{ssec:deepseekmoe}, \ref{ssec:deepseekv3_recipe} \\
+Switch Transformer \cite{fedus2022switch} & Mục~\ref{ssec:switch_transformer} \\
+DeepSeekMoE \cite{dai2024deepseekmoe}; cân bằng tải không loss phụ \cite{wang2024auxlossfree} & Mục~\ref{ssec:deepseekmoe} \\
+FlashAttention \cite{dao2022flashattention}; FlashAttention-2 \cite{dao2024flashattention2} & Mục~\ref{sssec:flashattention} \\
+YaRN \cite{peng2023yarn}; Position Interpolation \cite{chen2023extending} & Mục~\ref{ssec:other_long_context_methods} \\
+Ring Attention \cite{liu2023ring} & Mục~\ref{ssec:ring_attention} \\
+Gemini \cite{geminiteam2023gemini} & Mục~\ref{sssec:gemini} \\
+Multi-Token Prediction \cite{gloeckle2024mtp} & Mục~\ref{ssec:mtp} \\
+Efficient Transformers: A Survey \cite{tay2022efficient} & Chương~\ref{chap:transformer_llms} (tham khảo) \\
+\bottomrule
+\end{longtable}
+
+\section*{2. Tối ưu hóa}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+Adam \cite{kingma2014adam}; AdamW \cite{loshchilov2019adamw} & Mục~\ref{ssec:adam}, \ref{ssec:adamw} \\
+Sophia \cite{liu2024sophia} & Mục~\ref{ssec:sophia} \\
+Adam-mini \cite{zhang2025adammini} & Mục~\ref{ssec:adam_mini} \\
+Muon \cite{jordan2024muon}; Muon is Scalable \cite{liu2025muon}; MuonClip \cite{kimiteam2025k2} & Mục~\ref{ssec:muon} \\
+Benchmark bộ tối ưu \cite{wen2025fantastic} & Mục~\ref{ssec:optimizer_comparison} \\
+\bottomrule
+\end{longtable}
+
+\section*{3. Tiền huấn luyện}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+Scaling Laws \cite{kaplan2020scaling} & Mục~\ref{ssec:kaplan_scaling} \\
+Chinchilla \cite{hoffmann2022chinchilla} & Mục~\ref{ssec:chinchilla} \\
+Llama 3 \cite{grattafiori2024llama3} & Mục~\ref{ssec:llama3_recipe} \\
+Dữ liệu tổng hợp \cite{kang2025synthetic}; WRAP \cite{maini2024wrap}; Phi \cite{gunasekar2023textbooks} & Mục~\ref{ssec:synthetic_pretraining} \\
+FineWeb \cite{penedo2024fineweb} & Mục~\ref{ssec:fineweb} \\
+RefinedWeb \cite{penedo2023refinedweb} & Mục~\ref{ssec:refinedweb} \\
+The Pile \cite{gao2020pile} & Mục~\ref{ssec:the_pile} \\
+DoReMi \cite{xie2023doremi} & Mục~\ref{ssec:doremi} \\
+DataComp-LM \cite{li2024dclm} & Mục~\ref{ssec:dclm} \\
+Khử trùng lặp \cite{lee2022dedup}; dữ liệu hữu hạn \cite{muennighoff2023scaling} & Mục~\ref{ssec:data_pipeline}, \ref{ssec:beyond_chinchilla} \\
+\bottomrule
+\end{longtable}
+
+\section*{4. Tinh chỉnh / PEFT}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+LoRA \cite{hu2021lora}; DoRA \cite{liu2024dora} & Mục~\ref{ssec:reparam} \\
+QLoRA \cite{dettmers2023qlora} & Mục~\ref{ssec:reparam}; thực hành: mục~\ref{ssec:trl_sft} \\
+Prefix-Tuning \cite{li2021prefix}; Prompt-Tuning \cite{lester2021power} & Mục~\ref{ssec:soft_prompts} \\
+Adapters \cite{houlsby2019parameter} & Mục~\ref{ssec:adapters} \\
+(IA)$^3$ \cite{liu2022ia3} & Mục~\ref{ssec:additive} \\
+Đánh đổi của PEFT trong căn chỉnh \cite{thakkar2024deepdive} & Mục~\ref{ssec:peft_alignment_tradeoffs} \\
+Tinh chỉnh theo miền \cite{moslem2023adaptivemt}; DAPT/TAPT \cite{gururangan2020dontstop} & Mục~\ref{ssec:domain_adaptation} \\
+\bottomrule
+\end{longtable}
+
+\section*{5. Hậu huấn luyện}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+InstructGPT \cite{ouyang2022training} & Mục~\ref{sssec:instructgpt} \\
+DPO \cite{rafailov2023direct} & Mục~\ref{ssec:dpo}; thực hành: mục~\ref{ssec:trl_dpo} \\
+DeepSeekMath / GRPO \cite{shao2024deepseekmath} & Mục~\ref{ssec:grpo}; thực hành: mục~\ref{ssec:trl_grpo} \\
+DeepSeek-R1 \cite{deepseekai2025r1} & Mục~\ref{sec:rl_reasoning} \\
+KTO \cite{ethayarajh2024kto} & Mục~\ref{ssec:kto} \\
+ORPO \cite{hong2024orpo} & Mục~\ref{ssec:orpo} \\
+DAPO \cite{yu2025dapo}; Dr.~GRPO \cite{liu2025drgrpo}; GSPO \cite{zheng2025gspo} & Mục~\ref{ssec:grpo_variants} \\
+Constitutional AI \cite{bai2022constitutional} & Mục~\ref{ssec:cai} \\
+\bottomrule
+\end{longtable}
+
+\section*{6. Suy luận / Test-time compute}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+Let's Verify Step by Step \cite{lightman2024verify} & Mục~\ref{ssec:prm} \\
+Scaling Test-Time Compute \cite{snell2024scaling} & Mục~\ref{sec:test_time_compute} \\
+Tree of Thoughts \cite{yao2023tree}; Self-Consistency \cite{wang2022self} & Mục~\ref{ssec:advanced_cot}, \ref{ssec:ttc_mechanisms} \\
+STaR \cite{zelikman2022star} & Mục~\ref{ssec:star} \\
+ReST$^{EM}$ \cite{singh2024restem} & Mục~\ref{ssec:restem} \\
+Quiet-STaR \cite{zelikman2024quietstar} & Mục~\ref{ssec:quiet_star} \\
+Math-Shepherd \cite{wang2024mathshepherd}; GSM8K verifiers \cite{cobbe2021gsm8k} & Mục~\ref{ssec:math_shepherd}, \ref{ssec:orm} \\
+\bottomrule
+\end{longtable}
+
+\section*{7. Chưng cất}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+Distilling the Knowledge \cite{hinton2015distilling} & Mục~\ref{ssec:knowledge_distillation} \\
+Distilling Step-by-Step \cite{hsieh2023distilling} & Mục~\ref{ssec:rationale_distillation} \\
+MiniLLM \cite{gu2024minillm} & Mục~\ref{ssec:minillm} \\
+GKD / On-policy distillation \cite{agarwal2024gkd} & Mục~\ref{ssec:gkd} \\
+KARD \cite{kang2023kard} & Mục~\ref{ssec:rationale_distillation} \\
+RL-aware distillation \cite{zhang2026rlad} & Mục~\ref{ssec:rlad} \\
+Sequence-level KD \cite{kim2016sequence} & Mục~\ref{ssec:seq_kd} \\
+\bottomrule
+\end{longtable}
+
+\section*{8. Suy luận hiệu quả / Phục vụ}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+Speculative Decoding \cite{leviathan2023speculative, chen2023accelerating} & Mục~\ref{sec:speculative_decoding} \\
+SmoothQuant \cite{xiao2023smoothquant} & Mục~\ref{ssec:smoothquant} \\
+LLM.int8() \cite{dettmers2022llmint8} & Mục~\ref{ssec:llm_int8} \\
+AWQ \cite{lin2024awq} & Mục~\ref{ssec:awq} \\
+GPTQ \cite{frantar2023gptq} & Mục~\ref{ssec:gptq} \\
+FlexGen \cite{sheng2023flexgen} & Mục~\ref{ssec:flexgen} \\
+vLLM / PagedAttention \cite{kwon2023vllm}; Orca \cite{yu2022orca} & Mục~\ref{ssec:pagedattention}, \ref{ssec:continuous_batching} \\
+SpecInfer \cite{miao2024specinfer}; Medusa \cite{cai2024medusa}; EAGLE \cite{li2024eagle} & Mục~\ref{ssec:specinfer}, \ref{ssec:draft_free} \\
+Mooncake \cite{qin2024mooncake}; P/D-Serve \cite{jin2024pdserve}; DistServe \cite{zhong2024distserve} & Mục~\ref{sec:disaggregated_serving} \\
+\bottomrule
+\end{longtable}
+
+\section*{9. Đánh giá}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+HELM \cite{liang2022helm} & Mục~\ref{ssec:helm} \\
+LLM-as-a-Judge / MT-Bench \cite{zheng2023judging}; Chatbot Arena \cite{chiang2024arena} & Mục~\ref{ssec:mtbench_arena} \\
+LM Evaluation Harness \cite{biderman2024lessons} & Mục~\ref{ssec:lm_eval_harness}; thực hành: mục~\ref{sec:lm_eval_practice} \\
+TruthfulQA \cite{lin2022truthfulqa} & Mục~\ref{sssec:truthfulqa} \\
+GSM8K \cite{cobbe2021gsm8k}; MATH \cite{hendrycks2021math} & Mục~\ref{sssec:gsm8k_math} \\
+BIG-bench \cite{srivastava2023bigbench}; MMLU \cite{hendrycks2021mmlu} & Mục~\ref{ssec:llm_benchmarks} \\
+AgentBench \cite{liu2024agentbench} & Mục~\ref{ssec:agentbench} \\
+GAIA \cite{mialon2024gaia} & Mục~\ref{ssec:gaia} \\
+SWE-bench \cite{jimenez2024swebench, openai2024sweverified} & Mục~\ref{ssec:swebench} \\
+\bottomrule
+\end{longtable}
+
+\section*{10. Khảo sát tổng quan}
+\begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
+\toprule
+\textbf{Bài báo} & \textbf{Trình bày ở} \\
+\midrule
+\endhead
+A Survey of Large Language Models \cite{zhao2023survey} & Chương~\ref{chap:transformer_llms} (tham khảo) \\
+Efficient Transformers: A Survey \cite{tay2022efficient} & Mục~\ref{sec:long_context_transformers} (tham khảo) \\
+\bottomrule
+\end{longtable}
+
+\begin{tcolorbox}[title={Giữ cho kiến thức luôn mới}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
+Mỗi tuần, chỉ cần quét arXiv theo các từ khóa: \emph{architecture, MoE, MLA, attention, optimizer, Muon, pretraining, synthetic data, SFT, PEFT, LoRA, QLoRA, DPO, GRPO, RL, reasoning, test-time compute, distillation, quantization, speculative decoding, KV cache, serving, evaluation, agents}. Và nhớ nguyên tắc: \textbf{đừng đọc một paper chỉ vì nó mới} -- hãy đọc để trả lời năm câu hỏi ở đầu phụ lục này.
+\end{tcolorbox}

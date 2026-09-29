@@ -30,7 +30,8 @@ twoside
 \usepackage{enumitem}
 \setlist{nosep}
 \usepackage{graphicx}
-\graphicspath{{images/}} 
+\usepackage{float}
+\graphicspath{{images/}}
 \usepackage[dvipsnames]{xcolor} 
 \usepackage{hyperref}
 \hypersetup{
@@ -43,6 +44,7 @@ twoside
 	pdfauthor={Tên tác giả},
 }
 \usepackage{booktabs}
+\usepackage{longtable}
 % ==============================================================================
 % 4. TÙY BIẾN TIÊU ĐỀ
 % ==============================================================================
@@ -128,8 +130,17 @@ list inside=rcp
 % ==============================================================================
 % 6. LỆNH PHỤ
 % ==============================================================================
-\newcommand{\newtag}{\textcolor{red}{\textnormal{\bfseries\small [MỚI & SỬA ĐỔI]}}}
 \newcommand{\reftag}{\textcolor{blue}{\textnormal{\bfseries\small [THAM KHẢO]}}}
+
+% Chèn hình minh họa kèm mô tả nội dung.
+% Cú pháp: \bookimage[độ rộng]{mã-hình}{mô tả chi tiết nội dung hình cần có}
+% - Nếu images/<mã-hình>.png hoặc .jpg tồn tại: chèn ảnh.
+% - Nếu chưa có: hiện khung chờ kèm mô tả để dễ bổ sung ảnh sau.
+\newcommand{\bookimage}[3][0.8\textwidth]{%
+	\IfFileExists{images/#2.png}{\includegraphics[width=#1]{#2.png}}{%
+		\IfFileExists{images/#2.jpg}{\includegraphics[width=#1]{#2.jpg}}{%
+			\fcolorbox{orange!70!black}{orange!5}{\parbox{\dimexpr#1-2\fboxsep-2\fboxrule\relax}{\centering\small
+					\textbf{[Hình đang chờ bổ sung: \texttt{\detokenize{#2}}]}\\[2pt]\textit{#3}}}}}}
 
 % ==============================================================================
 % 7. THÔNG TIN SÁCH

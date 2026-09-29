@@ -1,0 +1,139 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_pretraining/sec3_optimizers.tex
+
+\section{Bộ Tối ưu hóa cho LLM: Từ Adam đến Muon}
+\label{sec:llm_optimizers}
+
+Bộ tối ưu quyết định mô hình \emph{đi} trên bề mặt loss như thế nào. Ở quy mô LLM, nó còn quyết định hai thứ rất thực tế: \textbf{bộ nhớ} (mỗi tham số cần bao nhiêu trạng thái phụ) và \textbf{hiệu quả dữ liệu} (cần bao nhiêu token để đạt cùng một loss). Một bộ tối ưu nhanh hơn 1.5 lần đồng nghĩa với việc tiết kiệm một phần ba hóa đơn huấn luyện hàng triệu đô-la.
+
+\subsection{Từ SGD đến Adam: hai moment không phải là tùy tiện}
+\label{ssec:sgd_to_adam}
+Trước khi xem Adam làm gì, cần thấy nó \emph{sửa} cái gì.
+\begin{itemize}
+	\item \textbf{SGD} cập nhật $\theta \leftarrow \theta - \eta g$: một tốc độ học duy nhất áp cho mọi tham số. Vấn đề là trong một Transformer, độ lớn gradient chênh nhau nhiều bậc giữa các khối -- embedding của token hiếm (gradient thưa và nhỏ), ma trận attention, hệ số của lớp chuẩn hóa. Một $\eta$ đủ lớn cho nhóm này sẽ làm nổ nhóm kia.
+	\item \textbf{Momentum} thay $g$ bằng một trung bình trượt $m_t$: nhiễu ngẫu nhiên giữa các batch triệt tiêu lẫn nhau, còn thành phần nhất quán thì được cộng dồn. Đây là \emph{moment bậc nhất} -- nó lo phần \textbf{hướng đi}.
+	\item \textbf{AdaGrad} và \textbf{RMSProp} chia bước đi cho căn bậc hai của trung bình bình phương gradient: tham số nào lâu nay gradient lớn thì bước ngắn lại, và ngược lại. AdaGrad cộng dồn từ bước đầu tiên nên mẫu số chỉ có tăng, học một lúc là bước đi tắt hẳn; RMSProp thay tổng bằng trung bình trượt mũ nên không chết (RMSProp nổi tiếng vì chưa từng được viết thành bài báo -- nó xuất hiện trong một slide bài giảng của Hinton). Đây là \emph{moment bậc hai} -- nó lo phần \textbf{độ dài bước}.
+\end{itemize}
+Adam chỉ đơn giản là ghép hai thứ đó lại rồi thêm hiệu chỉnh độ lệch. Nhìn như vậy thì hai dòng công thức ở mục sau không còn là hai dòng phải học thuộc.
+
+\paragraph{Một cách nhìn khác: Adam gần với “đi theo dấu của gradient”.} Nếu gradient của một tham số khá nhất quán qua các batch thì $\sqrt{\hat{v}_t} \approx |\hat{m}_t|$, và bước cập nhật rút gọn thành
+\[
+\frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} \;\approx\; \operatorname{sign}(\hat{m}_t) .
+\]
+Tức là Adam đi một bước dài xấp xỉ $\eta$ theo \emph{dấu} của gradient, gần như không quan tâm gradient lớn hay nhỏ \cite{balles2018dissecting}. Điều này giải thích vài chuyện rất thực tế: nhân hàm loss với $1000$ hầu như không làm Adam đổi hành vi (trong khi SGD thì đổi hoàn toàn); độ lớn mỗi bước bị chặn nên các khối tham số có thang đo rất khác nhau vẫn tiến cùng nhịp; và cũng chính vì thế Adam \emph{vứt bỏ} thông tin về độ lớn tương đối của gradient -- một thông tin mà các bộ tối ưu mới hơn như Muon (mục~\ref{ssec:muon}) tìm cách khai thác lại, nhưng ở mức \emph{ma trận} thay vì từng tham số riêng lẻ.
+
+\paragraph{Vì sao Transformer gần như bắt buộc dùng Adam?} Với mạng tích chập, SGD kèm momentum được tinh chỉnh kỹ có thể ngang ngửa Adam và đôi khi còn tổng quát hóa tốt hơn. Với Transformer thì khoảng cách là rõ rệt và dai dẳng: SGD hội tụ chậm hơn nhiều và thường kẹt lại ở mức loss cao hơn hẳn. Cách giải thích được chấp nhận rộng rãi nhất là các khối tham số trong Transformer có “địa hình” rất khác nhau, cộng với phân phối tần suất token lệch nặng theo luật Zipf, khiến một tốc độ học chung không thể phục vụ tốt đồng thời embedding của token hiếm lẫn các ma trận attention. Nói ngắn gọn: tính thích nghi theo từng tham số không phải một tiện nghi, nó là điều kiện cần.
+
+\subsection{Adam: Tốc độ học thích nghi cho từng tham số}
+\label{ssec:adam}
+Với gradient $g_t$ tại bước $t$, \textbf{Adam} \cite{kingma2014adam} duy trì hai trung bình trượt mũ -- moment bậc nhất (hướng) và bậc hai (độ lớn):
+\begin{align}
+	m_t &= \beta_1 m_{t-1} + (1-\beta_1)\, g_t, \qquad
+	v_t = \beta_2 v_{t-1} + (1-\beta_2)\, g_t^2, \\
+	\hat{m}_t &= \frac{m_t}{1-\beta_1^t}, \qquad \hat{v}_t = \frac{v_t}{1-\beta_2^t}, \qquad
+	\theta_t = \theta_{t-1} - \eta\, \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}.
+\end{align}
+\begin{itemize}
+	\item \textbf{Hiệu chỉnh độ lệch (bias correction):} Vì $m_0 = v_0 = 0$, các trung bình trượt bị kéo về 0 ở những bước đầu; chia cho $1-\beta^t$ khử độ lệch này.
+	\item \textbf{Tốc độ học thích nghi:} Chia cho $\sqrt{\hat{v}_t}$ nghĩa là tham số có gradient thường xuyên lớn sẽ đi bước nhỏ, tham số có gradient nhỏ và hiếm sẽ đi bước lớn -- rất quan trọng với embedding của các token hiếm.
+	\item \textbf{Chi phí bộ nhớ:} Hai trạng thái $m, v$ cho \emph{mỗi} tham số. Trong huấn luyện độ chính xác hỗn hợp, mỗi tham số thường chiếm khoảng 16 byte: trọng số BF16 (2), gradient BF16 (2), bản sao trọng số FP32 (4), $m$ (4) và $v$ (4). Một mô hình 70B cần khoảng 1.1 TB chỉ cho trạng thái huấn luyện -- lý do cần ZeRO/FSDP (mục~\ref{sec:distributed_training}).
+\end{itemize}
+
+\subsection{AdamW: Tách rời Weight Decay}
+\label{ssec:adamw}
+Với SGD, thêm điều chuẩn L2 $\frac{\lambda}{2}\|\theta\|^2$ vào loss tương đương với \emph{weight decay} (nhân trọng số với $1 - \eta\lambda$ mỗi bước). Loshchilov \& Hutter \cite{loshchilov2019adamw} chỉ ra rằng \textbf{với Adam thì không còn tương đương}: gradient của số hạng L2 là $\lambda\theta$, và nó bị chia cho $\sqrt{\hat{v}_t}$ như mọi gradient khác. Tham số có gradient lớn lại bị điều chuẩn \emph{ít hơn} -- ngược với mong muốn.
+
+\textbf{AdamW} tách weight decay ra khỏi bước thích nghi:
+\begin{equation}
+	\theta_t = \theta_{t-1} - \eta_t\left(\frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} + \lambda\,\theta_{t-1}\right).
+\end{equation}
+Mọi tham số bị “co lại” với cùng một tốc độ, độc lập với lịch sử gradient.
+
+\begin{tcolorbox}[title={Cấu hình AdamW “chuẩn” cho tiền huấn luyện LLM}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{itemize}
+	\item $\beta_1 = 0.9$, $\beta_2 = 0.95$ (thấp hơn giá trị mặc định 0.999 để $v_t$ phản ứng nhanh hơn với các đột biến gradient, giúp ổn định), $\epsilon = 10^{-8}$.
+	\item Weight decay $\lambda = 0.1$; thường không áp dụng cho bias, tham số chuẩn hóa và đôi khi cả embedding.
+	\item Cắt gradient (gradient clipping) theo chuẩn toàn cục ở ngưỡng 1.0.
+	\item Lịch learning rate: \textbf{warmup} tuyến tính vài nghìn bước (vì $\hat{v}_t$ chưa ổn định ở đầu), sau đó \textbf{cosine decay} về khoảng 10\% giá trị đỉnh; hoặc lịch \textbf{Warmup--Stable--Decay} (giữ hằng số phần lớn thời gian rồi giảm nhanh ở cuối), thuận tiện khi muốn huấn luyện tiếp hoặc lưu checkpoint ở nhiều ngân sách token khác nhau.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Sophia: Tối ưu bậc hai với chi phí gần bậc nhất}
+\label{ssec:sophia}
+Adam chỉ dùng thông tin bậc nhất (gradient). Các phương pháp bậc hai như Newton dùng độ cong (Hessian) để đi bước lớn ở hướng phẳng và bước nhỏ ở hướng dốc, nhưng Hessian của mô hình tỷ tham số thì không thể tính. \textbf{Sophia} (Second-order Clipped Stochastic Optimization) \cite{liu2024sophia} đề xuất:
+\begin{enumerate}
+	\item \textbf{Ước lượng đường chéo Hessian} $h_t$ bằng một trong hai bộ ước lượng rẻ: Hutchinson ($u \odot (\nabla^2 L\, u)$ với $u \sim \mathcal{N}(0, I)$) hoặc Gauss-Newton-Bartlett (lấy mẫu nhãn từ chính phân phối của mô hình rồi dùng bình phương gradient tương ứng).
+	\item \textbf{Chỉ cập nhật ước lượng mỗi $k$ bước} (ví dụ $k = 10$) và lấy trung bình trượt mũ, nên chi phí phụ trên mỗi bước là nhỏ.
+	\item \textbf{Cập nhật có cắt ngưỡng từng phần tử:}
+	\begin{equation}
+		\theta_{t+1} = \theta_t - \eta_t \cdot \text{clip}\left(\frac{m_t}{\max(\gamma\, h_t,\ \epsilon)},\ 1\right),
+	\end{equation}
+	trong đó $\text{clip}(z, 1)$ giới hạn mỗi phần tử trong $[-1, 1]$. Việc cắt ngưỡng bảo vệ khỏi các ước lượng Hessian âm hoặc quá nhỏ (vốn sẽ khiến bước Newton “bay” đi rất xa) -- đặc biệt quan trọng vì bề mặt loss của Transformer không lồi.
+\end{enumerate}
+Trên GPT-2 (125M--770M tham số), Sophia đạt cùng loss với khoảng \textbf{một nửa} số bước, compute và thời gian so với AdamW.
+
+\subsection{Adam-mini: Ít tốc độ học hơn, hiệu quả hơn}
+\label{ssec:adam_mini}
+\textbf{Adam-mini} \cite{zhang2025adammini} đặt một câu hỏi ngược với Sophia: thay vì \emph{thêm} thông tin bậc hai, liệu có thể \emph{bỏ bớt} trạng thái của Adam? Quan sát then chốt là Hessian của Transformer có \textbf{cấu trúc gần như chéo khối}, với các khối tương ứng các thành phần tự nhiên: từng đầu attention của Query/Key, ma trận Value, phép chiếu đầu ra của attention, từng nơ-ron của MLP, từng hàng (token) của embedding. Trong mỗi khối, các tham số có độ cong tương tự nhau, nên \textbf{một tốc độ học cho cả khối} là đủ:
+\[
+v_b = \beta_2 v_b + (1-\beta_2)\cdot \text{mean}_{i \in b}\big(g_i^2\big), \qquad \theta_b \leftarrow \theta_b - \eta\,\frac{\hat{m}_b}{\sqrt{\hat{v}_b} + \epsilon}.
+\]
+Kết quả: loại bỏ được \textbf{hơn 99.9\%} các phần tử của $v$, giảm khoảng \textbf{50\% bộ nhớ} của bộ tối ưu so với AdamW mà hiệu năng ngang hoặc tốt hơn. Nhờ giảm giao tiếp giữa GPU và CPU, Adam-mini đạt thông lượng cao hơn 49.6\% khi tiền huấn luyện Llama 2-7B trên hai GPU A800-80GB, tiết kiệm 33\% thời gian thực.
+
+\subsection{Muon: Trực giao hóa cập nhật cho ma trận}
+\label{ssec:muon}
+Adam, Sophia và Adam-mini đều xử lý mỗi tham số như một phần tử độc lập (hoặc theo khối), bỏ qua thực tế rằng phần lớn tham số của Transformer là \textbf{ma trận} với cấu trúc hình học riêng. \textbf{Muon} (MomentUm Orthogonalized by Newton-Schulz) \cite{jordan2024muon} khai thác cấu trúc đó.
+
+\paragraph{Thuật toán.} Với một ma trận trọng số ẩn $W \in \mathbb{R}^{A\times B}$ và gradient $G_t$:
+\begin{align}
+	B_t &= \mu\, B_{t-1} + G_t, && \text{(momentum như SGD)}\\
+	O_t &= \text{NewtonSchulz}_5(B_t) \approx U V^\top \quad \text{với } B_t = U\Sigma V^\top, && \text{(trực giao hóa)}\\
+	W_t &= W_{t-1} - \eta\, O_t.
+\end{align}
+Bước trực giao hóa đặt tất cả các giá trị suy biến của ma trận cập nhật về xấp xỉ 1, giữ nguyên các \emph{hướng} nhưng xóa bỏ chênh lệch \emph{độ lớn} giữa chúng. Thay vì tính SVD (rất chậm), Muon dùng 5 bước lặp Newton-Schulz trên $X_0 = B_t/\|B_t\|_F$:
+\[
+X_{k+1} = a X_k + b\,(X_k X_k^\top) X_k + c\,(X_k X_k^\top)^2 X_k, \qquad (a, b, c) = (3.4445,\ -4.7750,\ 2.0315),
+\]
+chỉ gồm các phép nhân ma trận nên chạy ổn định ngay ở BF16 trên GPU.
+
+\paragraph{Trực giác.} Ma trận cập nhật của SGD-momentum hay Adam trên các lớp Transformer thường có \textbf{số điều kiện rất lớn}: bị chi phối bởi vài hướng có giá trị suy biến lớn, còn các hướng “hiếm” nhưng có thể quan trọng hầu như không được cập nhật. Trực giao hóa khuếch đại tương đối các hướng hiếm này. Về mặt lý thuyết, Muon có thể được xem là \emph{hạ gradient dốc nhất theo chuẩn phổ} (spectral norm) thay vì chuẩn Euclid.
+
+\paragraph{Phạm vi áp dụng.} Muon chỉ dùng cho các ma trận 2 chiều \emph{ẩn} (attention, MLP). Embedding, lớp đầu ra, và các tham số vô hướng/vector (gain của RMSNorm, bias) vẫn dùng AdamW. Muon giữ một trạng thái (momentum) thay vì hai, nên tiết kiệm bộ nhớ hơn AdamW. Nó nổi tiếng đầu tiên qua các kỷ lục huấn luyện nhanh NanoGPT (“speedrun”) cuối năm 2024.
+
+\paragraph{Mở rộng Muon lên quy mô LLM \cite{liu2025muon}.} Moonshot AI chỉ ra hai thay đổi cần thiết để Muon hoạt động ở quy mô lớn mà không phải tinh chỉnh lại siêu tham số:
+\begin{enumerate}
+	\item \textbf{Thêm weight decay:} $W_t = W_{t-1} - \eta\,(O_t + \lambda W_{t-1})$. Không có weight decay, độ lớn RMS của trọng số và đầu ra các lớp tăng dần trong huấn luyện dài, vượt khỏi dải chính xác của BF16.
+	\item \textbf{Chuẩn hóa độ lớn cập nhật:} RMS của một ma trận trực giao cỡ $A\times B$ là khoảng $\sqrt{1/\max(A,B)}$, nghĩa là các ma trận có hình dạng khác nhau nhận bước cập nhật có độ lớn khác nhau. Nhân cập nhật với $0.2\sqrt{\max(A,B)}$ để RMS khớp với mức điển hình của AdamW, nhờ đó \emph{dùng lại được} learning rate và weight decay đã tinh chỉnh cho AdamW.
+\end{enumerate}
+Với hai thay đổi này, Muon đạt khoảng \textbf{2 lần hiệu quả tính toán} so với AdamW trong các thí nghiệm scaling law tối ưu tính toán. Mô hình Moonlight (MoE 16B tổng, 3B kích hoạt) được huấn luyện trên 5.7T token bằng Muon.
+
+\paragraph{MuonClip trong Kimi K2 \cite{kimiteam2025k2}.} Khi mở rộng tiếp lên 1 nghìn tỷ tham số, nhóm Kimi gặp hiện tượng \textbf{logit attention bùng nổ} (giá trị $q^\top k$ tăng vọt, gây mất ổn định). Kỹ thuật \textbf{QK-Clip} theo dõi logit attention lớn nhất của từng đầu sau mỗi bước; nếu nó vượt một ngưỡng $\tau$, ma trận chiếu Query và Key của đầu đó được thu nhỏ lại theo tỷ lệ tương ứng. Nhờ MuonClip, Kimi K2 được tiền huấn luyện trên 15.5T token mà \textbf{không xảy ra một đột biến loss nào}.
+
+\subsection{So sánh và lời khuyên thực hành}
+\label{ssec:optimizer_comparison}
+
+\begin{table}[H]
+\centering
+\caption{So sánh các bộ tối ưu cho tiền huấn luyện LLM (trạng thái phụ tính trên mỗi phần tử tham số).}
+\label{tab:optimizer_comparison}
+\begin{tabularx}{\textwidth}{@{}lcX@{}}
+\toprule
+\textbf{Bộ tối ưu} & \textbf{Trạng thái phụ} & \textbf{Ý tưởng chính / đánh đổi} \\
+\midrule
+AdamW & $m, v$ (2) & Chuẩn mực, ổn định, dễ tinh chỉnh; tốn bộ nhớ. \\
+Sophia & $m, h$ (2) & Dùng đường chéo Hessian có cắt ngưỡng; thêm chi phí ước lượng mỗi $k$ bước. \\
+Adam-mini & $m$ + 1 số/khối ($\approx$1) & Một tốc độ học cho mỗi khối Hessian; cần chia khối đúng theo kiến trúc. \\
+Muon & momentum (1) & Trực giao hóa cập nhật ma trận; chỉ cho ma trận ẩn, phần còn lại dùng AdamW; cần weight decay và chuẩn hóa RMS khi mở rộng. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{tcolorbox}[title={Cẩn trọng khi đọc các tuyên bố “nhanh hơn AdamW 2 lần”}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+Wen et al. (2025) \cite{wen2025fantastic} so sánh có hệ thống mười bộ tối ưu từ 0.1B đến 1.2B tham số, với siêu tham số được tinh chỉnh riêng và kỹ lưỡng cho \emph{từng} bộ tối ưu. Kết quả:
+\begin{itemize}
+	\item Các bộ tối ưu dựa trên ma trận (Muon, SOAP) tốt nhất, nhưng mức tăng tốc so với AdamW được tinh chỉnh tốt chỉ khoảng \textbf{1.4 lần ở 0.1B} và \textbf{giảm còn khoảng 1.1 lần ở 1.2B}.
+	\item Nhiều tuyên bố tăng tốc lớn hơn đến từ baseline AdamW chưa được tinh chỉnh đủ, hoặc từ việc dùng chung siêu tham số cho các bộ tối ưu khác nhau.
+	\item So sánh các checkpoint giữa chừng dễ gây hiểu lầm: thứ hạng hai bộ tối ưu có thể \emph{đảo ngược} khi learning rate giảm về cuối lịch huấn luyện.
+\end{itemize}
+Đây chính là câu hỏi thứ tư của danh sách đọc: \emph{có so sánh cùng compute và ablation công bằng không?} Trong thực tế năm 2026, AdamW vẫn là lựa chọn an toàn mặc định; Muon/MuonClip là lựa chọn đáng cân nhắc đã được kiểm chứng ở quy mô nghìn tỷ tham số.
+\end{tcolorbox}

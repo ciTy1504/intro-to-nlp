@@ -5,7 +5,7 @@
 \section{Contextualized Word Embeddings: Biểu diễn từ theo ngữ cảnh}
 \label{sec:contextualized_embeddings}
 
-Các Word Embeddings truyền thống tạo vector cố định cho mỗi từ, bất kể ngữ cảnh. Ví dụ, từ \textit{"bank"} trong \textit{"river bank"} và \textit{"investment bank"} đều có cùng một vector. Điều này gây ra hạn chế lớn: \textbf{không thể xử lý đa nghĩa (polysemy)}.
+Các Word Embeddings truyền thống tạo vector cố định cho mỗi từ, bất kể ngữ cảnh. Ví dụ, từ \textit{“bank”} trong \textit{“river bank”} và \textit{“investment bank”} đều có cùng một vector. Điều này gây ra hạn chế lớn: \textbf{không thể xử lý đa nghĩa (polysemy)}.
 
 \paragraph{Ý tưởng cơ bản}\leavevmode
 
@@ -188,14 +188,14 @@ Trước khi các mô hình Transformer khổng lồ thống trị, một trong 
 \textbf{ULMFiT} (Universal Language Model Fine-tuning), được giới thiệu bởi Jeremy Howard và Sebastian Ruder (fast.ai) vào năm 2018 \cite{howard2018universal}, đã tạo ra một cuộc cách mạng bằng cách đưa ra một \textbf{khung phương pháp (framework)} hoàn chỉnh và cực kỳ hiệu quả để tinh chỉnh (fine-tune) một mô hình ngôn ngữ cho các tác vụ phân loại văn bản downstream. ULMFiT đã chứng minh rằng, với các kỹ thuật phù hợp, chúng ta có thể đạt được kết quả SOTA (state-of-the-art) trên nhiều bộ dữ liệu chỉ với khoảng 100 mẫu được gán nhãn.
 
 \paragraph{Tư duy cốt lõi: Quy trình 3 bước}
-Ý tưởng của ULMFiT không nằm ở một kiến trúc mạng nơ-ron mới, mà là ở một \textbf{quy trình (recipe)} gồm 3 bước, được thiết kế cẩn thận để bảo toàn kiến thức đã học và tránh "sự quên lãng thảm khốc" (catastrophic forgetting).
+Ý tưởng của ULMFiT không nằm ở một kiến trúc mạng nơ-ron mới, mà là ở một \textbf{quy trình (recipe)} gồm 3 bước, được thiết kế cẩn thận để bảo toàn kiến thức đã học và tránh “sự quên lãng thảm khốc” (catastrophic forgetting).
 
 \begin{enumerate}
     \item \textbf{Huấn luyện trước mô hình ngôn ngữ tổng quát (General-domain LM Pre-training):} Huấn luyện một mô hình ngôn ngữ (cụ thể là AWD-LSTM) trên một kho văn bản lớn và đa dạng (ví dụ: WikiText-103). Mục tiêu của bước này là để mô hình học được các đặc trưng ngôn ngữ phổ quát: ngữ pháp, mối quan hệ ngữ nghĩa, và thậm chí một lượng kiến thức nền về thế giới. Đây là bước tốn kém nhất và thường chỉ cần làm một lần.
 
-    \item \textbf{Tinh chỉnh mô hình ngôn ngữ trên miền đích (Target-domain LM Fine-tuning):} Đây là bước trung gian quan trọng mà các phương pháp trước đó thường bỏ qua. Trước khi giải quyết tác vụ cuối cùng (ví dụ: phân loại bình luận phim), mô hình ngôn ngữ tổng quát sẽ được tiếp tục huấn luyện trên dữ liệu của chính tác vụ đó (nhưng không dùng nhãn). Bước này giúp mô hình thích nghi với các đặc điểm, thuật ngữ, và phong cách của miền dữ liệu cụ thể (ví dụ: ngôn ngữ "teen code" trong các bình luận phim).
+    \item \textbf{Tinh chỉnh mô hình ngôn ngữ trên miền đích (Target-domain LM Fine-tuning):} Đây là bước trung gian quan trọng mà các phương pháp trước đó thường bỏ qua. Trước khi giải quyết tác vụ cuối cùng (ví dụ: phân loại bình luận phim), mô hình ngôn ngữ tổng quát sẽ được tiếp tục huấn luyện trên dữ liệu của chính tác vụ đó (nhưng không dùng nhãn). Bước này giúp mô hình thích nghi với các đặc điểm, thuật ngữ, và phong cách của miền dữ liệu cụ thể (ví dụ: ngôn ngữ “teen code” trong các bình luận phim).
 
-    \item \textbf{Tinh chỉnh mô hình phân loại cho tác vụ cuối (Target Task Classifier Fine-tuning):} Cuối cùng, lớp đầu ra (output layer) của mô hình ngôn ngữ được thay thế bằng một "đầu phân loại" (classification head) phù hợp với tác vụ. Toàn bộ mô hình sau đó được tinh chỉnh trên dữ liệu có nhãn của tác vụ, nhưng không phải theo cách thông thường, mà bằng các kỹ thuật đặc biệt để tối ưu hóa quá trình học chuyển giao.
+    \item \textbf{Tinh chỉnh mô hình phân loại cho tác vụ cuối (Target Task Classifier Fine-tuning):} Cuối cùng, lớp đầu ra (output layer) của mô hình ngôn ngữ được thay thế bằng một “đầu phân loại” (classification head) phù hợp với tác vụ. Toàn bộ mô hình sau đó được tinh chỉnh trên dữ liệu có nhãn của tác vụ, nhưng không phải theo cách thông thường, mà bằng các kỹ thuật đặc biệt để tối ưu hóa quá trình học chuyển giao.
 \end{enumerate}
 
 \begin{center}
@@ -242,14 +242,14 @@ trong đó:
 Chiến lược này giúp mô hình nhanh chóng hội tụ đến một vùng tham số tốt (giai đoạn tăng) rồi sau đó từ từ tinh chỉnh để tìm điểm tối ưu cục bộ tốt hơn (giai đoạn giảm).
 
 \paragraph{3. Mở băng Dần dần (Gradual Unfreezing)}
-Để tránh "sự quên lãng thảm khốc", việc tinh chỉnh toàn bộ mô hình ngay từ đầu trên một tập dữ liệu nhỏ có thể phá hỏng các trọng số đã được huấn luyện cẩn thận. ULMFiT đề xuất một phương pháp an toàn hơn, theo từng giai đoạn:
+Để tránh “sự quên lãng thảm khốc”, việc tinh chỉnh toàn bộ mô hình ngay từ đầu trên một tập dữ liệu nhỏ có thể phá hỏng các trọng số đã được huấn luyện cẩn thận. ULMFiT đề xuất một phương pháp an toàn hơn, theo từng giai đoạn:
 
 \begin{enumerate}
     \item \textbf{Giai đoạn 1:} Đóng băng (freeze) tất cả các tầng đã được huấn luyện trước ($l=1, \dots, L-1$), chỉ huấn luyện các tầng của đầu phân loại mới được thêm vào (tầng $L$) trong một epoch.
     \item \textbf{Giai đoạn 2:} Mở băng (unfreeze) tầng trên cùng của mô hình gốc (tầng $L-1$) và huấn luyện nó cùng với tầng $L$ trong một epoch nữa.
     \item \textbf{Giai đoạn 3 và tiếp theo:} Tiếp tục quá trình này, tuần tự mở băng từng tầng một từ trên xuống dưới ($L-2, L-3, \dots, 1$) và huấn luyện cho đến khi toàn bộ mô hình được tinh chỉnh.
 \end{enumerate}
-Phương pháp này giống như việc từ từ "rã đông" kiến thức, giúp mô hình thích nghi một cách nhẹ nhàng và hiệu quả, đặc biệt khi dữ liệu tác vụ có hạn.
+Phương pháp này giống như việc từ từ “rã đông” kiến thức, giúp mô hình thích nghi một cách nhẹ nhàng và hiệu quả, đặc biệt khi dữ liệu tác vụ có hạn.
 
 \begin{tcolorbox}[
     title=Công thức thành công của ULMFiT,
@@ -264,7 +264,7 @@ ULMFiT không chỉ là một mô hình, mà là một công thức thực tiễ
 \end{tcolorbox}
 
 \subsubsection{Di sản và Hạn chế}
-ULMFiT là một cột mốc quan trọng, nó đã "dân chủ hóa" việc áp dụng học chuyển giao trong NLP, cho thấy rằng không cần đến tài nguyên tính toán khổng lồ vẫn có thể đạt được hiệu suất cao. Nó đã đặt nền móng và tư duy cho các phương pháp sau này như BERT và các mô hình dựa trên Transformer, vốn cũng tuân theo quy trình "huấn luyện trước - tinh chỉnh" nhưng với kiến trúc mạnh mẽ hơn.
+ULMFiT là một cột mốc quan trọng, nó đã “dân chủ hóa” việc áp dụng học chuyển giao trong NLP, cho thấy rằng không cần đến tài nguyên tính toán khổng lồ vẫn có thể đạt được hiệu suất cao. Nó đã đặt nền móng và tư duy cho các phương pháp sau này như BERT và các mô hình dựa trên Transformer, vốn cũng tuân theo quy trình “huấn luyện trước - tinh chỉnh” nhưng với kiến trúc mạnh mẽ hơn.
 
 Tuy nhiên, hạn chế chính của ULMFiT nằm ở kiến trúc LSTM tuần tự, vốn không thể song song hóa hiệu quả và gặp khó khăn trong việc nắm bắt các phụ thuộc tầm xa so với kiến trúc Self-Attention của Transformer.
 

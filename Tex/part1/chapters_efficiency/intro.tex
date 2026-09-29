@@ -1,0 +1,15 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_efficiency/intro.tex
+% Chương mới (cập nhật 2026) -- trục Distillation + Inference/Serving của LLM Research Reading List
+
+\chapter{HIỆU QUẢ LLM: CHƯNG CẤT, LƯỢNG TỬ HÓA VÀ PHỤC VỤ}
+\label{chap:efficiency}
+
+Một mô hình suy luận hàng đầu có thể có hàng trăm tỷ tham số và sinh hàng nghìn token cho mỗi câu hỏi. Nếu phục vụ nó một cách ngây thơ, mỗi yêu cầu có thể tốn hàng chục giây và vài GB bộ nhớ GPU -- nhân lên với hàng triệu người dùng, chi phí suy luận nhanh chóng vượt xa chi phí huấn luyện. Chương này tập trung vào câu hỏi: \textbf{làm thế nào để có cùng chất lượng với chi phí thấp hơn nhiều?}
+
+Chúng ta tấn công vấn đề ở ba tầng:
+\begin{enumerate}
+	\item \textbf{Làm mô hình nhỏ đi:} chưng cất tri thức (mục~\ref{sec:model_optimization} cho nguyên lý chung, mục~\ref{sec:llm_distillation} cho LLM).
+	\item \textbf{Làm mỗi tham số rẻ đi:} lượng tử hóa sau huấn luyện -- LLM.int8(), SmoothQuant, GPTQ, AWQ (mục~\ref{sec:llm_quantization}).
+	\item \textbf{Làm hệ thống phục vụ thông minh hơn:} quản lý KV cache với PagedAttention, batching liên tục, offloading (mục~\ref{sec:llm_serving}); giải mã suy đoán (mục~\ref{sec:speculative_decoding}); và kiến trúc tách rời prefill/decode ở quy mô cụm máy (mục~\ref{sec:disaggregated_serving}).
+\end{enumerate}

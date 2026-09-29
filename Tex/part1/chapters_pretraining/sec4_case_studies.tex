@@ -1,0 +1,100 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_pretraining/sec4_case_studies.tex
+
+\section{Công thức Huấn luyện Thực tế: Llama 3 và DeepSeek-V3}
+\label{sec:pretraining_case_studies}
+
+Hai báo cáo kỹ thuật Llama 3 \cite{grattafiori2024llama3} và DeepSeek-V3 \cite{deepseekai2024v3} là những tài liệu công khai chi tiết nhất về cách huấn luyện một LLM hàng đầu. Chúng đại diện cho hai triết lý khác nhau: \textbf{đơn giản hóa để mở rộng quy mô} và \textbf{đồng thiết kế thuật toán--hệ thống để tiết kiệm tối đa}. Đọc song song hai báo cáo giúp ta ghép lại mọi mảnh kiến thức của chương~\ref{chap:transformer_llms} và chương này.
+
+\subsection{Llama 3: Mô hình dày đặc, dữ liệu là trọng tâm}
+\label{ssec:llama3_recipe}
+
+\paragraph{Triết lý.} Meta tuyên bố rõ ba “đòn bẩy” chính: \textbf{dữ liệu}, \textbf{quy mô} và \textbf{quản lý độ phức tạp}. Họ cố ý chọn kiến trúc Transformer dày đặc tiêu chuẩn (thay vì MoE) và thuật toán hậu huấn luyện đơn giản (SFT, lấy mẫu loại bỏ, DPO thay vì PPO) để việc mở rộng quy mô ổn định và dễ gỡ lỗi.
+
+\paragraph{Kiến trúc của bản 405B.} 126 lớp, $d_{\text{model}} = 16\,384$, 128 đầu attention với 8 đầu Key/Value (GQA), FFN SwiGLU 53\,120 chiều, RoPE với cơ số $\theta = 500\,000$ (lớn hơn nhiều so với 10\,000 để thuận lợi cho ngữ cảnh dài), từ vựng 128K token.
+
+\paragraph{Dữ liệu.} Khoảng 15.6T token, cập nhật tới cuối năm 2023.
+\begin{itemize}
+	\item \textbf{Làm sạch nhiều tầng:} bộ trích xuất HTML riêng; khử trùng lặp theo URL, theo tài liệu (MinHash) và theo dòng; các heuristic loại bỏ nội dung lặp n-gram, từ ngữ độc hại, và các tài liệu có phân phối token bất thường.
+	\item \textbf{Lọc chất lượng bằng mô hình:} bộ phân loại fastText nhận diện văn bản “có khả năng được Wikipedia trích dẫn”, và các bộ phân loại dựa trên RoBERTa được huấn luyện từ nhãn do Llama 2 gán; các bộ phân loại chuyên biệt để nhận diện dữ liệu mã nguồn và suy luận toán học.
+	\item \textbf{Tỷ lệ trộn cuối cùng:} khoảng 50\% kiến thức tổng quát, 25\% toán học và suy luận, 17\% mã nguồn, 8\% đa ngôn ngữ -- được chọn dựa trên các thí nghiệm scaling law với nhiều tỷ lệ trộn khác nhau.
+\end{itemize}
+
+\paragraph{Quy mô.} Ngân sách $3.8 \times 10^{25}$ FLOPs, chọn theo scaling law tự xây dựng (mục~\ref{ssec:beyond_chinchilla}). Hạ tầng lên tới 16 nghìn GPU H100 với \textbf{song song 4 chiều}: tensor parallelism trong mỗi máy, pipeline parallelism giữa các máy, context parallelism cho chuỗi dài (mục~\ref{ssec:ring_attention}), và FSDP cho song song dữ liệu. Ở quy mô này, hỏng hóc là chuyện thường ngày: trong một giai đoạn 54 ngày có 466 lần gián đoạn, 419 lần không định trước, khoảng 78\% do lỗi phần cứng -- vậy mà thời gian huấn luyện hữu ích vẫn đạt trên 90\% nhờ tự động hóa việc khôi phục.
+
+\paragraph{Ba giai đoạn tiền huấn luyện.}
+\begin{enumerate}
+	\item \textbf{Tiền huấn luyện ban đầu:} Batch size tăng dần theo lịch (4M token với chuỗi 4096 $\rightarrow$ 8M token với chuỗi 8192 $\rightarrow$ 16M token), giúp ổn định ở đầu và hiệu quả ở cuối.
+	\item \textbf{Tiền huấn luyện ngữ cảnh dài:} Tăng ngữ cảnh từ 8K lên 128K qua sáu giai đoạn, dùng khoảng 800B token; chỉ chuyển giai đoạn khi hiệu năng trên ngữ cảnh ngắn được phục hồi và bài kiểm tra “tìm kim trong đống cỏ” (needle-in-a-haystack) đạt yêu cầu.
+	\item \textbf{Ủ (annealing):} Ở 40M token cuối, learning rate giảm tuyến tính về 0 trong khi tăng tỷ trọng dữ liệu chất lượng cao; kết quả cuối là trung bình của các checkpoint trong giai đoạn ủ (Polyak averaging). Đáng chú ý, annealing trên dữ liệu toán và mã giúp bản 8B tăng 24.0\% trên GSM8K và 6.4\% trên MATH, nhưng hầu như không giúp bản 405B -- mô hình lớn đã tự học đủ từ dữ liệu chung. Nhóm tác giả còn dùng annealing như một \emph{công cụ đánh giá} giá trị của các bộ dữ liệu nhỏ.
+\end{enumerate}
+
+\paragraph{Hậu huấn luyện.} Sáu vòng lặp, mỗi vòng gồm: huấn luyện reward model, sinh nhiều câu trả lời và chọn câu tốt nhất bằng reward model (lấy mẫu loại bỏ -- rejection sampling), SFT trên dữ liệu đã chọn, rồi DPO (mục~\ref{ssec:dpo}). Xem chương~\ref{chap:finetuning_alignment}.
+
+\subsection{DeepSeek-V3: Đồng thiết kế thuật toán và hệ thống}
+\label{ssec:deepseekv3_recipe}
+
+\paragraph{Triết lý.} Với ràng buộc phần cứng (GPU H800 bị giới hạn băng thông kết nối), DeepSeek tối ưu \emph{từng} tầng -- kiến trúc, độ chính xác số học, song song hóa, giao tiếp -- để giảm chi phí mà không giảm chất lượng.
+
+\paragraph{Kiến trúc.} MoE 671B tham số, \textbf{37B kích hoạt} mỗi token; 61 lớp, trong đó 3 lớp đầu dùng FFN dày đặc, các lớp còn lại là DeepSeekMoE với 1 chuyên gia chia sẻ và 256 chuyên gia định tuyến (chọn 8); attention là MLA (mục~\ref{ssec:mla}); cân bằng tải không dùng loss phụ (mục~\ref{ssec:deepseekmoe}); thêm một module MTP (mục~\ref{ssec:mtp}).
+
+\paragraph{Dữ liệu và lịch huấn luyện.} 14.8T token đa dạng, tăng tỷ lệ toán và mã so với V2. Batch size tăng dần trong giai đoạn đầu; learning rate có warmup, giữ hằng số trong phần lớn quá trình rồi giảm dần theo cosine. Ngữ cảnh được mở rộng bằng YaRN qua hai giai đoạn: 4K $\rightarrow$ 32K $\rightarrow$ 128K.
+
+\paragraph{Huấn luyện FP8.} Đây là một trong những lần đầu tiên huấn luyện FP8 được kiểm chứng ở quy mô cực lớn:
+\begin{itemize}
+	\item Phần lớn các phép nhân ma trận nặng (trong FFN/chuyên gia) chạy ở FP8.
+	\item \textbf{Lượng tử hóa mịn:} Thay vì một hệ số tỷ lệ cho cả tensor, dùng hệ số riêng cho từng khối nhỏ, để các giá trị ngoại lai (outliers) không làm hỏng độ chính xác của phần còn lại (cùng ý tưởng với lượng tử hóa theo khối ở chương~\ref{chap:efficiency}).
+	\item Các thành phần nhạy cảm (embedding, lớp đầu ra, router MoE, chuẩn hóa, attention) vẫn giữ độ chính xác cao hơn.
+	\item Sai lệch loss tương đối so với BF16 luôn dưới 0.25\%.
+\end{itemize}
+
+\paragraph{Song song hóa và giao tiếp.} Không dùng tensor parallelism; kết hợp pipeline parallelism 16 chiều, expert parallelism 64 chiều trải trên 8 máy, và ZeRO-1. Thuật toán \textbf{DualPipe} sắp xếp để giao tiếp all-to-all của MoE \emph{chồng lấp} với tính toán, giảm thời gian GPU nằm chờ.
+
+\paragraph{Chi phí.} Toàn bộ quá trình huấn luyện chính thức tốn \textbf{2.788 triệu giờ GPU H800} (tiền huấn luyện 2.664 triệu, mở rộng ngữ cảnh 119 nghìn, hậu huấn luyện 5 nghìn), tương đương khoảng 5.6 triệu USD nếu thuê với giá 2 USD/giờ GPU -- \emph{chưa tính} chi phí nghiên cứu và các thí nghiệm loại bỏ trước đó. Quá trình tiền huấn luyện không gặp đột biến loss không thể phục hồi và không phải quay lui checkpoint lần nào.
+
+\paragraph{Hậu huấn luyện.} SFT với khoảng 1.5 triệu mẫu, trong đó dữ liệu suy luận được chưng cất từ một mô hình nội bộ dòng R1; sau đó học tăng cường bằng GRPO với phần thưởng dựa trên luật (cho toán, mã có thể kiểm chứng) và reward model (cho câu hỏi mở). Xem chương~\ref{chap:reasoning}.
+
+\subsection{So sánh hai công thức}
+\label{ssec:recipe_comparison}
+
+\begin{table}[H]
+\centering
+\caption{So sánh công thức tiền huấn luyện của Llama 3 405B và DeepSeek-V3. Compute của DeepSeek-V3 ước lượng thô theo $6ND$ với $N$ là tham số kích hoạt.}
+\label{tab:llama3_vs_deepseekv3}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+ & \textbf{Llama 3 405B} & \textbf{DeepSeek-V3} \\
+\midrule
+Kiến trúc & Dày đặc & MoE (1 chia sẻ + 256 định tuyến, chọn 8) \\
+Tham số (tổng / kích hoạt) & 405B / 405B & 671B / 37B \\
+Attention & GQA (8 đầu KV) & MLA \\
+Số token & $\approx$15.6T & 14.8T \\
+Compute & $3.8 \times 10^{25}$ FLOPs & $\approx 3.3 \times 10^{24}$ FLOPs ($6 \times 37\text{B} \times 14.8\text{T}$) \\
+Độ chính xác & BF16 & FP8 (phần lớn phép tính) \\
+Song song hóa & TP + CP + PP + FSDP & PP + EP + ZeRO-1 (không TP) \\
+Cân bằng tải MoE & -- & Bias động, không loss phụ \\
+Mục tiêu phụ & -- & Multi-Token Prediction \\
+Ngữ cảnh & 128K (6 giai đoạn) & 128K (YaRN, 2 giai đoạn) \\
+Hậu huấn luyện & SFT + rejection sampling + DPO & SFT (chưng cất từ R1) + GRPO \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{tcolorbox}[title={Bài học rút ra}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
+\begin{itemize}
+	\item \textbf{Scaling law là công cụ ra quyết định}, không chỉ là kết quả học thuật: cả hai đội đều dùng thí nghiệm nhỏ để chọn kích thước, lượng dữ liệu và tỷ lệ trộn.
+	\item \textbf{Dữ liệu chất lượng cao ở cuối quá trình huấn luyện} (annealing) có tác động lớn -- nhất là với mô hình nhỏ.
+	\item \textbf{MoE + MLA + FP8} cho phép đạt chất lượng tương đương với compute ít hơn khoảng một bậc độ lớn, đổi lại hệ thống phức tạp hơn nhiều.
+	\item \textbf{Ổn định là đặc tính được thiết kế}, không phải may mắn: lịch batch size, cân bằng tải, QK-Clip, tự động khôi phục khi phần cứng hỏng.
+\end{itemize}
+\end{tcolorbox}
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Chương này đã đi từ quy luật lũy thừa của Kaplan và Chinchilla, qua cuộc cách mạng về chất lượng dữ liệu (RefinedWeb, FineWeb, DCLM, DoReMi, dữ liệu tổng hợp), đến thế hệ bộ tối ưu mới (Sophia, Adam-mini, Muon), và kết thúc bằng hai công thức huấn luyện thực tế. Kết quả của tất cả những nỗ lực đó là một \emph{mô hình nền (base model)}: hiểu biết rộng, nhưng chưa biết làm theo chỉ dẫn và chưa được căn chỉnh với mong muốn của con người. Chương tiếp theo sẽ biến mô hình nền thành một trợ lý hữu ích.}

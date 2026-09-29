@@ -1,0 +1,64 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_reasoning/sec2_test_time_compute.tex
+
+\section{Mở rộng Tính toán lúc Suy luận (Test-time Compute Scaling)}
+\label{sec:test_time_compute}
+
+Giả sử bạn có một ngân sách tính toán cố định. Nên dùng nó để \textbf{tiền huấn luyện một mô hình lớn hơn}, hay dùng mô hình nhỏ hơn nhưng \textbf{cho nó “nghĩ” lâu hơn} khi trả lời? Snell et al. \cite{snell2024scaling} là nghiên cứu hệ thống đầu tiên đặt câu hỏi này, với mô hình PaLM 2-S* trên tập MATH.
+
+\subsection{Hai cơ chế tiêu tốn tính toán lúc suy luận}
+\label{ssec:ttc_mechanisms}
+\begin{enumerate}
+	\item \textbf{Tìm kiếm dưới sự dẫn đường của verifier} (thay đổi phân phối \emph{đề xuất} bằng cách chọn lọc): sinh nhiều ứng viên và dùng PRM (mục~\ref{ssec:prm}) để chọn hoặc cắt tỉa.
+	\item \textbf{Cập nhật phân phối đầu ra một cách thích nghi}: mô hình được tinh chỉnh để \emph{tự sửa} câu trả lời trước đó của nó qua nhiều vòng (sequential revisions).
+\end{enumerate}
+
+\paragraph{Các chiến lược tìm kiếm với PRM.}
+\begin{itemize}
+	\item \textbf{Best-of-$N$ (có trọng số):} Sinh $N$ lời giải độc lập, chọn theo điểm PRM (có thể cộng dồn điểm của các lời giải cùng đáp án -- kết hợp ý tưởng Self-Consistency \cite{wang2022self}).
+	\item \textbf{Beam search theo bước:} Tại mỗi bước suy luận, sinh nhiều bước kế tiếp cho mỗi nhánh, giữ lại các nhánh có điểm PRM cao nhất -- gần với tinh thần của Tree of Thoughts \cite{yao2023tree}.
+	\item \textbf{Lookahead search:} Beam search nhưng đánh giá một bước bằng cách “nhìn trước” vài bước tiếp theo, tốn kém hơn nhiều.
+\end{itemize}
+
+\begin{center}
+\bookimage[0.95\textwidth]{test_time_search_strategies}{Hình so sánh ba chiến lược tìm kiếm với process reward model khi suy luận: Best-of-N (sinh N lời giải đầy đủ độc lập rồi chọn lời giải có điểm verifier cao nhất), Beam search (tại mỗi bước giữ lại các bước trung gian có điểm PRM cao nhất và mở rộng tiếp), và Lookahead search (đánh giá mỗi bước bằng cách triển khai thêm vài bước phía trước).}
+\captionof{figure}{Các chiến lược tìm kiếm có verifier dẫn đường: Best-of-$N$, Beam search và Lookahead search. Nguồn: Snell et al.~\cite{snell2024scaling}.}
+\label{fig:ttc_search}
+\end{center}
+
+\subsection{Phát hiện then chốt: Chiến lược tối ưu phụ thuộc độ khó}
+\label{ssec:ttc_difficulty}
+Các tác giả chia câu hỏi thành 5 mức độ khó dựa trên tỷ lệ giải đúng của chính mô hình gốc, và phát hiện:
+\begin{itemize}
+	\item \textbf{Câu hỏi dễ:} Mô hình thường đã “gần đúng”; \emph{tự sửa tuần tự} (chỉnh dần một lời giải) hiệu quả hơn sinh song song, và best-of-$N$ tốt hơn beam search ở ngân sách lớn -- beam search dễ “tối ưu quá mức” theo PRM và làm giảm chất lượng.
+	\item \textbf{Câu hỏi trung bình đến khó:} Beam search với PRM hiệu quả hơn best-of-$N$, và nên \emph{kết hợp} sinh song song (khám phá nhiều hướng tiếp cận) với tự sửa tuần tự theo một tỷ lệ phụ thuộc độ khó.
+	\item \textbf{Câu hỏi quá khó:} Không chiến lược tính toán lúc suy luận nào giúp được nhiều -- mô hình thiếu kiến thức nền.
+\end{itemize}
+Từ đó, một chiến lược \textbf{tối ưu tính toán (compute-optimal)} -- ước lượng độ khó của câu hỏi rồi chọn cách phân bổ phù hợp -- hiệu quả hơn best-of-$N$ \textbf{hơn 4 lần} với cùng chất lượng.
+
+\subsection{Tiền huấn luyện hay suy nghĩ lâu hơn?}
+\label{ssec:pretrain_vs_ttc}
+Để so sánh công bằng, dùng lại công thức compute ở mục~\ref{ssec:compute_6nd}: tiền huấn luyện tốn $6ND_{\text{pretrain}}$, suy luận tốn khoảng $2ND_{\text{inference}}$. Tăng kích thước mô hình $M$ lần làm tăng \emph{cả hai} chi phí; thay vào đó có thể giữ mô hình nhỏ và dùng lượng tính toán tương đương để sinh thêm token lúc suy luận. Kết quả \textbf{so sánh cùng FLOPs}:
+\begin{itemize}
+	\item Trên các câu hỏi dễ và trung bình, hoặc khi tổng lượng suy luận nhỏ so với tiền huấn luyện ($D_{\text{inference}} \ll D_{\text{pretrain}}$), mô hình nhỏ với tính toán lúc suy luận tối ưu có thể \textbf{vượt một mô hình lớn hơn 14 lần}.
+	\item Trên các câu hỏi khó nhất, hoặc khi hệ thống phải phục vụ lượng suy luận rất lớn, đầu tư vào tiền huấn luyện vẫn hiệu quả hơn.
+\end{itemize}
+
+\begin{center}
+\bookimage[0.95\textwidth]{test_time_vs_pretrain_compute}{Hai biểu đồ đường so sánh tính toán lúc suy luận với tính toán lúc tiền huấn luyện trên bộ MATH: trục hoành là lượng FLOPs suy luận (thang lũy thừa của 2), trục tung là độ chính xác; mỗi màu ứng với một mức độ khó từ 1 đến 5; các ngôi sao đánh dấu hiệu năng đạt được nếu dùng cùng lượng compute để tiền huấn luyện một mô hình lớn hơn. Bên trái dùng chiến lược tự sửa (revisions), bên phải dùng tìm kiếm có PRM dẫn đường.}
+\captionof{figure}{Cùng một ngân sách FLOPs: dùng cho tính toán lúc suy luận (đường liền) hay cho tiền huấn luyện mô hình lớn hơn (ngôi sao)? Câu trả lời phụ thuộc độ khó của câu hỏi và tỷ lệ giữa lượng suy luận và lượng tiền huấn luyện. Nguồn: Snell et al.~\cite{snell2024scaling}.}
+\label{fig:ttc_vs_pretrain}
+\end{center}
+
+\begin{tcolorbox}[title={Ý nghĩa}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
+Tính toán lúc suy luận và tính toán lúc tiền huấn luyện \textbf{không hoàn toàn thay thế được cho nhau}, nhưng chúng có thể bù trừ trong một vùng rộng. Điều này mở ra hướng: \emph{huấn luyện mô hình để biết cách tận dụng tính toán lúc suy luận} -- tức là để nó tự sinh ra chuỗi suy nghĩ dài, tự kiểm tra và tự sửa sai mà không cần verifier bên ngoài. Đó chính là bản chất của các mô hình suy luận hiện đại (mục~\ref{sec:rl_reasoning}), nơi “tìm kiếm” được nội hóa vào trong một chuỗi suy nghĩ duy nhất.
+\end{tcolorbox}
+
+\subsection{Đo lường: pass@$k$, maj@$k$ và các cạm bẫy}
+\label{ssec:passk}
+\begin{itemize}
+	\item \textbf{pass@1:} Xác suất một lần sinh (thường lấy trung bình trên nhiều mẫu với nhiệt độ $>0$) cho đáp án đúng -- metric chính của các mô hình suy luận.
+	\item \textbf{pass@$k$:} Xác suất có \emph{ít nhất một} lời giải đúng trong $k$ lần sinh. Đo “giới hạn trên” nếu có một verifier hoàn hảo. Ước lượng không chệch từ $n \geq k$ mẫu với $c$ mẫu đúng: $\text{pass@}k = 1 - \binom{n-c}{k}\big/\binom{n}{k}$.
+	\item \textbf{maj@$k$ (cons@$k$):} Độ chính xác khi chọn đáp án xuất hiện nhiều nhất trong $k$ lần sinh (Self-Consistency).
+\end{itemize}
+Khi đọc paper về suy luận, luôn kiểm tra: kết quả là pass@1 hay maj@64? Có so sánh \textbf{cùng số token sinh ra} không? Một mô hình “tốt hơn” nhưng sinh gấp 5 lần token chưa chắc đã tốt hơn khi xét chi phí.

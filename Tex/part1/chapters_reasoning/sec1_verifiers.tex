@@ -1,0 +1,62 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_reasoning/sec1_verifiers.tex
+
+\section{Kiểm chứng Lời giải: Giám sát theo Kết quả và theo Quá trình}
+\label{sec:verifiers}
+
+\begin{tcolorbox}[title={Trực giác cốt lõi}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+\textbf{Kiểm tra một lời giải dễ hơn tự viết ra lời giải đó.} Nếu mô hình sinh ra được một lời giải đúng trong 100 lần thử, ta chỉ cần một “giám khảo” đủ tốt để nhặt ra lời giải đó. Giám khảo này cũng chính là nguồn phần thưởng cho học tăng cường ở các mục sau.
+\end{tcolorbox}
+
+\subsection{Verifier theo kết quả (Outcome Reward Model -- ORM)}
+\label{ssec:orm}
+Cobbe et al. \cite{cobbe2021gsm8k} giới thiệu \textbf{GSM8K} -- 8.5 nghìn bài toán đố cấp tiểu học cần 2 đến 8 bước tính -- cùng với ý tưởng \textbf{verifier}:
+\begin{enumerate}
+	\item Tinh chỉnh một mô hình sinh (generator) trên lời giải mẫu.
+	\item Cho generator sinh nhiều lời giải cho mỗi bài trong tập huấn luyện, gán nhãn mỗi lời giải là đúng/sai dựa trên \emph{đáp án cuối cùng}.
+	\item Huấn luyện một verifier dự đoán xác suất lời giải là đúng.
+	\item Khi suy luận: sinh nhiều ứng viên (ví dụ 100), chọn ứng viên được verifier chấm điểm cao nhất (\textbf{best-of-$N$}).
+\end{enumerate}
+Trên GSM8K, dùng verifier mang lại mức cải thiện xấp xỉ việc \textbf{tăng kích thước mô hình khoảng 30 lần}, và verifier tận dụng dữ liệu tốt hơn so với tinh chỉnh thêm generator. Mô hình kiểu này được gọi là \textbf{Outcome-supervised Reward Model (ORM)}: nó chỉ học từ tín hiệu ở cuối lời giải.
+
+Điểm yếu của ORM: một lời giải có thể có đáp án đúng nhờ \emph{may mắn} (hai lỗi triệt tiêu nhau) nhưng lập luận sai, và ORM không cho biết lỗi nằm ở bước nào.
+
+\subsection{Verifier theo quá trình (Process Reward Model -- PRM)}
+\label{ssec:prm}
+\textbf{“Let's Verify Step by Step”} \cite{lightman2024verify} (OpenAI, 2023) so sánh trực tiếp hai kiểu giám sát ở quy mô lớn trên bộ dữ liệu MATH \cite{hendrycks2021math}.
+
+\paragraph{Dữ liệu PRM800K.} Người gán nhãn xem từng \emph{bước} của lời giải do mô hình sinh ra và gán nhãn \emph{tích cực}, \emph{trung tính} hoặc \emph{tiêu cực}. Tổng cộng \textbf{800 nghìn nhãn ở mức bước} trên 75 nghìn lời giải cho 12 nghìn bài toán.
+
+\paragraph{Chấm điểm cả lời giải bằng PRM.} PRM dự đoán xác suất mỗi bước là đúng; điểm của cả lời giải là \textbf{tích các xác suất} đó -- lời giải chỉ được xem là đúng khi \emph{mọi} bước đều đúng:
+\[
+\text{score}(s_1, \dots, s_K) = \prod_{k=1}^{K} P(\text{bước } s_k \text{ đúng} \mid \text{bài toán}, s_{<k}).
+\]
+
+\paragraph{Kết quả.} Trên 500 bài toán đại diện của tập kiểm tra MATH (về sau được biết đến rộng rãi với tên \textbf{MATH-500}), chọn lời giải tốt nhất trong 1860 ứng viên:
+\begin{center}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Phương pháp chọn} & \textbf{\% bài giải đúng (best-of-1860)} \\
+\midrule
+Bỏ phiếu đa số (majority voting) & 69.6 \\
+Outcome Reward Model (ORM) & 72.4 \\
+Process Reward Model (PRM) & \textbf{78.2} \\
+\bottomrule
+\end{tabular}
+\end{center}
+Khoảng cách giữa PRM và các phương pháp còn lại \emph{tăng lên} khi $N$ lớn -- PRM đặc biệt giỏi phát hiện những lời giải “trông có vẻ đúng” nhưng sai ở một bước. Nhóm tác giả còn dùng \textbf{học chủ động (active learning)}: ưu tiên gán nhãn các lời giải “thuyết phục nhưng sai” (được PRM hiện tại chấm cao nhưng có đáp án sai), giúp hiệu quả dữ liệu tăng khoảng 2.6 lần.
+
+\paragraph{Lợi ích về căn chỉnh.} Giám sát theo quá trình thưởng cho \emph{lập luận} mà con người đồng thuận, thay vì chỉ thưởng cho kết quả. Nó ít có nguy cơ khuyến khích mô hình “đi đường tắt” sai và dễ diễn giải hơn -- các tác giả gọi đây là một “thuế căn chỉnh âm” (negative alignment tax): vừa an toàn hơn vừa hiệu quả hơn.
+
+\subsection{Tự động tạo nhãn quá trình: Math-Shepherd}
+\label{ssec:math_shepherd}
+Nhãn ở mức bước của con người rất đắt. \textbf{Math-Shepherd} \cite{wang2024mathshepherd} ước lượng chất lượng một bước bằng cách \emph{nhìn xem nó dẫn tới đâu}: từ bước $s_k$, cho một mô hình “hoàn thiện” (completer) viết tiếp lời giải $N$ lần và kiểm tra đáp án cuối.
+\begin{itemize}
+	\item \textbf{Ước lượng cứng:} bước $s_k$ được gán nhãn tốt nếu \emph{ít nhất một} lần viết tiếp đạt đáp án đúng.
+	\item \textbf{Ước lượng mềm:} nhãn của $s_k$ là \emph{tỷ lệ} số lần viết tiếp đạt đáp án đúng.
+\end{itemize}
+Về bản chất, đây là ước lượng Monte Carlo của \emph{giá trị} của một trạng thái trung gian. PRM huấn luyện trên nhãn tự động này được dùng cả để xếp hạng lời giải lẫn làm phần thưởng từng bước cho học tăng cường, không cần một nhãn người nào.
+
+\begin{tcolorbox}[title={ORM hay PRM? Góc nhìn năm 2026}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+PRM rất mạnh khi dùng để \textbf{xếp hạng hoặc dẫn đường tìm kiếm} lúc suy luận (mục~\ref{sec:test_time_compute}). Tuy nhiên, khi dùng làm phần thưởng cho học tăng cường quy mô lớn, nhóm DeepSeek-R1 báo cáo ba khó khăn \cite{deepseekai2025r1}: (1) khó định nghĩa thế nào là một “bước” trong suy luận tổng quát; (2) khó xác định chính xác một bước trung gian đúng hay sai, dù bằng người hay bằng mô hình; (3) mọi reward model dạng nơ-ron đều có thể bị \textbf{“hack”} khi chính sách được tối ưu mạnh. Vì vậy các mô hình suy luận hàng đầu hiện nay chủ yếu dùng \textbf{phần thưởng kiểm chứng được dựa trên luật} (đáp án toán, test case của mã) cho học tăng cường, và dành PRM cho giai đoạn suy luận.
+\end{tcolorbox}

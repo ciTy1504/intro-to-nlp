@@ -14,10 +14,10 @@ Tuy nhiên, trong các dự án học máy, \textbf{Mã nguồn chỉ là một 
 \end{itemize}
 
 \begin{tcolorbox}[
-    title=Vấn đề: "Nó chạy được trên máy của tôi mà!",
+    title=Vấn đề: “Nó chạy được trên máy của tôi mà!”,
     colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries
 ]
-Nếu không có một hệ thống quản lý phiên bản hoàn chỉnh, chúng ta sẽ rơi vào một "địa ngục tái lập" (reproducibility hell). Bạn có thể có một mô hình hoạt động rất tốt, nhưng vài tháng sau, khi dữ liệu thay đổi hoặc một đồng nghiệp muốn tái tạo lại kết quả của bạn, không ai có thể làm được vì không ai biết chính xác phiên bản dữ liệu và các thiết lập nào đã tạo ra mô hình đó.
+Nếu không có một hệ thống quản lý phiên bản hoàn chỉnh, chúng ta sẽ rơi vào một “địa ngục tái lập” (reproducibility hell). Bạn có thể có một mô hình hoạt động rất tốt, nhưng vài tháng sau, khi dữ liệu thay đổi hoặc một đồng nghiệp muốn tái tạo lại kết quả của bạn, không ai có thể làm được vì không ai biết chính xác phiên bản dữ liệu và các thiết lập nào đã tạo ra mô hình đó.
 \end{tcolorbox}
 
 \textbf{Git không được thiết kế để xử lý các file lớn} như các bộ dữ liệu hay các file trọng số mô hình. Việc commit các file lớn này sẽ làm cho kho Git trở nên cực kỳ cồng kềnh và chậm chạp. Đây là lúc DVC (Data Version Control) phát huy tác dụng.
@@ -31,7 +31,7 @@ Nếu không có một hệ thống quản lý phiên bản hoàn chỉnh, chún
     title=Triết lý của DVC,
     colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
 ]
-Hãy để \textbf{Git} làm những gì nó giỏi nhất: quản lý phiên bản của các file code nhỏ. Hãy để một \textbf{bộ nhớ từ xa (remote storage)} (như Amazon S3, Google Cloud Storage, hoặc thậm chí là Google Drive) lưu trữ các file dữ liệu và mô hình lớn. \textbf{DVC} sẽ đóng vai trò là "cầu nối", tạo ra các file metadata nhỏ để theo dõi phiên bản của các file lớn đó, và các file metadata này sẽ được quản lý bởi \textbf{Git}.
+Hãy để \textbf{Git} làm những gì nó giỏi nhất: quản lý phiên bản của các file code nhỏ. Hãy để một \textbf{bộ nhớ từ xa (remote storage)} (như Amazon S3, Google Cloud Storage, hoặc thậm chí là Google Drive) lưu trữ các file dữ liệu và mô hình lớn. \textbf{DVC} sẽ đóng vai trò là “cầu nối”, tạo ra các file metadata nhỏ để theo dõi phiên bản của các file lớn đó, và các file metadata này sẽ được quản lý bởi \textbf{Git}.
 \end{tcolorbox}
 
 \subsubsection{Cơ chế hoạt động}
@@ -84,7 +84,7 @@ DVC còn tiến một bước xa hơn bằng cách cho phép bạn định nghĩ
             \item Nếu không có gì thay đổi, DVC sẽ không chạy lại, giúp tiết kiệm thời gian và tài nguyên tính toán.
         \end{itemize}
 \end{itemize}
-Bằng cách commit file `dvc.yaml` và `dvc.lock` (file ghi lại các giá trị băm chính xác của các deps/outs) vào Git, bạn đã ghi lại toàn bộ "provenance" (nguồn gốc) của một thử nghiệm. Bất kỳ ai cũng có thể checkout một commit Git cụ thể và chạy `dvc repro` để tái tạo lại chính xác kết quả của bạn.
+Bằng cách commit file `dvc.yaml` và `dvc.lock` (file ghi lại các giá trị băm chính xác của các deps/outs) vào Git, bạn đã ghi lại toàn bộ “provenance” (nguồn gốc) của một thử nghiệm. Bất kỳ ai cũng có thể checkout một commit Git cụ thể và chạy `dvc repro` để tái tạo lại chính xác kết quả của bạn.
 
 \subsection{Lợi ích của việc sử dụng DVC}
 \begin{itemize}
@@ -100,7 +100,7 @@ Việc tích hợp DVC vào quy trình làm việc đòi hỏi một chút nỗ 
 \bigskip
 
 \begin{center}
-    \textbf{\Large KẾT THÚC CHƯƠNG 1}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
 \end{center}
 
 \textit{Trong chương đầu tiên của phần thực chiến này, chúng ta đã xây dựng nền móng vững chắc cho bất kỳ dự án NLP thành công nào. Chúng ta đã bắt đầu với một quy trình làm việc có hệ thống, sau đó đi sâu vào công việc chiếm phần lớn thời gian và công sức: dữ liệu. Bạn đã học các kỹ thuật để thu thập, làm sạch, gán nhãn, tăng cường, và quan trọng là quản lý phiên bản dữ liệu một cách chuyên nghiệp. Bài học cốt lõi của chương này là: một pipeline dữ liệu mạnh mẽ và có thể tái lập chính là xương sống của một hệ thống AI hiệu năng cao. Giờ đây, khi đã có trong tay một bộ dữ liệu chất lượng, chúng ta đã sẵn sàng để chuyển sang giai đoạn hấp dẫn tiếp theo: huấn luyện và đánh giá các mô hình state-of-the-art.}

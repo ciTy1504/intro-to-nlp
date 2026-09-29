@@ -5,7 +5,7 @@
 \section{Các Bài toán Cốt lõi trong NLP}
 \label{sec:bai_toan_cot_loi}
 
-Sau khi đã có nền tảng về các cấp độ phân tích ngôn ngữ, chúng ta sẽ chính thức ánh xạ chúng vào các bài toán (tasks) cụ thể trong NLP. Việc hiểu rõ các bài toán này là cực kỳ quan trọng, vì chúng là những "viên gạch" cơ bản để xây dựng nên các ứng dụng NLP phức tạp hơn. Các bài toán này thường được nhóm lại theo cấp độ phân tích, từ từ, đến câu, và cuối cùng là các ứng dụng hoàn chỉnh.
+Sau khi đã có nền tảng về các cấp độ phân tích ngôn ngữ, chúng ta sẽ chính thức ánh xạ chúng vào các bài toán (tasks) cụ thể trong NLP. Việc hiểu rõ các bài toán này là cực kỳ quan trọng, vì chúng là những “viên gạch” cơ bản để xây dựng nên các ứng dụng NLP phức tạp hơn. Các bài toán này thường được nhóm lại theo cấp độ phân tích, từ từ, đến câu, và cuối cùng là các ứng dụng hoàn chỉnh.
 
 \subsection{Phân tích cấp độ từ}
 \label{ssec:phan_tich_tu}
@@ -15,7 +15,7 @@ Sau khi đã có nền tảng về các cấp độ phân tích ngôn ngữ, ch�
 \paragraph{Gán nhãn Từ loại (Part-of-Speech - POS Tagging)}
 Là quá trình gán một nhãn từ loại (danh từ, động từ, tính từ, v.v.) cho mỗi từ trong một câu, dựa vào định nghĩa và ngữ cảnh của nó.
 \begin{itemize}
-    \item \textbf{Mục tiêu:} Giải quyết sự mơ hồ của từ. Ví dụ, từ "câu" trong "câu cá" là động từ, nhưng trong "câu văn" lại là danh từ.
+    \item \textbf{Mục tiêu:} Giải quyết sự mơ hồ của từ. Ví dụ, từ “câu” trong “câu cá” là động từ, nhưng trong “câu văn” lại là danh từ.
     \item \textbf{Ví dụ đầu vào:} `Tôi thích đọc sách.`
     \item \textbf{Ví dụ đầu ra:} `Tôi/P thích/V đọc/V sách/N ./CH` (P: Đại từ, V: Động từ, N: Danh từ, CH: Dấu câu).
     \item \textbf{Tầm quan trọng:} Là một bước tiền xử lý nền tảng cho rất nhiều bài toán khác như phân tích cú pháp, nhận dạng thực thể, trích xuất thông tin.
@@ -26,12 +26,12 @@ Cả hai kỹ thuật này đều nhằm mục đích quy chuẩn hóa các dạ
 \begin{itemize}
     \item \textbf{Stemming (Rút gọn về gốc từ):} Một phương pháp đơn giản, dựa trên quy tắc để cắt bỏ các hậu tố của từ. Nó nhanh nhưng đôi khi không chính xác về mặt ngôn ngữ.
         \begin{itemize}
-            \item \textbf{Ví dụ (tiếng Anh):} "studies", "studying" $\rightarrow$ "studi".
+            \item \textbf{Ví dụ (tiếng Anh):} “studies”, “studying” $\rightarrow$ “studi”.
         \end{itemize}
     \item \textbf{Lemmatization (Đưa về dạng từ điển):} Một phương pháp phức tạp hơn, sử dụng từ điển và phân tích hình thái để đưa từ về dạng nguyên thể (lemma) của nó.
         \begin{itemize}
-            \item \textbf{Ví dụ (tiếng Anh):} "studies", "studying" $\rightarrow$ "study"; "better" $\rightarrow$ "good".
-            \item \textbf{Ví dụ (tiếng Việt):} "đi học", "đi làm" có thể được chuẩn hóa về động từ "đi".
+            \item \textbf{Ví dụ (tiếng Anh):} “studies”, “studying” $\rightarrow$ “study”; “better” $\rightarrow$ “good”.
+            \item \textbf{Ví dụ (tiếng Việt):} “đi học”, “đi làm” có thể được chuẩn hóa về động từ “đi”.
         \end{itemize}
     \item \textbf{Lựa chọn:} Lemmatization thường được ưu tiên hơn vì kết quả có ý nghĩa ngôn ngữ học, tuy nhiên nó chậm hơn và đòi hỏi nhiều tài nguyên hơn Stemming.
 \end{itemize}
@@ -62,7 +62,7 @@ Sau khi đã xử lý các từ riêng lẻ, bước tiếp theo là hiểu các
             \item \textbf{Đầu ra:} Một tập các cặp (từ quản lý, quan hệ, từ phụ thuộc), ví dụ: \texttt{(thích, nsubj, Tôi)}, \texttt{(thích, obj, sách)}.
         \end{itemize}
 \end{itemize}
-Phân tích cú pháp là một trong những bài toán lâu đời và thách thức nhất trong NLP, là chìa khóa để "hiểu sâu" cấu trúc của một câu.
+Phân tích cú pháp là một trong những bài toán lâu đời và thách thức nhất trong NLP, là chìa khóa để “hiểu sâu” cấu trúc của một câu.
 
 \subsection{Phân tích ngữ nghĩa}
 \label{ssec:phan_tich_ngu_nghia}
@@ -80,12 +80,12 @@ Là bài toán tìm và phân loại các thực thể có tên trong văn bản
 \paragraph{Phân biệt Ý của Từ (Word Sense Disambiguation - WSD)}
 Là bài toán xác định xem một từ đa nghĩa đang được sử dụng với ý nghĩa nào trong một ngữ cảnh cụ thể.
 \begin{itemize}
-    \item \textbf{Ví dụ:} Trong câu "Ngân hàng nhà nước vừa hạ lãi suất", từ "ngân hàng" có nghĩa là một tổ chức tài chính, chứ không phải "bờ sông" (bờ, bank).
+    \item \textbf{Ví dụ:} Trong câu “Ngân hàng nhà nước vừa hạ lãi suất”, từ “ngân hàng” có nghĩa là một tổ chức tài chính, chứ không phải “bờ sông” (bờ, bank).
     \item \textbf{Thách thức:} Đây là một bài toán rất khó và lâu đời. Tuy nhiên, sự ra đời của các mô hình ngôn ngữ dựa trên ngữ cảnh (contextualized embeddings) như BERT đã ngầm giải quyết một phần lớn bài toán này.
 \end{itemize}
 
 \paragraph{Gán nhãn Vai nghĩa (Semantic Role Labeling - SRL)}
-Là bài toán xác định "ai đã làm gì, cho ai, ở đâu, khi nào, và như thế nào" xung quanh một động từ chính (vị ngữ) trong câu.
+Là bài toán xác định “ai đã làm gì, cho ai, ở đâu, khi nào, và như thế nào” xung quanh một động từ chính (vị ngữ) trong câu.
 \begin{itemize}
     \item \textbf{Mục tiêu:} Phân tích cấu trúc sự kiện (event structure) của câu.
     \item \textbf{Ví dụ đầu vào:} `Hôm qua, An đã tặng Hoa một cuốn sách ở thư viện.`
@@ -140,7 +140,7 @@ Là bài toán xác định các mối quan hệ ngữ nghĩa giữa các thực
             \end{itemize}
             \item \textbf{Suy luận Ngôn ngữ Tự nhiên (Natural Language Inference - NLI):} Xác định mối quan hệ logic (kéo theo, mâu thuẫn, hoặc trung lập) giữa một cặp câu (tiền đề và giả thuyết).
             \begin{itemize}
-                \item \textit{Ví dụ:} Tiền đề: "Một người đàn ông đang chơi guitar." Giả thuyết: "Có người đang tạo ra âm nhạc." $\rightarrow$ Mối quan hệ: Kéo theo (Entailment).
+                \item \textit{Ví dụ:} Tiền đề: “Một người đàn ông đang chơi guitar.” Giả thuyết: “Có người đang tạo ra âm nhạc.” $\rightarrow$ Mối quan hệ: Kéo theo (Entailment).
             \end{itemize}
     \end{itemize}
 \end{example}

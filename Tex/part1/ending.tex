@@ -36,18 +36,28 @@
 	Word embeddings (Word2Vec, GloVe, FastText), 
 	autoencoder, RNN/LSTM/GRU, seq2seq với attention, 
 	CNN cho NLP, contextualized embeddings, và các mô hình sinh pre-Transformer.
-	\item \textbf{Chương 4 – Kỷ nguyên Transformer và LLMs:} 
-	Kiến trúc Transformer gốc, phân loại LLMs, tokenization hiện đại, 
-	biến thể cho ngữ cảnh dài, MoE.
-	\item \textbf{Chương 5 – Tinh chỉnh và Căn chỉnh mô hình:} 
-	Fine-tuning, PEFT (LoRA, QLoRA, Adapter), prompt engineering, 
-	instruction tuning, RLHF và các kỹ thuật alignment khác.
-	\item \textbf{Chương 6 – Hệ thống và Kiến trúc nâng cao:} 
-	RAG, tối ưu hóa mô hình (distillation, quantization, pruning), 
-	mô hình đa phương thức, hệ thống tác tử, world models, 
-	và biểu diễn nâng cao cho truy xuất.
-	\item \textbf{Chương 7 – Đánh giá và Benchmark:} 
-	Các metric kinh điển (perplexity, F1, BLEU, ROUGE), 
-	benchmark (GLUE, SuperGLUE, đánh giá emergent abilities), 
-	thách thức trong đánh giá, và xu hướng “LLM-as-a-Judge”.
+	\item \textbf{Chương 4 – Kỷ nguyên Transformer và LLMs:}
+	Kiến trúc Transformer gốc, phân loại LLMs, tokenization hiện đại,
+	ngữ cảnh dài (FlashAttention, YaRN, Ring Attention), MoE (Switch, DeepSeekMoE),
+	khối decoder hiện đại (GQA, MLA, MTP).
+	\item \textbf{Chương 5 – Tiền huấn luyện LLM:}
+	Scaling laws (Kaplan, Chinchilla), dữ liệu tiền huấn luyện (The Pile, RefinedWeb, FineWeb, DCLM, DoReMi, dữ liệu tổng hợp),
+	bộ tối ưu (AdamW, Sophia, Adam-mini, Muon), công thức Llama 3 và DeepSeek-V3.
+	\item \textbf{Chương 6 – Tinh chỉnh và Căn chỉnh mô hình:}
+	Fine-tuning và thích ứng miền, PEFT (LoRA, DoRA, QLoRA, Adapter, IA$^3$), prompt engineering,
+	instruction tuning, RLHF (InstructGPT), DPO, KTO, ORPO, GRPO.
+	\item \textbf{Chương 7 – Mô hình suy luận và tính toán lúc suy luận:}
+	Verifier (ORM, PRM), scaling test-time compute, STaR/ReST$^{EM}$/Quiet-STaR,
+	học tăng cường với phần thưởng kiểm chứng được (DeepSeek-R1, DAPO, GSPO).
+	\item \textbf{Chương 8 – Tìm kiếm và Sinh Tăng cường (RAG):}
+	Pipeline RAG từ cơ bản đến nâng cao, biểu diễn chuyên biệt cho truy xuất, RAG đa bước và RAG dạng tác tử.
+	\item \textbf{Chương 9 – Hiệu quả LLM:}
+	Chưng cất (MiniLLM, GKD, Distilling Step-by-Step, KARD, RLAD), lượng tử hóa (LLM.int8, SmoothQuant, GPTQ, AWQ),
+	PagedAttention, giải mã suy đoán, phục vụ tách rời prefill/decode.
+	\item \textbf{Chương 10 – Hệ thống và Kiến trúc nâng cao:}
+	Mô hình đa phương thức (CLIP, LLaVA, Gemini), hệ thống tác tử, world models.
+	\item \textbf{Chương 11 – Đánh giá và Benchmark:}
+	Các metric kinh điển, benchmark (GLUE, MMLU, GSM8K, MATH, TruthfulQA, HELM),
+	thách thức trong đánh giá, LLM-as-a-Judge và Chatbot Arena,
+	đánh giá tác tử (AgentBench, GAIA, SWE-bench) và tính tái lập.
 \end{itemize}
