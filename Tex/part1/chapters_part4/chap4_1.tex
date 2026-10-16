@@ -341,6 +341,30 @@ sử dụng $R_p^\top = R_p^{-1} = R_{-p}$ và $R_{-p} R_q = R_{q-p}$ (chính l�
 \end{itemize}
 Bài báo gốc còn chứng minh RoPE có tính \textbf{suy giảm theo khoảng cách dài (long-term decay)}: cận trên của $|\tilde{q}_p^\top \tilde{k}_q|$ giảm khi $|p-q|$ tăng, nghĩa là mặc định các token ở xa tương tác yếu hơn -- đúng với trực giác ngôn ngữ, mà không cần áp một thiên vị cứng như ALiBi.
 
+\paragraph{Mỗi cặp chiều là một chiếc kim riêng.} Vì RoPE chia vector đầu thành các lát hai chiều, số chiều của một đầu attention \textbf{bắt buộc phải chẵn} -- nếu lẻ sẽ thừa ra một chiều không ghép cặp được. Với $d_h$ chiều ta có $d_h/2$ chiếc kim, mỗi chiếc quay với một bước sóng riêng $\lambda_i = 2\pi b^{2i/d_h}$, trải trên bốn bậc độ lớn. Với $d_h = 128$ và $b = 10000$: cặp chiều đầu tiên quay trọn một vòng sau mỗi 6 token, cặp ở giữa sau khoảng 600 token, cặp cuối cùng phải tới hơn 54\,000 token mới hết một vòng. Cách đọc tự nhiên là theo \emph{thang thời gian}: kim nhanh phân biệt các quan hệ sát nhau (hình thái từ, cụm hai ba từ), kim trung bình phủ cỡ một câu hay một đoạn, kim chậm hoạt động gần như một “mã vùng” cho biết ta đang ở đâu trong tài liệu. Cần nói rõ đây là cách diễn giải theo bước sóng chứ không phải kết quả đo: mô hình tự quyết định khai thác nhóm kim nào, và các đầu attention khác nhau thường chuyên môn hóa khác nhau.
+
+\paragraph{Tăng số chiều \emph{không} kéo dài được chiếc kim chậm nhất.} Đây là một hệ quả ít được để ý. Chiếc kim chậm nhất ứng với $i = d_h/2 - 1$, nên
+\[
+\lambda_{\max} = 2\pi\, b^{\,1 - 2/d_h} \xrightarrow{\ d_h \to \infty\ } 2\pi b \approx 62\,832 \ \text{token} \quad (b = 10000).
+\]
+Bước sóng dài nhất bị chặn trên bởi $2\pi b$, bất kể đầu attention rộng bao nhiêu:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+$d_h$ & 64 & 128 & 256 & 1024 & 4096 \\
+\midrule
+Số kim ($d_h/2$) & 32 & 64 & 128 & 512 & 2048 \\
+$\lambda_{\max}$ (token) & 47\,117 & 54\,410 & 58\,470 & 61\,712 & 62\,550 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Tăng $d_h$ gấp 64 lần (từ 64 lên 4096) chỉ kéo chu kỳ dài nhất từ 47\,000 lên 62\,500 token -- chưa tới 33\%, và càng tăng càng sát trần. Vậy thứ mà một đầu attention rộng thực sự mua được \textbf{không phải chu kỳ dài hơn, mà là nhiều kim trung gian hơn}: phổ tần số dày hơn, các thang thời gian được lấp đầy mịn hơn. Muốn ngữ cảnh dài hơn thật sự thì phải động vào $b$ hoặc vào chính các tần số -- đó là việc của ABF, Position Interpolation và YaRN (mục~\ref{sssec:pe_long_context}), chứ không phải việc của $d_h$.
+
+\paragraph{Vì sao vượt quá $\lambda_{\max}$ vẫn chưa “hết chỗ”.} Một chiếc kim quay quá một vòng thì tự nó không còn phân biệt được $p$ với $p + \lambda_i$. Nhưng attention dùng \emph{đồng thời} cả $d_h/2$ chiếc kim, nên hai vị trí chỉ thực sự trùng “dấu vân tay” khi \textbf{mọi} chiếc kim cùng quay về đúng pha cũ một lúc. Các chu kỳ $\lambda_i$ là một cấp số nhân với công bội vô tỷ, chúng không thông ước với nhau, nên thời điểm trùng pha đồng loạt nằm xa hơn $\lambda_{\max}$ rất nhiều bậc. Nói cách khác, khi một mô hình RoPE hỏng ở ngữ cảnh dài, nguyên nhân gần như không bao giờ là “trùng pha”; nó là những lý do khác hẳn mà ta sẽ xem ở mục~\ref{sssec:pe_long_context}.
+
 \paragraph{Chi phí và cách cài đặt.} RoPE \textbf{không thêm một tham số nào} và cũng gần như không thêm bộ nhớ. Vì $R_p$ là ma trận khối chéo, ta không bao giờ dựng nó ra: chỉ cần hai vector $\cos$ và $\sin$ đã tính sẵn, chi phí là $O(d_h)$ cho mỗi token mỗi đầu, hoàn toàn chìm trong chi phí của phép nhân ma trận. RoPE chỉ áp lên Query và Key, \emph{không} áp lên Value.
 
 Một chi tiết hay gây bối rối khi đọc code: bài báo ghép chiều $2i$ với $2i{+}1$ (kiểu “xen kẽ”), còn phần lớn cài đặt phổ biến (GPT-NeoX và các mô hình Llama trên Hugging Face) lại ghép chiều $i$ với $i + d_h/2$ qua hàm \texttt{rotate\_half}. Hai quy ước chỉ khác nhau một phép hoán vị cố định các chiều trong mỗi đầu chú ý, nên \emph{tương đương về mặt toán học} miễn là Q và K dùng chung một quy ước. Nhưng chúng \textbf{không tương thích ở mức trọng số}: chuyển một checkpoint từ quy ước này sang quy ước kia đòi hỏi phải hoán vị lại các hàng của $W_Q$ và $W_K$ -- đó chính là bước \texttt{permute} trong các script chuyển đổi trọng số Llama.

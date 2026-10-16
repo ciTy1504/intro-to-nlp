@@ -14,13 +14,20 @@ Trước khi xem Adam làm gì, cần thấy nó \emph{sửa} cái gì.
 	\item \textbf{Momentum} thay $g$ bằng một trung bình trượt $m_t$: nhiễu ngẫu nhiên giữa các batch triệt tiêu lẫn nhau, còn thành phần nhất quán thì được cộng dồn. Đây là \emph{moment bậc nhất} -- nó lo phần \textbf{hướng đi}.
 	\item \textbf{AdaGrad} và \textbf{RMSProp} chia bước đi cho căn bậc hai của trung bình bình phương gradient: tham số nào lâu nay gradient lớn thì bước ngắn lại, và ngược lại. AdaGrad cộng dồn từ bước đầu tiên nên mẫu số chỉ có tăng, học một lúc là bước đi tắt hẳn; RMSProp thay tổng bằng trung bình trượt mũ nên không chết (RMSProp nổi tiếng vì chưa từng được viết thành bài báo -- nó xuất hiện trong một slide bài giảng của Hinton). Đây là \emph{moment bậc hai} -- nó lo phần \textbf{độ dài bước}.
 \end{itemize}
-Adam chỉ đơn giản là ghép hai thứ đó lại rồi thêm hiệu chỉnh độ lệch. Nhìn như vậy thì hai dòng công thức ở mục sau không còn là hai dòng phải học thuộc.
+
+\begin{center}
+\bookimage[0.98\textwidth]{optimizer_trajectories}{Hai biểu đồ: trái là quỹ đạo của SGD, SGD+momentum và Adam trên các đường đồng mức của một hàm bậc hai hình thung lũng hẹp; phải là loss theo số bước (trục tung log).}
+\captionof{figure}{Vì sao cần momentum và tốc độ học thích nghi. Hàm mục tiêu là một dạng toàn phương có số điều kiện 150 -- một thung lũng rất hẹp. Cả ba cùng xuất phát từ một điểm, cùng chạy 40 bước, mỗi bộ tối ưu dùng learning rate lớn nhất mà nó còn ổn định. SGD buộc phải chọn bước thật nhỏ để không bùng nổ theo hướng dốc, nên nó dao động qua lại và sau 40 bước vẫn còn cách xa cực tiểu; momentum cộng dồn các bước nhất quán dọc thung lũng; Adam chuẩn hóa theo từng tọa độ nên đi những bước gần bằng nhau ở cả hai hướng. Lưu ý đây chỉ là minh họa hai chiều: trên Transformer, khoảng cách thật giữa SGD và Adam lớn hơn nhiều, vì chênh lệch thang đo trải trên hàng tỷ tham số chứ không phải hai.}
+\label{fig:optimizer_trajectories}
+\end{center}
+
+\noindent Adam chỉ đơn giản là ghép hai thứ đó lại rồi thêm hiệu chỉnh độ lệch. Nhìn như vậy thì hai dòng công thức ở mục sau không còn là hai dòng phải học thuộc.
 
 \paragraph{Một cách nhìn khác: Adam gần với “đi theo dấu của gradient”.} Nếu gradient của một tham số khá nhất quán qua các batch thì $\sqrt{\hat{v}_t} \approx |\hat{m}_t|$, và bước cập nhật rút gọn thành
 \[
 \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} \;\approx\; \operatorname{sign}(\hat{m}_t) .
 \]
-Tức là Adam đi một bước dài xấp xỉ $\eta$ theo \emph{dấu} của gradient, gần như không quan tâm gradient lớn hay nhỏ \cite{balles2018dissecting}. Điều này giải thích vài chuyện rất thực tế: nhân hàm loss với $1000$ hầu như không làm Adam đổi hành vi (trong khi SGD thì đổi hoàn toàn); độ lớn mỗi bước bị chặn nên các khối tham số có thang đo rất khác nhau vẫn tiến cùng nhịp; và cũng chính vì thế Adam \emph{vứt bỏ} thông tin về độ lớn tương đối của gradient -- một thông tin mà các bộ tối ưu mới hơn như Muon (mục~\ref{ssec:muon}) tìm cách khai thác lại, nhưng ở mức \emph{ma trận} thay vì từng tham số riêng lẻ.
+Tức là Adam đi một bước dài xấp xỉ $\eta$ theo \emph{dấu} của gradient, gần như không quan tâm gradient lớn hay nhỏ \cite{balles2018dissecting} (hình~\ref{fig:adam_bias_step}, bên phải). Điều này giải thích vài chuyện rất thực tế: nhân hàm loss với $1000$ hầu như không làm Adam đổi hành vi (trong khi SGD thì đổi hoàn toàn); độ lớn mỗi bước bị chặn nên các khối tham số có thang đo rất khác nhau vẫn tiến cùng nhịp; và cũng chính vì thế Adam \emph{vứt bỏ} thông tin về độ lớn tương đối của gradient -- một thông tin mà các bộ tối ưu mới hơn như Muon (mục~\ref{ssec:muon}) tìm cách khai thác lại, nhưng ở mức \emph{ma trận} thay vì từng tham số riêng lẻ.
 
 \paragraph{Vì sao Transformer gần như bắt buộc dùng Adam?} Với mạng tích chập, SGD kèm momentum được tinh chỉnh kỹ có thể ngang ngửa Adam và đôi khi còn tổng quát hóa tốt hơn. Với Transformer thì khoảng cách là rõ rệt và dai dẳng: SGD hội tụ chậm hơn nhiều và thường kẹt lại ở mức loss cao hơn hẳn. Cách giải thích được chấp nhận rộng rãi nhất là các khối tham số trong Transformer có “địa hình” rất khác nhau, cộng với phân phối tần suất token lệch nặng theo luật Zipf, khiến một tốc độ học chung không thể phục vụ tốt đồng thời embedding của token hiếm lẫn các ma trận attention. Nói ngắn gọn: tính thích nghi theo từng tham số không phải một tiện nghi, nó là điều kiện cần.
 
@@ -36,8 +43,16 @@ Với gradient $g_t$ tại bước $t$, \textbf{Adam} \cite{kingma2014adam} duy 
 \begin{itemize}
 	\item \textbf{Hiệu chỉnh độ lệch (bias correction):} Vì $m_0 = v_0 = 0$, các trung bình trượt bị kéo về 0 ở những bước đầu; chia cho $1-\beta^t$ khử độ lệch này.
 	\item \textbf{Tốc độ học thích nghi:} Chia cho $\sqrt{\hat{v}_t}$ nghĩa là tham số có gradient thường xuyên lớn sẽ đi bước nhỏ, tham số có gradient nhỏ và hiếm sẽ đi bước lớn -- rất quan trọng với embedding của các token hiếm.
-	\item \textbf{Chi phí bộ nhớ:} Hai trạng thái $m, v$ cho \emph{mỗi} tham số. Trong huấn luyện độ chính xác hỗn hợp, mỗi tham số thường chiếm khoảng 16 byte: trọng số BF16 (2), gradient BF16 (2), bản sao trọng số FP32 (4), $m$ (4) và $v$ (4). Một mô hình 70B cần khoảng 1.1 TB chỉ cho trạng thái huấn luyện -- lý do cần ZeRO/FSDP (mục~\ref{sec:distributed_training}).
+	\item \textbf{Chi phí bộ nhớ:} Hai trạng thái $m, v$ cho \emph{mỗi} tham số. Trong huấn luyện độ chính xác hỗn hợp, mỗi tham số thường chiếm khoảng 16 byte: trọng số BF16 (2), gradient BF16 (2), bản sao trọng số FP32 (4), $m$ (4) và $v$ (4). Một mô hình 70B cần khoảng 1.1 TB chỉ cho trạng thái huấn luyện (hình~\ref{fig:optimizer_memory}) -- lý do cần ZeRO/FSDP (mục~\ref{sec:distributed_training}).
 \end{itemize}
+
+\begin{center}
+\bookimage[0.98\textwidth]{adam_bias_and_step}{Hai biểu đồ: trái là moment bậc nhất trước và sau hiệu chỉnh độ lệch theo số bước; phải là độ lớn bước cập nhật theo độ lớn gradient, trục log-log, so sánh SGD và Adam.}
+\captionof{figure}{Hai chi tiết nhỏ làm nên Adam. \textbf{Trái:} với gradient hằng $g = 1$ và $\beta_1 = 0.9$, trung bình trượt $m_t$ xuất phát từ $0$ nên những bước đầu bị kéo thấp hơn giá trị thật rất nhiều (ở bước 1 chỉ bằng $0.1$); phép chia cho $1 - \beta_1^t$ đưa ước lượng về đúng $1$ ngay từ bước đầu tiên. \textbf{Phải:} độ lớn bước cập nhật theo độ lớn gradient. SGD tỷ lệ thuận với $|g|$, còn Adam bão hòa ở trần $\eta$ -- chỉ khi $|g|$ rơi xuống cỡ $\epsilon$ thì bước mới nhỏ lại. Đây chính là tính chất “đi theo dấu” khiến Adam bền vững trước chênh lệch thang đo giữa các khối tham số.}
+\label{fig:adam_bias_step}
+\end{center}
+
+
 
 \subsection{AdamW: Tách rời Weight Decay}
 \label{ssec:adamw}
@@ -96,6 +111,14 @@ X_{k+1} = a X_k + b\,(X_k X_k^\top) X_k + c\,(X_k X_k^\top)^2 X_k, \qquad (a, b,
 \]
 chỉ gồm các phép nhân ma trận nên chạy ổn định ngay ở BF16 trên GPU.
 
+\begin{center}
+\bookimage[0.95\textwidth]{muon_newton_schulz}{Biểu đồ phổ giá trị suy biến (trục tung log) trước và sau 5 bước lặp Newton-Schulz: đường trước giảm theo luật lũy thừa qua gần ba bậc độ lớn, đường sau gần như nằm ngang quanh giá trị 1.}
+\captionof{figure}{Bước trực giao hóa làm gì. Ma trận momentum mô phỏng ở đây có phổ suy biến theo luật lũy thừa với số điều kiện khoảng 130: vài hướng đầu chiếm gần hết độ lớn, các hướng còn lại hầu như không được cập nhật. Sau 5 bước lặp Newton--Schulz, mọi giá trị suy biến bị kéo về dải $[0.68,\ 1.13]$ -- các hướng “hiếm” được khuếch đại lên ngang với hướng mạnh nhất, đúng như trực giác đã nêu. Lưu ý bộ hệ số $(3.4445,\ -4.7750,\ 2.0315)$ được chọn để hội tụ \emph{nhanh} chứ không để chính xác, nên phổ dừng lại ở một dải quanh 1 chứ không đúng bằng 1; với mục đích của Muon thì như vậy là đủ.}
+\label{fig:muon_newton_schulz}
+\end{center}
+
+
+
 \paragraph{Trực giác.} Ma trận cập nhật của SGD-momentum hay Adam trên các lớp Transformer thường có \textbf{số điều kiện rất lớn}: bị chi phối bởi vài hướng có giá trị suy biến lớn, còn các hướng “hiếm” nhưng có thể quan trọng hầu như không được cập nhật. Trực giao hóa khuếch đại tương đối các hướng hiếm này. Về mặt lý thuyết, Muon có thể được xem là \emph{hạ gradient dốc nhất theo chuẩn phổ} (spectral norm) thay vì chuẩn Euclid.
 
 \paragraph{Phạm vi áp dụng.} Muon chỉ dùng cho các ma trận 2 chiều \emph{ẩn} (attention, MLP). Embedding, lớp đầu ra, và các tham số vô hướng/vector (gain của RMSNorm, bias) vẫn dùng AdamW. Muon giữ một trạng thái (momentum) thay vì hai, nên tiết kiệm bộ nhớ hơn AdamW. Nó nổi tiếng đầu tiên qua các kỷ lục huấn luyện nhanh NanoGPT (“speedrun”) cuối năm 2024.
@@ -127,6 +150,14 @@ Muon & momentum (1) & Trực giao hóa cập nhật ma trận; chỉ cho ma tr�
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\begin{center}
+\bookimage[0.95\textwidth]{optimizer_memory}{Biểu đồ cột ngang xếp chồng so sánh byte trên mỗi tham số của AdamW, Adam-mini và Muon, tách thành ba phần: trọng số + gradient BF16, bản sao trọng số FP32, và trạng thái bộ tối ưu.}
+\captionof{figure}{Bộ nhớ cho mỗi tham số khi huấn luyện ở độ chính xác hỗn hợp. Phần trọng số BF16, gradient BF16 và bản sao FP32 là cố định (8 byte); phần thay đổi là \emph{trạng thái bộ tối ưu}. AdamW giữ hai trạng thái FP32 ($m$ và $v$) nên tốn 8 byte -- đúng một nửa tổng bộ nhớ. Adam-mini thay $v$ bằng một số cho mỗi khối, còn Muon chỉ giữ momentum; cả hai đưa phần này về 4 byte. Với một mô hình 70B, chênh lệch đó là gần 280 GB. (Muon chỉ áp cho các ma trận ẩn, embedding và lớp ra vẫn dùng AdamW, nên con số thực tế nằm giữa hai mức.)}
+\label{fig:optimizer_memory}
+\end{center}
+
+
 
 \begin{tcolorbox}[title={Cẩn trọng khi đọc các tuyên bố “nhanh hơn AdamW 2 lần”}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
 Wen et al. (2025) \cite{wen2025fantastic} so sánh có hệ thống mười bộ tối ưu từ 0.1B đến 1.2B tham số, với siêu tham số được tinh chỉnh riêng và kỹ lưỡng cho \emph{từng} bộ tối ưu. Kết quả:

@@ -31,3 +31,16 @@ Macro `\bookimage{<mã>}{<mô tả>}` trong `style.tex` sẽ tự chèn ảnh kh
 Hiện không còn hình nào thiếu: mọi `\bookimage` trong sách đều đã có ảnh tương ứng.
 Nếu sau này thêm `\bookimage{<mã>}` mới, chỉ cần thả ảnh `images/<mã>.png` vào đây là nó
 tự xuất hiện trong bản biên dịch.
+
+## Hình tự dựng bằng code (không lấy từ bài báo)
+
+Các hình dưới đây được sinh ra bằng `scripts/figs_optimizers.py` (matplotlib). Chạy lại
+script là dựng lại y hệt; không có vấn đề bản quyền.
+
+| Tệp | Nội dung |
+|---|---|
+| `optimizer_trajectories.png` | Quỹ đạo SGD / SGD+momentum / Adam trên hàm bậc hai số điều kiện 150, và loss theo bước. |
+| `adam_bias_and_step.png` | Hiệu chỉnh độ lệch của moment bậc nhất; độ lớn bước cập nhật theo độ lớn gradient. |
+| `optimizer_memory.png` | Byte trên mỗi tham số của AdamW / Adam-mini / Muon ở độ chính xác hỗn hợp. |
+| `muon_newton_schulz.png` | Phổ giá trị suy biến trước và sau 5 bước lặp Newton-Schulz (tính thật, không vẽ phác). |
+| `rope_wavelengths.png` | Bước sóng từng cặp chiều RoPE với cơ số 10000 và 500000 (`scripts/figs_rope.py`). |

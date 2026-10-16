@@ -136,10 +136,19 @@ Các mô hình sử dụng Rotary Position Embedding (RoPE) như Llama, Qwen, De
 \]
 trong đó $b$ là cơ số (thường $b = 10000$), $|D|$ là số chiều của một đầu attention, và $\lambda_d$ là \textbf{bước sóng} -- số token cần để chiều $d$ quay đủ một vòng. Các chiều có $d$ nhỏ quay rất nhanh (tần số cao, mã hóa vị trí cục bộ), các chiều có $d$ lớn quay rất chậm (tần số thấp, mã hóa vị trí xa).
 
+\begin{center}
+\bookimage[0.92\textwidth]{rope_wavelengths}{Biểu đồ bước sóng $\lambda_i$ (trục tung log, đơn vị token) theo chỉ số cặp chiều $i$ của một đầu attention 128 chiều, vẽ cho hai giá trị cơ số: 10000 và 500000. Vùng phía trên đường ngang $L = 8192$ được tô xám, đánh dấu các chiều chưa quay trọn một vòng trong lúc huấn luyện.}
+\captionof{figure}{Bước sóng của từng cặp chiều RoPE trong một đầu attention 128 chiều. Vì $\lambda_i = 2\pi b^{2i/|D|}$, các bước sóng trải trên bốn bậc độ lớn: với $b = 10000$, cặp chiều đầu tiên quay trọn một vòng sau mỗi 6 token, còn cặp chiều cuối cùng cần tới 54\,410 token. Với ngữ cảnh huấn luyện $L = 8192$, 14 trong số 64 cặp chiều (vùng xám) chưa bao giờ quay hết một vòng -- đó chính là những chiều mà mô hình \emph{chưa từng thấy đủ mọi góc}, và cũng chính là nhóm mà mọi kỹ thuật mở rộng ngữ cảnh phải xử lý. Tăng cơ số lên $b = 500000$ (ABF) kéo dãn toàn bộ đường cong lên trên.}
+\label{fig:rope_wavelengths}
+\end{center}
+
+
+
 \begin{itemize}
 	\item \textbf{Vấn đề ngoại suy:} Khi $m > L$, các chiều tần số thấp rơi vào những góc quay mà mô hình \emph{chưa từng thấy} khi huấn luyện, khiến điểm attention trở nên bất thường.
 	\item \textbf{Position Interpolation (PI) \cite{chen2023extending}:} Muốn mở rộng lên $L' = sL$, chỉ cần “nén” vị trí: thay $m$ bằng $m/s$. Mọi vị trí mới đều nằm trong dải góc đã thấy. Chỉ cần khoảng 1000 bước tinh chỉnh là đủ đưa LLaMA lên 32K token. Nhược điểm: nén \emph{đều} mọi chiều làm mất độ phân giải ở các chiều tần số cao -- mô hình khó phân biệt hai token đứng cạnh nhau.
 	\item \textbf{NTK-aware scaling \cite{bloc972023ntkaware}:} Thay vì nén vị trí, tăng cơ số $b' = b \cdot s^{|D|/(|D|-2)}$, khiến các chiều tần số thấp bị kéo dãn nhiều còn các chiều tần số cao gần như giữ nguyên.
+	\item \textbf{ABF -- Adjusted Base Frequency \cite{xiong2023effective}:} Cách đơn giản nhất và cũng là cách được triển khai rộng rãi nhất: \emph{chỉ tăng cơ số} $b$, từ 10000 lên 500000. Lập luận của Meta không đi theo hướng bước sóng mà theo hướng \textbf{suy giảm attention}: cơ số lớn hơn làm mọi góc quay $m\theta_d$ nhỏ lại, nên tích vô hướng giữa hai token ở xa không bị RoPE kéo tụt xuống nhanh như trước -- mô hình giữ được khả năng “với” tới token ở xa. Trong so sánh của chính bài báo, RoPE ABF thắng cả PI lẫn xPos ABF, và là biến thể \emph{duy nhất} giữ nguyên được hiệu năng trên toàn bộ cửa sổ 32\,768 token ở tác vụ truy hồi câu đầu tiên. Khác biệt quan trọng về cách dùng: ABF \textbf{không phải} một thủ thuật áp lên mô hình đã huấn luyện xong -- Llama 2 Long đổi cơ số rồi \emph{huấn luyện tiếp} trên chuỗi dài, còn Llama 3 đặt thẳng $b = 500000$ ngay từ đầu quá trình tiền huấn luyện \cite{grattafiori2024llama3}.
 	\item \textbf{YaRN \cite{peng2023yarn}} kết hợp hai ý tưởng trên một cách có nguyên tắc:
 	\begin{enumerate}
 		\item \textbf{NTK-by-parts:} Với mỗi chiều, tính tỷ lệ $r(d) = L/\lambda_d$ (số vòng quay trong ngữ cảnh gốc) và một hàm dốc
@@ -152,9 +161,20 @@ trong đó $b$ là cơ số (thường $b = 10000$), $|D|$ là số chiều củ
 	\end{enumerate}
 	YaRN mở rộng Llama 2 lên 64K--128K token chỉ với khoảng 0.1\% lượng dữ liệu tiền huấn luyện ban đầu, cần ít hơn 10 lần số token và 2.5 lần số bước so với các phương pháp trước. Đây là kỹ thuật được Qwen và DeepSeek-V3 dùng để mở rộng ngữ cảnh lên 128K.
 \end{itemize}
+
+\paragraph{Hai nhóm kỹ thuật, hai tình huống khác nhau.} Bốn phương pháp trên dễ bị gộp chung thành “các cách mở rộng ngữ cảnh”, nhưng chúng trả lời hai câu hỏi khác nhau:
+\begin{itemize}
+	\item \textbf{Sửa sau khi đã huấn luyện xong} (PI, NTK-aware, YaRN): bạn có một checkpoint huấn luyện ở $L$ và muốn chạy ở $L' > L$ với ít hoặc không có tinh chỉnh. Ở đây tiêu chí của YaRN -- chiều nào đã quay đủ nhiều vòng thì giữ, chiều nào chưa trọn một vòng thì nội suy -- là cách phân loại gọn nhất.
+	\item \textbf{Quyết định từ đầu} (ABF): bạn đang thiết kế lần tiền huấn luyện và muốn mô hình sinh ra đã quen với ngữ cảnh dài. Khi đó chỉ cần chọn $b$ lớn rồi huấn luyện; không cần thủ thuật nào. Chi phí là bạn phải thực sự huấn luyện ở độ dài đó.
+\end{itemize}
+
+\paragraph{RoPE không có “giới hạn ngữ cảnh cứng”.} Một hiểu lầm phổ biến là mô hình có một ngưỡng độ dài được cài sẵn. Thực tế công thức $R(m\theta_i)$ xác định với \emph{mọi} $m$ thực, không có chỗ nào gãy ở $m = L$; bảng $\cos/\sin$ muốn tính tới đâu cũng được. Thứ hỏng không phải phép toán mà là \emph{phân phối}: ở $m > L$, các chiều tần số thấp rơi vào những góc chưa từng xuất hiện khi huấn luyện, và trọng số đã học không có lý do gì để hành xử hợp lý ở đó. Ngoài ra còn một nguyên nhân độc lập với RoPE: softmax phải chia đều khối lượng cho nhiều token hơn, nên phân phối attention bị “làm phẳng” và entropy tăng khi ngữ cảnh dài ra (mục~\ref{ssec:softmax}) -- chính vì vậy YaRN phải thêm một hệ số nhiệt độ bên cạnh việc chỉnh tần số. Nói cách khác, mở rộng ngữ cảnh không chỉ là bài toán mã hóa vị trí.
+
+\paragraph{Một thủ phạm ít ai ngờ: độ chính xác số.} Mọi phân tích ở trên giả định phép quay được tính chính xác. Trên thực tế huấn luyện chạy ở \texttt{bfloat16}, vốn chỉ có 8 bit phần định trị. Wang và cộng sự \cite{wang2024bfloat16rope} chỉ ra rằng sai số làm tròn ở định dạng này đủ để \textbf{phá vỡ chính tính chất tương đối của RoPE}: $\tilde{q}_p^\top \tilde{k}_q$ không còn chỉ phụ thuộc $q - p$ nữa, và độ lệch \emph{tích lũy theo độ dài ngữ cảnh} -- ngữ cảnh càng dài thì sai lệch càng lớn, với token đầu tiên đóng góp phần lớn nhất. Nhóm tác giả đề xuất \textbf{AnchorAttention}: giữ token đầu làm một “mỏ neo” dùng chung với chỉ số vị trí cố định, nhìn thấy được từ mọi tài liệu trong cùng một cửa sổ huấn luyện; cách này vừa khắc phục sai lệch vừa giảm hơn 50\% thời gian huấn luyện so với full attention. Chi tiết đáng chú ý: token đầu tiên lại một lần nữa đóng vai trò đặc biệt, đúng như hiện tượng \emph{attention sink} đã bàn ở mục~\ref{ssec:softmax}. Bài học thực hành là khi gỡ lỗi một mô hình ngữ cảnh dài, đừng chỉ nghi ngờ công thức mở rộng tần số -- hãy kiểm tra cả định dạng số dùng để tính $\cos$ và $\sin$.
+
+
 \subsubsection{Mô hình Trạng thái (State Space Models - SSMs) và Mamba}
 Đây là một trong những hướng nghiên cứu thú vị và hứa hẹn nhất gần đây.
-
 \paragraph{Nguồn gốc từ Lý thuyết Điều khiển}
 SSMs có nguồn gốc từ lý thuyết điều khiển và xử lý tín hiệu. Chúng được thiết kế để mô hình hóa các hệ thống động liên tục. Ý tưởng cốt lõi là duy trì một \textbf{trạng thái ẩn (state) $h(t)$ nhỏ, có kích thước cố định}, và cập nhật nó một cách liên tục theo thời gian dựa trên đầu vào $x(t)$.
 $$ h'(t) = \mathbf{A}h(t) + \mathbf{B}x(t) $$
