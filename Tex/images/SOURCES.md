@@ -44,3 +44,4 @@ script là dựng lại y hệt; không có vấn đề bản quyền.
 | `optimizer_memory.png` | Byte trên mỗi tham số của AdamW / Adam-mini / Muon ở độ chính xác hỗn hợp. |
 | `muon_newton_schulz.png` | Phổ giá trị suy biến trước và sau 5 bước lặp Newton-Schulz (tính thật, không vẽ phác). |
 | `rope_wavelengths.png` | Bước sóng từng cặp chiều RoPE với cơ số 10000 và 500000 (`scripts/figs_rope.py`). |
+| `minhash_s_curve.png` | Đường cong S của MinHash-LSH cho ba cấu hình sản xuất (`scripts/figs_dedup.py`). |

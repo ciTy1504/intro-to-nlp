@@ -94,3 +94,61 @@ Sức mạnh của hệ sinh thái Hugging Face là việc tích hợp các côn
 `Trainer` và `accelerate` sẽ tự động xử lý tất cả các chi tiết phức tạp của việc khởi tạo và chạy DeepSpeed.
 
 Ngoài ZeRO, DeepSpeed còn cung cấp nhiều tính năng tối ưu hóa khác như \textbf{Offloading} (chuyển bớt các tham số không dùng đến từ VRAM sang CPU RAM hoặc NVMe) và các kernel hiệu năng cao. Bằng cách kết hợp các công cụ như `accelerate` và `DeepSpeed`, việc huấn luyện các mô hình ngôn ngữ lớn không còn là đặc quyền của một vài phòng thí nghiệm AI lớn, mà đã trở nên dễ tiếp cận hơn với cộng đồng nghiên cứu và các doanh nghiệp.
+
+
+\subsection{FSDP hay DeepSpeed: chọn theo năng lực, không theo sở thích}
+\label{sec:fsdp_vs_deepspeed}
+
+Mục trên trình bày DeepSpeed vì nó ra đời trước và định hình cách nghĩ về ZeRO. Nhưng PyTorch có cơ chế sharding riêng -- \textbf{FSDP} (Fully Sharded Data Parallel) -- và tới 2026 nó đã là mặc định của phần lớn hệ sinh thái. Câu hỏi “dùng cái nào” thường bị trả lời theo cảm tính; thực ra nó có câu trả lời khá rõ.
+
+\paragraph{Trước hết, hai bên nói cùng một thứ.} Các giai đoạn ZeRO và các chế độ sharding của FSDP ánh xạ gần như một-một:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{FSDP} & \textbf{DeepSpeed} & \textbf{Chia sẻ cái gì} \\
+\midrule
+\texttt{NO\_SHARD} & ZeRO-0 (DDP) & không chia \\
+\texttt{SHARD\_GRAD\_OP} & ZeRO-2 & gradient + trạng thái bộ tối ưu \\
+\texttt{FULL\_SHARD} & ZeRO-3 & thêm cả tham số \\
+\texttt{HYBRID\_SHARD} & ZeRO++ phân tầng & chia trong nút, nhân bản giữa các nút \\
+-- & \textbf{ZeRO-1} & \textit{FSDP không có tương đương} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Trong FSDP2, cái núm ZeRO-2 $\leftrightarrow$ ZeRO-3 rút gọn thành một tham số bool: \texttt{reshard\_after\_forward}. Còn HSDP được diễn đạt bằng cách truyền vào một \texttt{DeviceMesh} hai chiều, không còn hằng số enum riêng.
+
+\paragraph{Vậy khi nào phải dùng DeepSpeed?} Khi bạn cần một năng lực mà FSDP2 \emph{không có}:
+\begin{itemize}
+	\item \textbf{Offload xuống NVMe} (ZeRO-Infinity). FSDP2 chỉ có hai chính sách offload và cả hai đều là RAM chủ -- không có đường xuống đĩa.
+	\item \textbf{Offload tách riêng tham số và trạng thái bộ tối ưu.} FSDP offload theo kiểu tất-cả-hoặc-không-gì; DeepSpeed cho phép đẩy riêng từng phần.
+	\item \textbf{ZeRO-1} (chỉ chia trạng thái bộ tối ưu) -- FSDP không có chế độ này.
+	\item \textbf{Ngữ cảnh siêu dài kiểu Ulysses} kết hợp FlashAttention.
+	\item \textbf{Song song đường ống} (pipeline parallelism) -- phần tích hợp sẵn trong Trainer không hỗ trợ.
+\end{itemize}
+Ngược lại, có một điểm FSDP hơn rõ: \textbf{độ chính xác}. DeepSpeed bỏ qua \texttt{torch\_dtype} và luôn tạo trạng thái ở fp32, nên trên ít GPU nó gánh thêm chi phí bộ nhớ do nâng kiểu; FSDP cho phép giữ bộ tối ưu ở kiểu thấp.
+
+\paragraph{Và một nghịch lý cần biết trước khi bạn tăng giai đoạn.} Trực giác thông thường là “thiếu bộ nhớ thì nâng ZeRO-2 lên ZeRO-3”. Thực tế có những cấu hình mà \textbf{ZeRO-3 tốn nhiều bộ nhớ hơn ZeRO-2} -- báo cáo đo được trên mô hình 7B, 8$\times$A100 cho 52{,}8 GB ở stage 3 so với 43{,}8 GB ở stage 2. Nguyên nhân khả dĩ nằm ở một mặc định: cờ chồng lấp giao tiếp được bật tự động \emph{chỉ ở stage 3}, kéo theo bộ đệm giao tiếp phụ. Đây là một issue đã mở nhiều năm, chưa có lời giải thích chính thức. Bài học: \textbf{hãy đo, đừng suy diễn} -- nâng giai đoạn không đảm bảo giảm bộ nhớ.
+
+\paragraph{Checkpoint: chỗ ai cũng vấp.} Cả hai đều \emph{không} ghi ra thứ mà \texttt{from\_pretrained()} đọc được.
+\begin{itemize}
+	\item \textbf{DeepSpeed:} hoặc bật gom trọng số 16-bit lúc lưu (chậm và tốn bộ nhớ, nên mặc định tắt), hoặc chạy script \texttt{zero\_to\_fp32.py} ngoại tuyến sau đó -- script này không cần GPU nhưng cần khoảng \emph{gấp đôi} RAM so với kích thước checkpoint cuối.
+	\item \textbf{FSDP:} checkpoint phân mảnh chỉ nạp lại được vào FSDP. Bản cuối cùng mà bạn muốn chia sẻ phải được lưu ở dạng \texttt{FULL\_STATE\_DICT}, hoặc hợp nhất sau bằng \texttt{accelerate merge-weights}. Một cái bẫy rất phổ biến: phải trỏ vào đúng thư mục con chứa tệp \texttt{.metadata}, không phải thư mục checkpoint gốc.
+\end{itemize}
+
+\paragraph{Trên Windows.} Tuyên bố chính thức duy nhất của DeepSpeed về Windows chỉ nói tới \emph{một GPU}, và tới 2026 nhóm bảo trì nói rõ họ không còn nguồn lực phát hành wheel cho Windows. DeepSpeed cũng không phát hành wheel nhị phân nào cả, nên mọi lần cài đều phải biên dịch. FSDP thuần PyTorch nên không có vấn đề này. Với người đọc dùng Windows: \textbf{WSL2 hoặc FSDP}.
+
+\begin{tcolorbox}[title={Đọc tín hiệu của hệ sinh thái cho đúng}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+Trạng thái FSDP1 so với FSDP2 hiện đang \emph{lộn xộn một cách khó chịu}, và biết điều đó sẽ tiết kiệm cho bạn vài giờ:
+\begin{itemize}
+	\item Hướng dẫn của PyTorch nói thẳng “FSDP1 đã lỗi thời”, nhưng trang API của nó \emph{không} có biển báo nào, và không ở đâu công bố phiên bản sẽ gỡ bỏ.
+	\item \texttt{transformers} v5 mặc định FSDP2. \texttt{accelerate} thì \textbf{vẫn mặc định FSDP1}, có chủ đích, để không phá vỡ mã nguồn cũ.
+	\item Nhiều tên khóa cấu hình đã đổi, vài khóa bị gỡ hẳn. Tệ nhất: \texttt{fsdp\_reshard\_after\_forward} nhận một \emph{chuỗi enum} ở phiên bản 1 nhưng một \emph{giá trị bool} ở phiên bản 2.
+	\item Một số trang tài liệu chính thức -- kể cả trang FSDP của PEFT -- vẫn chỉ mô tả FSDP1.
+\end{itemize}
+\textbf{Nguồn đáng tin cho tên khóa không phải trang hướng dẫn, mà là mã nguồn và các tệp cấu hình mẫu mà TRL phát hành kèm.} Và còn một thói quen cần biết khi tra cứu issue: trong các kho này, \emph{“closed” không đồng nghĩa với “đã sửa”} -- một tỷ lệ đáng kể bị bot đóng vì quá hạn.
+\end{tcolorbox}
+
+\paragraph{Ai đang dùng gì.} Axolotl: chỉ FSDP2, đã gỡ FSDP1. torchtitan: chỉ FSDP2, không nhắc tới DeepSpeed. LlamaFactory: nghiêng nhẹ về DeepSpeed. NVIDIA thì không chọn bên nào mà tự xây Megatron-FSDP. Còn bản thân DeepSpeed đã chuyển về PyTorch Foundation và \textbf{đang thu hẹp phạm vi có chủ đích} -- điều thú vị là danh sách tính năng họ tuyên bố \emph{giữ lại} gần như trùng khớp với danh sách năng lực mà FSDP2 còn thiếu: offload, pipeline, inference, Windows.

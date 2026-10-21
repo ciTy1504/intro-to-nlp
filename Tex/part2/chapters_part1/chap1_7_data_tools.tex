@@ -1,0 +1,196 @@
+% !TEX root = ../main.tex
+% File: part2/chapters_part1/chap1_7_data_tools.tex
+% Công cụ cho pipeline dữ liệu LLM
+
+\section{Công cụ: datatrove, NeMo Curator và thực trạng hệ sinh thái}
+\label{sec:data_tools}
+
+Bảy bước ở mục trước là kiến thức bền. Công cụ thì không -- và mục này bắt đầu bằng chính điều đó, vì nó là thứ sẽ cứu bạn nhiều thời gian nhất.
+
+\subsection{Kỹ năng đầu tiên: biết một dự án còn sống hay đã chết}
+\label{ssec:tool_liveness}
+
+Hệ sinh thái dữ liệu LLM thay đổi nhanh hơn tài liệu của chính nó. Dưới đây là tình trạng thật, kiểm tra vào tháng 10 năm 2026:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}lcX@{}}
+\toprule
+\textbf{Công cụ} & \textbf{Tình trạng} & \textbf{Ghi chú} \\
+\midrule
+datatrove & Đang phát triển & Thư viện đứng sau FineWeb; bao trọn từ WARC tới token. \\
+NeMo Curator & Đang phát triển & Nhịp phát hành nhanh nhất; tăng tốc bằng GPU. \\
+distilabel & \textit{Cộng đồng tiếp quản} & Tác giả gốc đã rời; bản trên PyPI cũ hơn nhánh phát triển rất nhiều. \\
+Argilla & \textit{Đóng băng tính năng} & Đang tìm người duy trì. \\
+dolma (bộ công cụ) & \textit{Đã bị thay thế} & AI2 viết lại bằng Rust cho OLMo 3 -- nhưng README không nói. \\
+\textit{Bộ khử trùng lặp của Google} & \textbf{Đã lưu trữ} & Vẫn là phụ thuộc của công cụ khác. \\
+\bottomrule
+\end{tabularx}
+\caption{Tình trạng các công cụ xử lý dữ liệu LLM, tháng 10/2026.}
+\label{tab:data_tools_status}
+\end{table}
+
+\begin{tcolorbox}[title={Cách tự kiểm tra, vì bảng trên sẽ cũ đi}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+Bảng này chắc chắn sẽ lỗi thời. Kỹ năng thì không. Bốn phép kiểm, mất chừng hai phút:
+\begin{enumerate}
+	\item \textbf{Ngày phát hành gần nhất trên PyPI} -- không phải ngày commit gần nhất. Một dự án có thể commit hằng ngày mà bản \texttt{pip install} đã hai năm tuổi.
+	\item \textbf{Commit gần nhất, và commit đó \emph{làm gì}.} Nếu những commit cuối cùng toàn là vá cho khỏi vỡ khi thư viện khác nâng cấp, dự án đang được duy trì ở chế độ sinh tồn, không phải đang phát triển.
+	\item \textbf{Đọc dòng đầu README.} Thông báo ngừng phát triển thường nằm ngay đó -- và cũng thường bị người đọc lướt qua.
+	\item \textbf{Đừng tin biểu tượng “archived”.} Một kho mã có thể đã chết hoàn toàn mà vẫn \emph{không} được đánh dấu lưu trữ. Nhìn lướt thì không phân biệt được.
+\end{enumerate}
+Và một cái bẫy đặc thù: \textbf{README của một dự án đã bị thay thế thường không trỏ sang dự án thay thế nó.} Bộ công cụ dolma là ví dụ sống: AI2 đã xây một bộ công cụ Rust hoàn toàn mới cho OLMo 3, còn README cũ thì im lặng. Ai tin README sẽ hạ cánh xuống công cụ đóng băng.
+\end{tcolorbox}
+
+\subsection{datatrove: pipeline là một danh sách Python}
+\label{ssec:datatrove}
+
+datatrove là thư viện Hugging Face dùng để tạo ra FineWeb, và là công cụ duy nhất trong nhóm đi trọn đường từ WARC thô tới các mảnh token sẵn sàng huấn luyện. Nó ưu tiên CPU -- đó là ưu điểm lớn nhất của nó, vì phần lớn công việc trong bảy bước kia vốn không cần GPU.
+
+Mô hình lập trình đơn giản đến mức dễ bị đánh giá thấp:
+\begin{itemize}
+	\item \textbf{\texttt{Document}} là \texttt{\{text, id, metadata\}}. Mọi thứ là một generator của chúng.
+	\item \textbf{Pipeline là một \texttt{list} Python thuần}, phần tử là các khối thuộc các họ \texttt{readers}, \texttt{extractors}, \texttt{filters}, \texttt{dedup}, \texttt{formatters}, \texttt{tokens}, \texttt{writers}.
+	\item \textbf{\texttt{Executor}} quyết định nó chạy ở đâu: cục bộ, Slurm, hay Ray. \emph{Cùng một pipeline}, đổi executor là đổi quy mô.
+\end{itemize}
+
+\begin{minted}{python}
+from datatrove.pipeline.readers import CSVReader
+from datatrove.pipeline.filters import SamplerFilter
+from datatrove.pipeline.writers import JsonlWriter
+from datatrove.executor import LocalPipelineExecutor
+
+pipeline = [
+    CSVReader(data_folder="/my/input/path"),
+    SamplerFilter(rate=0.5),
+    JsonlWriter(output_folder="/my/output/path"),
+]
+LocalPipelineExecutor(pipeline=pipeline, logging_dir="logs/",
+                      tasks=10, workers=5).run()
+\end{minted}
+
+\paragraph{Và đây là giai đoạn 1 thật của FineWeb.} Đoạn dưới không phải ví dụ minh họa -- đó là mã nguồn đã tạo ra bộ dữ liệu 15 nghìn tỷ token, rút gọn chút ít cho vừa trang:
+
+\begin{minted}{python}
+SlurmPipelineExecutor(
+    job_name=f"cc_{DUMP}",
+    pipeline=[
+        WarcReader(f"s3://commoncrawl/crawl-data/{DUMP}/segments/",
+                   glob_pattern="*/warc/*"),
+        URLFilter(exclusion_writer=JsonlWriter(f"{OUT}/removed/1_url/{DUMP}")),
+        Trafilatura(favour_precision=True),
+        LanguageFilter(exclusion_writer=JsonlWriter(f"{OUT}/2_non_english/")),
+        GopherRepetitionFilter(exclusion_writer=JsonlWriter(f"{OUT}/removed/3_gopher_rep/{DUMP}")),
+        GopherQualityFilter(exclusion_writer=JsonlWriter(f"{OUT}/removed/4_gopher_qual/{DUMP}")),
+        C4QualityFilter(filter_no_terminal_punct=False,     # <- tắt có chủ ý
+                        exclusion_writer=JsonlWriter(f"{OUT}/removed/5_c4/{DUMP}")),
+        FineWebQualityFilter(exclusion_writer=JsonlWriter(f"{OUT}/removed/6_fineweb_qual/{DUMP}")),
+        JsonlWriter(f"{OUT}/output/{DUMP}"),
+    ],
+    tasks=8000, time="10:00:00", mem_per_cpu_gb=2, partition="hopper-cpu",
+    randomize_start_duration=180,   # đừng dội hết request vào bucket cùng lúc
+).run()
+\end{minted}
+
+\noindent Hai điều đáng chú ý trong đoạn mã này, và cả hai đều là bài học kỹ thuật chứ không phải chi tiết API. Thứ nhất, \textbf{mỗi bộ lọc đều có một \texttt{exclusion\_writer}}, ghi phần bị loại vào thư mục được đánh số \texttt{1\_url} đến \texttt{6\_fineweb\_qual}. Đó chính là cách người ta gỡ lỗi một chồng bộ lọc. Thứ hai, \texttt{filter\_no\_terminal\_punct=False} là quyết định tắt quy tắc C4 mà ta đã bàn ở mục~\ref{ssec:quality_filter} -- nó nằm ngay đó, trong mã, dưới dạng một tham số.
+
+\paragraph{Khử trùng lặp là bốn công việc riêng biệt, không phải một lượt chạy.} Đây là chỗ người mới hay bất ngờ nhất. Pipeline MinHash của datatrove là \emph{bốn job Slurm nối nhau bằng quan hệ phụ thuộc}:
+
+\begin{minted}{python}
+stage1 = SlurmPipelineExecutor(job_name="mh1", tasks=TOTAL_TASKS, pipeline=[
+    INPUT_READER, MinhashDedupSignature(output_folder=f"{BASE}/signatures", ...)])
+
+stage2 = SlurmPipelineExecutor(job_name="mh2", depends=stage1,
+    tasks=minhash_config.num_buckets,            # song song bị chặn ở SỐ NHÓM
+    pipeline=[MinhashDedupBuckets(...)])
+
+stage3 = SlurmPipelineExecutor(job_name="mh3", depends=stage2,
+    tasks=1, mem_per_cpu_gb=70,                  # chỗ nghẽn: MỘT nút, 70 GB
+    pipeline=[MinhashDedupCluster(...)])
+
+stage4 = SlurmPipelineExecutor(job_name="mh4", depends=stage3,
+    tasks=TOTAL_TASKS,                           # PHẢI bằng đúng stage 1
+    pipeline=[INPUT_READER, TokensCounter(), MinhashDedupFilter(...), JsonlWriter(...)])
+stage4.run()
+\end{minted}
+
+\noindent Ba con số trong đoạn trên chính là ba đặc tính tính toán đã bàn ở mục~\ref{ssec:dedup}, hiện ra thành cấu hình: \texttt{tasks=num\_buckets} ở pha hai, \texttt{tasks=1, mem\_per\_cpu\_gb=70} ở pha ba, và \texttt{tasks=TOTAL\_TASKS} phải trùng khớp ở pha bốn.
+
+\paragraph{Năm cái bẫy mà chính tài liệu cảnh báo.}
+\begin{itemize}
+	\item \textbf{Một tệp đi vào đúng một tác vụ; datatrove không chia nhỏ tệp.} Một tệp 500 GB cho bạn mức song song bằng 1. Phải chia lại tệp trước.
+	\item \textbf{Khi chạy lại sau sự cố, đừng đổi tổng số tác vụ.} Đổi là đổi cách chia mảnh, và sự tương ứng ID giữa pha 1 và pha 4 hỏng trong im lặng.
+	\item \textbf{Đừng dùng lại \texttt{logging\_dir} giữa các pipeline} -- nó ghi đè nhật ký, thống kê và cả dấu hiệu hoàn thành.
+	\item Số tác vụ lớn hơn số tệp thì phần dư ngồi không.
+	\item Khử trùng lặp chuỗi con vẫn phụ thuộc vào một kho mã bên ngoài \emph{đã bị lưu trữ đóng băng}.
+\end{itemize}
+
+\subsection{NeMo Curator: cùng bài toán, triết lý GPU}
+\label{ssec:nemo_curator}
+
+NeMo Curator của NVIDIA giải cùng bài toán nhưng đặt cược vào GPU và vào Ray. Trừu tượng của nó mang màu sắc “hệ thống” hơn: \texttt{ProcessingStage} (một đơn vị công việc tự khai báo tài nguyên nó cần), \texttt{Task} (dữ liệu chảy giữa các stage), \texttt{Pipeline}, và \texttt{Executor}.
+
+\begin{minted}{python}
+from nemo_curator.pipeline import Pipeline
+from nemo_curator.stages.text.filters import ScoreFilter
+from nemo_curator.stages.text.filters.heuristic import WordCountFilter
+
+pipeline = Pipeline(name="heuristic_filtering")
+pipeline.add_stage(JsonlReader(file_paths="input_data/", fields=["text", "id"]))
+pipeline.add_stage(ScoreFilter(filter_obj=WordCountFilter(min_words=80),
+                               text_field="text", score_field="word_count"))
+pipeline.add_stage(JsonlWriter(path="high_quality_output/"))
+results = pipeline.run()
+\end{minted}
+
+\noindent Điểm mạnh thật sự của nó là \textbf{bộ phân loại chạy trên GPU} -- hơn mười bộ có sẵn, gồm cả bản tái hiện bộ phân loại giáo dục của FineWeb -- và khử trùng lặp \textbf{ngữ nghĩa}, thứ bắt được những cặp mà MinHash không thể thấy: diễn đạt lại, bản dịch, viết lại hoàn toàn mà không chung $n$-gram nào.
+
+\paragraph{Ba điều cần biết trước khi chọn.}
+\begin{itemize}
+	\item \textbf{Khâu nhận diện và khâu xóa là hai quy trình tách rời.} Bạn chạy một workflow để \emph{tìm} bản trùng, rồi một workflow khác để \emph{xóa}. Nghe rườm rà, nhưng đó là thiết kế đúng: nó cho bạn xem danh sách sắp bị xóa trước khi xóa.
+	\item \textbf{GPU là bắt buộc} cho khử trùng lặp mờ, khử trùng lặp ngữ nghĩa và mọi bộ phân loại phân tán. Phần lọc heuristic văn bản thì có đường chạy CPU.
+	\item \textbf{Không có mô-đun gỡ PII} trong tài liệu phiên bản hiện tại. Nếu cần bước 5, phải ghép công cụ khác.
+\end{itemize}
+
+\paragraph{Một chi tiết nhỏ gây bực mình thật.} Dự án này dùng \emph{ba} cách đánh số phiên bản song song: README dùng kiểu năm-tháng, GitHub dùng semver, còn trang tài liệu hiển thị cả hai ghép lại. Khi ghim phiên bản, hãy ghim theo cái mà trình quản lý gói nhìn thấy.
+
+\subsection{distilabel: sinh dữ liệu tổng hợp -- và một bài học về rủi ro phụ thuộc}
+\label{ssec:distilabel}
+
+Hai công cụ trên xử lý dữ liệu \emph{có sẵn}. distilabel làm việc ngược lại: \textbf{sinh ra} dữ liệu bằng LLM -- tạo câu trả lời, chấm điểm, so sánh cặp, lọc. Nó không thuộc về tiền huấn luyện mà thuộc về giai đoạn hậu huấn luyện: dựng tập SFT, dựng dữ liệu sở thích cho DPO, hoặc dùng LLM làm người gán nhãn.
+
+\begin{minted}{python}
+from distilabel.pipeline import Pipeline
+from distilabel.steps.tasks import TextGeneration
+from distilabel.models import InferenceEndpointsLLM
+
+with Pipeline() as pipeline:
+    TextGeneration(llm=InferenceEndpointsLLM(
+        model_id="meta-llama/Meta-Llama-3.1-8B-Instruct",
+        generation_kwargs={"temperature": 0.7, "max_new_tokens": 512}))
+
+distiset = pipeline.run(dataset=dataset)
+distiset.push_to_hub(repo_id="distilabel-example")
+\end{minted}
+
+\noindent Mô hình lập trình gọn: \texttt{Pipeline} là context manager, \texttt{Step} là đơn vị, \texttt{Task} là một Step có LLM bên trong, \texttt{LLM} là bộ chuyển đổi cho từng nhà cung cấp, và kết quả là một \texttt{Distiset} đẩy thẳng lên Hub được. Các bước được nối bằng toán tử \texttt{>>}.
+
+\begin{tcolorbox}[title={Và đây là lý do thật sự tôi đưa distilabel vào sách}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+distilabel là một ví dụ sống về \textbf{rủi ro phụ thuộc} -- một kỹ năng kỹ thuật mà sách giáo khoa hiếm khi dạy.
+
+README của nó ghi rằng các tác giả gốc đã chuyển sang dự án khác. Một nhóm cộng đồng đã tiếp quản và nhánh phát triển vẫn có commit mới, nhưng \textbf{bản trên PyPI thì đã rất cũ}. Nghĩa là: \texttt{pip install distilabel} cho bạn một phiên bản lạc hậu nhiều tháng so với mã đang được sửa.
+
+Việc đúng cần làm nếu bạn phụ thuộc vào nó: \textbf{ghim theo mã commit cụ thể trên nhánh phát triển}, chứ không ghim theo số phiên bản PyPI -- và ghi lại quyết định đó ở chỗ người sau đọc được. Thêm nữa, các bước tích hợp của nó trỏ sang Argilla, vốn cũng đang đóng băng tính năng; một phụ thuộc đã lung lay đang tựa vào một phụ thuộc khác cũng lung lay.
+
+Bài học tổng quát, dùng được cho mọi thư viện: \textbf{trước khi đặt một công cụ vào đường đi chính của hệ thống, hãy bỏ hai phút chạy bốn phép kiểm ở mục~\ref{ssec:tool_liveness}.} Chi phí phát hiện muộn cao hơn rất nhiều.
+\end{tcolorbox}
+
+\subsection{Chọn công cụ nào}
+\label{ssec:data_tool_choice}
+
+\begin{itemize}
+	\item \textbf{Bạn đang dựng corpus tiền huấn luyện và có CPU} -- kể cả chỉ một máy nhiều lõi: \textbf{datatrove}. Nó đi trọn đường tới token, và cùng một pipeline co giãn được lên Slurm khi cần.
+	\item \textbf{Bạn có cụm GPU và cần phân loại hoặc khử trùng lặp ngữ nghĩa ở quy mô lớn}: \textbf{NeMo Curator}.
+	\item \textbf{Bạn đang dựng dữ liệu hậu huấn luyện bằng LLM}: \textbf{distilabel}, với lưu ý ghim phiên bản ở trên -- hoặc tự viết, vì phần lõi của bài toán này (gọi LLM hàng loạt, lưu checkpoint, thử lại khi lỗi) không khó bằng việc xử lý văn bản ở quy mô web.
+	\item \textbf{Bạn đang làm một dự án tiếng Việt}: dù chọn công cụ nào, hãy chuẩn bị tinh thần \emph{đo lại mọi ngưỡng}. Các công cụ cho bạn khung, không cho bạn tham số.
+\end{itemize}

@@ -1,0 +1,185 @@
+% !TEX root = ../main.tex
+% File: part2/chapters_part2/chap2_frameworks.tex
+% Tầng framework phía trên TRL
+
+\section{Tầng Framework phía trên TRL}
+\label{sec:ft_frameworks}
+
+TRL cho bạn các \emph{trainer}. Nhưng một lần tinh chỉnh thật còn cần nhiều thứ khác: nạp và trộn nhiều bộ dữ liệu với định dạng khác nhau, chọn đúng mẫu hội thoại cho họ mô hình đang dùng, khởi chạy trên nhiều GPU, đóng gói chuỗi, hợp nhất adapter, export sang định dạng mà runtime đích đọc được, và một lược đồ cấu hình để bạn không gõ sai tên tham số rồi phát hiện sau ba tiếng.
+
+Đó là phần việc của \textbf{tầng framework}. Các công cụ trong mục này không huấn luyện thay bạn -- bên dưới phần lớn chúng vẫn gọi TRL và \texttt{transformers}. Chúng viết phần \emph{ống nước} thay bạn, và đổi lại bạn chấp nhận quy ước của chúng.
+
+\begin{tcolorbox}[title={Đọc mục này trước khi bạn tra Google}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+Hai thông tin sẽ khiến phần lớn hướng dẫn trên mạng dẫn bạn đi sai đường:
+\begin{itemize}
+	\item \textbf{torchtune đã ngừng phát triển.} README của nó mở đầu bằng đúng câu đó, và commit cuối cùng trên nhánh chính chính là commit thêm dòng thông báo ấy. Repo \emph{không} bị đánh dấu archive, nên nhìn lướt vẫn tưởng còn sống. Nặng hơn: \textbf{dự án kế nhiệm cũng đã tạm dừng}, và dòng huấn luyện PyTorch-native được gộp vào \texttt{torchtitan} -- vốn là nền tảng \emph{tiền huấn luyện} phân tán, không phải framework tinh chỉnh (không có đăng ký dataset, không có luồng LoRA, không có CLI kiểu “recipe”).
+	\item \textbf{LLaMA-Factory đã đổi tên thành LlamaFactory.} Repo cũ chuyển hướng, gói PyPI là \texttt{llamafactory}, và tiêu đề bài báo cũng đã đổi theo.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{LlamaFactory: cấu hình phẳng, ma trận tác vụ rộng nhất}
+\label{ssec:llamafactory}
+
+LlamaFactory \cite{zheng2024llamafactory} định vị mình là lớp vỏ “không cần code”: một tệp YAML phẳng cho mỗi lần chạy, một động từ cho mỗi lệnh CLI, cộng thêm một giao diện web (LLaMA Board) cho người không muốn chạm vào dòng lệnh.
+
+\begin{minted}{bash}
+llamafactory-cli train  examples/train_lora/qwen3_lora_sft.yaml
+llamafactory-cli chat   examples/inference/qwen3_lora_sft.yaml
+llamafactory-cli export examples/merge_lora/qwen3_lora_sft.yaml
+llamafactory-cli webui
+\end{minted}
+
+\noindent Giá trị sư phạm của nó nằm ở chỗ cấu hình rất dễ đọc. Chỉ có \textbf{bốn khóa chịu lực}; phần còn lại là \texttt{TrainingArguments} của Hugging Face truyền thẳng xuống, nên bạn đã biết chúng rồi:
+
+\begin{minted}{yaml}
+### model
+model_name_or_path: Qwen/Qwen3-4B-Instruct-2507
+
+### method        <- bốn khóa chịu lực nằm ở đây và ở mục dataset
+stage: sft                  # pt | sft | rm | ppo | dpo | kto
+finetuning_type: lora       # full | freeze | lora
+lora_rank: 8
+lora_target: all
+
+### dataset
+dataset: identity,alpaca_en_demo   # tên đã đăng ký trong dataset_info.json
+template: qwen3_nothink            # mẫu hội thoại của họ mô hình
+cutoff_len: 2048
+
+### train — từ đây trở xuống là TrainingArguments quen thuộc
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-4
+num_train_epochs: 3.0
+bf16: true
+\end{minted}
+
+\paragraph{Hỗ trợ.} Tiền huấn luyện, SFT, mô hình thưởng, PPO, DPO, KTO, ORPO, SimPO -- mỗi cái nhân với Full / Freeze / LoRA / QLoRA. Đa GPU qua DeepSpeed, FSDP, Megatron-core và Ray. Có đa phương thức.
+
+\paragraph{Nhưng không có GRPO.} Đây là điểm cần nói rõ vì nó đi ngược kỳ vọng: GRPO vắng mặt cả trong bảng tính năng lẫn trong cây mã nguồn. Tác giả tách nó thành một dự án riêng (EasyR1). \textbf{Nếu bạn đến với tầng framework vì cần GRPO, LlamaFactory là lựa chọn sai} -- hãy xem Axolotl hoặc ms-swift.
+
+\paragraph{Cái giá.} LlamaFactory ghim phiên bản theo \emph{khoảng}, và các trần của nó đều thấp hơn bản phát hành hiện tại của hệ sinh thái Hugging Face. Hệ quả rất thực tế: cài nó vào một môi trường đang có stack HF mới sẽ \textbf{hạ cấp} stack đó, và nó không thể sống chung một môi trường ảo với Axolotl. Ngoài ra bản PyPI thường chậm vài tháng so với nhánh chính, nên tài liệu khuyên clone repo thay vì \texttt{pip install}.
+
+\subsection{Axolotl: YAML cho những lần chạy thật}
+\label{ssec:axolotl}
+
+Axolotl phục vụ người muốn ai đó khác chịu trách nhiệm phần định dạng dữ liệu và phần phân tán. Thứ nó thêm vào so với TRL thuần: khai báo kiểu dữ liệu ở mức cấu hình (\texttt{type: alpaca}, xử lý mẫu hội thoại, trộn nhiều dataset), \textbf{đóng gói chuỗi kèm mặt nạ chú ý khối chéo chỉ bằng một cờ}, câu chuyện đa nút qua FSDP2/DeepSpeed/Ray, hệ thống plugin, và một lược đồ cấu hình được kiểm tra bằng Pydantic.
+
+\begin{minted}{yaml}
+base_model: NousResearch/Llama-3.2-1B
+
+datasets:
+  - path: teknium/GPT4-LLM-Cleaned
+    type: alpaca              # khai báo định dạng, không viết hàm format
+
+sequence_len: 2048
+sample_packing: true          # đóng gói + mặt nạ khối chéo, một cờ
+eval_sample_packing: true
+
+adapter: lora
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target_modules: [gate_proj, down_proj, up_proj, q_proj, v_proj, k_proj, o_proj]
+
+micro_batch_size: 2           # từ vựng riêng của Axolotl (per-device)
+gradient_accumulation_steps: 2
+optimizer: adamw_8bit
+learning_rate: 0.0002
+gradient_checkpointing: true
+attn_implementation: flash_attention_2
+
+loss_watchdog_threshold: 5.0  # tự dừng khi loss vọt — TRL không có
+loss_watchdog_patience: 3
+special_tokens:
+  pad_token: "<|end_of_text|>"
+\end{minted}
+
+\noindent Hai chi tiết đáng để ý trong tệp trên. Thứ nhất, Axolotl dùng \emph{từ vựng riêng} (\texttt{micro\_batch\_size}, \texttt{evals\_per\_epoch}) chứ không truyền thẳng tên của Hugging Face như LlamaFactory -- một triết lý ngược hẳn. Thứ hai, \texttt{loss\_watchdog\_*} tự hủy lần chạy khi loss vọt lên quá ngưỡng; đối chiếu với mục~\ref{ssec:framework_bugs}, đây đúng là loại cơ chế bạn muốn có.
+
+\paragraph{Hỗ trợ.} Full/LoRA/QLoRA/QAT, DPO, IPO, KTO, ORPO, \textbf{GRPO}, mô hình thưởng, đa phương thức (ảnh, video, âm thanh), FSDP2 và DeepSpeed.
+
+\paragraph{Axolotl là tín hiệu FSDP2 mạnh nhất trong hệ sinh thái.} Tài liệu của nó ghi thẳng: \emph{chỉ FSDP2; FSDP1 đã bị gỡ bỏ}. Ta sẽ quay lại ý nghĩa của điều này ở mục~\ref{sec:fsdp_vs_deepspeed}.
+
+\paragraph{Cái giá.} Axolotl ghim \texttt{==} lên gần như toàn bộ hệ sinh thái Hugging Face, bám rất sát bản mới nhất. Nghĩa là nó \emph{sở hữu} môi trường ảo của bạn. Quy tắc thực hành: \textbf{luôn cho Axolotl một môi trường riêng}. Thêm nữa, gần như mỗi bản phát hành đều có thay đổi phá vỡ tương thích -- đổi tên khóa cấu hình, nâng sàn Python và PyTorch, bỏ extra này thêm extra kia. Nếu bạn chép một cấu hình từ sách vở (kể cả quyển này), hãy ghim theo \textbf{tag phát hành} và ghi rõ tag đó.
+
+\subsection{Unsloth: nhanh nhất trên một GPU}
+\label{ssec:unsloth}
+
+Unsloth đi một đường khác hẳn: không có YAML, không có CLI huấn luyện. Nó là một tập \emph{nhân Triton viết tay} cộng với các lớp mô hình đã được vá, bọc quanh TRL chứ không thay thế TRL. Bạn vẫn dùng \texttt{SFTTrainer}, chỉ là mô hình đưa vào đã được thay ruột.
+
+\begin{minted}{python}
+from unsloth import FastLanguageModel   # phải import TRƯỚC transformers
+
+model, tokenizer = FastLanguageModel.from_pretrained(
+    model_name="unsloth/Llama-3.1-8B",
+    max_seq_length=2048,
+    load_in_4bit=True,
+)
+model = FastLanguageModel.get_peft_model(
+    model, r=16, lora_alpha=16,
+    target_modules=["q_proj","k_proj","v_proj","o_proj",
+                    "gate_proj","up_proj","down_proj"],
+    use_gradient_checkpointing="unsloth",   # biến thể riêng của Unsloth
+)
+# từ đây trở đi là TRL bình thường: SFTTrainer(model=model, ...)
+\end{minted}
+
+\noindent Lưu ý thứ tự import: Unsloth vá vào nội bộ \texttt{transformers}, nên nó phải được nạp trước. Đây cũng chính là nguồn gốc của “thuế Unsloth” nói ở dưới.
+
+\paragraph{Nó không còn chỉ là một thư viện.} Tính đến 2026, Unsloth có ba hình thái: \emph{Desktop} (ứng dụng, được chính dự án khuyến nghị), \emph{Studio} (giao diện web) và \emph{Core} (thư viện như trên). Một chương viết theo khung “import \texttt{FastLanguageModel}” chỉ mô tả một phần ba sản phẩm.
+
+\paragraph{Đây là lựa chọn Windows duy nhất.} Trong năm công cụ của mục này, Unsloth là cái duy nhất có đường cài \textbf{native Windows} được hỗ trợ (các công cụ khác yêu cầu WSL hoặc Docker). Với độc giả Việt Nam dùng máy Windows có GPU rời, đây thường là điểm quyết định. Kèm một cái bẫy mà chính tài liệu của họ cảnh báo: trên Windows phải cài \texttt{torchao} \emph{trước}, vì nếu không trình giải quyết phụ thuộc sẽ âm thầm chọn một bản Unsloth cũ.
+
+\paragraph{Đọc các con số quảng cáo cho đúng.} Khẩu hiệu là “nhanh gấp 2, ít hơn 70\% VRAM, không mất độ chính xác”. Điều kiện đo, theo đúng trang benchmark của họ: GPU H100/Blackwell, bộ dữ liệu Alpaca, batch 2, tích lũy gradient 4 bước, hạng 32, QLoRA trên mọi lớp tuyến tính. Vài điểm cần tỉnh táo:
+\begin{itemize}
+	\item \textbf{Đường cơ sở là “Hugging Face + FlashAttention-2”, và kết quả chỉ được công bố dưới dạng tỷ lệ} -- không có con số thông lượng tuyệt đối nào để đối chiếu.
+	\item \textbf{Phép đo ngữ cảnh dài là trường hợp tốt nhất theo thiết kế:} họ đệm mọi chuỗi tới độ dài tối đa, mà đó chính là kiểu lãng phí mà Unsloth tối ưu. Dữ liệu thật có độ dài biến thiên -- nhất là khi đường cơ sở cũng bật đóng gói chuỗi -- sẽ không cho tỷ lệ đó.
+	\item \textbf{Mức tiết kiệm VRAM dao động rất rộng theo mô hình.} Trong bộ benchmark chi tiết nhất từng công bố, con số trải từ khoảng $-12\%$ tới $-66\%$ tùy mô hình. “70\%” là đầu trên của một dải rộng.
+	\item Một phần lợi thế bộ nhớ đến từ \emph{cut cross-entropy}, một kỹ thuật đã công bố mà các thư viện khác cũng đang áp dụng (xem mục~\ref{ssec:liger}).
+\end{itemize}
+Không có phép tái lập độc lập nào cho con số 2$\times$/70\%. Cơ chế thì thật và lợi ích bộ nhớ thì rõ ràng; chỉ là đừng chép con số vào báo cáo của bạn như một hằng số.
+
+\paragraph{Hai giới hạn phải biết.}
+\begin{itemize}
+	\item \textbf{Đa GPU chưa được hỗ trợ chính thức.} Tài liệu nói bạn “có thể” dùng qua Accelerate/DeepSpeed và hứa hỗ trợ chính thức “sắp tới” -- lời hứa đã kéo dài nhiều năm. Công thức duy nhất được đưa ra là \texttt{accelerate launch} hoặc \texttt{torchrun}. \textbf{Hãy coi Unsloth là nhà vô địch một-GPU}, và chuyển sang Axolotl hoặc LlamaFactory khi cần nhiều GPU.
+	\item \textbf{Giấy phép có ba tầng, README chỉ thừa nhận hai.} Lõi Apache-2.0, giao diện Studio AGPL-3.0 -- nhưng gói phụ thuộc \emph{bắt buộc} \texttt{unsloth\_zoo} lại là \textbf{LGPL-3.0}. Nếu bạn tinh chỉnh bên trong một sản phẩm thương mại, hãy để bộ phận pháp chế nhìn qua trước.
+\end{itemize}
+
+\subsection{ms-swift: rộng nhất, nhưng mặc định hướng hệ sinh thái Trung Quốc}
+\label{ssec:msswift}
+
+SWIFT \cite{zhao2024swift} là framework có phạm vi rộng nhất trong nhóm: huấn luyện, suy luận, đánh giá, lượng tử hóa và triển khai trong cùng một CLI, với độ phủ \textbf{đa phương thức} và \textbf{họ thuật toán RL kiểu GRPO} mạnh nhất, cộng một đường Megatron thật sự. Điểm trừ với độc giả ngoài Trung Quốc là mặc định nó kéo mô hình từ ModelScope thay vì Hugging Face, và phần lớn thảo luận cộng đồng bằng tiếng Trung. Nếu bạn làm đa phương thức, hoặc dùng các mô hình Qwen/GLM/InternVL, đây là lựa chọn đáng cân nhắc nghiêm túc.
+
+\subsection{Chọn cái nào}
+\label{ssec:framework_choice}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}lXccc@{}}
+\toprule
+& \textbf{Giao diện} & \textbf{GRPO} & \textbf{Đa GPU} & \textbf{Windows} \\
+\midrule
+LlamaFactory & YAML phẳng + CLI + WebUI & Không & DeepSpeed, FSDP, Megatron & WSL \\
+Axolotl & YAML + CLI, lược đồ Pydantic & Có & FSDP2, DeepSpeed, Ray & WSL \\
+Unsloth & Python API + app + web UI & Có & \textit{chưa chính thức} & \textbf{native} \\
+ms-swift & CLI + Python + WebUI & Rất mạnh & ZeRO, FSDP2, Megatron & WSL \\
+torchtune & \multicolumn{4}{l}{\textit{đã ngừng phát triển -- không dùng}} \\
+\bottomrule
+\end{tabularx}
+\caption{Tầng framework tinh chỉnh, tình trạng cuối năm 2026.}
+\label{tab:ft_frameworks}
+\end{table}
+
+\noindent Quy tắc chọn gọn trong một câu: \textbf{một GPU và muốn nhanh} $\rightarrow$ Unsloth; \textbf{cần giao diện hoặc ma trận tác vụ rộng mà không cần RL} $\rightarrow$ LlamaFactory; \textbf{chạy production nhiều GPU, cần tái lập và cần GRPO} $\rightarrow$ Axolotl; \textbf{đa phương thức hoặc RL ngoại lai} $\rightarrow$ ms-swift.
+
+\begin{tcolorbox}[title={Nghịch lý ghim phiên bản -- và quy tắc rút ra}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+Ba framework, ba chiến lược ghim phiên bản hoàn toàn khác nhau, cùng dẫn tới một kết luận:
+\begin{itemize}
+	\item \textbf{LlamaFactory} ghim theo khoảng với trần lạc hậu $\Rightarrow$ cài vào thì \emph{hạ cấp} stack hiện có của bạn.
+	\item \textbf{Axolotl} ghim \texttt{==} sát bản mới nhất $\Rightarrow$ nó \emph{chiếm} trọn môi trường.
+	\item \textbf{Unsloth} vá vào nội bộ \texttt{transformers} $\Rightarrow$ buộc phải bám sau các bản phát hành của \texttt{transformers}, và notebook chính thức của nó ghim những phiên bản đã khá cũ.
+\end{itemize}
+\textbf{Quy tắc: mỗi framework một môi trường ảo riêng, ghim theo tag phát hành, và ghi phiên bản vào cùng chỗ với checkpoint.} Đây không phải sự cầu toàn -- nó là điều kiện để bạn tái lập được kết quả của chính mình sáu tháng sau.
+\end{tcolorbox}

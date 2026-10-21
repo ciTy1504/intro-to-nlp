@@ -1,0 +1,169 @@
+% !TEX root = ../main.tex
+% File: part2/chapters_part2/chap2_boundary.tex
+% Ranh giới huấn luyện - phục vụ
+
+\section{Ranh giới Huấn luyện--Phục vụ: nơi phần lớn lỗi thực tế xảy ra}
+\label{sec:train_serve_boundary}
+
+Mọi thứ cho tới đây đều giả định một điều kiện ngầm: chuỗi byte mà mô hình nhìn thấy lúc huấn luyện \emph{giống hệt} chuỗi byte nó nhìn thấy lúc phục vụ. Điều kiện đó bị vi phạm thường xuyên hơn bạn nghĩ, và đây là lớp lỗi tốn thời gian nhất trong thực tế vì nó có một đặc điểm chung:
+
+\begin{tcolorbox}[title={Đặc điểm chung của mọi lỗi trong mục này}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\textbf{Chúng không báo lỗi.} Không exception, không stack trace, không cảnh báo. Mô hình vẫn nạp được, vẫn chạy, vẫn sinh ra chữ tiếng Việt đúng ngữ pháp. Chỉ là chữ tệ hơn đáng lẽ phải có. Bạn sẽ đi tìm nguyên nhân ở dữ liệu, ở siêu tham số, ở kiến trúc -- trong khi nguyên nhân nằm ở một token.
+\end{tcolorbox}
+
+\noindent Hamel Husain, người dạy khóa tinh chỉnh của Parlance Labs, ước lượng rằng phần lớn thời gian tinh chỉnh thực tế là để chắc chắn mình hiểu đúng mẫu hội thoại, và “99\% lỗi trong thực tế” nằm ở đó. Con số ấy là ước lượng của một người hành nghề chứ không phải kết quả đo đạc, nhưng hướng của nó thì khớp với mọi tài liệu khắc phục sự cố của các thư viện tinh chỉnh.
+
+\subsection{Mẫu hội thoại (chat template)}
+\label{ssec:chat_template}
+
+Một mô hình đã instruction-tuned không được huấn luyện trên văn bản thô. Nó được huấn luyện trên văn bản đã bọc trong một \textbf{mẫu hội thoại}: các ký hiệu đánh dấu vai, các token đặc biệt phân tách lượt, và -- chi tiết hay bị bỏ qua nhất -- cả những ký tự xuống dòng và khoảng trắng giữa chúng. Mẫu đó là một phần của phân phối dữ liệu huấn luyện, ngang hàng với nội dung.
+
+Dùng một mẫu khác lúc suy luận vì thế không phải lỗi định dạng. Nó là một \emph{dịch chuyển phân phối}, và mô hình phản ứng đúng như mọi mô hình gặp dữ liệu lệch phân phối: nó vẫn trả lời, nhưng kém đi.
+
+\paragraph{Triệu chứng.} Các thư viện tinh chỉnh liệt kê gần như cùng một danh sách: sinh văn bản \textbf{không dừng}, \textbf{lặp lại} một đoạn, \textbf{token điều khiển rò ra} đầu ra (người dùng nhìn thấy \texttt{<|im\_end|>} trong câu trả lời), hoặc chất lượng tụt rõ rệt mà không có dấu hiệu nào khác. Tình huống kinh điển: mô hình chạy tốt trong notebook huấn luyện, export sang Ollama hay llama.cpp thì hỏng.
+
+\paragraph{Vì sao rất dễ sai.} Bởi vì gần như không ai tự viết mẫu hội thoại. Nó được sinh ra bởi một lớp trừu tượng -- \texttt{tokenizer.apply\_chat\_template()}, một hàm tiện ích của framework, hay một tệp cấu hình của runtime đích -- và mỗi họ mô hình một quy ước. Chính lớp trừu tượng đó là chỗ sai lệch chui vào.
+
+\paragraph{Cách kiểm tra duy nhất đáng tin: so ở mức token ID.} So hai chuỗi ký tự bằng mắt sẽ không phát hiện được một khoảng trắng thừa hay một BOS lặp. Hãy so dãy số.
+
+\begin{example}{Đối chiếu token giữa huấn luyện và suy luận}{ex:token_diff}
+\begin{minted}{python}
+from transformers import AutoTokenizer
+
+tok = AutoTokenizer.from_pretrained(MODEL)
+msgs = [{"role": "user", "content": "Thủ đô của Việt Nam là gì?"}]
+
+# Chuỗi mà mô hình sẽ thấy lúc SUY LUẬN
+infer_ids = tok.apply_chat_template(msgs, add_generation_prompt=True)
+
+# Chuỗi mà mô hình đã thấy lúc HUẤN LUYỆN (lấy thẳng từ dataset đã xử lý)
+train_ids = train_dataset[0]["input_ids"]
+
+# So ở mức token, kèm cả dạng chữ để đọc được
+for i, t in enumerate(infer_ids[:20]):
+    print(i, t, repr(tok.decode([t])))
+
+# Phần tiền tố phải trùng nhau
+n = len(infer_ids)
+assert train_ids[:n] == infer_ids, "Mẫu hội thoại lệch giữa train và infer!"
+\end{minted}
+Hãy in cả \texttt{repr()} chứ không chỉ \texttt{decode()}: \texttt{repr} mới cho bạn thấy \texttt{'\textbackslash n'} và khoảng trắng đầu token.
+\end{example}
+
+\paragraph{Lối thoát: tự sở hữu mẫu.} Nếu bạn không muốn phụ thuộc vào lớp trừu tượng, có thể đi đường \emph{không dùng template}: tự ghép các đoạn văn bản đúng như mong muốn và tự chèn token đặc biệt. Axolotl hỗ trợ cách này qua định dạng \texttt{input\_output}. Đổi lại sự tiện lợi, bạn nhận lấy quyền kiểm soát và trách nhiệm.
+
+\paragraph{Một chỗ cần kiểm, nhưng đừng thổi phồng.} Cờ \texttt{add\_generation\_prompt=True} thêm phần mở đầu lượt của trợ lý; thiếu nó, mô hình không biết đã đến lượt mình nói. Về cơ chế thì đây là một chỗ sai được, nhưng tôi không tìm được báo cáo thực tế nào của một đội ngũ mất thời gian vì nó. Hãy xem đây là một mục trong danh sách kiểm tra, không phải một tai họa phổ biến.
+
+\subsection{Token đặc biệt: BOS, EOS và những token chưa từng được huấn luyện}
+\label{ssec:special_tokens}
+
+\paragraph{BOS lặp hoặc thiếu.} Nhiều engine suy luận tự thêm token bắt đầu chuỗi. Nếu mẫu hội thoại của bạn \emph{cũng} đã thêm, mô hình nhận hai BOS liên tiếp -- một cấu hình nó chưa từng thấy. Nếu không bên nào thêm, nó không nhận BOS nào. Cả hai đều là lỗi một token, không báo lỗi, và ảnh hưởng rõ rệt. Lời khuyên thẳng thắn từ tài liệu của Unsloth là \emph{thử cả hai khả năng} rồi so kết quả -- vì không có cách nào suy ra từ tài liệu cho chắc.
+
+\paragraph{EOS sai hoặc thiếu.} Nếu dữ liệu huấn luyện không kết thúc mỗi mẫu bằng đúng token kết thúc mà runtime đích trông đợi, mô hình không bao giờ học được khi nào nên im lặng. Kết quả là sinh văn bản không dừng cho tới khi chạm \texttt{max\_tokens}. Đây là triệu chứng số một của một mô hình đã export hỏng.
+
+\paragraph{Token có trong từ vựng nhưng chưa từng được huấn luyện.} Đây là cái bẫy tinh vi nhất và có con số cụ thể nhất. Mô hình \emph{nền} (base, chưa instruction-tune) thường vẫn có sẵn các token đặc biệt dành cho hội thoại trong từ vựng -- nhưng vector embedding của chúng chưa bao giờ nhận gradient. Với Llama-3 base, cộng đồng đếm được \textbf{287 token như vậy}. Dùng chúng để tinh chỉnh sẽ cho \textbf{gradient NaN} ngay những bước đầu.
+
+Cách sửa ngây thơ là đặt các vector đó bằng trung bình của toàn bộ bảng embedding. Nhưng chính các token chưa huấn luyện kia cũng nằm trong bảng và kéo lệch trung bình đó, nên cách đúng là \emph{chỉ lấy trung bình trên những token đã được huấn luyện}. Các thư viện hiện nay tự xử lý việc này, nhưng nếu bạn tự viết vòng lặp huấn luyện thì phải tự lo.
+
+\paragraph{Lệch \emph{loại} token khi export.} Một biến thể còn khó thấy hơn: token đúng chuỗi ký tự nhưng sai \emph{phân loại}. Khi export sang GGUF, nếu \texttt{<start\_of\_turn>} bị ghi là token \textbf{NORMAL} thay vì \textbf{CONTROL}, runtime sẽ không nhận ra đó là mốc hội thoại. Mô hình nạp bình thường, sinh chữ bình thường, chất lượng tụt âm thầm. Lỗi này từng xảy ra thật với các bản export của Gemma 3.
+
+\subsection{Nhãn: hãy kiểm tra trước khi bấm nút huấn luyện}
+\label{ssec:label_masking}
+
+Trong tinh chỉnh có giám sát, ta thường chỉ muốn tính mất mát trên phần \emph{đáp án}, không tính trên phần chỉ dẫn. Cơ chế là đặt nhãn của các vị trí không muốn tính thành $-100$ -- giá trị mà hàm cross-entropy của PyTorch bỏ qua.
+
+\paragraph{Lỗi thật, và nó im lặng.} Cơ chế che nhãn dựa trên việc nhận ra mốc đánh dấu vai trong chuỗi token. Mỗi họ mô hình một mốc khác nhau: Llama 3.x dùng \texttt{<|start\_header\_id|>}, Gemma dùng \texttt{<start\_of\_turn>}. Đưa sai mốc thì hàm che không tìm thấy gì, che toàn bộ, và \textbf{mọi nhãn đều thành $-100$}. Hệ quả: \texttt{loss = 0} từ bước đầu tiên. Nếu bạn không nhìn kỹ, đó trông y như một mô hình đang học rất tốt.
+
+Chiều ngược lại cũng xảy ra: Axolotl đã phải sửa ít nhất hai lỗi mà cờ che nhãn bị \emph{bỏ qua âm thầm}, khiến mô hình được huấn luyện trên toàn bộ chuỗi trong khi người dùng tin rằng phần chỉ dẫn đã được che.
+
+\paragraph{Mặc định khác nhau giữa các thư viện.} Axolotl mặc định che phần chỉ dẫn; \texttt{Trainer} của Hugging Face thì không. Cùng một tệp cấu hình, hai hành vi khác nhau.
+
+\begin{example}{Kiểm tra nhãn bằng cách giải mã ngược}{ex:check_labels}
+\begin{minted}{python}
+import torch
+
+ex = train_dataset[0]
+ids = torch.tensor(ex["input_ids"])
+labels = torch.tensor(ex["labels"])
+
+n_train = (labels != -100).sum().item()
+print(f"Số token được tính loss: {n_train}/{len(labels)}")
+assert n_train > 0, "Mọi nhãn đều là -100 — loss sẽ bằng 0!"
+
+# Giải mã ĐÚNG những token được tính loss: phải ra phần đáp án
+print(repr(tok.decode(ids[labels != -100])))
+\end{minted}
+Chạy đoạn này một lần trước mỗi lần đổi mô hình nền hoặc đổi định dạng dữ liệu. Nó tốn ba giây và chặn được cả một đêm huấn luyện vô nghĩa.
+\end{example}
+
+\paragraph{Nhưng \emph{có nên} che hay không lại là chuyện khác.} Ở đây cần tách bạch hai điều mà tài liệu phổ thông hay gộp làm một. “Nhãn phải đúng ý bạn” là một \textbf{yêu cầu cứng}. Còn “che phần chỉ dẫn” chỉ là một \textbf{lựa chọn thực nghiệm}, và thực nghiệm không ủng hộ nó một cách tuyệt đối:
+
+\begin{itemize}
+	\item Shi và cộng sự \cite{shi2024instruction} (NeurIPS 2024) cho thấy tính mất mát trên \emph{cả} phần chỉ dẫn thường \textbf{tốt hơn} che nó, qua 21 benchmark. Mức lợi phụ thuộc hai yếu tố: tỷ lệ độ dài chỉ dẫn so với đáp án, và số lượng mẫu huấn luyện. Nó có lợi nhất khi chỉ dẫn dài mà đáp án ngắn, hoặc khi bộ dữ liệu nhỏ.
+	\item Phụ lục của bài QLoRA \cite{dettmers2023qlora} lại thấy che tốt hơn -- nhưng chỉ đo trên MMLU, một benchmark trắc nghiệm, và không đo chất lượng hội thoại.
+\end{itemize}
+Nói cách khác: hãy kiểm tra nhãn của bạn, nhưng đừng coi việc che là chân lý. Nếu dữ liệu của bạn có chỉ dẫn dài và đáp án ngắn, thử cả hai.
+
+\subsection{Phía đệm (padding side)}
+\label{ssec:padding_side}
+
+Quy ước thông thường: \textbf{đệm bên trái khi sinh, đệm bên phải khi huấn luyện}. Lý do của vế đầu rất cụ thể: khi sinh tự hồi quy, token mới được nối vào \emph{cuối} chuỗi. Nếu đệm nằm bên phải, token mới sẽ nằm sau một dãy token đệm, và vị trí của nó không còn là thứ mô hình trông đợi.
+
+Cái bẫy thật không nằm ở quy ước mà ở chỗ \textbf{các thư viện âm thầm ghi đè lựa chọn của bạn}. Đã có trường hợp một bản phát hành ép phía đệm sang phải lúc suy luận trong khi huấn luyện dùng trái. Có cả một lớp lỗi riêng ở chỗ dựng mặt nạ chú ý: mã đọc \texttt{tokenizer.padding\_side} để dựng mặt nạ, nên một tokenizer đệm phải đi với một batch đệm trái sẽ che nhầm vào token thật, làm hỏng đầu ra của đúng những prompt ngắn.
+
+\begin{tcolorbox}[title={Quy tắc thực hành}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+Đừng tin giá trị bạn đặt lúc nạp tokenizer. Hãy \textbf{đọc \texttt{tokenizer.padding\_side} ngay trước mỗi lần dùng}, và khẳng định nó bằng \texttt{assert}. Đây là một dòng code đổi lấy một lớp lỗi không có thông báo.
+\end{tcolorbox}
+
+\subsection{Hợp nhất adapter: chỗ mất mát mà không ai đo}
+\label{ssec:merge_adapter}
+
+Sau khi tinh chỉnh bằng QLoRA, phản xạ tự nhiên là hợp nhất adapter vào trọng số nền để có một mô hình duy nhất. Nhưng cơ chế bên dưới có một chỗ hở.
+
+Trong lúc huấn luyện QLoRA, trọng số nền 4-bit được \emph{giải lượng tử} về độ chính xác của adapter để tính toán. Nghĩa là \textbf{adapter chưa bao giờ “biết” rằng trọng số nền sẽ bị lượng tử hóa} -- nó được tối ưu cho đường tính toán 16-bit. Khi bạn gập một adapter 16-bit vào trọng số 4-bit, phép làm tròn diễn ra lần thứ hai, và chính những hiệu chỉnh nhỏ mà adapter học được là thứ bị làm tròn mất.
+
+Hệ quả thực tế rất khó chịu: \emph{đường loss bạn theo dõi suốt quá trình huấn luyện là của đường 16-bit}, nên mô hình sau khi hợp nhất có thể kém hơn con số bạn đo được lúc kết thúc huấn luyện. Bạn không hề làm gì sai, và cũng không có gì báo cho bạn biết.
+
+\begin{itemize}
+	\item \textbf{Cách làm an toàn:} hợp nhất ở độ chính xác 16-bit, rồi mới lượng tử hóa lại nếu cần -- và \textbf{đo lại mô hình đã hợp nhất} trên tập validation, so với adapter chưa hợp nhất. Nếu mức tụt không chấp nhận được, hãy phục vụ adapter riêng.
+	\item \textbf{Nguyên tắc tổng quát:} huấn luyện ở đúng độ chính xác bạn định phục vụ. 4-bit thì phục vụ 4-bit, 16-bit thì phục vụ 16-bit.
+	\item \textbf{Về độ lớn của mức tụt:} các nguồn không thống nhất, từ dưới một phần trăm tới mức đáng kể tùy tác vụ và hạng adapter. Cơ chế thì chắc chắn, con số thì chưa có kết luận -- nên hãy tự đo trên dữ liệu của bạn thay vì tin một con số trên mạng.
+	\item \textbf{Và nếu bạn phục vụ nhiều adapter thì vấn đề này biến mất:} đừng hợp nhất gì cả, dùng cơ chế đa adapter ở mục~\ref{ssec:vllm_multilora}.
+\end{itemize}
+
+\subsection{Một lớp lỗi nữa: bug của chính framework}
+\label{ssec:framework_bugs}
+
+Lớp lỗi cuối cùng không có trong bất kỳ giáo trình học máy cổ điển nào, vì nó không tồn tại ở quy mô đó: \textbf{con số trên màn hình có thể sai vì bug của bộ huấn luyện, không phải vì dữ liệu hay mô hình của bạn}.
+
+Ví dụ cụ thể nhất là lỗi tích lũy gradient được phát hiện năm 2026: với một số cấu hình, loss nhảy vọt lên 300--400 thay vì nằm ở mức 10--15 đáng lẽ phải có. Điều đáng chú ý là nhóm phát hiện ra nói rõ lỗi \emph{không} bắt nguồn từ thư viện của họ mà \textbf{ảnh hưởng tới mọi thư viện huấn luyện} dùng chung cách cài đặt đó.
+
+\begin{tcolorbox}[title={Thực hành tối thiểu}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{enumerate}
+	\item \textbf{Ghim phiên bản} của mọi thư viện huấn luyện, và ghi phiên bản đó cùng với checkpoint.
+	\item \textbf{Đọc changelog} của thư viện bạn đang dùng -- không phải để biết tính năng mới, mà để biết lỗi nào vừa được sửa và nó có ảnh hưởng tới lần chạy trước của bạn không.
+	\item \textbf{Giữ một baseline đã biết kết quả} và chạy lại nó sau mỗi lần nâng cấp. Nếu con số đổi mà bạn không đổi gì, bạn vừa phát hiện ra điều gì đó.
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection{Danh sách kiểm tra}
+\label{ssec:boundary_checklist}
+
+\begin{tcolorbox}[title={Bảy phép kiểm trước và sau khi huấn luyện}, colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries, breakable]
+\textbf{Trước khi huấn luyện}
+\begin{enumerate}
+	\item In token ID của một mẫu huấn luyện và của một request suy luận, rồi \textbf{diff chúng}. Không so chuỗi ký tự.
+	\item Đếm số nhãn khác $-100$; giải mã đúng những vị trí đó và xác nhận chúng là phần đáp án.
+	\item \texttt{assert tokenizer.padding\_side == ...} ngay trước khi dựng batch.
+	\item Kiểm BOS: xem tokenizer thêm mấy cái, rồi xem engine suy luận có thêm nữa không.
+\end{enumerate}
+\textbf{Trong khi huấn luyện}
+\begin{enumerate}\setcounter{enumi}{4}
+	\item Chạy 10 bước và nhìn loss. \texttt{loss = 0} hoặc loss lớn bất thường là tín hiệu dừng lại kiểm tra, không phải tín hiệu chờ thêm.
+\end{enumerate}
+\textbf{Sau khi huấn luyện}
+\begin{enumerate}\setcounter{enumi}{5}
+	\item Đo adapter \emph{chưa} hợp nhất và \emph{đã} hợp nhất trên cùng một tập validation.
+	\item Sinh thử 20 mẫu trong \textbf{runtime đích} (vLLM, Ollama, llama.cpp\dots) và so với runtime huấn luyện. Đây là phép kiểm bắt được nhiều lỗi nhất, và là phép kiểm hay bị bỏ qua nhất.
+\end{enumerate}
+\end{tcolorbox}

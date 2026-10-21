@@ -11,6 +11,12 @@
 Các mô hình học sâu, đặc biệt là các mô hình Transformer lớn, rất “đói” dữ liệu. Khi được fine-tune trên một bộ dữ liệu nhỏ, chúng có nguy cơ cao bị \textbf{quá khớp (overfitting)} -- tức là chúng “học thuộc lòng” các ví dụ trong tập huấn luyện thay vì học quy luật tổng quát, dẫn đến hiệu năng kém trên dữ liệu mới.
 \end{tcolorbox}
 
+\begin{tcolorbox}[title={Phạm vi áp dụng của mục này}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+Các kỹ thuật trong mục này -- thay từ đồng nghĩa, dịch vòng, diễn đạt lại -- thuộc về \textbf{chế độ dữ liệu nhỏ có giám sát}: bạn có vài nghìn mẫu đã gán nhãn và muốn nhiều hơn. Ở đó chúng vẫn hữu ích và vẫn rẻ.
+
+Chúng \emph{không} áp dụng cho tiền huấn luyện LLM. Ở quy mô hàng nghìn tỷ token, vấn đề không bao giờ là thiếu văn bản -- mà là \emph{thừa} văn bản kém chất lượng và trùng lặp. Ở đó, việc tương đương với “tăng cường dữ liệu” là sinh dữ liệu tổng hợp bằng chính LLM (mục~\ref{ssec:distilabel}), còn công việc chính lại là \emph{loại bớt} chứ không phải thêm vào (mục~\ref{sec:llm_data_pipeline}).
+\end{tcolorbox}
+
 \textbf{Tăng cường Dữ liệu (Data Augmentation)} là quá trình tạo ra các mẫu dữ liệu huấn luyện mới, “giả” nhưng hợp lý, từ các mẫu dữ liệu hiện có. Mục tiêu là làm tăng kích thước và sự đa dạng của bộ dữ liệu huấn luyện, giúp mô hình trở nên mạnh mẽ hơn (more robust) và có khả năng tổng quát hóa tốt hơn.
 
 Điều quan trọng là các phép biến đổi phải \textbf{giữ nguyên nhãn (label-preserving)}. Ví dụ, nếu bạn thay đổi một câu có cảm xúc “Tích cực”, câu mới được tạo ra cũng phải giữ nguyên cảm xúc “Tích cực”.

@@ -1,0 +1,110 @@
+% !TEX root = ../main.tex
+% File: part2/chapters_part2/chap2_knobs.tex
+% Các núm vặn thực hành khi huấn luyện
+
+\section{Bốn núm vặn bạn sẽ thực sự phải chỉnh}
+\label{sec:training_knobs}
+
+Giữa “chạy được” và “chạy hiệu quả” là bốn thiết lập. Chúng không phải siêu tham số của mô hình -- chúng không đổi kết quả học, chỉ đổi tốc độ và bộ nhớ -- nhưng chính chúng quyết định bạn có nhét vừa mô hình vào GPU hay không.
+
+\subsection{Đóng gói chuỗi (sequence packing)}
+\label{ssec:packing}
+
+Dữ liệu tinh chỉnh có độ dài rất chênh lệch. Nếu mỗi mẫu chiếm một hàng trong batch và được đệm tới độ dài dài nhất, \textbf{phần lớn phép tính của bạn đổ vào token đệm}. Trong các phép đo kinh điển, tỷ lệ token đệm có thể lên tới một nửa.
+
+\textbf{Đóng gói} ghép nhiều tài liệu ngắn vào một hàng cho tới khi đầy \texttt{max\_length}. Ý tưởng đơn giản, nhưng cài đặt đúng cần \emph{ba} thành phần, và thiếu bất kỳ cái nào cũng hỏng âm thầm:
+
+\begin{enumerate}
+	\item \texttt{position\_ids} phải \textbf{quay về 0} ở đầu mỗi tài liệu.
+	\item Đường attention phải nhận \textbf{ranh giới tài liệu} (\texttt{cu\_seq\_lens}) để mặt nạ là \textbf{khối chéo} -- tài liệu B không được nhìn ngược vào tài liệu A.
+	\item Nhãn ở vị trí đầu mỗi tài liệu phải đặt thành $-100$.
+\end{enumerate}
+
+Thiếu (2) là lỗi nguy hiểm nhất vì không có triệu chứng: mô hình vẫn huấn luyện, chỉ là nó học từ những ngữ cảnh pha tạp mà bạn không hề định tạo ra.
+
+\paragraph{Trong TRL.} Đặt \texttt{SFTConfig(packing=True)}. Chiến lược mặc định là \texttt{"bfd"} (\emph{best-fit decreasing} -- xếp thùng theo kiểu khớp-tốt-nhất, \textbf{không} phải \emph{first-fit}; tên viết tắt rất dễ nhớ nhầm). Ba lựa chọn:
+\begin{itemize}
+	\item \texttt{"bfd"} -- giữ nguyên ranh giới chuỗi, cắt bỏ phần tràn quá \texttt{max\_length}.
+	\item \texttt{"bfd\_split"} -- chia nhỏ chuỗi dài trước, nên không mất token nào, nhưng tài liệu cảnh báo nó \emph{có thể phá vỡ cấu trúc hội thoại}.
+	\item \texttt{"wrapped"} -- nối tất cả rồi cắt theo khối. Tài liệu nói thẳng là nó \emph{trộn lẫn các mẫu không liên quan} và làm hỏng tính liên tục của phần lớn dữ liệu.
+\end{itemize}
+
+\begin{tcolorbox}[title={Một chi tiết cài đặt đáng để hiểu}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+Khi bật \texttt{"bfd"}, TRL \textbf{tự động bật luôn chế độ không-đệm}. Lý do nằm trong chính mã nguồn: nếu collator vẫn xuất ra một mặt nạ chú ý toàn số 1, FlashAttention sẽ \emph{bỏ qua} \texttt{position\_ids} và tự suy lại ranh giới từ mặt nạ đó -- tức là suy sai, và mặt nạ khối chéo bị vô hiệu hóa trong im lặng.
+
+Bài học tổng quát hơn một thư viện: \textbf{truyền một mặt nạ chú ý toàn số 1 kèm theo các hàng đã đóng gói sẽ phá hỏng việc tách tài liệu}. Nếu bạn tự viết đường dữ liệu, đây là chỗ cần kiểm tra đầu tiên.
+\end{tcolorbox}
+
+\paragraph{Lợi ích thực tế.} Phép đo chính thức của Hugging Face trên 8$\times$A100 báo cáo \textbf{tới 2 lần thông lượng}. Nhưng con số phụ thuộc hoàn toàn vào \emph{độ biến thiên độ dài} của dữ liệu: bộ FLAN đạt khoảng $2\times$, bộ OrcaMath chỉ khoảng $1.4\times$. Dữ liệu càng đều độ dài, đóng gói càng ít tác dụng. Đừng chép con số $2\times$ như một hằng số -- hãy đo phân phối độ dài của bạn trước.
+
+\paragraph{Điều kiện.} Đóng gói trong TRL chỉ áp dụng cho SFT và chỉ với FlashAttention (hoặc các biến thể). Với SDPA, bạn \emph{có thể} diễn đạt mặt nạ khối chéo bằng một mặt nạ 4 chiều, nhưng phải hiện thực hóa một ma trận $O(L^2)$ -- đúng cái ta muốn tránh ở ngữ cảnh dài. FlexAttention là đường tự nhiên hơn nếu không có FlashAttention.
+
+\subsection{Gradient checkpointing}
+\label{ssec:grad_ckpt}
+
+Ý tưởng gốc \cite{chen2016sublinear}: thay vì giữ mọi kích hoạt trung gian cho lượt lan truyền ngược, chỉ giữ một số “điểm kiểm tra” và \emph{tính lại} phần còn lại khi cần. Bộ nhớ giảm còn $O(\sqrt{n})$ cho mạng $n$ lớp, đổi lấy khoảng một lượt lan truyền xuôi phụ.
+
+Về chi phí, hãy trích dẫn cho đúng: tài liệu của Hugging Face nói \textbf{chậm hơn khoảng 20\%}; con số 30\% hay được trích lại đến từ \emph{một} thí nghiệm ResNet trong bài báo gốc, không phải một tính chất của cận $O(\sqrt{n})$. Hãy nói “khoảng 20--30\%”.
+
+\begin{tcolorbox}[title={Ba câu thần chú đã lỗi thời}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+Rất nhiều hướng dẫn vẫn dạy ba dòng sau. Tính đến 2026, cả ba đều đã là mặc định:
+\begin{itemize}
+	\item \texttt{gradient\_checkpointing\_kwargs=\{"use\_reentrant": False\}} -- \texttt{transformers} nay \textbf{mặc định} dùng biến thể không-đệ-quy. Viết thêm cũng không sai, nhưng không còn bắt buộc.
+	\item \texttt{model.config.use\_cache = False} -- \texttt{TrainingArguments} nay có \texttt{use\_cache} riêng, mặc định \texttt{False}. Thông báo cảnh báo cũng đã đổi lời và nay \emph{tự sửa} thay vì chỉ cảnh báo.
+	\item “Phải tắt cache thủ công nếu không sẽ lỗi” -- không còn đúng.
+\end{itemize}
+Cái \emph{vẫn} còn đúng: với LoRA trên mô hình nền đóng băng, đầu ra của lớp embedding không yêu cầu gradient, nên khối được checkpoint đầu tiên không có đầu vào nào cần gradient và (ở chế độ đệ quy) sẽ không sinh ra gradient nào. Khắc phục bằng \texttt{model.enable\_input\_require\_grads()}, hoặc dùng \texttt{prepare\_model\_for\_kbit\_training()} của PEFT -- vốn đã làm đúng việc đó bên trong.
+\end{tcolorbox}
+
+\paragraph{Các núm mới ít người biết.} \texttt{gradient\_checkpointing\_kwargs} nay nhận \texttt{\{"every\_n\_layers": N\}} (chỉ checkpoint mỗi $N$ lớp -- đổi bộ nhớ lấy tốc độ theo một thang liên tục thay vì bật/tắt) và \texttt{\{"offload": True\}} (giữ kích hoạt ở RAM chủ đã ghim thay vì trên GPU, giải phóng đúng phần chiếm ưu thế ở ngữ cảnh dài). TRL còn có \texttt{\{"selective": True\}}: lưu đầu ra attention thay vì tính lại, thu hồi gần hết phần chậm ở ngữ cảnh dài với giá một tensor phụ mỗi lớp.
+
+\paragraph{Lưu ý khi dùng với FSDP.} Hãy dùng \texttt{activation\_checkpointing} của chính FSDP thay vì \texttt{gradient\_checkpointing} của Trainer -- cái sau thêm một lần all-gather thừa trong lan truyền ngược. Đặt cả hai sẽ báo lỗi.
+
+\subsection{Nhân hợp nhất: Liger Kernel và bài toán logits}
+\label{ssec:liger}
+
+Đây là núm có cơ chế đẹp nhất, và hiểu cơ chế quan trọng hơn nhớ con số.
+
+\paragraph{Vấn đề.} Để tính cross-entropy, mô hình phải dựng ma trận logits kích thước $[\text{batch} \times \text{seq\_len},\ |V|]$. Với từ vựng hiện đại, ma trận này \emph{áp đảo mọi thứ khác}. Ví dụ cụ thể: batch 8, chuỗi 4096, từ vựng 256\,000, ở BF16:
+\[
+8 \times 4096 \times 256\,000 \times 2\ \text{byte} = 16{,}8\ \text{GB}
+\]
+chỉ cho \emph{một} tensor. Và trên thực tế phải nhân đôi, vì autograd còn giữ gradient của chính tensor đó.
+
+\paragraph{Quan sát then chốt.} Sau khi tính xong mất mát, \textbf{ta không bao giờ cần tới ma trận logits nữa} -- chỉ cần $\partial \mathcal{L}/\partial h$ và $\partial \mathcal{L}/\partial W_{\text{out}}$. Vậy tại sao phải hiện thực hóa toàn bộ nó?
+
+\textbf{Fused Linear Cross-Entropy} (FLCE) áp phép chiếu đầu ra \emph{theo từng khối} trạng thái ẩn, tính mất mát bộ phận và ghi gradient đè lên chính khối đó. Đỉnh bộ nhớ cho logits trở thành $\text{chunk} \times |V|$ thay vì $\text{batch} \times \text{seq} \times |V|$. Đây là nguồn gốc của phần lớn lợi ích mà Liger mang lại.
+
+\paragraph{Đọc con số cho đúng.} Liger quảng cáo \textbf{+20\% thông lượng, $-$60\% bộ nhớ}, với điều kiện ghi rõ: Llama 3-8B, batch 8, bf16, AdamW, có gradient checkpointing, FSDP trên 8$\times$A100. Nhưng:
+\begin{itemize}
+	\item Ngay bảng ví dụ của chính dự án cho dải hẹp hơn: khoảng \textbf{15--20\% tốc độ, 40--50\% bộ nhớ}. Con số 60\% là trường hợp tốt nhất.
+	\item Phép đo bán độc lập đáng tin nhất -- một bài của PyTorch, đồng tác giả bởi chính nhóm Liger -- cho kết quả rất khác khi đường cơ sở đã bật \texttt{torch.compile}: \textbf{giảm 47\% bộ nhớ đỉnh, nhưng thông lượng chỉ tăng 1--2\%}.
+\end{itemize}
+Kết luận trung thực: \textbf{lợi ích của Liger về bản chất là bộ nhớ, không phải tốc độ}. Con số “+20\% thông lượng” được đo so với \texttt{transformers} chạy chế độ eager. Nếu bạn đã dùng \texttt{torch.compile}, hãy kỳ vọng bộ nhớ chứ đừng kỳ vọng tốc độ -- dù bộ nhớ tiết kiệm được thường cho phép tăng batch, và tốc độ quay lại theo đường vòng đó.
+
+\paragraph{Cách bật.} \texttt{TrainingArguments(use\_liger\_kernel=True)} hoặc \texttt{SFTConfig(use\_liger\_kernel=True)}. Cả LlamaFactory lẫn Axolotl đều có cờ riêng. Và từ 2026, \texttt{transformers} có thể lấy thẳng các nhân này từ kernel hub mà không cần cài Liger.
+
+\paragraph{Ý tưởng sắc hơn, gói yếu hơn.} \emph{Cut Cross-Entropy} (CCE) \cite{wijmans2025cce} đi xa hơn một bước: tính log-sum-exp \emph{ngay trong nhân}, nên ma trận logits \textbf{không bao giờ được ghi ra bộ nhớ toàn cục}. Bài báo báo cáo phần tính mất mát của Gemma 2 2B giảm từ 24 GB xuống cỡ 1 MB. Ý tưởng mạnh hơn FLCE, nhưng kho mã nhỏ và không có gói phát hành -- nên trong thực tế bạn sẽ gặp CCE \emph{qua} các thư viện khác đã hấp thụ nó, chứ không cài trực tiếp.
+
+\subsection{flash-attn: lời khuyên cũ đã hết hạn}
+\label{ssec:flashattn_install}
+
+Trong nhiều năm, câu đầu tiên của mọi hướng dẫn tinh chỉnh là “cài flash-attn, và chúc may mắn”. Điều đó đã thay đổi.
+
+\paragraph{Vì sao nó từng khổ sở.} PyPI chỉ phát hành mã nguồn, không có wheel biên dịch sẵn, nên \emph{mọi} lần cài đều phải biên dịch. Cờ \texttt{--no-build-isolation} là bắt buộc chứ không phải tùy chọn: \texttt{setup.py} \texttt{import torch} ngay lúc dựng để đọc phiên bản và ABI, nên môi trường dựng cô lập của pip (không có torch) sẽ hỏng. Không có \texttt{ninja}, việc biên dịch mất khoảng hai tiếng; có \texttt{ninja} thì còn 3--5 phút -- nhưng trên máy nhiều lõi mà dưới 96 GB RAM, \texttt{ninja} lại song song hóa quá tay và gây hết bộ nhớ, phải hạ bằng \texttt{MAX\_JOBS=4}.
+
+\begin{tcolorbox}[title={Lời khuyên đúng cho năm 2026: đừng biên dịch nữa}, colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries]
+\begin{minted}{bash}
+pip install -U "transformers[kernels]"
+\end{minted}
+\begin{minted}{python}
+model = AutoModelForCausalLM.from_pretrained(
+    "Qwen/Qwen3-0.6B",
+    attn_implementation="kernels-community/flash-attn2")
+\end{minted}
+Nhân đã biên dịch sẵn được tải từ Hub lúc chạy, nên không còn chuyện lệch phiên bản CUDA hay PyTorch. Yêu cầu \texttt{"flash\_attention\_2"} cũng \emph{tự động} rơi về nhân trên Hub khi gói \texttt{flash-attn} không có.
+
+\textbf{Nhưng hãy đọc kỹ cảnh báo bảo mật:} chỉ kho \texttt{kernels-community} được tin mặc định; muốn dùng kho khác phải bật cờ cho phép, vì \textbf{nạp một nhân đồng nghĩa với thực thi mã tùy ý trên máy bạn} -- cùng loại rủi ro với \texttt{trust\_remote\_code=True}. Tắt hẳn bằng \texttt{USE\_HUB\_KERNELS=0}.
+\end{tcolorbox}
+
+\paragraph{Vài sự thật về phần cứng.} FlashAttention-2 yêu cầu GPU Ampere trở lên; Volta/V100 \emph{không} được hỗ trợ (lựa chọn duy nhất ở đó là đường memory-efficient của SDPA). FlashAttention-3 vẫn đang beta và chỉ cho Hopper. FlashAttention-4 nhắm Hopper và Blackwell, và có một đặc điểm đáng chú ý: vì nó biên dịch lúc chạy, wheel của nó là \textbf{wheel Python thuần, không phụ thuộc nền tảng} -- cài trong vài giây, không có bước biên dịch C++/CUDA nào. Trên Windows vẫn không có wheel chính thức cho FA2; đây là một lý do nữa để đi đường kernel hub.

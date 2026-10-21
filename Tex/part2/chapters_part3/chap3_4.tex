@@ -61,6 +61,52 @@ llm = LLM(
 \end{example}
 Hãy đo trước và sau: tăng tốc phụ thuộc vào tỷ lệ chấp nhận $\alpha$ và mức tải; ở batch lớn, giải mã suy đoán có thể \emph{giảm} thông lượng tổng.
 
+\paragraph{Phục vụ nhiều adapter LoRA trên cùng một máy chủ}
+\label{ssec:vllm_multilora}
+Cơ chế phía sau đã bàn ở mục~\ref{ssec:slora}: một mô hình nền dùng chung, nghìn adapter nằm ở RAM chủ, chỉ nạp lên GPU khi có request. vLLM hiện thực hóa nó bằng vài cờ dòng lệnh.
+
+\begin{example}{Phục vụ nhiều adapter LoRA bằng vLLM}{ex:vllm_multilora}
+Chạy ngoại tuyến, mỗi lời gọi chọn một adapter:
+\begin{minted}{python}
+from vllm import LLM, SamplingParams
+from vllm.lora.request import LoRARequest
+
+llm = LLM(model="meta-llama/Llama-3.2-3B-Instruct", enable_lora=True)
+outputs = llm.generate(
+    prompts,
+    SamplingParams(temperature=0, max_tokens=256),
+    # tham số: tên dễ đọc, ID nguyên duy nhất toàn cục, đường dẫn adapter
+    lora_request=LoRARequest("sql_adapter", 1, "/path/to/adapter"),
+)
+\end{minted}
+
+Chạy như một máy chủ, đăng ký adapter ngay lúc khởi động:
+\begin{minted}{bash}
+vllm serve meta-llama/Llama-3.2-3B-Instruct \
+    --enable-lora \
+    --lora-modules sql-lora=jeeejeee/llama32-3b-text2sql-spider \
+    --max-lora-rank 64
+\end{minted}
+
+Phía client, adapter được chọn bằng chính trường \texttt{model} -- không cần endpoint riêng:
+\begin{minted}{bash}
+curl http://localhost:8000/v1/completions \
+    -H "Content-Type: application/json" \
+    -d '{"model": "sql-lora", "prompt": "San Francisco is a", "max_tokens": 7}'
+\end{minted}
+Gọi \texttt{/v1/models} sẽ thấy mỗi adapter được liệt kê như một mô hình, với mô hình nền đứng ở trường \texttt{parent}.
+\end{example}
+
+\begin{itemize}
+	\item \texttt{--max-lora-rank} nên đặt \emph{bằng đúng hạng của adapter lớn nhất bạn có}. Đặt dư ra cho “chắc” là lãng phí bộ nhớ đã giữ chỗ, vì bể bộ nhớ được cấp theo hạng lớn nhất.
+	\item \texttt{max\_loras} giới hạn số adapter \emph{đồng thời trong một batch}, còn \texttt{max\_cpu\_loras} giới hạn số adapter giữ ở RAM chủ. Hai con số này mới là thứ quyết định bạn phục vụ được bao nhiêu khách cùng lúc.
+	\item \textbf{Nạp và gỡ adapter lúc đang chạy} được hỗ trợ qua \texttt{POST /v1/load\_lora\_adapter} và \texttt{/v1/unload\_lora\_adapter}, nhưng phải bật biến môi trường \texttt{VLLM\_ALLOW\_RUNTIME\_LORA\_UPDATING}. Tài liệu vLLM cảnh báo thẳng rằng việc này \emph{có rủi ro bảo mật} -- nó cho phép nạp trọng số tùy ý từ một đường dẫn do request chỉ định -- và không nên bật trong môi trường production trừ khi môi trường đó đã được cô lập và hoàn toàn tin cậy. Nếu cần nạp động, hãy dùng cơ chế \texttt{LoRAResolver} với danh sách repo cho sẵn thay vì mở endpoint nhận đường dẫn tự do.
+\end{itemize}
+
+\begin{tcolorbox}[title={Ghi chú thời điểm: tinh chỉnh dạng dịch vụ, 2026}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+Kiến trúc này từng là thứ khiến các API tinh chỉnh thương mại có giá hợp lý. Tính đến năm 2026, OpenAI đã thông báo \textbf{ngừng dần API tinh chỉnh của họ}, với lý do công bố là các mô hình nền mới đã bám định dạng và chỉ dẫn tốt hơn nhiều, khiến hướng tiếp cận dựa trên prompt rẻ và nhanh hơn. Hệ quả cho người đọc quyển sách này rất cụ thể: nếu bạn cần phục vụ nhiều phiên bản chuyên biệt của một mô hình, con đường mặc định bây giờ là \emph{tự dựng} -- trọng số mở, LoRA, và đúng cơ chế phục vụ đa adapter mô tả ở trên.
+\end{tcolorbox}
+
 \subsubsection{SGLang: Tối ưu cho các chương trình LLM có cấu trúc}
 \begin{itemize}
 	\item \textbf{RadixAttention:} Tự động lưu và tái dùng KV cache của mọi tiền tố đã gặp bằng cây radix \cite{zheng2024sglang} -- đặc biệt hiệu quả cho tác tử nhiều lượt, RAG với tài liệu lặp lại, và các vòng lặp tự sửa.

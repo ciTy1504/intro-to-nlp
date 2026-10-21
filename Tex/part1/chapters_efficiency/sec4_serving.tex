@@ -44,6 +44,29 @@ Batching tĩnh truyền thống gom $B$ yêu cầu, chạy tới khi \emph{tất
 
 \paragraph{Prefix caching.} Mở rộng tự nhiên của việc chia sẻ khối: lưu lại KV cache của các tiền tố thường gặp (system prompt, tài liệu RAG, lịch sử hội thoại, few-shot examples) để các yêu cầu sau \emph{bỏ qua} phần prefill tương ứng. SGLang \cite{zheng2024sglang} tổ chức các tiền tố đã lưu thành một cây radix (\textbf{RadixAttention}) để tự động tìm tiền tố chung dài nhất. Với tác tử và RAG -- nơi prompt dài và lặp lại nhiều -- prefix caching thường giảm TTFT và chi phí đáng kể.
 
+\subsection{Phục vụ nghìn adapter trên một mô hình nền: S-LoRA}
+\label{ssec:slora}
+
+LoRA (mục~\ref{sec:peft}) hứa hẹn một điều rất hấp dẫn về mặt hệ thống: mỗi khách hàng, mỗi tác vụ, mỗi miền dữ liệu có thể có một adapter riêng chỉ vài chục MB, trong khi mô hình nền hàng chục GB được dùng chung. Nhưng cách \emph{phục vụ} ngây thơ lại phá hỏng đúng lợi thế đó. Nếu ta hợp nhất (merge) adapter vào trọng số rồi nạp mô hình, mỗi khách hàng lại trở thành một mô hình đầy đủ: hết chia sẻ bộ nhớ, và hai request của hai khách khác nhau không thể nằm chung một batch. Mà batch chung mới là thứ quyết định thông lượng (mục~\ref{ssec:continuous_batching}).
+
+Đây chính là bài toán kinh tế đứng sau mọi dịch vụ tinh chỉnh dạng dịch vụ: nếu mỗi khách hàng cần một GPU riêng giữ một bản sao mô hình riêng, giá suy luận của mô hình đã tinh chỉnh không thể nào ngang giá mô hình nền.
+
+\textbf{S-LoRA} \cite{sheng2023slora} giải bài toán này bằng ba ý tưởng ghép lại.
+
+\paragraph{1. Không hợp nhất adapter.} Giữ nguyên dạng $h = xW + xBA$ thay vì gộp thành $x(W + BA)$. Ta trả thêm một phép nhân ma trận hạng thấp cho mỗi token, đổi lại \emph{mọi request trong cùng một batch được phép dùng adapter khác nhau} -- trọng số nền $W$ vẫn chung, chỉ phần $BA$ là riêng.
+
+\paragraph{2. Unified Paging.} Đây là mở rộng trực tiếp của ý tưởng phân trang ở mục~\ref{ssec:pagedattention}. Nhận xét then chốt: trọng số adapter và KV cache là \emph{hai loại tensor có cùng một tính chất rắc rối} -- kích thước động và không biết trước. KV cache thay đổi theo độ dài chuỗi; trọng số adapter thay đổi theo hạng $r$ của từng adapter. Thay vì viết hai bộ cấp phát, S-LoRA gộp cả hai vào \textbf{một bể bộ nhớ phân trang duy nhất}. Nhờ đó phân mảnh giảm hẳn và GPU không phải giữ chỗ trước cho adapter nào.
+
+\paragraph{3. Nhân CUDA cho batch dị thể.} Một batch mà mỗi request dùng một adapter khác nhau, lại khác cả hạng, thì không gọi được một phép nhân ma trận thông thường. S-LoRA viết nhân CUDA riêng cho kiểu batch dị thể này.
+
+Ghép với một quyết định về phân tầng bộ nhớ -- \emph{toàn bộ adapter nằm ở RAM chủ, chỉ adapter nào đang có request mới được chuyển lên GPU} -- hệ thống đạt: thông lượng cao hơn tới \textbf{4 lần} so với HuggingFace PEFT và so với vLLM ở thời điểm đó (vốn chỉ hỗ trợ LoRA một cách ngây thơ), và số adapter phục vụ được đồng thời tăng \textbf{vài bậc độ lớn} -- tới hàng nghìn adapter trên một GPU.
+
+\begin{tcolorbox}[title={Vì sao đây là một mục về kiến trúc, không phải về LoRA}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+Ba ý tưởng trên lặp lại đúng một khuôn mẫu đã gặp ở PagedAttention: \emph{một tài nguyên có kích thước động đang bị cấp phát tĩnh, hãy phân trang nó}. Lần trước là KV cache, lần này là KV cache \emph{và} trọng số adapter trong cùng một bể. Khi gặp một tài nguyên mới có tính chất tương tự -- ví dụ bộ nhớ cho các bộ nhớ đệm tiền tố dùng chung -- câu hỏi đầu tiên đáng đặt ra vẫn là câu đó.
+
+Hệ quả thực hành thì ngược chiều với trực giác thông thường: \textbf{đừng hợp nhất adapter nếu bạn định phục vụ nhiều adapter}. Hợp nhất chỉ hợp lý khi bạn có đúng một adapter và muốn bớt một phép nhân. Cách gọi từ phía máy chủ nằm ở mục~\ref{ssec:vllm_multilora}.
+\end{tcolorbox}
+
 \subsection{FlexGen: Phục vụ mô hình khổng lồ trên một GPU bằng offloading}
 \label{ssec:flexgen}
 Không phải ai cũng có cụm GPU. Với các tác vụ \textbf{không cần tương tác thời gian thực} (xử lý dữ liệu hàng loạt, đánh giá benchmark, trích xuất thông tin từ kho tài liệu), điều quan trọng là thông lượng, không phải độ trễ. \textbf{FlexGen} \cite{sheng2023flexgen} tối ưu cho kịch bản này:
