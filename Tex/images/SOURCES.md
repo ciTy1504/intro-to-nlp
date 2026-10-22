@@ -45,3 +45,17 @@ script là dựng lại y hệt; không có vấn đề bản quyền.
 | `muon_newton_schulz.png` | Phổ giá trị suy biến trước và sau 5 bước lặp Newton-Schulz (tính thật, không vẽ phác). |
 | `rope_wavelengths.png` | Bước sóng từng cặp chiều RoPE với cơ số 10000 và 500000 (`scripts/figs_rope.py`). |
 | `minhash_s_curve.png` | Đường cong S của MinHash-LSH cho ba cấu hình sản xuất (`scripts/figs_dedup.py`). |
+| `eval_uncertainty.png` | Bề rộng KTC của accuracy theo n; biểu đồ độ tin cậy trước/sau temperature scaling (`scripts/figs_uncertainty.py`). |
+
+## Hình vẽ lại vì ảnh cũ không khớp nội dung sách
+
+Bốn hình dưới đây trước kia lấy từ nguồn ngoài nhưng **mô tả sai thứ mà sách đang
+giảng**. Chúng đã được dựng lại bằng `scripts/figs_replacements.py`; chạy lại script
+là dựng lại y hệt, và không còn vấn đề bản quyền.
+
+| Tệp | Ảnh cũ sai ở đâu | Nội dung ảnh mới |
+|---|---|---|
+| `lda_generative_process.png` | Là hình về module chức năng protein và con đường trao đổi chất, chỉ mượn chữ "Topic"; không liên quan tới LDA trên văn bản. | Ký hiệu dạng tấm của LDA: $\alpha, \beta$, $\theta_d$, $\phi_k$, $z_{d,n}$, $w_{d,n}$, với nút quan sát được tô màu. |
+| `bert_mlm_nsp.png` | Chỉ vẽ MLM, trong khi tên tệp và chú thích hứa cả MLM lẫn NSP. | Hai khung: MLM đoán token bị che, và NSP phân loại IsNext/NotNext từ vector `[CLS]`. |
+| `transformer_encoder_detailed.png` | Vẽ khối **Pre-LN**, nhưng hình nằm ở mục BERT và BERT dùng **Post-LN**. | Khung (a) khối Post-LN, khung (b) chi tiết multi-head attention kèm công thức, khung (c) đối chiếu Pre-LN. |
+| `llm_benchmarks_timeline.png` | Là đồ thị bão hòa so với mốc người, dừng ở 2020, không có benchmark nào của kỷ nguyên LLM, dù đặt ở mục "Kỷ nguyên LLM". | Trục thời gian 2016–2024 với mốc ra đời của các benchmark, chia ba thế hệ. Năm lấy từ chính `references.bib` của sách. |
