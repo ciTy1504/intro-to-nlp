@@ -3,28 +3,23 @@
 % Nội dung cho Chương 7, Phần 1
 
 
-\section{Các Metric kinh điển}
+\section{Các metric kinh điển}
 \label{sec:classic_metrics}
 
-Đây là những công cụ đầu tiên và cơ bản nhất trong bộ công cụ của bất kỳ nhà thực hành NLP nào. Mỗi metric được thiết kế để đo lường một khía cạnh cụ thể của hiệu năng mô hình.
+Mỗi metric trong mục này đo một khía cạnh cụ thể của hiệu năng mô hình.
 
-\subsection{Perplexity: Đo lường chất lượng của Mô hình Ngôn ngữ}
+\subsection{Perplexity: đo chất lượng của mô hình ngôn ngữ}
 \label{ssec:perplexity}
-\begin{itemize}
-    \item \textbf{Dùng cho tác vụ nào?} Đánh giá chất lượng nội tại của các \textbf{Mô hình Ngôn ngữ (Language Models)} (ví dụ: các mô hình được huấn luyện để dự đoán từ tiếp theo).
-    \item \textbf{Trực giác cốt lõi:} Một mô hình ngôn ngữ tốt là mô hình \textbf{ít “ngạc nhiên” (less surprised)} hơn khi nhìn thấy một câu văn thực tế. Perplexity (PPL), hay còn gọi là Độ bối rối, chính là một cách để định lượng sự “ngạc nhiên” này. \textbf{Perplexity càng thấp, mô hình càng tốt}.
-    \item \textbf{Cơ chế hoạt động:} Perplexity có mối quan hệ trực tiếp với hàm mất mát Cross-Entropy. Đối với một chuỗi văn bản $W = (w_1, w_2, \dots, w_N)$, Perplexity được định nghĩa là:
-        \begin{equation}
-            \text{PPL}(W) = \sqrt[N]{\frac{1}{P(w_1, w_2, \dots, w_N)}} = \left( \prod_{i=1}^{N} \frac{1}{P(w_i|w_1, \dots, w_{i-1})} \right)^{1/N}
-            \label{eq:perplexity}
-        \end{equation}
-        Về mặt toán học, nó là nghịch đảo của xác suất trung bình trên mỗi từ (được lấy căn bậc $N$).
-    \item \textbf{Hạn chế:}
-        \begin{itemize}
-            \item Chỉ đo lường khả năng dự đoán xác suất, không trực tiếp đo lường chất lượng ngữ nghĩa hay sự mạch lạc của văn bản được sinh ra.
-            \item Rất nhạy cảm với kích thước từ vựng. Không thể so sánh Perplexity của hai mô hình có từ vựng khác nhau.
-        \end{itemize}
-\end{itemize}
+\textbf{Perplexity} (PPL), hay độ bối rối, đánh giá chất lượng nội tại của một \textbf{mô hình ngôn ngữ (Language Model)}, tức mô hình được huấn luyện để dự đoán từ tiếp theo. Nó định lượng mức “ngạc nhiên” (surprise) của mô hình khi gặp một câu văn thực tế: perplexity càng thấp, mô hình càng tốt.
+
+Perplexity quan hệ trực tiếp với hàm mất mát Cross-Entropy. Với một chuỗi văn bản $W = (w_1, w_2, \dots, w_N)$:
+\begin{equation}
+    \text{PPL}(W) = \sqrt[N]{\frac{1}{P(w_1, w_2, \dots, w_N)}} = \left( \prod_{i=1}^{N} \frac{1}{P(w_i|w_1, \dots, w_{i-1})} \right)^{1/N}
+    \label{eq:perplexity}
+\end{equation}
+Về mặt toán học, nó là nghịch đảo của xác suất trung bình trên mỗi từ, lấy căn bậc $N$.
+
+Perplexity có hai hạn chế. Nó chỉ đo khả năng dự đoán xác suất, không trực tiếp đo chất lượng ngữ nghĩa hay sự mạch lạc của văn bản được sinh ra. Và nó rất nhạy với kích thước từ vựng, nên không thể so sánh perplexity của hai mô hình có từ vựng khác nhau.
 
 \subsubsection{Perplexity chính là hàm mất mát, chỉ viết theo đơn vị khác}
 Lấy logarit tự nhiên hai vế của công thức~\eqref{eq:perplexity}:
@@ -35,13 +30,13 @@ vế phải chính là \textbf{cross-entropy trung bình trên mỗi token} -- �
 \[
 \boxed{\ \text{PPL} = e^{L}\ }
 \]
-Loss $2{,}0$ tương ứng PPL $\approx 7{,}39$; giảm loss được $0{,}1$ nghĩa là PPL giảm khoảng $10\%$. Đây là đẳng thức hữu ích nhất cần nhớ về perplexity: \emph{đường loss và đường log-perplexity là một đường}.
+Loss $2{,}0$ tương ứng PPL $\approx 7{,}39$; giảm loss được $0{,}1$ nghĩa là PPL được nhân với $e^{-0{,}1} \approx 0{,}905$, tức giảm khoảng $9{,}5\%$. Đây là đẳng thức hữu ích nhất cần nhớ về perplexity: \emph{đường loss và đường log-perplexity là một đường}.
 
 \paragraph{Đọc perplexity như “số lựa chọn hiệu dụng”.} Một mô hình đoán đều trên từ vựng $V$ token có $P = 1/V$ ở mọi bước, nên PPL $= V$, đúng bằng kích thước từ vựng. Tổng quát, PPL $= k$ nghĩa là mô hình bối rối ngang với việc phải chọn đều giữa $k$ khả năng. Một LLM hiện đại đạt PPL cỡ một chữ số tới hơn chục trên văn bản web với từ vựng $128\,000$ token -- tức ở mỗi bước nó đã thu hẹp $128$ nghìn khả năng xuống còn tương đương chục khả năng.
 
 \paragraph{Bit, và mối liên hệ với nén dữ liệu.} Dùng $\log_2$ thay cho $\ln$, ta được \textbf{bit trên mỗi token}, và PPL $= 2^{\text{bits}}$. Con số này có ý nghĩa vật lý rất cụ thể: theo lý thuyết mã hóa, đó chính là số bit trung bình cần để mã hóa một token nếu ta dùng mô hình làm bộ nén. Một mô hình ngôn ngữ tốt hơn \emph{đúng nghĩa đen} là một bộ nén tốt hơn -- đây không phải phép ẩn dụ mà là cùng một đại lượng nhìn từ hai phía.
 
-\paragraph{Vì sao không được so perplexity giữa hai tokenizer khác nhau.} Perplexity được tính \emph{trên mỗi token}, mà “token” là gì thì do tokenizer quyết định. Một tokenizer có từ vựng lớn cắt văn bản thành \emph{ít} token hơn, mỗi token mang nhiều thông tin hơn và do đó khó đoán hơn -- PPL cao hơn, dù mô hình chẳng hề tệ hơn. Ngược lại, tokenizer cắt vụn (ví dụ theo ký tự) cho PPL thấp một cách giả tạo. Muốn so sánh hợp lệ thì phải chuẩn hóa về một đơn vị không phụ thuộc tokenizer, phổ biến nhất là \textbf{bit trên mỗi byte} (bits-per-byte, BPB) \cite{gao2020pile}:
+\paragraph{Perplexity không so sánh được giữa hai tokenizer khác nhau.} Perplexity được tính \emph{trên mỗi token}, mà “token” là gì thì do tokenizer quyết định. Một tokenizer có từ vựng lớn cắt văn bản thành \emph{ít} token hơn, mỗi token mang nhiều thông tin hơn và do đó khó đoán hơn -- PPL cao hơn, dù mô hình chẳng hề tệ hơn. Ngược lại, tokenizer cắt vụn (ví dụ theo ký tự) cho PPL thấp một cách giả tạo. Muốn so sánh hợp lệ thì phải chuẩn hóa về một đơn vị không phụ thuộc tokenizer, phổ biến nhất là \textbf{bit trên mỗi byte} (bits-per-byte, BPB) \cite{gao2020pile}:
 \[
 \text{BPB} = \frac{N_{\text{token}}}{N_{\text{byte}}} \cdot \frac{L}{\ln 2} .
 \]
@@ -53,84 +48,61 @@ Loss $2{,}0$ tương ứng PPL $\approx 7{,}39$; giảm loss được $0{,}1$ ng
     \item \textbf{PPL thấp không đồng nghĩa mô hình hữu ích hơn.} Sau khi căn chỉnh theo sở thích con người (mục~\ref{ssec:rlhf}), perplexity của mô hình trên văn bản web thường \emph{tăng lên} trong khi mức hữu ích với người dùng tăng rõ rệt. Perplexity đo mức khớp với phân phối dữ liệu, không đo mức hữu ích -- và sau RLHF thì hai thứ đó \emph{cố tình} không còn trùng nhau nữa.
 \end{itemize}
 
-\subsection{Precision, Recall, và F1-Score: Nền tảng của các bài toán Phân loại}
+\subsection{Precision, Recall và F1-score: nền tảng của các bài toán phân loại}
 \label{ssec:f1_score}
-Đây là bộ ba metric không thể thiếu cho hầu hết các bài toán \textbf{phân loại (classification)} và \textbf{trích xuất thông tin (information extraction)} như NER.
+Ba metric này được dùng cho phần lớn các bài toán \textbf{phân loại (classification)} và \textbf{trích xuất thông tin (information extraction)} như NER.
 
 \subsubsection{Các thành phần cơ bản}
-Để hiểu bộ ba này, chúng ta cần định nghĩa bốn kết quả có thể xảy ra khi phân loại một điểm dữ liệu:
+Khi phân loại một điểm dữ liệu có bốn kết quả:
 \begin{itemize}
-    \item \textbf{True Positive (TP):} Dự đoán là \textbf{Dương tính}, và thực tế là \textbf{Dương tính}. (Dự đoán đúng)
-    \item \textbf{True Negative (TN):} Dự đoán là \textbf{Âm tính}, và thực tế là \textbf{Âm tính}. (Dự đoán đúng)
-    \item \textbf{False Positive (FP):} Dự đoán là \textbf{Dương tính}, nhưng thực tế là \textbf{Âm tính}. (Lỗi Loại I - “báo động giả”)
-    \item \textbf{False Negative (FN):} Dự đoán là \textbf{Âm tính}, nhưng thực tế là \textbf{Dương tính}. (Lỗi Loại II - “bỏ sót”)
+    \item \textbf{True Positive (TP):} Dự đoán là Dương tính, thực tế là Dương tính (dự đoán đúng).
+    \item \textbf{True Negative (TN):} Dự đoán là Âm tính, thực tế là Âm tính (dự đoán đúng).
+    \item \textbf{False Positive (FP):} Dự đoán là Dương tính, thực tế là Âm tính (lỗi loại I, “báo động giả”).
+    \item \textbf{False Negative (FN):} Dự đoán là Âm tính, thực tế là Dương tính (lỗi loại II, “bỏ sót”).
 \end{itemize}
 
 \begin{center}
-    \includegraphics[width=0.6\textwidth]{confusion_matrix.png}
-    \captionof{figure}{Ma trận nhầm lẫn (Confusion Matrix) minh họa bốn kết quả của một bài toán phân loại nhị phân.}
-    \label{fig:confusion_matrix}
+\bookimage[0.6\textwidth]{confusion_matrix}{Bảng hai hàng hai cột. Cột là nhãn dự đoán (Negative, Positive), hàng là nhãn thực tế (Negative, Positive). Bốn ô lần lượt chứa: số lượng TN (thực tế Âm, dự đoán Âm), FP (thực tế Âm, dự đoán Dương), FN (thực tế Dương, dự đoán Âm) và TP (thực tế Dương, dự đoán Dương).}
+\captionof{figure}{Ma trận nhầm lẫn (Confusion Matrix) minh họa bốn kết quả của một bài toán phân loại nhị phân.}
+\label{fig:confusion_matrix}
 \end{center}
 
-\subsubsection{Định nghĩa các Metric}
-\paragraph{Precision (Độ chính xác)}
-\begin{itemize}
-    \item \textbf{Câu hỏi nó trả lời:} “Trong số tất cả những gì mô hình dự đoán là Dương tính, có bao nhiêu cái thực sự là Dương tính?”
-    \item \textbf{Công thức:}
-        $$ \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}} $$
-    \item \textbf{Mục tiêu:} Tối đa hóa Precision có nghĩa là cố gắng giảm thiểu số lượng báo động giả (FP). Rất quan trọng trong các ứng dụng như phát hiện spam (thà bỏ sót một email spam còn hơn là đưa một email quan trọng vào hòm thư rác).
-\end{itemize}
+\subsubsection{Định nghĩa các metric}
+\paragraph{Precision (độ chính xác)} Trong số tất cả những gì mô hình dự đoán là Dương tính, bao nhiêu phần thực sự là Dương tính:
+$$ \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}} $$
+Tối đa hóa Precision là giảm thiểu số báo động giả (FP). Đó là mục tiêu của các ứng dụng như phát hiện spam: thà bỏ sót một email spam còn hơn đưa một email quan trọng vào hòm thư rác.
 
-\paragraph{Recall (Độ phủ, hay Độ nhạy)}
-\begin{itemize}
-    \item \textbf{Câu hỏi nó trả lời:} “Trong số tất cả những cái thực sự là Dương tính, mô hình đã tìm thấy được bao nhiêu cái?”
-    \item \textbf{Công thức:}
-        $$ \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}} $$
-    \item \textbf{Mục tiêu:} Tối đa hóa Recall có nghĩa là cố gắng giảm thiểu số lượng bỏ sót (FN). Rất quan trọng trong các ứng dụng như chẩn đoán y tế (thà chẩn đoán nhầm một người khỏe mạnh là có bệnh còn hơn là bỏ sót một người thực sự có bệnh).
-\end{itemize}
+\paragraph{Recall (độ phủ, hay độ nhạy)} Trong số tất cả những cái thực sự là Dương tính, mô hình tìm thấy được bao nhiêu:
+$$ \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}} $$
+Tối đa hóa Recall là giảm thiểu số bỏ sót (FN). Đó là mục tiêu của các ứng dụng như chẩn đoán y tế: thà chẩn đoán nhầm một người khỏe mạnh là có bệnh còn hơn bỏ sót một người thực sự có bệnh.
 
-\paragraph{F1-Score (Điểm F1)}
-\begin{itemize}
-    \item \textbf{Vấn đề:} Precision và Recall thường có sự đánh đổi (trade-off). Một mô hình rất “cẩn trọng” có thể có Precision cao nhưng Recall thấp, và ngược lại. F1-score được tạo ra để kết hợp cả hai thành một chỉ số duy nhất.
-    \item \textbf{Công thức:} F1-score là trung bình điều hòa (harmonic mean) của Precision và Recall.
-        $$ \text{F1-Score} = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} $$
-    \item \textbf{Mục tiêu:} F1-score cao khi cả Precision và Recall đều cao. Nó là một thước đo cân bằng, được sử dụng rộng rãi trong các tác vụ như NER, nơi chúng ta quan tâm đến cả việc không nhận dạng sai và không bỏ sót thực thể.
-\end{itemize}
-Khi đánh giá trên nhiều lớp, người ta thường tính `macro-F1` (tính F1 cho mỗi lớp rồi lấy trung bình) hoặc `micro-F1` (tính tổng TP, FP, FN trên tất cả các lớp rồi mới tính F1).
+\paragraph{F1-score (điểm F1)} Precision và Recall thường đánh đổi nhau: một mô hình “cẩn trọng” có thể có Precision cao nhưng Recall thấp, và ngược lại. F1-score gộp cả hai thành một chỉ số duy nhất bằng trung bình điều hòa (harmonic mean):
+$$ \text{F1-Score} = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} $$
+Trung bình điều hòa chỉ cao khi cả Precision và Recall đều cao, nên F1-score được dùng rộng rãi trong các tác vụ như NER, nơi ta quan tâm đến cả việc không nhận dạng sai và không bỏ sót thực thể.
 
-\subsection{BLEU: Đánh giá Dịch máy}
+Khi đánh giá trên nhiều lớp, người ta thường tính \texttt{macro-F1} (tính F1 cho mỗi lớp rồi lấy trung bình) hoặc \texttt{micro-F1} (tính tổng TP, FP, FN trên tất cả các lớp rồi mới tính F1).
+
+\subsection{BLEU: đánh giá dịch máy}
 \label{ssec:bleu}
-\begin{itemize}
-    \item \textbf{Dùng cho tác vụ nào?} Chủ yếu là \textbf{Dịch máy (Machine Translation)}, nhưng đôi khi cũng dùng cho các tác vụ sinh văn bản khác.
-    \item \textbf{Trực giác cốt lõi:} Một bản dịch tốt nên có nhiều \textbf{N-gram trùng lặp} với các bản dịch tham khảo chất lượng cao do con người tạo ra.
-    \item \textbf{Cơ chế hoạt động:} BLEU (Bilingual Evaluation Understudy) tính toán một điểm số dựa trên hai yếu tố:
-        \begin{enumerate}
-            \item \textbf{Độ chính xác N-gram đã được sửa đổi (Modified N-gram Precision):} Tính toán tỷ lệ các N-gram (thường từ 1-gram đến 4-gram) trong câu do máy dịch tạo ra cũng xuất hiện trong các câu tham khảo. Nó được “sửa đổi” để ngăn mô hình lặp lại một từ đúng nhiều lần để gian lận điểm.
-            \item \textbf{Hình phạt cho câu ngắn (Brevity Penalty - BP):} Nếu câu do máy dịch tạo ra ngắn hơn đáng kể so với các câu tham khảo, nó sẽ bị phạt. Điều này ngăn mô hình chỉ sinh ra một vài từ rất chính xác để có Precision cao.
-        \end{enumerate}
-        $$ \text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right) $$
-        Trong đó $p_n$ là độ chính xác của n-gram, và $w_n$ thường là $1/N$.
-    \item \textbf{Hạn chế:}
-        \begin{itemize}
-            \item \textbf{Chỉ quan tâm đến Precision, không quan tâm đến Recall:} Nó không phạt nếu bản dịch bỏ sót các thông tin quan trọng.
-            \item \textbf{Không hiểu ngữ nghĩa:} Một bản dịch có thể dùng từ đồng nghĩa hoàn hảo nhưng vẫn bị điểm BLEU thấp nếu không khớp chính xác N-gram.
-            \item \textbf{Gặp khó khăn với trật tự từ và sự sáng tạo:} Không đánh giá tốt các bản dịch có cấu trúc câu khác biệt nhưng vẫn đúng.
-        \end{itemize}
-\end{itemize}
+\textbf{BLEU} (Bilingual Evaluation Understudy) được dùng chủ yếu cho \textbf{dịch máy (Machine Translation)}, đôi khi cho các tác vụ sinh văn bản khác. Nó dựa trên giả định rằng một bản dịch tốt có nhiều N-gram trùng lặp với các bản dịch tham khảo chất lượng cao do con người tạo ra.
 
-\subsection{ROUGE: Đánh giá Tóm tắt Văn bản}
+Điểm BLEU được tính từ hai yếu tố. Thứ nhất là \textbf{độ chính xác N-gram đã sửa đổi (Modified N-gram Precision)}: tỷ lệ các N-gram (thường từ 1-gram đến 4-gram) trong câu do máy dịch tạo ra cũng xuất hiện trong các câu tham khảo; phần “sửa đổi” ngăn mô hình lặp lại một từ đúng nhiều lần để gian lận điểm. Thứ hai là \textbf{hình phạt cho câu ngắn (Brevity Penalty, BP)}: câu do máy dịch tạo ra mà ngắn hơn đáng kể so với các câu tham khảo sẽ bị phạt, nhằm ngăn mô hình chỉ sinh ra một vài từ rất chính xác để có Precision cao.
+$$ \text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right) $$
+Trong đó $p_n$ là độ chính xác của n-gram, và $w_n$ thường là $1/N$.
+
+BLEU có ba hạn chế. Nó chỉ xét Precision, không xét Recall, nên không phạt một bản dịch bỏ sót thông tin. Nó không hiểu ngữ nghĩa, nên một bản dịch dùng từ đồng nghĩa hoàn hảo vẫn bị điểm thấp nếu không khớp chính xác N-gram. Và nó không đánh giá tốt các bản dịch có trật tự từ hay cấu trúc câu khác biệt nhưng vẫn đúng.
+
+\subsection{ROUGE: đánh giá tóm tắt văn bản}
 \label{ssec:rouge}
-\begin{itemize}
-    \item \textbf{Dùng cho tác vụ nào?} Chủ yếu là \textbf{Tóm tắt văn bản (Summarization)}.
-    \item \textbf{Trực giác cốt lõi:} ROUGE (Recall-Oriented Understudy for Gisting Evaluation) hoạt động ngược lại với BLEU. Nó cho rằng một bản tóm tắt tốt nên \textbf “bao phủ” được các N-gram quan trọng có trong các bản tóm tắt tham khảo của con người.
-    \item \textbf{Cơ chế hoạt động:} ROUGE là một họ các metric, trong đó phổ biến nhất là:
-        \begin{itemize}
-            \item \textbf{ROUGE-N:} Dựa trên sự trùng lặp N-gram, nhưng tính toán dựa trên \textbf{Recall}.
-                $$ \text{ROUGE-N} = \frac{\text{Số N-gram trong tham khảo cũng xuất hiện trong tóm tắt máy}}{\text{Tổng số N-gram trong tham khảo}} $$
-                Thường dùng `ROUGE-1` (unigram) và `ROUGE-2` (bigram).
-            \item \textbf{ROUGE-L:} Dựa trên \textbf{Chuỗi con chung dài nhất (Longest Common Subsequence - LCS)}. Nó không yêu cầu các từ phải liền kề nhau, do đó nắm bắt được sự tương đồng về trật tự từ tốt hơn.
-        \end{itemize}
-    \item \textbf{Hạn chế:} Tương tự như BLEU, ROUGE cũng chỉ dựa trên sự khớp bề mặt của từ và không hiểu được ngữ nghĩa sâu sắc. Một bản tóm tắt có thể diễn đạt lại ý tưởng một cách hoàn hảo nhưng vẫn bị điểm ROUGE thấp.
-\end{itemize}
+\textbf{ROUGE} (Recall-Oriented Understudy for Gisting Evaluation) được dùng chủ yếu cho \textbf{tóm tắt văn bản (Summarization)}. Nó đảo chiều so với BLEU: một bản tóm tắt tốt phải bao phủ được các N-gram quan trọng có trong các bản tóm tắt tham khảo của con người.
 
-Mặc dù có nhiều hạn chế, các metric kinh điển này vẫn được sử dụng rộng rãi vì chúng tự động, nhanh chóng và cung cấp một thước đo khách quan (dù không hoàn hảo) để so sánh các mô hình với nhau trong quá trình phát triển.
+ROUGE là một họ metric, trong đó hai biến thể phổ biến nhất là:
+\begin{itemize}
+    \item \textbf{ROUGE-N:} Dựa trên sự trùng lặp N-gram, nhưng tính theo Recall.
+        $$ \text{ROUGE-N} = \frac{\text{Số N-gram trong tham khảo cũng xuất hiện trong tóm tắt máy}}{\text{Tổng số N-gram trong tham khảo}} $$
+        Thường dùng \texttt{ROUGE-1} (unigram) và \texttt{ROUGE-2} (bigram).
+    \item \textbf{ROUGE-L:} Dựa trên chuỗi con chung dài nhất (Longest Common Subsequence, LCS). Nó không yêu cầu các từ phải liền kề nhau, nên nắm bắt được sự tương đồng về trật tự từ tốt hơn.
+\end{itemize}
+Giống BLEU, ROUGE chỉ dựa trên sự khớp bề mặt của từ và không xét ngữ nghĩa: một bản tóm tắt diễn đạt lại ý tưởng hoàn toàn chính xác vẫn có thể bị điểm ROUGE thấp.
+
+Dù có những hạn chế trên, các metric kinh điển vẫn được dùng rộng rãi vì chúng tự động, nhanh và cho một thước đo khách quan (dù không hoàn hảo) để so sánh các mô hình trong quá trình phát triển.

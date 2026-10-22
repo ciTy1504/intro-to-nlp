@@ -1,0 +1,56 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_part6/chap6_5.tex
+% RAG đa phương thức
+
+\section{RAG đa phương thức}
+\label{sec:multimodal_rag}
+
+Phần lớn tài liệu có giá trị trong doanh nghiệp \emph{không} phải văn bản thuần: báo cáo tài chính đầy bảng, slide trình bày, bản vẽ kỹ thuật, biểu đồ, ảnh chụp màn hình, biên bản họp ghi âm. Đưa chúng vào một pipeline RAG vốn chỉ biết văn bản là chỗ mất thông tin lớn nhất của cả hệ thống.
+
+\subsection{Đường truyền thống, và vì sao nó giòn}
+\label{ssec:ocr_pipeline}
+
+Cách làm quen thuộc là ép mọi thứ về văn bản trước:
+\[
+\text{PDF} \;\rightarrow\; \text{OCR} + \text{phân tích bố cục} \;\rightarrow\; \text{văn bản} \;\rightarrow\; \text{pipeline RAG thông thường}
+\]
+Mỗi mũi tên là một chỗ hỏng:
+\begin{itemize}
+	\item \textbf{Bảng biến thành cháo chữ.} Một bảng hai chiều bị duỗi thành một dãy số mất quan hệ hàng--cột. Câu trả lời “doanh thu quý 3 của chi nhánh miền Nam” không còn truy được.
+	\item \textbf{Biểu đồ biến mất hoàn toàn.} Thông tin nằm trong hình dạng đường cong, không nằm trong chữ.
+	\item \textbf{Bố cục nhiều cột bị trộn lẫn}, câu của cột trái nối vào câu của cột phải.
+	\item \textbf{Thông tin vị trí bị vứt bỏ:} Tiêu đề, chú thích, ghi chú chân trang đều thành văn bản phẳng ngang hàng nhau.
+\end{itemize}
+
+\subsection{ColPali: bỏ hẳn bước trích xuất}
+\label{ssec:colpali}
+
+Ý tưởng của \textbf{ColPali} \cite{faysse2025colpali} đơn giản và triệt để: \emph{nếu bước trích xuất văn bản là chỗ mất thông tin, hãy bỏ hẳn nó đi}. Thay vì trích văn bản rồi nhúng văn bản, ColPali \textbf{nhúng thẳng ảnh của trang tài liệu} bằng một mô hình thị giác--ngôn ngữ.
+
+Hai chi tiết kỹ thuật đáng chú ý:
+\begin{itemize}
+	\item Mô hình sinh ra \textbf{nhúng đa vector} từ ảnh trang -- không phải một vector cho cả trang, mà nhiều vector.
+	\item Khớp bằng cơ chế \textbf{tương tác muộn} (late interaction), đúng cơ chế đã bàn ở mục~\ref{sssec:colbert} với ColBERT. Điều này không phải trùng hợp: ColPali mang kiến trúc của ColBERT sang miền thị giác.
+\end{itemize}
+
+Nhóm tác giả cũng giới thiệu \textbf{ViDoRe}, một benchmark truy hồi ở mức \emph{trang} trải nhiều miền và nhiều ngôn ngữ, và báo cáo rằng cách tiếp cận này vượt các pipeline truy hồi tài liệu hiện đại trong khi vẫn đơn giản hơn, nhanh hơn và huấn luyện được đầu-cuối.
+
+\begin{deepdive}{Bài học kiến trúc, không chỉ là một công cụ}
+Khuôn mẫu ở đây lặp lại một khuôn mẫu đã gặp nhiều lần trong quyển sách này: \textbf{khi một bước tiền xử lý thủ công là chỗ mất thông tin lớn nhất, câu trả lời thường là bỏ hẳn bước đó và để mô hình học trực tiếp trên dữ liệu thô}. Trước đây ta đã thấy nó ở việc bỏ đặc trưng thủ công để dùng embedding, và ở việc bỏ phân tích cú pháp để dùng mô hình đầu-cuối.
+
+Cái giá phải trả cũng lặp lại: nhúng đa vector tốn bộ nhớ chỉ mục \emph{nhiều hơn hẳn} so với một vector cho mỗi chunk. Với corpus lớn, đây là một quyết định về chi phí lưu trữ chứ không chỉ về chất lượng.
+\end{deepdive}
+
+\subsection{Các phương thức khác}
+\label{ssec:other_modalities}
+
+Không phải lúc nào cũng cần tới ColPali. Thang lựa chọn, từ rẻ tới đắt:
+
+\begin{itemize}
+	\item \textbf{Âm thanh} $\rightarrow$ bản ghi lời (transcript) bằng mô hình nhận dạng tiếng nói, rồi xử lý như văn bản. Hãy giữ \emph{dấu thời gian} trong siêu dữ liệu để trích dẫn được về đúng phút giây.
+	\item \textbf{Video} $\rightarrow$ kết hợp bản ghi lời với các khung hình lấy mẫu; mỗi khung hình được mô tả bằng mô hình thị giác.
+	\item \textbf{Ảnh và biểu đồ rời} $\rightarrow$ để một mô hình thị giác viết \textbf{chú thích} mô tả nội dung, rồi nhúng chú thích đó. Đây là đường rẻ nhất và nó hoạt động đủ tốt cho ảnh minh họa -- nhưng nó \emph{không} đủ cho biểu đồ dày số liệu, vì chú thích là một phép nén có mất mát do chính mô hình quyết định giữ gì.
+	\item \textbf{Tài liệu giàu thị giác} (báo cáo, slide, biểu mẫu) $\rightarrow$ ColPali hoặc tương đương.
+\end{itemize}
+
+\paragraph{Và một lựa chọn kiến trúc phải quyết sớm.} Bạn muốn \emph{một} không gian nhúng chung cho mọi phương thức (dùng mô hình nhúng đa phương thức, tìm một lần ra cả văn bản lẫn ảnh), hay \emph{nhiều} chỉ mục riêng rồi hợp nhất kết quả? Không gian chung gọn hơn nhưng thường yếu hơn ở từng phương thức; chỉ mục riêng mạnh hơn nhưng bắt bạn phải giải bài toán hợp nhất xếp hạng -- lại chính là bài toán mà RRF ở mục~\ref{ssec:advanced_retrieval_ranking} đã giải.

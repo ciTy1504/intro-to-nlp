@@ -31,7 +31,7 @@ dolma (bộ công cụ) & \textit{Đã bị thay thế} & AI2 viết lại bằn
 \label{tab:data_tools_status}
 \end{table}
 
-\begin{tcolorbox}[title={Cách tự kiểm tra, vì bảng trên sẽ cũ đi}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{deepdive}{Cách tự kiểm tra, vì bảng trên sẽ cũ đi}
 Bảng này chắc chắn sẽ lỗi thời. Kỹ năng thì không. Bốn phép kiểm, mất chừng hai phút:
 \begin{enumerate}
 	\item \textbf{Ngày phát hành gần nhất trên PyPI} -- không phải ngày commit gần nhất. Một dự án có thể commit hằng ngày mà bản \texttt{pip install} đã hai năm tuổi.
@@ -39,8 +39,8 @@ Bảng này chắc chắn sẽ lỗi thời. Kỹ năng thì không. Bốn phép
 	\item \textbf{Đọc dòng đầu README.} Thông báo ngừng phát triển thường nằm ngay đó -- và cũng thường bị người đọc lướt qua.
 	\item \textbf{Đừng tin biểu tượng “archived”.} Một kho mã có thể đã chết hoàn toàn mà vẫn \emph{không} được đánh dấu lưu trữ. Nhìn lướt thì không phân biệt được.
 \end{enumerate}
-Và một cái bẫy đặc thù: \textbf{README của một dự án đã bị thay thế thường không trỏ sang dự án thay thế nó.} Bộ công cụ dolma là ví dụ sống: AI2 đã xây một bộ công cụ Rust hoàn toàn mới cho OLMo 3, còn README cũ thì im lặng. Ai tin README sẽ hạ cánh xuống công cụ đóng băng.
-\end{tcolorbox}
+Và một cái bẫy đặc thù: \textbf{README của một dự án đã bị thay thế thường không trỏ sang dự án thay thế nó.} Bộ công cụ dolma là ví dụ sống: AI2 đã xây một bộ công cụ Rust hoàn toàn mới cho OLMo 3, còn README cũ thì im lặng. Ai tin README sẽ dùng phải công cụ đã đóng băng.
+\end{deepdive}
 
 \subsection{datatrove: pipeline là một danh sách Python}
 \label{ssec:datatrove}
@@ -92,7 +92,7 @@ SlurmPipelineExecutor(
 ).run()
 \end{minted}
 
-\noindent Hai điều đáng chú ý trong đoạn mã này, và cả hai đều là bài học kỹ thuật chứ không phải chi tiết API. Thứ nhất, \textbf{mỗi bộ lọc đều có một \texttt{exclusion\_writer}}, ghi phần bị loại vào thư mục được đánh số \texttt{1\_url} đến \texttt{6\_fineweb\_qual}. Đó chính là cách người ta gỡ lỗi một chồng bộ lọc. Thứ hai, \texttt{filter\_no\_terminal\_punct=False} là quyết định tắt quy tắc C4 mà ta đã bàn ở mục~\ref{ssec:quality_filter} -- nó nằm ngay đó, trong mã, dưới dạng một tham số.
+\noindent Hai điều cần nói về đoạn mã này, và cả hai đều là bài học kỹ thuật chứ không phải chi tiết API. Thứ nhất, \textbf{mỗi bộ lọc đều có một \texttt{exclusion\_writer}}, ghi phần bị loại vào thư mục được đánh số \texttt{1\_url} đến \texttt{6\_fineweb\_qual}. Đó chính là cách người ta gỡ lỗi một chồng bộ lọc. Thứ hai, \texttt{filter\_\allowbreak no\_\allowbreak terminal\_\allowbreak punct=False} là quyết định tắt quy tắc C4 mà ta đã bàn ở mục~\ref{ssec:quality_filter} -- nó nằm ngay đó, trong mã, dưới dạng một tham số.
 
 \paragraph{Khử trùng lặp là bốn công việc riêng biệt, không phải một lượt chạy.} Đây là chỗ người mới hay bất ngờ nhất. Pipeline MinHash của datatrove là \emph{bốn job Slurm nối nhau bằng quan hệ phụ thuộc}:
 
@@ -152,7 +152,7 @@ results = pipeline.run()
 	\item \textbf{Không có mô-đun gỡ PII} trong tài liệu phiên bản hiện tại. Nếu cần bước 5, phải ghép công cụ khác.
 \end{itemize}
 
-\paragraph{Một chi tiết nhỏ gây bực mình thật.} Dự án này dùng \emph{ba} cách đánh số phiên bản song song: README dùng kiểu năm-tháng, GitHub dùng semver, còn trang tài liệu hiển thị cả hai ghép lại. Khi ghim phiên bản, hãy ghim theo cái mà trình quản lý gói nhìn thấy.
+\paragraph{Một chi tiết nhỏ về đánh số phiên bản.} Dự án này dùng \emph{ba} cách đánh số phiên bản song song: README dùng kiểu năm-tháng, GitHub dùng semver, còn trang tài liệu hiển thị cả hai ghép lại. Khi ghim phiên bản, hãy ghim theo cái mà trình quản lý gói nhìn thấy.
 
 \subsection{distilabel: sinh dữ liệu tổng hợp -- và một bài học về rủi ro phụ thuộc}
 \label{ssec:distilabel}
@@ -175,15 +175,15 @@ distiset.push_to_hub(repo_id="distilabel-example")
 
 \noindent Mô hình lập trình gọn: \texttt{Pipeline} là context manager, \texttt{Step} là đơn vị, \texttt{Task} là một Step có LLM bên trong, \texttt{LLM} là bộ chuyển đổi cho từng nhà cung cấp, và kết quả là một \texttt{Distiset} đẩy thẳng lên Hub được. Các bước được nối bằng toán tử \texttt{>>}.
 
-\begin{tcolorbox}[title={Và đây là lý do thật sự tôi đưa distilabel vào sách}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
-distilabel là một ví dụ sống về \textbf{rủi ro phụ thuộc} -- một kỹ năng kỹ thuật mà sách giáo khoa hiếm khi dạy.
+\begin{keyidea}{Lý do distilabel có mặt trong sách}
+distilabel là một ví dụ sống về \textbf{rủi ro phụ thuộc}, một kỹ năng kỹ thuật mà sách giáo khoa hiếm khi dạy.
 
 README của nó ghi rằng các tác giả gốc đã chuyển sang dự án khác. Một nhóm cộng đồng đã tiếp quản và nhánh phát triển vẫn có commit mới, nhưng \textbf{bản trên PyPI thì đã rất cũ}. Nghĩa là: \texttt{pip install distilabel} cho bạn một phiên bản lạc hậu nhiều tháng so với mã đang được sửa.
 
 Việc đúng cần làm nếu bạn phụ thuộc vào nó: \textbf{ghim theo mã commit cụ thể trên nhánh phát triển}, chứ không ghim theo số phiên bản PyPI -- và ghi lại quyết định đó ở chỗ người sau đọc được. Thêm nữa, các bước tích hợp của nó trỏ sang Argilla, vốn cũng đang đóng băng tính năng; một phụ thuộc đã lung lay đang tựa vào một phụ thuộc khác cũng lung lay.
 
 Bài học tổng quát, dùng được cho mọi thư viện: \textbf{trước khi đặt một công cụ vào đường đi chính của hệ thống, hãy bỏ hai phút chạy bốn phép kiểm ở mục~\ref{ssec:tool_liveness}.} Chi phí phát hiện muộn cao hơn rất nhiều.
-\end{tcolorbox}
+\end{keyidea}
 
 \subsection{Chọn công cụ nào}
 \label{ssec:data_tool_choice}
@@ -194,3 +194,13 @@ Bài học tổng quát, dùng được cho mọi thư viện: \textbf{trước 
 	\item \textbf{Bạn đang dựng dữ liệu hậu huấn luyện bằng LLM}: \textbf{distilabel}, với lưu ý ghim phiên bản ở trên -- hoặc tự viết, vì phần lõi của bài toán này (gọi LLM hàng loạt, lưu checkpoint, thử lại khi lỗi) không khó bằng việc xử lý văn bản ở quy mô web.
 	\item \textbf{Bạn đang làm một dự án tiếng Việt}: dù chọn công cụ nào, hãy chuẩn bị tinh thần \emph{đo lại mọi ngưỡng}. Các công cụ cho bạn khung, không cho bạn tham số.
 \end{itemize}
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Chương này mở đầu bằng một quy trình làm việc có hệ thống cho dự án NLP, rồi đi vào phần chiếm phần lớn thời gian và công sức: dữ liệu. Nội dung đã đi qua các kỹ thuật thu thập, làm sạch, gán nhãn, tăng cường và quản lý phiên bản dữ liệu, rồi mở rộng sang quy mô tiền huấn luyện LLM: đường ống bảy bước từ Common Crawl tới token, và bộ công cụ thực tế để chạy nó. Một pipeline dữ liệu có thể tái lập là điều kiện cần của mọi hệ thống NLP chạy được trong thực tế.}

@@ -3,7 +3,11 @@
 
 \setmainfont{Times New Roman}       % font chữ chính (serif)
 \setsansfont{Arial}                 % font không chân (sans-serif)
-\setmonofont{Courier New}           % font mono (code, terminal)
+% Courier New báo độ giãn khoảng trắng bằng 0. Một dòng gồm toàn chữ \texttt
+% do đó không co giãn được để căn đều, nên TeX chọn cách nhồi cho tràn lề thay vì
+% ngắt dòng ở dấu cách. WordSpace cho khoảng trắng giãn/co được để dòng ngắt bình
+% thường; khối minted không bị ảnh hưởng vì mỗi dòng verbatim không căn đều.
+\setmonofont{Courier New}[WordSpace={1,3,1.5}]   % font mono (code, terminal)
 
 % Gói hỗ trợ tiếng Việt
 \usepackage[vietnamese]{babel}
@@ -37,14 +41,25 @@ twoside
 \hypersetup{
 	colorlinks=true,
 	linkcolor=MidnightBlue,
-	filecolor=magenta,      
+	filecolor=magenta,
 	urlcolor=RoyalBlue,
 	citecolor=ForestGreen,
+	% Phần 2 đánh số chương lại từ 1 (\setcounter{chapter}{0} trong part2/intro.tex),
+	% nên tên neo mặc định của hyperref bị trùng: chapter.1..chapter.4 tồn tại hai lần,
+	% và mọi liên kết mục lục đều nhảy về chương của Phần 1. Tắt hypertexnames để
+	% hyperref tự sinh tên neo duy nhất cho chương, mục, hình, bảng và công thức.
+	hypertexnames=false,
 	pdftitle={Giáo trình NLP Toàn tập},
-	pdfauthor={Tên tác giả},
+	pdfauthor={Đinh Công Thái},
 }
 \usepackage{booktabs}
 \usepackage{longtable}
+
+% Cho TeX thêm chỗ co giãn ở lượt dàn dòng cuối. TeX chỉ dùng tới nó khi một
+% đoạn không thể dàn vừa khung bằng cách nào khác, nên các dòng vốn đã vừa thì
+% không bị ảnh hưởng; đổi lại một vài dòng chứa công thức hay tên mã dài sẽ
+% thưa hơn một chút thay vì tràn ra lề.
+\emergencystretch=1.5em
 % ==============================================================================
 % 4. TÙY BIẾN TIÊU ĐỀ
 % ==============================================================================
@@ -61,11 +76,14 @@ twoside
 {\Huge}
 \titlespacing*{\part}{0pt}{50pt}{40pt}
 
+% \raggedright: tiêu đề chương dài, in ALL-CAPS ở cỡ \huge, chỉ có vài từ trên
+% mỗi dòng nên căn đều không đủ chỗ co giãn và TeX để tràn lề. Tiêu đề không nên
+% căn đều; bỏ căn đều không làm đổi hình thức vì tiêu đề chương vốn căn lề trái.
 \titleformat{\chapter}[display]
-{\normalfont\huge\bfseries}
+{\normalfont\huge\bfseries\raggedright}
 {\chaptertitlename~\thechapter}
 {20pt}
-{\huge\bfseries}
+{\huge\bfseries\raggedright}
 \titlespacing*{\chapter}{0pt}{40pt}{30pt}
 
 \titleformat{\section}
@@ -145,8 +163,66 @@ list inside=rcp
 % ==============================================================================
 % 7. THÔNG TIN SÁCH
 % ==============================================================================
-\title{GIÁO TRÌNH NLP TOÀN TẬP \\ \large}
+\title{GIÁO TRÌNH NLP TOÀN TẬP}
 \author{Đinh Công Thái}
 \date{\today}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ==============================================================================
+% 7. QUY ƯỚC TRÌNH BÀY CỦA SÁCH  (dùng đúng 5 loại hộp, không tự chế màu mới)
+% ==============================================================================
+%
+%   \begin{keyidea}{Tiêu đề}   ... \end{keyidea}
+%       Trực giác cốt lõi, ý tưởng then chốt, kết luận quan trọng của một mục.
+%
+%   \begin{pitfall}{Tiêu đề}   ... \end{pitfall}
+%       Cạm bẫy, cảnh báo, nguyên tắc không được vi phạm, lỗi hay gặp.
+%
+%   \begin{deepdive}{Tiêu đề}  ... \end{deepdive}
+%       Đọc thêm, ghi chú đi sâu, dẫn giải toán học có thể bỏ qua ở lần đọc đầu.
+%
+%   \begin{assess}{Tiêu đề}    ... \end{assess}
+%       Đánh giá / so sánh một phương pháp, tổng kết một nhóm kỹ thuật.
+%
+%   \begin{checklist}{Tiêu đề} ... \end{checklist}
+%       Danh sách kiểm, quy trình thao tác theo bước.
+%
+% HÌNH:  luôn dùng khuôn
+%       \begin{center}
+%       \bookimage[0.9\textwidth]{ten-file}{mô tả nội dung hình cho người không xem được}
+%       \captionof{figure}{Chú thích đầy đủ, nói ý nghĩa chứ không mô tả lại hình.}
+%       \label{fig:...}
+%       \end{center}
+%
+% BẢNG:  bảng được nhắc tới trong văn bản thì phải có số và nhãn:
+%       \begin{table}[H] \centering \small ... \caption{...} \label{tab:...} \end{table}
+%       Bảng nhỏ chỉ để minh họa tại chỗ thì dùng \begin{center}...\end{center}, không đánh số.
+%
+% MÃ VÀ CHUỖI NGUYÊN VĂN:
+%       \texttt{...}  cho mọi thứ in ra nguyên văn: tên hàm, tên gói, tên cờ dòng lệnh,
+%                     token và mảnh subword (<SOS>, [CLS], </w>), chuỗi đầu vào/đầu ra
+%                     của mô hình, prompt mẫu ngắn.
+%       \textit{...}  cho một từ của ngôn ngữ tự nhiên được dẫn ra làm ví dụ ngôn ngữ học
+%                     (bàn về nghĩa hay hình thái của chính từ đó).
+%       KHÔNG dùng dấu nháy ngược kiểu markdown: trong LaTeX `x` in ra thành ‘x,
+%       không ra font mã. Ngoặc nhọn trong \texttt phải thoát: \texttt{\{a, b\}},
+%       nếu không LaTeX coi là nhóm và cặp ngoặc sẽ không được in ra.
+%       Trích dẫn trong văn bản dùng ``...'' (hai nháy ngược + hai nháy đơn).
+% ==============================================================================
+
+\newtcolorbox{keyidea}[1]{colback=yellow!10!white, colframe=yellow!50!black,
+	fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{pitfall}[1]{colback=red!5!white, colframe=red!75!black,
+	fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{deepdive}[1]{colback=blue!5!white, colframe=blue!60!black,
+	fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{assess}[1]{colback=green!5!white, colframe=green!55!black,
+	fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{checklist}[1]{colback=gray!8!white, colframe=gray!60!black,
+	fonttitle=\bfseries, title={#1}, breakable}
+
+%   \begin{promptbox} ... \end{promptbox}
+%       Khối prompt mẫu hoặc đoạn hội thoại minh họa. Không tiêu đề, không đánh số.
+\newtcolorbox{promptbox}{colback=gray!5!white, colframe=gray!50!black,
+	sharp corners, fontupper=\small, breakable}

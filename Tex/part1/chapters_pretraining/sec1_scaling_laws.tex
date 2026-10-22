@@ -1,12 +1,12 @@
 % !TEX root = ../main.tex
 % File: part1/chapters_pretraining/sec1_scaling_laws.tex
 
-\section{Quy luật Mở rộng (Scaling Laws)}
+\section{Quy luật mở rộng (Scaling Laws)}
 \label{sec:scaling_laws}
 
-\begin{tcolorbox}[title={Trực giác cốt lõi}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
-Loss của mô hình ngôn ngữ giảm theo \textbf{luật lũy thừa (power law)} khi ta tăng số tham số, lượng dữ liệu hoặc lượng tính toán -- một cách đều đặn đến bất ngờ qua nhiều bậc độ lớn. Nhờ vậy, ta có thể huấn luyện hàng trăm mô hình nhỏ, khớp một đường thẳng trên đồ thị log-log, rồi \emph{ngoại suy} để chọn cấu hình tốt nhất cho lần huấn luyện lớn duy nhất.
-\end{tcolorbox}
+\begin{keyidea}{Loss theo luật lũy thừa, và phép ngoại suy từ thí nghiệm nhỏ}
+Loss của mô hình ngôn ngữ giảm theo \textbf{luật lũy thừa (power law)} khi ta tăng số tham số, lượng dữ liệu hoặc lượng tính toán, và giảm đều đặn qua nhiều bậc độ lớn. Nhờ vậy, ta có thể huấn luyện hàng trăm mô hình nhỏ, khớp một đường thẳng trên đồ thị log-log, rồi \emph{ngoại suy} để chọn cấu hình tốt nhất cho lần huấn luyện lớn duy nhất.
+\end{keyidea}
 
 \subsection{Chi phí tính toán của một lần huấn luyện: $C \approx 6ND$}
 \label{ssec:compute_6nd}
@@ -20,7 +20,7 @@ Vậy tổng chi phí huấn luyện xấp xỉ
 	C \approx 6ND \quad \text{(FLOPs)}.
 	\label{eq:compute_6nd}
 \end{equation}
-Công thức đơn giản này (bỏ qua chi phí attention theo độ dài ngữ cảnh, vốn nhỏ khi $N$ lớn) là “đơn vị tiền tệ” của mọi thảo luận về scaling. Ví dụ, GPT-3 175B huấn luyện trên 300B token tốn khoảng $6 \times 1.75\cdot 10^{11} \times 3\cdot 10^{11} \approx 3.15 \cdot 10^{23}$ FLOPs.
+Công thức đơn giản này (bỏ qua chi phí attention theo độ dài ngữ cảnh, vốn nhỏ khi $N$ lớn) là cách quy đổi chuẩn trong mọi thảo luận về scaling. Ví dụ, GPT-3 175B huấn luyện trên 300B token tốn khoảng $6 \times 1.75\cdot 10^{11} \times 3\cdot 10^{11} \approx 3.15 \cdot 10^{23}$ FLOPs.
 
 \subsection{Kaplan et al. (2020): Luật lũy thừa đầu tiên}
 \label{ssec:kaplan_scaling}
@@ -37,7 +37,7 @@ Nhóm OpenAI \cite{kaplan2020scaling} huấn luyện hàng trăm mô hình (từ
 	\item \textbf{Mô hình lớn hiệu quả mẫu hơn:} Mô hình lớn đạt cùng loss với ít token hơn.
 	\item \textbf{Phân bổ compute:} Khi tăng ngân sách, nên tăng $N$ nhanh hơn $D$ nhiều: $N_{\text{opt}} \propto C^{0.73}$, trong khi số token chỉ tăng khoảng $C^{0.27}$. Nói cách khác: \emph{“làm mô hình thật lớn và dừng huấn luyện trước khi hội tụ”}.
 \end{enumerate}
-Kết luận thứ ba đã định hướng cả một thế hệ mô hình: GPT-3 (175B, 300B token), Gopher (280B, 300B token), MT-NLG (530B, 270B token) -- tất cả đều rất lớn nhưng “ăn” tương đối ít dữ liệu.
+Kết luận thứ ba đã định hướng cả một thế hệ mô hình: GPT-3 (175B, 300B token), Gopher (280B, 300B token), MT-NLG (530B, 270B token) đều rất lớn nhưng dùng tương đối ít dữ liệu.
 
 \subsection{Chinchilla (2022): Mô hình tối ưu tính toán}
 \label{ssec:chinchilla}
@@ -59,37 +59,37 @@ N_{\text{opt}}(C) = G\left(\frac{C}{6}\right)^{\frac{\beta}{\alpha+\beta}}, \qqu
 D_{\text{opt}}(C) = G^{-1}\left(\frac{C}{6}\right)^{\frac{\alpha}{\alpha+\beta}}, \qquad
 G = \left(\frac{\alpha A}{\beta B}\right)^{\frac{1}{\alpha+\beta}}.
 \]
-Cả ba cách tiếp cận đều cho số mũ xấp xỉ $0.5$: \textbf{tham số và token nên được tăng cùng tỷ lệ}. Quy tắc ngón tay cái rút ra là khoảng \textbf{20 token cho mỗi tham số}.
+Cả ba cách tiếp cận đều cho số mũ xấp xỉ $0.5$: tham số và token nên được tăng cùng tỷ lệ. Quy tắc ngón tay cái rút ra là khoảng 20 token cho mỗi tham số.
 
 \begin{example}{Tính cấu hình tối ưu tính toán}{ex:chinchilla_budget}
 Giả sử ngân sách $C = 10^{24}$ FLOPs. Với $D \approx 20N$: $C = 6N \cdot 20N = 120N^2$, suy ra
 \[
 N \approx \sqrt{10^{24}/120} \approx 9.1 \times 10^{10} \;(\approx 91\text{B tham số}), \qquad D \approx 1.8 \times 10^{12} \;(\approx 1.8\text{T token}).
 \]
-Để so sánh: Gopher (280B tham số, 300B token) dùng khoảng $5 \times 10^{23}$ FLOPs -- với cùng ngân sách đó, cấu hình tối ưu là khoảng 65--70B tham số và 1.4T token. Đó chính là \textbf{Chinchilla 70B}, và nó vượt Gopher, GPT-3, Jurassic-1 và MT-NLG 530B trên hầu hết các benchmark, đạt 67.5\% trên MMLU (cao hơn Gopher hơn 7 điểm).
+Để so sánh: Gopher (280B tham số, 300B token) dùng khoảng $5 \times 10^{23}$ FLOPs; với cùng ngân sách đó, cấu hình tối ưu là khoảng 65--70B tham số và 1.4T token. Đó chính là Chinchilla 70B, và nó vượt Gopher, GPT-3, Jurassic-1 và MT-NLG 530B trên hầu hết các benchmark, đạt 67.5\% trên MMLU (cao hơn Gopher hơn 7 điểm).
 \end{example}
 
 \begin{center}
-\bookimage[0.95\textwidth]{chinchilla_isoflop_curves}{Hai biểu đồ cạnh nhau: bên trái là các đường đồng mức loss (IsoLoss contours) trên mặt phẳng compute--kích thước mô hình, kèm đường “biên hiệu quả” (efficient frontier) đi qua các điểm tối ưu và ngân sách của Gopher; bên phải là các lát cắt IsoFLOPs -- mỗi đường ứng với một ngân sách FLOPs cố định, có dạng chữ U với đáy là kích thước mô hình tối ưu.}
+\bookimage[0.95\textwidth]{chinchilla_isoflop_curves}{Hai biểu đồ cạnh nhau: bên trái là các đường đồng mức loss (IsoLoss contours) trên mặt phẳng compute--kích thước mô hình, kèm đường “biên hiệu quả” (efficient frontier) đi qua các điểm tối ưu và ngân sách của Gopher; bên phải là các lát cắt IsoFLOPs, mỗi đường ứng với một ngân sách FLOPs cố định, có dạng chữ U với đáy là kích thước mô hình tối ưu.}
 \captionof{figure}{Cách tiếp cận khớp hàm loss tham số của Chinchilla: đường đồng mức loss và biên hiệu quả (trái), các lát cắt IsoFLOPs với đáy chữ U là kích thước mô hình tối ưu cho mỗi ngân sách (phải). Nguồn: Hoffmann et al.~\cite{hoffmann2022chinchilla}.}
 \label{fig:chinchilla_isoflop}
 \end{center}
 
 \subsection{Vượt qua Chinchilla: Tối ưu cho cả vòng đời mô hình}
 \label{ssec:beyond_chinchilla}
-“Tối ưu tính toán” chỉ tối ưu \emph{chi phí huấn luyện}. Nhưng một mô hình được phục vụ cho hàng triệu người dùng sẽ tốn chi phí suy luận vượt xa chi phí huấn luyện, và chi phí suy luận tỷ lệ với $N$, không với $D$. Vì vậy các mô hình hiện đại thường được \textbf{huấn luyện vượt xa điểm Chinchilla}:
+“Tối ưu tính toán” chỉ tối ưu \emph{chi phí huấn luyện}. Nhưng một mô hình được phục vụ cho hàng triệu người dùng sẽ tốn chi phí suy luận vượt xa chi phí huấn luyện, và chi phí suy luận tỷ lệ với $N$, không với $D$. Vì vậy các mô hình hiện đại thường được huấn luyện vượt xa điểm Chinchilla:
 \begin{itemize}
-	\item Llama 3 8B được huấn luyện trên khoảng 15T token -- gần 1900 token mỗi tham số, gấp gần 100 lần tỷ lệ Chinchilla. Loss vẫn tiếp tục giảm theo quy luật log-tuyến tính.
-	\item Khi \textbf{dữ liệu mới là hữu hạn}, Muennighoff et al. \cite{muennighoff2023scaling} cho thấy lặp lại dữ liệu tới khoảng 4 epoch gần như tốt ngang dữ liệu chưa từng thấy; vượt quá đó, giá trị của mỗi lần lặp giảm nhanh.
+	\item Llama 3 8B được huấn luyện trên khoảng 15T token, gần 1900 token mỗi tham số, gấp gần 100 lần tỷ lệ Chinchilla. Loss vẫn tiếp tục giảm theo quy luật log-tuyến tính.
+	\item Khi dữ liệu mới là hữu hạn, Muennighoff et al. \cite{muennighoff2023scaling} cho thấy lặp lại dữ liệu tới khoảng 4 epoch gần như tốt ngang dữ liệu chưa từng thấy; vượt quá đó, giá trị của mỗi lần lặp giảm nhanh.
 \end{itemize}
 
-\paragraph{Scaling law của chính Llama 3.} Nhóm Llama 3 \cite{grattafiori2024llama3} tự xây dựng đường IsoFLOP từ $6\times10^{18}$ đến $10^{22}$ FLOPs, khớp $N^\star(C) = A\,C^{\alpha}$ với $(\alpha, A) = (0.53, 0.29)$, và ngoại suy cho ngân sách thực tế $3.8 \times 10^{25}$ FLOPs: cấu hình dự đoán là khoảng 402B tham số trên 16.55T token -- rất sát lựa chọn cuối cùng 405B tham số. Họ còn dự đoán \emph{điểm benchmark} theo hai bước: compute $\rightarrow$ log-likelihood chuẩn hóa trên câu trả lời đúng $\rightarrow$ độ chính xác (qua một hàm sigmoid), và dự đoán này khớp khá tốt với kết quả thật của mô hình 405B.
+\paragraph{Scaling law của chính Llama 3.} Nhóm Llama 3 \cite{grattafiori2024llama3} tự xây dựng đường IsoFLOP từ $6\times10^{18}$ đến $10^{22}$ FLOPs, khớp $N^\star(C) = A\,C^{\alpha}$ với $(\alpha, A) = (0.53, 0.29)$, và ngoại suy cho ngân sách thực tế $3.8 \times 10^{25}$ FLOPs: cấu hình dự đoán là khoảng 402B tham số trên 16.55T token, rất sát lựa chọn cuối cùng 405B tham số. Họ còn dự đoán \emph{điểm benchmark} theo hai bước: compute $\rightarrow$ log-likelihood chuẩn hóa trên câu trả lời đúng $\rightarrow$ độ chính xác (qua một hàm sigmoid), và dự đoán này khớp khá tốt với kết quả thật của mô hình 405B.
 
-\begin{tcolorbox}[title={Những giới hạn cần nhớ về scaling laws}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{pitfall}{Những giới hạn cần nhớ về scaling laws}
 \begin{itemize}
-	\item Scaling laws dự đoán \textbf{loss}, không trực tiếp dự đoán năng lực downstream; một số năng lực có vẻ “xuất hiện đột ngột” khi đo bằng metric rời rạc (đúng/sai).
-	\item Các hằng số ($E, A, B, \alpha, \beta$) phụ thuộc \textbf{dữ liệu, tokenizer và kiến trúc}; không thể bê nguyên số của paper này sang paper khác.
+	\item Scaling laws dự đoán loss, không trực tiếp dự đoán năng lực downstream; một số năng lực có vẻ “xuất hiện đột ngột” khi đo bằng metric rời rạc (đúng/sai).
+	\item Các hằng số ($E, A, B, \alpha, \beta$) phụ thuộc dữ liệu, tokenizer và kiến trúc; không thể bê nguyên số của paper này sang paper khác.
 	\item Phải so sánh ở cuối lịch learning rate; so sánh các checkpoint trung gian dễ cho kết luận sai (đây chính là lỗi mà Chinchilla chỉ ra ở Kaplan).
 	\item Có các trục scaling khác ngoài $N$ và $D$: dữ liệu tổng hợp (mục~\ref{sec:pretraining_data}), tính toán lúc suy luận (chương~\ref{chap:reasoning}), và compute cho học tăng cường.
 \end{itemize}
-\end{tcolorbox}
+\end{pitfall}

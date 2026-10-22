@@ -1,12 +1,12 @@
 \chapter{QUY TRÌNH LÀM VIỆC VÀ CÔNG CỤ XỬ LÝ DỮ LIỆU}
 \label{chap:workflow_data}
 
-Nếu như các chương trước đã trang bị cho bạn kho “vũ khí” lý thuyết, thì chương này sẽ dạy bạn cách trở thành một “chiến binh” thực thụ trên chiến trường NLP. Một mô hình tinh vi nhất cũng sẽ trở nên vô dụng nếu không có dữ liệu chất lượng cao để học hỏi và một quy trình làm việc bài bản để định hướng.
+Các chương trước trình bày phần lý thuyết; chương này chuyển sang cách làm. Một mô hình tinh vi đến đâu cũng vô dụng nếu không có dữ liệu chất lượng cao để học và một quy trình làm việc bài bản.
 
-Trong chương mở đầu của Phần 2, chúng ta sẽ tập trung vào nền móng của mọi dự án thành công: \textbf{Dữ liệu và Quy trình}. Chúng ta sẽ phác thảo một vòng đời dự án NLP tinh gọn, từ khâu lên ý tưởng, thiết lập baseline, cho đến khi triển khai và giám sát. Quan trọng hơn, chúng ta sẽ đi sâu vào các kỹ thuật và công cụ thiết yếu để thu thập, làm sạch, gán nhãn, và quản lý phiên bản dữ liệu -- những công việc chiếm đến 80\% thời gian của một dự án thực tế. Nắm vững những kỹ năng này là bước đi đầu tiên và quan trọng nhất để biến lý thuyết thành những sản phẩm có giá trị.
+Chương mở đầu của Phần 2 bàn về dữ liệu và quy trình. Chương phác thảo một vòng đời dự án NLP tinh gọn, từ lên ý tưởng, thiết lập baseline, cho đến triển khai và giám sát, rồi đi vào các kỹ thuật và công cụ để thu thập, làm sạch, gán nhãn và quản lý phiên bản dữ liệu, những công việc chiếm đến 80\% thời gian của một dự án thực tế.
 
 
-\begin{tcolorbox}[title={Chương này có hai nửa, cho hai quy mô khác nhau}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{deepdive}{Chương này có hai nửa, cho hai quy mô khác nhau}
 Công việc dữ liệu trong NLP ngày nay tách làm hai chế độ rất khác nhau, và dùng công cụ của chế độ này cho chế độ kia là một sai lầm tốn kém.
 
 \textbf{Nửa đầu (mục~\ref{sec:lean_workflow}--\ref{sec:dvc}) -- quy mô có giám sát.} Vài nghìn tới vài trăm nghìn mẫu. Bạn \emph{nhìn được} dữ liệu, gán nhãn được bằng tay, và một máy tính cá nhân là đủ. Đây vẫn là tình huống phổ biến nhất trong doanh nghiệp: phân loại văn bản, trích xuất thực thể, phân loại ý định. Scrapy, pandas, Label Studio và DVC là đúng công cụ ở đây.
@@ -14,4 +14,4 @@ Công việc dữ liệu trong NLP ngày nay tách làm hai chế độ rất kh
 \textbf{Nửa sau (mục~\ref{sec:llm_data_pipeline}--\ref{sec:data_tools}) -- quy mô LLM.} Hàng petabyte HTML vào, hàng nghìn tỷ token ra. Không ai nhìn được dữ liệu đó, không ai gán nhãn được nó, và không một dòng pandas nào chạy nổi. Bài toán đổi về bản chất chứ không chỉ về lượng: thứ quyết định chất lượng không còn là nhãn, mà là \emph{lọc} và \emph{khử trùng lặp}.
 
 Nếu bạn đang tinh chỉnh một mô hình có sẵn cho một tác vụ cụ thể, nửa đầu là đủ. Nếu bạn muốn hiểu vì sao FineWeb tốt hơn Common Crawl thô, hoặc muốn tự dựng corpus tiếng Việt, hãy đọc cả hai.
-\end{tcolorbox}
+\end{deepdive}

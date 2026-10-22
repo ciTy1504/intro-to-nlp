@@ -3,7 +3,12 @@
 \begin{document}
 
 \maketitle
+% Mục lục được tạo bằng \chapter*, mà lớp book mặc định là openright nên nó bị
+% đẩy sang trang lẻ, để lại một trang trống ngay sau bìa. Tắt openright riêng
+% cho mục lục: các chương vẫn mở ở trang lẻ theo đúng quy ước sách in.
+\makeatletter\@openrightfalse\makeatother
 \tableofcontents
+\makeatletter\@openrighttrue\makeatother
 
 \mainmatter
 
@@ -68,6 +73,12 @@
 \input{part1/chapters_part6/chap6_1}
 \input{part1/chapters_part6/chap6_2}
 \input{part1/chapters_part6/chap6_3}
+\input{part1/chapters_part6/chap6_4}
+\input{part1/chapters_part6/chap6_5}
+\input{part1/chapters_part6/chap6_6}
+\input{part1/chapters_part6/chap6_7}
+\input{part1/chapters_part6/chap6_8}
+\input{part1/chapters_part6/chap6_9}
 
 % Chương 9 (mới, 2026): Hiệu quả LLM -- chưng cất, lượng tử hóa, phục vụ
 \input{part1/chapters_efficiency/intro}
@@ -87,6 +98,7 @@
 % Chương 11: Đánh giá
 \input{part1/chapters_part9/intro}
 \input{part1/chapters_part9/chap9_1}
+\input{part1/chapters_part9/chap9_uncertainty}
 \input{part1/chapters_part9/chap9_2}
 \input{part1/chapters_part9/chap9_3}
 \input{part1/chapters_part9/chap9_4}

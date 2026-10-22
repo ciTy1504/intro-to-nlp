@@ -1,103 +1,115 @@
 % !TEX root = ../../main.tex
 % File: part2/chapters4/chap4_5.tex
 
-\section{Recipe 5: Xây dựng một Agent đơn giản với khả năng sử dụng công cụ}
+\section{Recipe 5: xây dựng một Agent đơn giản có khả năng sử dụng công cụ}
 \label{sec:recipe_agent}
 
-\textbf{Mục tiêu:} Xây dựng một Tác tử (Agent) có thể trả lời các câu hỏi về các sự kiện gần đây hoặc các chủ đề chuyên sâu bằng cách tự động quyết định khi nào cần tìm kiếm thông tin trên Wikipedia.
+\textbf{Mục tiêu:} Xây dựng một tác tử (Agent) trả lời được các câu hỏi về sự kiện gần đây hoặc chủ đề chuyên sâu, bằng cách tự quyết định khi nào cần tìm thông tin trên Wikipedia.
 
 \textbf{Thành phần chính:}
 \begin{itemize}
-    \item \textbf{`LangChain`:} Cung cấp các công cụ để xây dựng các agent.
-    \item \textbf{LLM:} Bộ não ra quyết định của agent.
+    \item \textbf{\texttt{LangChain}:} Cung cấp các công cụ để xây dựng các agent.
+    \item \textbf{LLM:} Thành phần ra quyết định của agent.
     \item \textbf{Công cụ (Tool):} Một API hoặc thư viện để tương tác với thế giới bên ngoài (trong trường hợp này là Wikipedia).
 \end{itemize}
 
 \textbf{Các bước thực hiện:}
 \begin{enumerate}
-    \item \textbf{Thiết lập Môi trường:} Cài đặt thư viện và API keys.
-    \item \textbf{Định nghĩa Công cụ:} Tạo một hoặc nhiều công cụ mà agent có thể sử dụng.
-    \item \textbf{Khởi tạo LLM và Agent:} Chọn một LLM và sử dụng các hàm của LangChain để “trang bị” công cụ cho nó.
-    \item \textbf{Thực thi Agent:} Đưa ra một câu hỏi và quan sát vòng lặp `Thought-Action-Observation`.
+    \item \textbf{Thiết lập môi trường:} Cài đặt thư viện và API keys.
+    \item \textbf{Định nghĩa công cụ:} Tạo một hoặc nhiều công cụ mà agent có thể sử dụng.
+    \item \textbf{Khởi tạo LLM và agent:} Chọn một LLM và dùng các hàm của LangChain để gắn công cụ cho nó.
+    \item \textbf{Thực thi agent:} Đưa ra một câu hỏi, rồi đọc lại chuỗi tin nhắn mà agent trả về để thấy vòng lặp \texttt{Thought-\allowbreak Action-\allowbreak Observation}.
 \end{enumerate}
 
 \textbf{Mã nguồn:}
-\begin{example}{Xây dựng Agent Tra cứu Wikipedia}{ex:simple_agent}
+\begin{example}{Agent tra cứu Wikipedia}{ex:simple_agent}
     \begin{minted}{python}
     # Bước 1: Cài đặt
-    # pip install langchain langchain-openai wikipedia
+    # pip install -U langchain wikipedia
+    # và gói của nhà cung cấp mô hình, ví dụ: pip install -U langchain-openai
     import os
-    # os.environ["OPENAI_API_KEY"] = "sk-..."
-    
-    from langchain_openai import ChatOpenAI
-    from langchain.agents import tool, AgentExecutor, create_react_agent
-    from langchain import hub # Để tải prompt ReAct có sẵn
-    
+    # Khóa API đọc từ biến môi trường của nhà cung cấp, ví dụ
+    # OPENAI_API_KEY hoặc ANTHROPIC_API_KEY
+    # os.environ["OPENAI_API_KEY"] = "..."
+
+    from langchain.agents import create_agent
+    from langchain.chat_models import init_chat_model
+    from langchain.messages import AIMessage, ToolMessage
+    from langchain.tools import tool
+
     # Bước 2: Định nghĩa Công cụ
+    # Tên công cụ lấy từ tên hàm, phần mô tả lấy từ docstring; mô hình chỉ
+    # dựa vào hai thứ đó để quyết định khi nào gọi.
     @tool
     def search_wikipedia(query: str) -> str:
-        """
-        Searches Wikipedia to find information about a given query.
-        Use this tool for questions about current events, facts, or specific entities.
+        """Searches Wikipedia for a short summary of the given query.
+        Use this for questions about entities, facts, or specific events.
         """
         from wikipedia import summary
         try:
             return summary(query, sentences=2)
         except Exception as e:
             return f"Error searching Wikipedia: {e}"
-    
+
     tools = [search_wikipedia]
-    
+
     # Bước 3: Khởi tạo LLM và Agent
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-    
-    # Tải một prompt ReAct đã được thiết kế sẵn từ LangChain Hub
-    prompt = hub.pull("hwchase17/react")
-    
-    # Tạo agent, kết hợp llm, tools, và prompt
-    agent = create_react_agent(llm, tools, prompt)
-    
-    # Tạo executor để chạy agent
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-    
+    # Điền model id hiện hành của nhà cung cấp (xem tài liệu của họ trước khi chạy)
+    MODEL = "<model-id>"
+    llm = init_chat_model(MODEL, model_provider="<provider>")
+
+    # create_agent trả về một graph đã biên dịch: nó tự lặp giữa lượt gọi
+    # mô hình và lượt chạy công cụ cho tới khi mô hình không gọi thêm.
+    agent = create_agent(
+        model=llm,
+        tools=tools,
+        system_prompt=(
+            "You are a research assistant. If a question needs facts you "
+            "are not sure about, call search_wikipedia before answering. "
+            "Answer in two or three sentences."
+        ),
+    )
+
     # Bước 4: Thực thi Agent
     query = "What is the main idea behind the LLaVA model?"
-    result = agent_executor.invoke({"input": query})
-    
+    result = agent.invoke({"messages": [{"role": "user", "content": query}]})
+
+    # Cả vòng lặp nằm trong result["messages"]: mỗi lần mô hình quyết định
+    # dùng công cụ là một AIMessage có tool_calls, mỗi kết quả trả về là
+    # một ToolMessage.
+    for msg in result["messages"]:
+        if isinstance(msg, AIMessage) and msg.tool_calls:
+            for call in msg.tool_calls:
+                print(f"[Action] {call['name']} {call['args']}")
+        elif isinstance(msg, ToolMessage):
+            print(f"[Observation] {msg.content}")
+
     print("\nFinal Answer:")
-    print(result["output"])
+    print(result["messages"][-1].text)
     \end{minted}
 \end{example}
-\textbf{Kết quả mong đợi (`verbose=True`):} Bạn sẽ thấy log của agent, thể hiện rõ các bước suy nghĩ của nó:
+\textbf{Kết quả mong đợi:} Phần in ra ở bước 4 cho thấy agent đã gọi công cụ, nhận kết quả, rồi mới trả lời:
 \begin{verbatim}
-> Entering new AgentExecutor chain...
-Thought: The user is asking about the LLaVA model. I don't have detailed,
-up-to-the-minute information on specific models in my internal knowledge.
-I should use the Wikipedia search tool to get a summary.
-Action: search_wikipedia
-Action Input: "LLaVA model"
-Observation: LLaVA (Large Language and Vision Assistant) is a large
+[Action] search_wikipedia {'query': 'LLaVA model'}
+[Observation] LLaVA (Large Language and Vision Assistant) is a large
 multimodal model (LMM) created by researchers from the University of
-Wisconsin-Madison, Microsoft Research, and Columbia University. It combines a
-vision encoder with a large language model (LLM) to enable multimodal
-chat capabilities, demonstrating impressive performance on various benchmarks.
-Thought: I now have the main idea of the LLaVA model. It combines a vision
-encoder and an LLM for multimodal chat. I can now formulate the final answer.
-Action: finish
-Final Answer: The main idea behind the LLaVA model is to combine a vision
-encoder with a large language model (LLM) to create a powerful multimodal
-assistant capable of understanding and discussing images in a conversational
-manner.
+Wisconsin-Madison, Microsoft Research, and Columbia University. It
+combines a vision encoder with a large language model (LLM) to enable
+multimodal chat capabilities.
 
-> Finished chain.
+Final Answer:
+The main idea behind the LLaVA model is to combine a vision encoder
+with a large language model, so that one model can both read an image
+and discuss it in a conversation.
 \end{verbatim}
+Bước \texttt{Thought} không còn được in ra dưới dạng văn bản: mô hình phát ra một lời gọi công cụ có cấu trúc, nên phần suy luận nằm trong quyết định gọi \texttt{search\_wikipedia} chứ không nằm trong chuỗi ký tự mà mô hình sinh ra.
 
-\begin{tcolorbox}[title={Cập nhật 2026: Tác tử hiện đại không còn “diễn kịch” ReAct bằng text}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
-Công thức ReAct ở trên rất tốt để \emph{hiểu} vòng lặp Suy nghĩ--Hành động--Quan sát (mục~\ref{ssec:react_framework}), nhưng cách triển khai thực tế hiện nay khác ở ba điểm:
+\begin{deepdive}{Cập nhật 2026: tác tử hiện đại không còn mô phỏng ReAct bằng văn bản tự do}
+Công thức ReAct ở trên có ích để \emph{hiểu} vòng lặp Suy nghĩ--Hành động--Quan sát (mục~\ref{ssec:react_framework}), nhưng cách triển khai thực tế hiện nay khác ở ba điểm:
 \begin{enumerate}
 	\item \textbf{Gọi công cụ có cấu trúc (native tool calling):} Thay vì bắt mô hình in ra chuỗi \texttt{Action: ...} rồi tự phân tích bằng regex (rất dễ vỡ), ta khai báo công cụ dưới dạng \emph{JSON schema} và mô hình trả về lời gọi công cụ có cấu trúc. Mọi API hiện đại và các engine mở (vLLM, SGLang) đều hỗ trợ, thường với ràng buộc ngữ pháp để đảm bảo JSON hợp lệ.
 	\item \textbf{Model Context Protocol (MCP):} Một chuẩn mở để mô tả và kết nối công cụ/nguồn dữ liệu với LLM. Thay vì viết lại adapter cho từng framework, bạn dựng một “MCP server” cho hệ thống của mình và mọi client hỗ trợ MCP đều dùng được.
 	\item \textbf{Mô hình suy luận thay cho prompt ReAct:} Các mô hình suy luận (chương~\ref{chap:reasoning}) đã được huấn luyện để tự lập kế hoạch và tự sửa sai; phần “Thought” viết tay trong prompt trở nên ít cần thiết. Việc cần làm nhiều hơn là thiết kế \textbf{bộ công cụ tốt}, \textbf{giới hạn số vòng lặp}, và \textbf{cơ chế phê duyệt} cho các hành động khó đảo ngược.
 \end{enumerate}
 Khi đánh giá tác tử, hãy dùng các benchmark chuyên biệt (mục~\ref{sec:agent_evaluation}) và nhớ rằng điểm số phụ thuộc mạnh vào “giàn giáo” quanh mô hình, không chỉ vào mô hình.
-\end{tcolorbox}
+\end{deepdive}

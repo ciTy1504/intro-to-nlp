@@ -1,32 +1,32 @@
 % !TEX root = ../../main.tex
 % File: part2/chapters2/chap2_2.tex
 
-\section{Kỹ thuật Đánh giá Thực tế}
+\section{Kỹ thuật đánh giá thực tế}
 \label{sec:practical_evaluation}
 
-Việc theo dõi các metric đánh giá trong suốt quá trình huấn luyện là cực kỳ quan trọng. Nó không chỉ cho chúng ta biết mô hình đang hoạt động tốt đến đâu, mà còn giúp phát hiện sớm các vấn đề như quá khớp (overfitting) hoặc dưới khớp (underfitting).
+Theo dõi các metric đánh giá trong suốt quá trình huấn luyện cho biết mô hình đang hoạt động tốt đến đâu, và giúp phát hiện sớm các vấn đề như quá khớp (overfitting) hoặc dưới khớp (underfitting).
 
-`Trainer` API của thư viện `transformers` cung cấp một cách rất tiện lợi để thực hiện việc đánh giá định kỳ trên tập validation. Chìa khóa để làm việc này là cung cấp cho nó một hàm tùy chỉnh, thường được gọi là `compute\_metrics`.
+\texttt{Trainer} của thư viện \texttt{transformers} hỗ trợ đánh giá định kỳ trên tập validation. Để dùng được, bạn cung cấp cho nó một hàm tùy chỉnh, thường đặt tên là \texttt{compute\_metrics}.
 
-\subsection{Hàm \texttt{compute\_metrics}: Cầu nối giữa Mô hình và Metric}
+\subsection{Hàm \texttt{compute\_metrics}}
 \label{ssec:compute_metrics_function}
 
 \begin{itemize}
-    \item \textbf{Mục đích:} Hàm `compute\_metrics` là một hàm Python mà bạn tự định nghĩa. `Trainer` sẽ gọi hàm này sau mỗi epoch (hoặc sau một số bước nhất định) trong quá trình huấn luyện.
-    \item \textbf{Đầu vào:} Hàm này nhận vào một đối tượng `EvalPrediction`, là một tuple chứa hai mảng NumPy: `predictions` (các logits đầu ra từ mô hình) và `label\_ids` (các nhãn thật từ bộ dữ liệu).
-    \item \textbf{Đầu ra:} Hàm phải trả về một dictionary, trong đó key là tên của metric (ví dụ: `“f1”`) và value là giá trị của metric đó.
+    \item \textbf{Mục đích:} \texttt{compute\_metrics} là một hàm Python mà bạn tự định nghĩa. \texttt{Trainer} gọi hàm này sau mỗi epoch, hoặc sau một số bước nhất định, trong quá trình huấn luyện.
+    \item \textbf{Đầu vào:} Một đối tượng \texttt{EvalPrediction}, là một tuple chứa hai mảng NumPy: \texttt{predictions} (các logits đầu ra từ mô hình) và \texttt{label\_ids} (các nhãn thật từ bộ dữ liệu).
+    \item \textbf{Đầu ra:} Một dictionary, trong đó key là tên của metric (ví dụ \texttt{"f1"}) và value là giá trị của metric đó.
 \end{itemize}
 
 \paragraph{Quy trình bên trong một hàm \texttt{compute\_metrics}}
-Một hàm `compute\_metrics` điển hình sẽ thực hiện các bước sau:
+Một hàm \texttt{compute\_metrics} điển hình thực hiện các bước sau:
 \begin{enumerate}
-    \item \textbf{Tải các metric cần thiết} từ thư viện `evaluate`.
-    \item \textbf{Tiền xử lý đầu ra của mô hình:} Các `predictions` thường là các logits (các số thực thô). Chúng ta cần phải chuyển đổi chúng thành các dự đoán cuối cùng (ví dụ, bằng cách lấy `argmax` trên chiều cuối cùng) để có thể so sánh với các nhãn.
-    \item \textbf{Tính toán các metric:} Sử dụng các đối tượng metric đã tải để tính toán điểm số bằng cách truyền vào các dự đoán đã xử lý và các nhãn thật.
-    \item \textbf{Trả về kết quả:} Trả về một dictionary chứa các điểm số đã tính được.
+    \item \textbf{Tải các metric cần thiết} từ thư viện \texttt{evaluate}.
+    \item \textbf{Tiền xử lý đầu ra của mô hình:} \texttt{predictions} thường là các logits, tức các số thực thô. Cần chuyển chúng thành dự đoán cuối cùng, ví dụ bằng cách lấy \texttt{argmax} trên chiều cuối cùng, để so sánh được với các nhãn.
+    \item \textbf{Tính toán các metric:} Dùng các đối tượng metric đã tải, truyền vào các dự đoán đã xử lý và các nhãn thật.
+    \item \textbf{Trả về kết quả:} Một dictionary chứa các điểm số đã tính được.
 \end{enumerate}
 
-\begin{example}{Một hàm `compute\_metrics` cho bài toán phân loại chuỗi}{ex:compute_metrics_classification}
+\begin{example}{Một hàm \texttt{compute\_metrics} cho bài toán phân loại chuỗi}{ex:compute_metrics_classification}
     Đây là một ví dụ hoàn chỉnh cho một bài toán phân loại nhị phân, sử dụng F1, Precision và Recall.
     \begin{minted}{python}
     import numpy as np
@@ -68,14 +68,13 @@ Một hàm `compute\_metrics` điển hình sẽ thực hiện các bước sau:
     \end{minted}
 \end{example}
 
-\subsection{Đánh giá các Tác vụ Phức tạp hơn}
+\subsection{Đánh giá các tác vụ phức tạp hơn}
 \label{ssec:complex_task_evaluation}
 
-\subsubsection{Gán nhãn Chuỗi (NER) với `seqeval`}
-\begin{itemize}
-    \item \textbf{Vấn đề:} Đối với các tác vụ như Nhận dạng Thực thể Tên (NER), việc đánh giá không chỉ đơn giản là so sánh từng nhãn một. Chúng ta quan tâm đến việc mô hình có nhận dạng đúng \textbf{toàn bộ các thực thể} (bao gồm cả ranh giới và loại) hay không. Ví dụ, dự đoán `[B-PER, I-PER]` cho “Hồ Chí Minh” là đúng, nhưng dự đoán `[B-PER, B-LOC]` là sai hoàn toàn, mặc dù đúng được 1/2 nhãn.
-    \item \textbf{Giải pháp: `seqeval`.} Đây là một thư viện Python (cũng được tích hợp trong `evaluate`) chuyên để đánh giá các tác vụ gán nhãn chuỗi. Nó tính toán Precision, Recall, và F1-score ở cấp độ thực thể (entity-level) theo các định dạng chuẩn như IOB2.
-\end{itemize}
+\subsubsection{Gán nhãn chuỗi (NER) với \texttt{seqeval}}
+Với các tác vụ như nhận dạng thực thể tên (NER), đánh giá không phải là so sánh từng nhãn một. Điều cần biết là mô hình có nhận dạng đúng \textbf{toàn bộ các thực thể}, cả ranh giới và loại, hay không. Ví dụ, dự đoán \texttt{[B-PER, I-PER]} cho “Hồ Chí Minh” là đúng, còn dự đoán \texttt{[B-PER, B-LOC]} là sai hoàn toàn, mặc dù đúng được 1/2 nhãn.
+
+\texttt{seqeval} là một thư viện Python chuyên để đánh giá các tác vụ gán nhãn chuỗi, cũng được tích hợp trong \texttt{evaluate}. Nó tính Precision, Recall và F1-score ở cấp độ thực thể (entity-level) theo các định dạng chuẩn như IOB2.
 
 \begin{example}{Hàm \texttt{compute\_metrics} cho NER}{ex:compute_metrics_ner}
     \begin{minted}{python}
@@ -116,17 +115,15 @@ Một hàm `compute\_metrics` điển hình sẽ thực hiện các bước sau:
     \end{minted}
 \end{example}
 
-\subsubsection{Sinh Văn bản (Tóm tắt, Dịch máy) với ROUGE và BLEU}
-\begin{itemize}
-    \item \textbf{Vấn đề:} Các mô hình sinh văn bản (Decoder-Only, Encoder-Decoder) tạo ra các chuỗi văn bản có độ dài thay đổi. Việc đánh giá đòi hỏi phải so sánh các chuỗi này với các chuỗi tham khảo.
-    \item \textbf{Thách thức trong `Trainer`:} `Trainer` không thể tự động thu thập các chuỗi văn bản được sinh ra từ nhiều GPU. Hơn nữa, quá trình decode (chuyển các token ID thành văn bản) cần phải được thực hiện.
-    \item \textbf{Giải pháp:} `Trainer` có một phương thức đặc biệt là `predict`. Khi sử dụng `evaluation\_strategy` cùng với `predict\_with\_generate=True` trong `TrainingArguments`, `Trainer` sẽ tự động:
-        \begin{enumerate}
-            \item Chạy quá trình sinh văn bản (`.generate()`) trên tập validation.
-            \item Thu thập (gather) các kết quả từ tất cả các thiết bị.
-        \end{enumerate}
-        Chúng ta chỉ cần thực hiện bước decode và tính toán metric trong hàm `compute\_metrics`.
-\end{itemize}
+\subsubsection{Sinh văn bản (tóm tắt, dịch máy) với ROUGE và BLEU}
+Các mô hình sinh văn bản (Decoder-Only, Encoder-Decoder) tạo ra các chuỗi có độ dài thay đổi, nên việc đánh giá phải so sánh các chuỗi này với các chuỗi tham khảo. Vấn đề là \texttt{Trainer} thường không \emph{sinh} gì cả: vòng lặp đánh giá của nó chỉ chạy một lượt truyền thẳng và trả về logits, nên không có chuỗi văn bản nào để decode và đem so với chuỗi tham khảo.
+
+Cách giải quyết là dùng \texttt{Seq2Seq\allowbreak Trainer} cùng với \texttt{Seq2Seq\allowbreak Training\allowbreak Arguments} -- \texttt{predict\_\allowbreak with\_\allowbreak generate} là tham số của lớp \texttt{Seq2Seq\allowbreak Training\allowbreak Arguments}, không có trong \texttt{Training\allowbreak Arguments} thường. Khi đặt \texttt{eval\_strategy} cùng với \texttt{predict\_\allowbreak with\_\allowbreak generate=True}, \texttt{Seq2Seq\allowbreak Trainer} tự động:
+\begin{enumerate}
+    \item Chạy quá trình sinh văn bản (\texttt{.generate()}) trên tập validation.
+    \item Thu thập (gather) các kết quả từ tất cả các thiết bị.
+\end{enumerate}
+Phần còn lại, decode và tính metric, nằm trong hàm \texttt{compute\_metrics}.
 
 \begin{example}{Hàm \texttt{compute\_metrics} cho Tóm tắt (sử dụng ROUGE)}{ex:compute_metrics_summarization}
     \begin{minted}{python}
@@ -161,4 +158,4 @@ Một hàm `compute\_metrics` điển hình sẽ thực hiện các bước sau:
     \end{minted}
 \end{example}
 
-Việc xây dựng một hàm `compute\_metrics` đúng đắn và phù hợp với tác vụ là một bước không thể thiếu để có được một quy trình huấn luyện và đánh giá đáng tin cậy.
+Một hàm \texttt{compute\_metrics} viết đúng và phù hợp với tác vụ là điều kiện để quy trình huấn luyện và đánh giá đáng tin cậy.

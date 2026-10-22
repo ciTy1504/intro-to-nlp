@@ -5,23 +5,20 @@
 \section{Lý thuyết về Mixture-of-Experts (MoE)}
 \label{sec:mixture_of_experts}
 
-Khi chúng ta nói về việc “tăng quy mô” (scaling up) các mô hình ngôn ngữ, cách tiếp cận thông thường là làm cho các mô hình trở nên “dày đặc” hơn (denser) - tức là tăng số lớp, tăng số chiều ẩn, tăng số đầu chú ý. Tuy nhiên, cách tiếp cận này có một giới hạn: để xử lý mỗi token, \textbf{toàn bộ các tham số của mô hình đều phải được kích hoạt}. Điều này dẫn đến chi phí tính toán cực kỳ lớn ở cả quá trình huấn luyện và suy luận.
+Cách “tăng quy mô” (scaling up) thông thường là làm cho mô hình “dày đặc” hơn (denser): tăng số lớp, tăng số chiều ẩn, tăng số đầu chú ý. Cách này có một giới hạn: để xử lý mỗi token, \textbf{toàn bộ tham số của mô hình đều phải được kích hoạt}, nên chi phí tính toán rất lớn ở cả huấn luyện lẫn suy luận.
 
-Mixture-of-Experts (MoE) \cite{shazeer2017outrageously, fedus2022switch} đưa ra một giải pháp thanh lịch cho vấn đề này, dựa trên một triết lý rất con người:
+Mixture-of-Experts (MoE) \cite{shazeer2017outrageously, fedus2022switch} đi theo hướng khác:
 
-\begin{tcolorbox}[
-    title=Triết lý của Mixture-of-Experts,
-    colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries
-]
-“Không cần phải huy động toàn bộ bộ não để giải quyết mọi vấn đề. Thay vào đó, hãy có một hội đồng gồm nhiều \textbf{chuyên gia (experts)}, mỗi người chuyên về một lĩnh vực khác nhau. Đối với mỗi vấn đề cụ thể, chỉ cần hỏi ý kiến của một vài chuyên gia phù hợp nhất.”
-\end{tcolorbox}
+\begin{keyidea}{Chỉ hỏi vài chuyên gia phù hợp, không huy động tất cả}
+“Không cần huy động toàn bộ mô hình để giải quyết mọi vấn đề. Thay vào đó, hãy có một hội đồng gồm nhiều \textbf{chuyên gia (experts)}, mỗi người chuyên về một lĩnh vực khác nhau. Với mỗi vấn đề cụ thể, chỉ cần hỏi ý kiến một vài chuyên gia phù hợp nhất.”
+\end{keyidea}
 
 Trong bối cảnh của Transformer, MoE cho phép tăng số lượng tham số của mô hình lên rất lớn, nhưng lại giữ cho chi phí tính toán trên mỗi token không đổi hoặc chỉ tăng nhẹ. Đây được gọi là \textbf{tăng quy mô thưa thớt (sparse scaling)}.
 
-\subsection{Kiến trúc và Nguyên lý hoạt động}
+\subsection{Kiến trúc và nguyên lý hoạt động}
 \label{ssec:moe_architecture}
 
-Kiến trúc MoE không phải là một mô hình hoàn toàn mới. Thay vào đó, nó là một cách để sửa đổi các khối Transformer hiện có. Cụ thể, trong một khối Transformer tiêu chuẩn, lớp \textbf{Feed-Forward Network (FFN)} được thay thế bằng một \textbf{lớp MoE}.
+MoE không phải một mô hình hoàn toàn mới, mà là một cách sửa đổi khối Transformer hiện có. Cụ thể, trong một khối Transformer tiêu chuẩn, lớp \textbf{Feed-Forward Network (FFN)} được thay thế bằng một \textbf{lớp MoE}.
 
 Một lớp MoE bao gồm hai thành phần chính:
 \begin{enumerate}
@@ -30,7 +27,7 @@ Một lớp MoE bao gồm hai thành phần chính:
 \end{enumerate}
 
 \begin{center}
-    \includegraphics[width=1.0\textwidth]{moe_transformer_block.png}
+    \bookimage[1.0\textwidth]{moe_transformer_block}{Hình gồm ba phần. Bên trái là sơ đồ một mô hình Encoder-Decoder xử lý câu “It is a” rồi sinh “nice”. Ở giữa là một Transformer Block phóng to: Attention, Add+Norm, Dense FFN (gồm Linear1, Activation, Linear2), Add+Norm. Bên phải là khối MoE FFN thay thế Dense FFN: các Input Tokens đi vào Gate/Router, router phân token tới ba chuyên gia Expert 1, Expert 2, Expert 3 (hình tô vàng cho thấy token 3 được gửi tới hai chuyên gia khác nhau), rồi kết quả đi qua bước Combine. Một mũi tên hai chiều giữa hai khối ghi “Dense $\leftrightarrow$ MoE Conversion”.}
     \captionof{figure}{So sánh một khối Transformer tiêu chuẩn (trái) và một khối Transformer với lớp MoE (phải). Lớp FFN dày đặc được thay thế bằng một mạng cổng và nhiều chuyên gia FFN thưa thớt.}
     \label{fig:moe_transformer_block}
 \end{center}
@@ -38,26 +35,26 @@ Một lớp MoE bao gồm hai thành phần chính:
 \subsubsection{Dòng chảy dữ liệu của một token}
 Khi một token (được biểu diễn bằng vector $x$) đi vào lớp MoE, quá trình sau sẽ xảy ra:
 
-\paragraph{Bước 1: Định tuyến bởi Mạng cổng (Routing by the Gating Network)}
+\paragraph{Bước 1: định tuyến bởi mạng cổng (routing by the gating network)}
 \begin{itemize}
     \item Token $x$ được đưa vào mạng cổng.
     \item Mạng cổng, thường là một lớp tuyến tính đơn giản, sẽ xuất ra một vector logits có số chiều bằng số chuyên gia ($N$).
-    \item Một hàm `softmax` được áp dụng lên vector logits này để tạo ra một phân phối xác suất, $G(x) = (g_1, g_2, \dots, g_N)$, trong đó $g_i$ là “điểm số” hoặc “mức độ tin cậy” mà mạng cổng dành cho chuyên gia thứ $i$.
+    \item Một hàm \texttt{softmax} được áp dụng lên vector logits này để tạo ra một phân phối xác suất, $G(x) = (g_1, g_2, \dots, g_N)$, trong đó $g_i$ là “điểm số” hoặc “mức độ tin cậy” mà mạng cổng dành cho chuyên gia thứ $i$.
 \end{itemize}
 
-\paragraph{Bước 2: Chọn các Chuyên gia “Top-K”}
+\paragraph{Bước 2: chọn các chuyên gia “top-K”}
 \begin{itemize}
     \item Thay vì gửi token đến tất cả các chuyên gia (điều này sẽ làm mất đi tính hiệu quả), hệ thống chỉ chọn ra $k$ chuyên gia có điểm số cao nhất (Top-K routing). Thông thường, $k$ là một số rất nhỏ, ví dụ $k=1$ hoặc $k=2$.
     \item Ví dụ, nếu $k=2$ và chuyên gia thứ 3 và thứ 5 có điểm số cao nhất, thì token này sẽ chỉ được gửi đến hai chuyên gia này. Tất cả các chuyên gia khác sẽ không được kích hoạt cho token này.
 \end{itemize}
 
-\paragraph{Bước 3: Xử lý bởi các Chuyên gia}
+\paragraph{Bước 3: xử lý bởi các chuyên gia}
 \begin{itemize}
     \item Token $x$ được đưa qua các mạng FFN của $k$ chuyên gia đã được chọn.
     \item Kết quả đầu ra là $k$ vector: $E_1(x), E_2(x), \dots, E_k(x)$.
 \end{itemize}
 
-\paragraph{Bước 4: Tổng hợp có trọng số}
+\paragraph{Bước 4: tổng hợp có trọng số}
 \begin{itemize}
     \item Đầu ra cuối cùng của lớp MoE, $y$, là một tổng có trọng số của đầu ra từ các chuyên gia được chọn. Các trọng số này chính là các điểm số $g_i$ từ mạng cổng đã được chuẩn hóa.
     $$ y = \sum_{i \in \text{TopK}} g_i \cdot E_i(x) $$
@@ -70,24 +67,21 @@ Mô hình Mixtral 8x7B của Mistral AI \cite{jiang2024mixtral} là một ví d�
     \item \textbf{Top-2 Routing:} Tại mỗi lớp MoE, mỗi token chỉ được định tuyến đến 2 trong số 8 chuyên gia.
     \item \textbf{Chi phí tính toán:} Mỗi token chỉ kích hoạt khoảng \textbf{12.9B} tham số (phần dùng chung cộng hai chuyên gia), nên chi phí suy luận trên mỗi token tương đương một mô hình dày đặc cỡ 13B, trong khi chất lượng ngang hoặc vượt Llama 2 70B trên nhiều benchmark. Lưu ý rằng \emph{bộ nhớ} vẫn phải chứa đủ 46.7B tham số.
 \end{itemize}
-\begin{tcolorbox}[
-    title={Các “Chuyên gia” có thực sự chuyên môn hóa không?},
-    colback=blue!5!white, colframe=blue!75!black, fonttitle=\bfseries
-]
+\begin{deepdive}{Các “chuyên gia” có thực sự chuyên môn hóa không?}
 Phép ẩn dụ về “hội đồng chuyên gia” rất hữu ích, nhưng sự chuyên môn hóa của các expert FFN trong thực tế lại trừu tượng hơn nhiều.
 \begin{itemize}
     \item \textbf{Không phải là chuyên môn về chủ đề:} Các nghiên cứu đã chỉ ra rằng các expert thường không chuyên môn hóa theo các chủ đề dễ hiểu như “thể thao”, “khoa học” hay “lịch sử”. Việc định tuyến một token đến expert nào phụ thuộc nhiều vào các đặc trưng trừu tượng của vector biểu diễn của nó.
     \item \textbf{Chuyên môn hóa theo cụm cú pháp/ngữ nghĩa:} Thay vào đó, sự chuyên môn hóa có thể xảy ra ở mức độ thấp hơn. Ví dụ, một số chuyên gia có thể giỏi hơn trong việc xử lý các token là dấu câu, một số khác chuyên về các động từ, một số khác lại tập trung vào các token ở các lớp Transformer cụ thể (ví dụ, các token ở lớp đầu so với lớp cuối).
-    \item \textbf{Sự dư thừa có chủ đích:} Có bằng chứng cho thấy các chuyên gia không hoàn toàn độc lập. Thường có sự dư thừa (redundancy) giữa chúng. Điều này có thể là một đặc tính hữu ích, giúp mô hình trở nên mạnh mẽ hơn: nếu một chuyên gia đưa ra kết quả kém, các chuyên gia khác có thể bù đắp.
+    \item \textbf{Sự dư thừa có chủ đích:} Có bằng chứng cho thấy các chuyên gia không hoàn toàn độc lập. Thường có sự dư thừa (redundancy) giữa chúng. Đây có thể là một đặc tính hữu ích, giúp mô hình bền hơn: nếu một chuyên gia đưa ra kết quả kém, các chuyên gia khác có thể bù đắp.
 \end{itemize}
 Vì vậy, hãy xem các “chuyên gia” như các \textbf{nhóm tham số (parameter groups)} có thể học được, thay vì các chuyên gia về một lĩnh vực kiến thức cụ thể. Mạng cổng học cách kết hợp các nhóm tham số này một cách tối ưu cho từng token.
-\end{tcolorbox}
-\subsection{Thách thức trong việc Huấn luyện MoE}
+\end{deepdive}
+\subsection{Thách thức khi huấn luyện MoE}
 \label{ssec:moe_training_challenges}
 
-Mặc dù rất mạnh mẽ, việc huấn luyện MoE không hề đơn giản và đòi hỏi phải giải quyết một số thách thức đặc thù.
+Huấn luyện MoE đặt ra một số thách thức đặc thù.
 
-\paragraph{1. Thách thức về sự sụp đổ của việc định tuyến (Routing Collapse)}
+\paragraph{1. Sự sụp đổ của việc định tuyến (routing collapse)}
 Đây là vấn đề lớn nhất của MoE. Nếu không được kiểm soát, mạng cổng sẽ nhanh chóng học được một chiến lược “lười biếng”: luôn gửi phần lớn các token đến một hoặc một vài chuyên gia “yêu thích” mà nó cho là tốt nhất.
 \begin{itemize}
     \item \textbf{Hậu quả:}
@@ -97,15 +91,15 @@ Mặc dù rất mạnh mẽ, việc huấn luyện MoE không hề đơn giản 
         \end{enumerate}
 \end{itemize}
 
-\paragraph{Giải pháp: Hàm Mất mát Cân bằng Tải (Load Balancing Loss)}
+\paragraph{Giải pháp: hàm mất mát cân bằng tải (load balancing loss)}
 Để giải quyết vấn đề này, người ta thêm một \textbf{hàm mất mát phụ trợ (auxiliary loss)} vào hàm mất mát chính của mô hình. Hàm mất mát này được thiết kế để khuyến khích sự phân bổ token đồng đều và thường bao gồm hai thành phần:
 \begin{itemize}
     \item \textbf{Một thành phần khuyến khích tầm quan trọng (importance) đồng đều:} Nó phạt nếu tổng các điểm số (logits) mà mạng cổng gán cho mỗi chuyên gia trên toàn bộ một batch là không đồng đều. Điều này đảm bảo mỗi chuyên gia được coi là “quan trọng” như nhau về mặt tổng thể.
     \item \textbf{Một thành phần khuyến khích số lượng token (load) đồng đều:} Nó phạt nếu số lượng token được gửi đến mỗi chuyên gia trong một batch là không đồng đều. Điều này đảm bảo mỗi chuyên gia có “công việc” để làm.
 \end{itemize}
-Việc cân bằng giữa hàm mất mát chính (ví dụ, cross-entropy) và hàm mất mát phụ trợ này là một trong những khía cạnh nghệ thuật nhất khi huấn luyện các mô hình MoE.
+Cân bằng giữa hàm mất mát chính (ví dụ cross-entropy) và hàm mất mát phụ trợ này là phần khó chỉnh nhất khi huấn luyện mô hình MoE.
 
-\subsection{Switch Transformer: Định tuyến Top-1 và Quy mô Nghìn tỷ Tham số}
+\subsection{Switch Transformer: định tuyến top-1 và quy mô nghìn tỷ tham số}
 \label{ssec:switch_transformer}
 \textbf{Switch Transformer} \cite{fedus2022switch} đặt câu hỏi ngược với trực giác thời đó: \emph{có cần gửi mỗi token tới ít nhất hai chuyên gia không?} Câu trả lời là không -- định tuyến tới \textbf{đúng một} chuyên gia (top-1, gọi là “switch”) vẫn giữ được chất lượng, đồng thời giảm một nửa chi phí tính toán và giao tiếp của lớp MoE.
 
@@ -127,7 +121,7 @@ trong đó $f_i$ là tỷ lệ token thực sự được gửi tới chuyên gi
 
 \paragraph{Các “mẹo” ổn định huấn luyện.} (1) Tính router ở độ chính xác float32 trong khi phần còn lại dùng bfloat16 (\emph{selective precision}); (2) khởi tạo trọng số nhỏ hơn (giảm hệ số tỷ lệ khởi tạo xuống 10 lần); (3) dropout lớn hơn ở các lớp chuyên gia khi tinh chỉnh. Kết quả: Switch-Base đạt chất lượng của T5-Base nhanh hơn tới 7 lần với cùng FLOPs mỗi token, và mô hình Switch-C đạt 1.6 nghìn tỷ tham số với 2048 chuyên gia.
 
-\subsection{DeepSeekMoE: Chuyên gia Mịn, Chuyên gia Chia sẻ và Cân bằng Tải không cần Loss phụ}
+\subsection{DeepSeekMoE: chuyên gia mịn, chuyên gia chia sẻ và cân bằng tải không cần loss phụ}
 \label{ssec:deepseekmoe}
 Các MoE kiểu GShard/Switch/Mixtral có ít chuyên gia (8--64) và mỗi chuyên gia khá lớn. DeepSeek chỉ ra hai vấn đề: \textbf{kiến thức bị trộn lẫn} (mỗi chuyên gia phải học quá nhiều thứ khác nhau) và \textbf{kiến thức bị dư thừa} (nhiều chuyên gia cùng phải học lại những kiến thức chung). \textbf{DeepSeekMoE} \cite{dai2024deepseekmoe} đề xuất hai thay đổi:
 \begin{enumerate}
@@ -159,22 +153,22 @@ Một kỹ thuật khác là thêm nhiễu ngẫu nhiên (Gaussian noise) vào l
 $$ \text{logits}_{\text{noisy}} = \text{logits}_{\text{original}} + \text{Noise} $$
 Nhiễu này buộc mô hình phải “khám phá” (explore) các lựa chọn định tuyến khác nhau thay vì chỉ đi theo con đường quen thuộc, giúp cải thiện sự cân bằng tải một cách tự nhiên.
 
-\paragraph{2. Thách thức về Triển khai và Cơ sở hạ tầng}
+\paragraph{2. Thách thức về triển khai và cơ sở hạ tầng}
 \begin{itemize}
     \item \textbf{Bộ nhớ:} Mặc dù chi phí tính toán trên mỗi token thấp, toàn bộ các tham số của tất cả các chuyên gia vẫn phải được tải vào bộ nhớ của GPU, đòi hỏi các hệ thống có bộ nhớ cực lớn.
     \item \textbf{Giao tiếp mạng:} Trong các hệ thống huấn luyện phân tán, các token từ một GPU có thể cần được gửi đến các chuyên gia nằm trên một GPU khác, đòi hỏi băng thông mạng rất cao.
 \end{itemize}
 
 \subsection{Tổng kết về MoE}
-Mixture-of-Experts là một sự thay đổi mô hình trong cách chúng ta xây dựng các mô hình ngôn ngữ lớn. Nó cho phép chúng ta tách rời \textbf{tổng số tham số} khỏi \textbf{chi phí tính toán trên mỗi token}.
+Mixture-of-Experts tách rời \textbf{tổng số tham số} khỏi \textbf{chi phí tính toán trên mỗi token}.
 
 Bằng cách sử dụng các chuyên gia thưa thớt, MoE mở ra một con đường để xây dựng các mô hình có quy mô khổng lồ (hàng nghìn tỷ tham số), có khả năng lưu trữ một lượng kiến thức cực lớn, trong khi vẫn duy trì được tốc độ huấn luyện và suy luận ở mức có thể quản lý được. Đến năm 2025--2026, MoE đã trở thành kiến trúc mặc định của hầu hết các mô hình mở hàng đầu (DeepSeek-V3, Qwen3-MoE, Llama 4, Kimi K2, gpt-oss), với xu hướng rõ rệt: \textbf{nhiều chuyên gia nhỏ hơn, tỷ lệ kích hoạt thấp hơn} (ví dụ 32B/1T ở Kimi K2), cùng với chuyên gia chia sẻ và các cơ chế cân bằng tải không dùng loss phụ.
 
-\begin{tcolorbox}[title={Đọc paper MoE mới: bốn câu hỏi nên đặt ra}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+\begin{keyidea}{Đọc paper MoE mới: bốn câu hỏi nên đặt ra}
 \begin{enumerate}
 	\item \textbf{Tổng tham số và tham số kích hoạt} là bao nhiêu? So sánh công bằng phải dựa trên FLOPs/token và bộ nhớ, không chỉ tổng tham số.
 	\item \textbf{Cân bằng tải} bằng cách nào (loss phụ, bias, capacity) và có token nào bị bỏ (dropped) không?
 	\item \textbf{Chi phí giao tiếp} được kiểm soát ra sao (giới hạn số node, expert parallelism)?
 	\item Kết quả có \textbf{ablation cùng lượng compute} với mô hình dày đặc tương ứng không?
 \end{enumerate}
-\end{tcolorbox}
+\end{keyidea}

@@ -1,24 +1,24 @@
 % !TEX root = ../../main.tex
 % File: part2/chapters4/chap4_2.tex
 
-\section{Xây dựng Hệ thống Hỏi-Đáp trên Tài liệu (RAG)}
+\section{Xây dựng hệ thống hỏi-đáp trên tài liệu (RAG)}
 \label{sec:recipe_rag}
 
-\textbf{Mục tiêu:} Xây dựng một hệ thống Hỏi-Đáp có thể trả lời các câu hỏi dựa trên nội dung của một tài liệu cụ thể. Phần này xây dựng trực tiếp dựa trên phần tìm kiếm ngữ nghĩa trước đó.
+\textbf{Mục tiêu:} Xây dựng một hệ thống hỏi-đáp trả lời câu hỏi dựa trên nội dung của một tài liệu cụ thể. Phần này dựng tiếp trên phần tìm kiếm ngữ nghĩa trước đó.
 
 \textbf{Thành phần chính:}
 \begin{itemize}
     \item \textbf{\texttt{LangChain} / \texttt{LlamaIndex}:} Các framework cấp cao giúp đơn giản hoá việc xây dựng ứng dụng dựa trên LLM, đặc biệt là RAG. Ở đây dùng \texttt{LangChain}.
     \item \textbf{Retriever:} Thành phần tìm kiếm ngữ nghĩa (giống phần trước).
-    \item \textbf{LLM (Generator):} Một mô hình ngôn ngữ lớn (ví dụ \texttt{gpt-3.5-turbo} qua API hoặc mô hình mã nguồn mở) để sinh câu trả lời cuối cùng.
+    \item \textbf{LLM (Generator):} Một mô hình ngôn ngữ lớn (qua API của một nhà cung cấp, hoặc một mô hình mã nguồn mở) để sinh câu trả lời cuối cùng. Các \textit{model id} của API thay đổi liên tục và các mô hình cũ bị ngừng phục vụ, nên hãy đối chiếu tài liệu của nhà cung cấp ở thời điểm bạn chạy thay vì tin vào một id in trong sách.
 \end{itemize}
 
 \textbf{Các bước thực hiện:}
 \begin{enumerate}
-    \item \textbf{Tải và Phân mảnh Dữ liệu:} Tải tài liệu dài và chia thành các \textit{chunk} nhỏ.
-    \item \textbf{Thiết lập Vector Store:} Dùng mô hình embedding và cơ sở dữ liệu vector để lập chỉ mục các \textit{chunk}.
+    \item \textbf{Tải và phân mảnh dữ liệu:} Tải tài liệu dài và chia thành các \textit{chunk} nhỏ.
+    \item \textbf{Thiết lập vector store:} Dùng mô hình embedding và cơ sở dữ liệu vector để lập chỉ mục các \textit{chunk}.
     \item \textbf{Thiết lập LLM:} Khởi tạo LLM sẽ sử dụng.
-    \item \textbf{Xây dựng Chuỗi RAG (RAG Chain):} Kết nối Retriever và LLM qua một \texttt{PromptTemplate}.
+    \item \textbf{Xây dựng chuỗi RAG (RAG Chain):} Kết nối Retriever và LLM qua một \texttt{PromptTemplate}.
     \item \textbf{Hỏi đáp:} Đặt câu hỏi và nhận câu trả lời.
 \end{enumerate}
 
@@ -28,18 +28,19 @@
 \begin{example}{RAG cơ bản với LangChain + Chroma}{ex:rag_basic}
     \begin{minted}{python}
     # Bước 1: Cài đặt
-    #pip install langchain langchain-openai langchain-community sentence-transformers chromadb
+    #pip install langchain langchain-openai langchain-chroma langchain-huggingface
+    #pip install langchain-community sentence-transformers chromadb
     import os
     # os.environ["OPENAI_API_KEY"] = "sk-..."
     
     from langchain_community.document_loaders import WebBaseLoader
-    from langchain_community.vectorstores import Chroma
-    from langchain_community.embeddings import SentenceTransformerEmbeddings
+    from langchain_chroma import Chroma
+    from langchain_huggingface import HuggingFaceEmbeddings
     from langchain_text_splitters import RecursiveCharacterTextSplitter
     from langchain_openai import ChatOpenAI
-    from langchain.prompts import PromptTemplate
-    from langchain.schema.runnable import RunnablePassthrough
-    from langchain.schema.output_parser import StrOutputParser
+    from langchain_core.prompts import PromptTemplate
+    from langchain_core.runnables import RunnablePassthrough
+    from langchain_core.output_parsers import StrOutputParser
     
     # Bước 2: Tải và phân mảnh dữ liệu
     loader = WebBaseLoader(web_path="https://en.wikipedia.org/wiki/Large_language_model")
@@ -48,12 +49,14 @@
     splits = text_splitter.split_documents(docs)
     
     # Bước 3: Thiết lập Vector Store (Retriever)
-    embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+    embedding_function = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = Chroma.from_documents(documents=splits, embedding=embedding_function)
     retriever = vectorstore.as_retriever()
     
     # Bước 4: Thiết lập LLM và Prompt Template
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+    # Điền model id hiện hành của nhà cung cấp (xem tài liệu của họ trước khi chạy)
+    MODEL = "<model-id>"
+    llm = ChatOpenAI(model=MODEL, temperature=0)
     
     template = """Sử dụng các đoạn ngữ cảnh sau đây để trả lời câu hỏi.
     Nếu bạn không biết câu trả lời, hãy nói rằng bạn không biết.
@@ -65,7 +68,7 @@
     Câu trả lời hữu ích:"""
     rag_prompt = PromptTemplate.from_template(template)
     
-    # Bước 55: Xây dựng Chuỗi RAG
+    # Bước 5: Xây dựng Chuỗi RAG
     rag_chain = (
         {"context": retriever, "question": RunnablePassthrough()}
         | rag_prompt

@@ -1,17 +1,17 @@
 % !TEX root = ../main.tex
 % File: chapters_part1/chap3_6.tex
-% Nội dung cho Phần 3.6: {Contextualized Word Embeddings\section{{Contextualized Word Embeddings: Biểu diễn từ theo ngữ cảnh}
+% Nội dung cho Phần 3.6: Contextualized Word Embeddings
 
-\section{Contextualized Word Embeddings: Biểu diễn từ theo ngữ cảnh}
+\section{Contextualized word embeddings: biểu diễn từ theo ngữ cảnh}
 \label{sec:contextualized_embeddings}
 
-Các Word Embeddings truyền thống tạo vector cố định cho mỗi từ, bất kể ngữ cảnh. Ví dụ, từ \textit{“bank”} trong \textit{“river bank”} và \textit{“investment bank”} đều có cùng một vector. Điều này gây ra hạn chế lớn: \textbf{không thể xử lý đa nghĩa (polysemy)}.
+Các word embeddings truyền thống tạo vector cố định cho mỗi từ, bất kể ngữ cảnh. Ví dụ, từ \textit{“bank”} trong \textit{“river bank”} và \textit{“investment bank”} đều có cùng một vector. Điều này gây ra hạn chế lớn: \textbf{không thể xử lý đa nghĩa (polysemy)}.
 
 \paragraph{Ý tưởng cơ bản}\leavevmode
 
-\textbf{Contextualized Embeddings} giải quyết vấn đề này bằng cách biểu diễn mỗi từ dựa trên \textbf{ngữ cảnh xung quanh}. Vector của từ sẽ thay đổi tùy thuộc vào câu mà nó xuất hiện.
+\textbf{Contextualized embeddings} giải quyết vấn đề này bằng cách biểu diễn mỗi từ dựa trên \textbf{ngữ cảnh xung quanh}. Vector của từ sẽ thay đổi tùy thuộc vào câu mà nó xuất hiện.
 
-\subsection{ELMo: Bước đệm tới Embeddings theo ngữ cảnh}
+\subsection{ELMo: bước đệm tới embeddings theo ngữ cảnh}
 \label{ssec:elmo}
 
 \paragraph{Vấn đề của embedding tĩnh}
@@ -21,7 +21,7 @@ Các mô hình như \textbf{Word2Vec}, \textbf{GloVe}, \textbf{FastText} gán ch
 \textbf{ELMo} (Embeddings from Language Models, 2018) \cite{peters2018deep} tạo \emph{biểu diễn phụ thuộc ngữ cảnh} cho mỗi từ bằng cách khai thác \textbf{các trạng thái ẩn} của một \emph{mô hình ngôn ngữ hai chiều sâu} (biLM). Với mỗi vị trí trong câu, ELMo kết hợp có trọng số các tầng biểu diễn (từ ký tự đến các tầng LSTM) để sinh ra một vector thích nghi với ngữ cảnh cụ thể.
 
 %---------------------------------------
-\subsubsection{Kiến trúc và Pipeline}
+\subsubsection{Kiến trúc và pipeline}
 \label{ssec:elmo_architecture}
 
 ELMo gồm ba khối chính:
@@ -61,8 +61,11 @@ ELMo gồm ba khối chính:
 
 \noindent\textbf{Tóm tắt pipeline}:
 \[
-  \text{Văn bản} \;\to\; \text{Char-CNN} \;\to\; \text{BiLSTM (fwd/bwd, nhiều tầng)} \;\to\; 
-  \{\mathbf{h}_t^{(j)}\}_{j=0}^{L} \;\to\; \text{Weighted Sum + }\gamma \;\to\; \text{ELMo}_t.
+  \begin{aligned}
+    &\text{Văn bản} \;\to\; \text{Char-CNN} \;\to\; \text{BiLSTM (fwd/bwd, nhiều tầng)} \;\to\;
+    \{\mathbf{h}_t^{(j)}\}_{j=0}^{L} \\
+    &\qquad \to\; \text{Weighted Sum + }\gamma \;\to\; \text{ELMo}_t.
+  \end{aligned}
 \]
 
 %---------------------------------------
@@ -118,8 +121,8 @@ Vector \text{ELMo}$_t$ được \emph{nối} vào các đặc trưng đầu vào
 \label{ssec:elmo_why}
 
 \begin{itemize}
-  \item \textbf{Phụ thuộc ngữ cảnh hai chiều:} mỗi vị trí nhận thông tin từ cả lịch sử (trái) và tương lai (phải) trong câu.
-  \item \textbf{Kết hợp đa tầng:} thay vì chỉ dùng tầng cuối, ELMo học trọng số để kết hợp cả \emph{đầu vào ký tự} và các \emph{tầng ẩn} --- linh hoạt theo từng tác vụ.
+  \item \textbf{Phụ thuộc ngữ cảnh hai chiều:} Mỗi vị trí nhận thông tin từ cả lịch sử (trái) và tương lai (phải) trong câu.
+  \item \textbf{Kết hợp đa tầng:} Thay vì chỉ dùng tầng cuối, ELMo học trọng số để kết hợp cả \emph{đầu vào ký tự} và các \emph{tầng ẩn} --- linh hoạt theo từng tác vụ.
   \item \textbf{Xử lý OOV/hình thái:} Char-CNN cung cấp biểu diễn vững cho từ hiếm, từ mới, biến thể hình thái.
 \end{itemize}
 
@@ -128,7 +131,7 @@ Vector \text{ELMo}$_t$ được \emph{nối} vào các đặc trưng đầu vào
 \label{ssec:elmo_limits}
 
 \begin{itemize}
-  \item \textbf{LSTM khó song song hoá:} suy diễn/chạy huấn luyện chậm hơn kiến trúc self-attention.
+  \item \textbf{LSTM khó song song hoá:} Suy diễn/chạy huấn luyện chậm hơn kiến trúc self-attention.
   \item \textbf{Quan hệ xa (long-range) hạn chế:} LSTM dựa vào trạng thái tuần tự; Transformer học phụ thuộc xa hiệu quả hơn qua self-attention.
   \item \textbf{BERT và hậu duệ:} BERT thay biLM bằng \emph{masked language modeling} trên \emph{Transformer encoder}, vẫn cho ra embedding ngữ cảnh hoá nhưng hiệu quả và mở rộng tốt hơn.
 \end{itemize}
@@ -138,9 +141,9 @@ Vector \text{ELMo}$_t$ được \emph{nối} vào các đặc trưng đầu vào
 \label{ssec:elmo_practice}
 
 \begin{itemize}
-  \item \textbf{Khi dùng ELMo như đặc trưng bổ sung:} nối \text{ELMo}$_t$ vào embedding từ (hoặc đầu vào mô hình hiện có). Giữ nguyên tham số biLM và học $\{a_j\},\gamma$ thường đã đủ mạnh khi dữ liệu tác vụ nhỏ.
-  \item \textbf{Điều chỉnh trọng số tầng:} theo dõi $s_j$ sau khi học để phân tích tác vụ ưu tiên cú pháp hay ngữ nghĩa (tầng thấp hay cao).
-  \item \textbf{Tối ưu hoá tài nguyên:} nếu tài nguyên hạn chế, đóng băng toàn bộ biLM; nếu đủ tài nguyên, thử fine-tune một phần (ví dụ chỉ Char-CNN) để thích nghi miền dữ liệu.
+  \item \textbf{Khi dùng ELMo như đặc trưng bổ sung:} Nối \text{ELMo}$_t$ vào embedding từ (hoặc đầu vào mô hình hiện có). Giữ nguyên tham số biLM và học $\{a_j\},\gamma$ thường đã đủ mạnh khi dữ liệu tác vụ nhỏ.
+  \item \textbf{Điều chỉnh trọng số tầng:} Theo dõi $s_j$ sau khi học để phân tích tác vụ ưu tiên cú pháp hay ngữ nghĩa (tầng thấp hay cao).
+  \item \textbf{Tối ưu hoá tài nguyên:} Nếu tài nguyên hạn chế, đóng băng toàn bộ biLM; nếu đủ tài nguyên, thử fine-tune một phần (ví dụ chỉ Char-CNN) để thích nghi miền dữ liệu.
 \end{itemize}
 
 %---------------------------------------
@@ -178,16 +181,16 @@ Sự khác biệt đến từ các trạng thái ẩn $\{\mathbf{h}_t^{(j)}\}$ d
 \end{align*}
 
 \vspace{4pt}
-\noindent\textbf{Kết luận.} ELMo đưa biểu diễn từ vượt khỏi giới hạn tĩnh bằng cách \emph{ngữ cảnh hoá hai chiều} và \emph{kết hợp đa tầng có trọng số}. Nó mở đường cho kỷ nguyên embedding theo ngữ cảnh dựa trên Transformer (BERT và các họ mô hình sau này), nơi khả năng song song hoá và học phụ thuộc xa được cải thiện đáng kể.
+\noindent\textbf{Kết luận.} ELMo đưa biểu diễn từ vượt khỏi giới hạn tĩnh bằng cách \emph{ngữ cảnh hoá hai chiều} và \emph{kết hợp đa tầng có trọng số}. Nó mở đường cho các embedding theo ngữ cảnh dựa trên Transformer (BERT và các họ mô hình sau này), với khả năng song song hoá và học phụ thuộc xa tốt hơn nhiều.
 
-\subsection{ULMFiT: Công thức Vàng cho Học Chuyển giao trong NLP}
+\subsection{ULMFiT: quy trình học chuyển giao cho NLP}
 \label{ssec:ulmfit}
 
-Trước khi các mô hình Transformer khổng lồ thống trị, một trong những thách thức lớn nhất của NLP là làm sao để áp dụng hiệu quả học chuyển giao (transfer learning) như lĩnh vực Thị giác Máy tính đã làm với ImageNet. Các nỗ lực trước đó thường chỉ chuyển giao các word embeddings tĩnh (Word2Vec, GloVe), trong khi toàn bộ phần còn lại của mô hình phải được huấn luyện lại từ đầu cho mỗi tác vụ.
+Trước khi các mô hình Transformer khổng lồ chiếm vị trí chủ đạo, một trong những thách thức lớn nhất của NLP là làm sao áp dụng được học chuyển giao (transfer learning) như thị giác máy tính đã làm với ImageNet. Các nỗ lực trước đó thường chỉ chuyển giao các word embeddings tĩnh (Word2Vec, GloVe), trong khi toàn bộ phần còn lại của mô hình phải được huấn luyện lại từ đầu cho mỗi tác vụ.
 
-\textbf{ULMFiT} (Universal Language Model Fine-tuning), được giới thiệu bởi Jeremy Howard và Sebastian Ruder (fast.ai) vào năm 2018 \cite{howard2018universal}, đã tạo ra một cuộc cách mạng bằng cách đưa ra một \textbf{khung phương pháp (framework)} hoàn chỉnh và cực kỳ hiệu quả để tinh chỉnh (fine-tune) một mô hình ngôn ngữ cho các tác vụ phân loại văn bản downstream. ULMFiT đã chứng minh rằng, với các kỹ thuật phù hợp, chúng ta có thể đạt được kết quả SOTA (state-of-the-art) trên nhiều bộ dữ liệu chỉ với khoảng 100 mẫu được gán nhãn.
+\textbf{ULMFiT} (Universal Language Model Fine-tuning), được giới thiệu bởi Jeremy Howard và Sebastian Ruder (fast.ai) vào năm 2018 \cite{howard2018universal}, đưa ra một \textbf{khung phương pháp (framework)} hoàn chỉnh để tinh chỉnh (fine-tune) một mô hình ngôn ngữ cho các tác vụ phân loại văn bản downstream. ULMFiT cho thấy rằng, với các kỹ thuật phù hợp, chúng ta có thể đạt được kết quả SOTA (state-of-the-art) trên nhiều bộ dữ liệu chỉ với khoảng 100 mẫu được gán nhãn.
 
-\paragraph{Tư duy cốt lõi: Quy trình 3 bước}
+\paragraph{Tư duy cốt lõi: quy trình 3 bước}
 Ý tưởng của ULMFiT không nằm ở một kiến trúc mạng nơ-ron mới, mà là ở một \textbf{quy trình (recipe)} gồm 3 bước, được thiết kế cẩn thận để bảo toàn kiến thức đã học và tránh “sự quên lãng thảm khốc” (catastrophic forgetting).
 
 \begin{enumerate}
@@ -199,13 +202,13 @@ Trước khi các mô hình Transformer khổng lồ thống trị, một trong 
 \end{enumerate}
 
 \begin{center}
-    \includegraphics[width=0.9\textwidth]{ulmfit_process.png}
+    \bookimage[0.9\textwidth]{ulmfit_process}{Ba khối xếp cạnh nhau theo thứ tự thời gian. Khối 1: mô hình ngôn ngữ AWD-LSTM được huấn luyện trước trên kho văn bản chung. Khối 2: cùng mô hình đó được tiếp tục huấn luyện trên văn bản không nhãn của miền đích. Khối 3: lớp đầu ra được thay bằng đầu phân loại và mô hình được tinh chỉnh trên dữ liệu có nhãn của tác vụ. Mũi tên nối ba khối cho thấy trọng số được chuyển tiếp qua từng bước.}
     \captionof{figure}{Quy trình 3 bước của ULMFiT: Pre-training trên dữ liệu chung, Fine-tuning LM trên dữ liệu miền đích, và Fine-tuning bộ phân loại cho tác vụ cuối cùng.}
     \label{fig:ulmfit_process}
 \end{center}
 
-\subsubsection{Các kỹ thuật Tinh chỉnh then chốt}
-Sự thành công của ULMFiT không chỉ đến từ quy trình 3 bước mà còn từ 3 kỹ thuật tinh chỉnh thông minh được áp dụng trong bước cuối cùng.
+\subsubsection{Ba kỹ thuật tinh chỉnh}
+Ngoài quy trình 3 bước, ULMFiT còn dùng ba kỹ thuật tinh chỉnh ở bước cuối cùng.
 
 \paragraph{1. Tinh chỉnh phân biệt (Discriminative Fine-tuning)}
 Các tầng khác nhau của một mạng nơ-ron sâu nắm bắt các loại thông tin khác nhau: tầng đầu tiên học các đặc trưng rất chung chung, trong khi các tầng sau học các đặc trưng ngày càng cụ thể và phức tạp. Do đó, việc tinh chỉnh tất cả các tầng với cùng một tốc độ học (learning rate) là không hợp lý. ULMFiT đề xuất sử dụng các tốc độ học khác nhau cho mỗi tầng.
@@ -221,7 +224,7 @@ Khi cập nhật trọng số $\theta = \{\theta_1, \dots, \theta_L\}$, mỗi t�
 \end{equation}
 Kỹ thuật này cho phép các tầng trên học hỏi nhanh chóng để thích nghi với tác vụ mới, trong khi các tầng dưới chỉ thay đổi một cách cẩn trọng để không làm mất đi kiến thức ngôn ngữ tổng quát đã học.
 
-\paragraph{2. Tốc độ học Tam giác Lệch (Slanted Triangular Learning Rates - STLR)}
+\paragraph{2. Tốc độ học tam giác lệch (Slanted Triangular Learning Rates - STLR)}
 Thay vì giữ một tốc độ học không đổi hoặc giảm dần theo một hàm mũ đơn giản, ULMFiT sử dụng một lịch trình tốc độ học (learning rate schedule) đặc biệt. Trong một epoch, tốc độ học sẽ \textbf{tăng tuyến tính} trong một khoảng ngắn lúc đầu (warm-up), sau đó \textbf{giảm tuyến tính} trong phần còn lại của quá trình huấn luyện.
 
 Công thức của STLR tại bước huấn luyện $t$ được định nghĩa như sau:
@@ -237,11 +240,11 @@ trong đó:
 \begin{itemize}
     \item $T$ là tổng số bước huấn luyện trong một epoch.
     \item $t_{\text{cut}}$ là bước mà tại đó tốc độ học chuyển từ tăng sang giảm (thường là 10\% của $T$).
-    \item $\eta_{\max}$ là tốc độ học tối đa, được chọn cho tầng cuối cùng. Các tầng khác sẽ có $\eta_{\max}$ riêng theo quy tắc của Tinh chỉnh phân biệt.
+    \item $\eta_{\max}$ là tốc độ học tối đa, được chọn cho tầng cuối cùng. Các tầng khác sẽ có $\eta_{\max}$ riêng theo quy tắc của tinh chỉnh phân biệt.
 \end{itemize}
-Chiến lược này giúp mô hình nhanh chóng hội tụ đến một vùng tham số tốt (giai đoạn tăng) rồi sau đó từ từ tinh chỉnh để tìm điểm tối ưu cục bộ tốt hơn (giai đoạn giảm).
+Lịch trình này giúp mô hình nhanh chóng hội tụ đến một vùng tham số tốt (giai đoạn tăng) rồi sau đó từ từ tinh chỉnh để tìm điểm tối ưu cục bộ tốt hơn (giai đoạn giảm).
 
-\paragraph{3. Mở băng Dần dần (Gradual Unfreezing)}
+\paragraph{3. Mở băng dần dần (Gradual Unfreezing)}
 Để tránh “sự quên lãng thảm khốc”, việc tinh chỉnh toàn bộ mô hình ngay từ đầu trên một tập dữ liệu nhỏ có thể phá hỏng các trọng số đã được huấn luyện cẩn thận. ULMFiT đề xuất một phương pháp an toàn hơn, theo từng giai đoạn:
 
 \begin{enumerate}
@@ -249,22 +252,19 @@ Chiến lược này giúp mô hình nhanh chóng hội tụ đến một vùng 
     \item \textbf{Giai đoạn 2:} Mở băng (unfreeze) tầng trên cùng của mô hình gốc (tầng $L-1$) và huấn luyện nó cùng với tầng $L$ trong một epoch nữa.
     \item \textbf{Giai đoạn 3 và tiếp theo:} Tiếp tục quá trình này, tuần tự mở băng từng tầng một từ trên xuống dưới ($L-2, L-3, \dots, 1$) và huấn luyện cho đến khi toàn bộ mô hình được tinh chỉnh.
 \end{enumerate}
-Phương pháp này giống như việc từ từ “rã đông” kiến thức, giúp mô hình thích nghi một cách nhẹ nhàng và hiệu quả, đặc biệt khi dữ liệu tác vụ có hạn.
+Cách mở băng theo giai đoạn này giúp mô hình thích nghi dần, đặc biệt khi dữ liệu tác vụ có hạn.
 
-\begin{tcolorbox}[
-    title=Công thức thành công của ULMFiT,
-    colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries
-]
-ULMFiT không chỉ là một mô hình, mà là một công thức thực tiễn cho học chuyển giao trong NLP:
+\begin{assess}{Ba thành phần làm nên ULMFiT}
+ULMFiT là một công thức thực tiễn cho học chuyển giao trong NLP:
 \begin{itemize}
     \item \textbf{Kiến trúc nền tảng:} AWD-LSTM (một biến thể LSTM hiệu quả và được điều chuẩn tốt).
     \item \textbf{Quy trình 3 bước:} Pre-train (chung) $\rightarrow$ Fine-tune LM (miền đích) $\rightarrow$ Fine-tune Classifier (tác vụ).
-    \item \textbf{Bí quyết tinh chỉnh:} Kết hợp \textbf{Discriminative Fine-tuning}, \textbf{Slanted Triangular Learning Rates}, và \textbf{Gradual Unfreezing}.
+    \item \textbf{Kỹ thuật tinh chỉnh:} Kết hợp \textbf{Discriminative Fine-tuning}, \textbf{Slanted Triangular Learning Rates}, và \textbf{Gradual Unfreezing}.
 \end{itemize}
-\end{tcolorbox}
+\end{assess}
 
-\subsubsection{Di sản và Hạn chế}
-ULMFiT là một cột mốc quan trọng, nó đã “dân chủ hóa” việc áp dụng học chuyển giao trong NLP, cho thấy rằng không cần đến tài nguyên tính toán khổng lồ vẫn có thể đạt được hiệu suất cao. Nó đã đặt nền móng và tư duy cho các phương pháp sau này như BERT và các mô hình dựa trên Transformer, vốn cũng tuân theo quy trình “huấn luyện trước - tinh chỉnh” nhưng với kiến trúc mạnh mẽ hơn.
+\subsubsection{Ảnh hưởng và hạn chế}
+ULMFiT cho thấy không cần đến tài nguyên tính toán khổng lồ vẫn đạt được hiệu suất cao trong học chuyển giao cho NLP. Nó đặt nền cho các phương pháp sau này như BERT và các mô hình dựa trên Transformer, vốn cũng tuân theo quy trình “huấn luyện trước -- tinh chỉnh” nhưng với kiến trúc khác.
 
-Tuy nhiên, hạn chế chính của ULMFiT nằm ở kiến trúc LSTM tuần tự, vốn không thể song song hóa hiệu quả và gặp khó khăn trong việc nắm bắt các phụ thuộc tầm xa so với kiến trúc Self-Attention của Transformer.
+Hạn chế chính của ULMFiT nằm ở kiến trúc LSTM tuần tự, vốn không thể song song hóa hiệu quả và gặp khó khăn trong việc nắm bắt các phụ thuộc tầm xa so với kiến trúc Self-Attention của Transformer.
 

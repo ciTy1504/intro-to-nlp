@@ -2,31 +2,26 @@
 % File: part1/chapters_part6/chap6_2.tex
 % Nội dung cho Chương 6, Phần 1: Tối ưu hóa Pipeline RAG
 
-\section{Tối ưu hóa Pipeline RAG: Từ Naive đến Nâng cao}
+\section{Tối ưu hóa pipeline RAG: từ naive đến nâng cao}
 \label{sec:advanced_rag_pipeline}
 
-Kiến trúc RAG cơ bản là một điểm khởi đầu mạnh mẽ, nhưng để xây dựng một hệ thống thực sự hiệu quả và đáng tin cậy, chúng ta cần tối ưu hóa từng giai đoạn trong pipeline. Chương này sẽ giới thiệu triết lý “lọc rộng rồi tinh chỉnh sâu”, lấy cảm hứng từ các hệ thống tìm kiếm hàng đầu như Google, và áp dụng nó vào việc cải thiện ba giai đoạn cốt lõi: Lập chỉ mục, Truy xuất, và Sinh.
+Kiến trúc RAG cơ bản là điểm khởi đầu, nhưng một hệ thống hiệu quả và đáng tin cậy đòi hỏi tối ưu hóa từng giai đoạn trong pipeline. Mục này áp dụng triết lý “lọc rộng rồi tinh chỉnh sâu” của các hệ thống tìm kiếm như Google vào ba giai đoạn: lập chỉ mục, truy xuất và sinh.
 
-\begin{tcolorbox}[
-	title=Bài học cốt lõi từ các Hệ thống Tìm kiếm,
-	colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
-	]
-	Xây dựng một hệ thống retrieval mạnh mẽ không phải là việc chọn một thuật toán duy nhất. Đó là việc xây dựng một \textbf{pipeline đa tầng}. Chúng ta chấp nhận sử dụng các phương pháp “đủ tốt” và nhanh ở giai đoạn đầu để lọc số lượng lớn, sau đó mới đầu tư tài nguyên tính toán vào các phương pháp chính xác cao cho một số lượng nhỏ các ứng viên hứa hẹn nhất. Triết lý “lọc rộng rồi tinh chỉnh sâu” này chính là kim chỉ nam cho việc tối ưu hóa RAG.
-\end{tcolorbox}
-
-\subsection{Tối ưu hóa Giai đoạn Lập chỉ mục (Smarter Indexing)}
+\subsection{Tối ưu hóa giai đoạn lập chỉ mục (Smarter Indexing)}
 \label{ssec:smarter_indexing}
-Chất lượng của các chunk được lập chỉ mục ảnh hưởng trực tiếp đến khả năng tìm thấy thông tin chính xác. Nguyên tắc “Rác vào, Rác ra” hoàn toàn đúng ở đây. Các kỹ thuật dưới đây giúp cải thiện “chất lượng đầu vào” cho hệ thống RAG.
+Chất lượng của các chunk được lập chỉ mục ảnh hưởng trực tiếp đến khả năng tìm thấy thông tin chính xác: rác vào thì rác ra. Các kỹ thuật dưới đây cải thiện chất lượng đầu vào cho hệ thống RAG.
 
-\subsubsection{Chiến lược Phân mảnh Nâng cao (Advanced Chunking Strategies)}
-Việc chia văn bản một cách “mù quáng” theo kích thước cố định (fixed-size chunking) thường làm phá vỡ ngữ nghĩa của câu hoặc đoạn văn.
+\subsubsection{Chiến lược phân mảnh nâng cao (Advanced Chunking Strategies)}
+Chia văn bản theo kích thước cố định (fixed-size chunking) mà không xét nội dung thường làm vỡ ngữ nghĩa của câu hoặc đoạn văn.
 \begin{itemize}
-	\item \textbf{Chunking theo Ngữ nghĩa/Cấu trúc (Semantic/Structural Chunking):} Thay vì chia theo số ký tự, chúng ta chia dựa trên các ranh giới tự nhiên của văn bản như dấu ngắt câu, đoạn văn, tiêu đề (Markdown headers), hoặc các thẻ HTML. Điều này giúp các chunk giữ được sự mạch lạc và trọn vẹn về ý nghĩa.
+	\item \textbf{Chunking theo ngữ nghĩa/cấu trúc (Semantic/Structural Chunking):} Thay vì chia theo số ký tự, ta chia theo các ranh giới tự nhiên của văn bản như dấu ngắt câu, đoạn văn, tiêu đề (Markdown headers), hoặc các thẻ HTML. Nhờ đó mỗi chunk giữ được một ý trọn vẹn.
 	\item \textbf{Chunking có chồng lấn (Overlap Chunking):} Để tránh mất ngữ cảnh ở điểm nối giữa hai chunk, một phần nhỏ của chunk trước được lặp lại ở đầu chunk sau. Ví dụ: chunk 1 chứa các câu [1, 2, 3, 4], chunk 2 sẽ chứa các câu [4, 5, 6, 7].
 \end{itemize}
 
 \subsubsection{Kỹ thuật Small-to-Big và Sentence-Windowing}
-Đây là một kỹ thuật mạnh mẽ để cân bằng giữa độ chính xác khi tìm kiếm và đầy đủ ngữ cảnh cho LLM.
+\label{sssec:small_to_big}
+Kỹ thuật này còn được gọi bằng nhiều tên khác trong tài liệu và trong mã nguồn các thư viện: \textbf{parent--child chunks}, \emph{parent document retriever}, hay \emph{auto-merging retrieval}. Tất cả đều mô tả cùng một ý tưởng: \emph{tìm bằng đoạn nhỏ, nhưng đưa vào prompt đoạn lớn chứa nó}.
+Nó cân bằng giữa độ chính xác khi tìm kiếm và độ đầy đủ của ngữ cảnh đưa cho LLM.
 \begin{itemize}
 	\item \textbf{Vấn đề:} Các chunk lớn (nguyên đoạn văn) chứa nhiều ngữ cảnh nhưng khó khớp chính xác với một câu hỏi cụ thể. Các chunk nhỏ (một câu) thì dễ khớp chính xác nhưng lại thiếu ngữ cảnh xung quanh.
 	\item \textbf{Giải pháp “Small-to-Big”:}
@@ -35,59 +30,54 @@ Việc chia văn bản một cách “mù quáng” theo kích thước cố đ�
 		\item \textbf{Tìm kiếm (Retrieve):} Tìm kiếm trên các câu đơn lẻ để có độ chính xác cao nhất.
 		\item \textbf{Mở rộng (Expand):} Sau khi tìm được câu phù hợp nhất, thay vì chỉ trả về câu đó, hệ thống sẽ lấy ra một “cửa sổ” văn bản lớn hơn xung quanh câu đó (ví dụ: 3 câu trước và 3 câu sau, hoặc toàn bộ đoạn văn chứa câu đó) để cung cấp cho LLM.
 	\end{enumerate}
-	Kỹ thuật này giúp đạt được \textit{sự chính xác trong tìm kiếm} và \textit{sự đầy đủ về ngữ cảnh} khi sinh câu trả lời.
 \end{itemize}
 
-\subsubsection{Tầm quan trọng của Metadata}
-Metadata là “thông tin về thông tin”. Khi lập chỉ mục, việc lưu trữ metadata cùng với mỗi chunk là cực kỳ quan trọng cho các ứng dụng thực tế.
+\subsubsection{Metadata đi kèm chunk}
+Metadata là thông tin về thông tin: tên file nguồn, số trang, ngày xuất bản, tác giả, tiêu đề chương/mục, URL. Khi lập chỉ mục, hãy lưu metadata cùng với mỗi chunk, vì ba lý do.
 \begin{itemize}
-	\item \textbf{Ví dụ về Metadata:} Tên file nguồn, số trang, ngày xuất bản, tác giả, tiêu đề chương/mục, URL.
-	\item \textbf{Tại sao nó quan trọng?}
-	\begin{itemize}
-		\item \textbf{Trích dẫn nguồn:} Giúp LLM có thể trích dẫn nguồn gốc của thông tin một cách chính xác trong câu trả lời (ví dụ: “Theo tài liệu X, trang 5...”).
-		\item \textbf{Lọc trước khi tìm kiếm (Pre-filtering):} Cho phép thu hẹp không gian tìm kiếm. Ví dụ: “Chỉ tìm kiếm trong các tài liệu được xuất bản sau năm 2023”.
-		\item \textbf{Gỡ lỗi (Debugging):} Dễ dàng truy vết xem chunk gây ra câu trả lời sai đến từ tài liệu nào.
-	\end{itemize}
+	\item \textbf{Trích dẫn nguồn:} Giúp LLM trích dẫn chính xác nguồn gốc của thông tin trong câu trả lời (ví dụ: “Theo tài liệu X, trang 5...”).
+	\item \textbf{Lọc trước khi tìm kiếm (Pre-filtering):} Cho phép thu hẹp không gian tìm kiếm. Ví dụ: “Chỉ tìm kiếm trong các tài liệu được xuất bản sau năm 2023”.
+	\item \textbf{Gỡ lỗi (Debugging):} Dễ dàng truy vết xem chunk gây ra câu trả lời sai đến từ tài liệu nào.
 \end{itemize}
 
-\subsection{Tối ưu hóa Giai đoạn Truy xuất (Advanced Retrieval \& Ranking)}
+\subsection{Tối ưu hóa giai đoạn truy xuất (Advanced Retrieval \& Ranking)}
 \label{ssec:advanced_retrieval_ranking}
-\begin{tcolorbox}[title=Mục tiêu, colback=blue!5!white, colframe=blue!75!black]
-	Retriever là trái tim của RAG. Giai đoạn này quyết định “chất lượng nguyên liệu đầu vào” cho LLM. Một hệ thống RAG chỉ có thể tốt bằng thành phần retriever của nó. Các kỹ thuật dưới đây giúp tìm được những mảnh ghép thông tin (chunk) chính xác, liên quan và đa dạng nhất.
-\end{tcolorbox}
+\begin{keyidea}{Chất lượng của retriever là chặn trên của cả hệ thống}
+	Giai đoạn truy xuất quyết định chất lượng nguyên liệu đầu vào cho LLM: một hệ thống RAG chỉ tốt được bằng retriever của nó. Các kỹ thuật dưới đây nhằm tìm ra các chunk chính xác, liên quan và đa dạng nhất.
+\end{keyidea}
 
-\subsubsection{Tầng 1: Tìm kiếm Lai để Tạo Ứng viên (Hybrid Search for Candidate Generation)}
+\subsubsection{Tầng 1: tìm kiếm lai để tạo ứng viên (Hybrid Search for Candidate Generation)}
 Đây là bước “lọc rộng”, ưu tiên \textit{recall} để đảm bảo không bỏ sót các tài liệu tiềm năng.
 \begin{itemize}
 	\item \textbf{Cơ chế:} Hệ thống chạy song song cả \textbf{Sparse Retriever} (BM25) để khớp từ khóa và \textbf{Dense Retriever} (Vector Search) để hiểu ngữ nghĩa. Sau đó, điểm số từ hai hệ thống được kết hợp lại (ví dụ: dùng thuật toán Reciprocal Rank Fusion - RRF) để tạo ra một danh sách ứng viên (candidate list) chất lượng cao (thường là top 100-200).
-	\item \textbf{Lợi ích:} Tận dụng khả năng khớp từ khóa chính xác của Sparse và khả năng hiểu ngữ nghĩa sâu sắc của Dense. Đây được coi là phương pháp mặc định để có được recall tốt nhất.
+	\item \textbf{Lợi ích:} Tận dụng khả năng khớp từ khóa chính xác của Sparse và khả năng hiểu ngữ nghĩa của Dense. Đây được coi là phương pháp mặc định để có được recall tốt nhất.
 \end{itemize}
 
-\subsubsection{Tầng 2: Xếp hạng lại (Re-ranking) với Cross-Encoders}
+\subsubsection{Tầng 2: xếp hạng lại (Re-ranking) với Cross-Encoders}
 Đây là bước “tinh chỉnh sâu”, ưu tiên \textit{precision} để chọn ra những tài liệu tốt nhất từ danh sách ứng viên.
 \begin{itemize}
-	\item \textbf{Vấn đề:} Hybrid Search rất nhanh và hiệu quả, nhưng trong top 100-200 ứng viên, đâu mới là những chunk thực sự tốt nhất?
-	\item \textbf{Giải pháp:} Sử dụng một mô hình thứ hai, mạnh hơn nhưng chậm hơn, gọi là \textbf{Cross-Encoder}.
+	\item \textbf{Vấn đề:} Hybrid Search nhanh và hiệu quả, nhưng nó không cho biết trong top 100-200 ứng viên thì chunk nào thực sự tốt nhất.
+	\item \textbf{Giải pháp:} Dùng một mô hình thứ hai, mạnh hơn nhưng chậm hơn, gọi là \textbf{Cross-Encoder}.
 	\begin{itemize}
 		\item \textbf{Cơ chế:} Thay vì tạo vector riêng cho câu hỏi và tài liệu, Cross-Encoder nhận vào cặp \texttt{(câu hỏi, chunk)} và xử lý chúng cùng lúc để đưa ra một điểm số tương đồng duy nhất. Việc xem xét cả hai cùng lúc cho phép nó hiểu được sự tương tác tinh vi hơn.
 		\item \textbf{Quy trình:} Hybrid Search tìm ra top-K ứng viên (K lớn). Sau đó, Cross-Encoder sẽ đánh giá và xếp hạng lại top-K này để chọn ra top-N cuối cùng (N nhỏ) gửi cho LLM.
 	\end{itemize}
 \end{itemize}
 
-\subsection{Tối ưu hóa Giai đoạn Sinh (Smarter Generation)}
+\subsection{Tối ưu hóa giai đoạn sinh (Smarter Generation)}
 \label{ssec:smarter_aug_gen}
-Sau khi đã có những chunk chất lượng nhất, chúng ta cần đảm bảo LLM sử dụng chúng một cách hiệu quả và trung thực.
+Sau khi đã có những chunk chất lượng nhất, việc còn lại là đảm bảo LLM dùng chúng một cách hiệu quả và trung thực.
 
-\subsubsection{Nén Ngữ cảnh (Context Compression)}
+\subsubsection{Nén ngữ cảnh (Context Compression)}
 Đôi khi, các chunk được truy xuất vẫn chứa nhiều thông tin thừa so với câu hỏi. Việc “nhồi nhét” tất cả vào prompt có thể làm LLM bị nhiễu.
 \begin{itemize}
 	\item \textbf{Cơ chế:} Trước khi đưa các chunk vào prompt cuối cùng, một mô hình nhỏ hơn (hoặc chính LLM với một prompt đặc biệt) sẽ chạy qua và chỉ giữ lại những câu, những ý có liên quan trực tiếp đến câu hỏi của người dùng.
 	\item \textbf{Lợi ích:} Giảm độ dài của prompt (tiết kiệm chi phí), tăng sự tập trung cho LLM vào các bằng chứng quan trọng nhất.
 \end{itemize}
 
-\subsubsection{Kiểm soát việc Sinh: Buộc Trích dẫn và Chống Bịa đặt (Hallucination Guardrails)}
-Đây là bước cuối cùng và quan trọng nhất để đảm bảo tính tin cậy của hệ thống.
+\subsubsection{Kiểm soát việc sinh: buộc trích dẫn và chống bịa đặt (Hallucination Guardrails)}
+Đây là bước cuối cùng, và là chỗ quyết định độ tin cậy của hệ thống.
 \begin{itemize}
 	\item \textbf{Instruction Tuning:} Huấn luyện hoặc chỉ dẫn LLM một cách rõ ràng thông qua prompt: \textit{“Hãy trả lời câu hỏi chỉ dựa trên ngữ cảnh được cung cấp. Với mỗi thông tin đưa ra, hãy trích dẫn nguồn [doc\_id, chunk\_id]. Nếu thông tin không có trong ngữ cảnh, hãy trả lời 'Tôi không tìm thấy thông tin trong tài liệu'.”}
-	\item \textbf{Giảm Temperature:} Khi sinh câu trả lời, đặt tham số `temperature` của LLM ở mức thấp (ví dụ: 0.1) để giảm tính ngẫu nhiên và sáng tạo, buộc nó bám sát vào văn bản nguồn.
+	\item \textbf{Giảm temperature:} Khi sinh câu trả lời, đặt tham số \texttt{temperature} của LLM ở mức thấp (ví dụ: 0.1) để giảm tính ngẫu nhiên và sáng tạo, buộc nó bám sát vào văn bản nguồn.
 \end{itemize}

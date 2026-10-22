@@ -1,21 +1,21 @@
 % !TEX root = ../../main.tex
 % File: part2/chapters4/chap4_1.tex
 
-\section{Xây dựng Hệ thống Tìm kiếm Ngữ nghĩa}
+\section{Xây dựng hệ thống tìm kiếm ngữ nghĩa}
 \label{sec:semantic_search}
 
-\textbf{Mục tiêu:} Xây dựng một hệ thống đơn giản có khả năng tìm kiếm các câu hoặc đoạn văn bản tương đồng về mặt ý nghĩa, thay vì chỉ khớp từ khóa. Đây là khối xây dựng cơ bản cho RAG và nhiều ứng dụng khác.
+\textbf{Mục tiêu:} Xây dựng một hệ thống đơn giản tìm được các câu hoặc đoạn văn bản tương đồng về mặt ý nghĩa, thay vì chỉ khớp từ khóa. Đây là thành phần nền của RAG và nhiều ứng dụng khác.
 
 \textbf{Thành phần chính:}
 \begin{itemize}
-    \item \textbf{\texttt{sentence-transformers}:} Thư viện dựa trên \texttt{transformers}, cung cấp các mô hình embedding chất lượng cao cho câu/đoạn văn.
+    \item \textbf{\texttt{sentence-\allowbreak transformers}:} Thư viện dựa trên \texttt{transformers}, cung cấp các mô hình embedding chất lượng cao cho câu/đoạn văn.
     \item \textbf{\texttt{chromadb}:} Cơ sở dữ liệu vector mã nguồn mở, cho phép lưu trữ và tìm kiếm embedding hiệu quả.
 \end{itemize}
 
 \textbf{Các bước thực hiện:}
 \begin{enumerate}
     \item \textbf{Chuẩn bị dữ liệu:} Danh sách các câu/đoạn văn bản để lập chỉ mục.
-    \item \textbf{Tải mô hình embedding:} Chọn và tải một mô hình từ \texttt{sentence-transformers}.
+    \item \textbf{Tải mô hình embedding:} Chọn và tải một mô hình từ \texttt{sentence-\allowbreak transformers}. Dữ liệu ở đây là tiếng Việt, nên phải chọn mô hình \textbf{đa ngữ}; các mô hình chỉ huấn luyện cho tiếng Anh (như \texttt{all-\allowbreak MiniLM-\allowbreak L6-\allowbreak v2}) sẽ cho kết quả kém.
     \item \textbf{Lập chỉ mục (Indexing):} Chuyển đổi văn bản thành vector embedding và lưu vào ChromaDB.
     \item \textbf{Truy vấn (Querying):} Nhúng câu truy vấn và tìm kiếm các vector tương tự trong ChromaDB.
 \end{enumerate}
@@ -27,13 +27,13 @@
 \colorbox{gray!20}{\texttt{pip install sentence-transformers chromadb}}
 
 % Code Python
-\begin{example}{Xây dựng hệ thống tìm kiếm ngữ nghĩa với Sentence-Transformers và ChromaDB}{ex:semantic_search}
+\begin{example}{Hệ thống tìm kiếm ngữ nghĩa với Sentence-Transformers và ChromaDB}{ex:semantic_search}
     \begin{minted}{python}
     from sentence_transformers import SentenceTransformer
     import chromadb
     
     # Bước 1: Chuẩn bị dữ liệu và tải mô hình
-    model = SentenceTransformer('all-MiniLM-L6-v2') 
+    model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2') 
     
     documents = [
         "Trái Đất quay quanh Mặt Trời.",

@@ -1,0 +1,105 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_part6/chap6_4.tex
+% Các kiến trúc RAG thế hệ sau
+
+\section{Các kiến trúc RAG thế hệ sau}
+\label{sec:advanced_rag_architectures}
+
+RAG cơ bản đứng trên ba giả định mà nó không bao giờ nói ra:
+\begin{enumerate}
+	\item Một chunk, tách khỏi tài liệu mẹ, vẫn mang đủ nghĩa để tìm thấy và để dùng.
+	\item Một lượt truy hồi là đủ.
+	\item Mọi câu hỏi đều trả lời được bằng cách tìm vài đoạn \emph{giống} câu hỏi.
+\end{enumerate}
+Mỗi kiến trúc trong mục này phá vỡ đúng một trong ba giả định đó.
+
+\subsection{Contextual Retrieval: vá lỗ hổng “chunk mất gốc”}
+\label{ssec:contextual_retrieval}
+
+Hãy nhìn một chunk thật, cắt ra từ một báo cáo tài chính:
+
+\begin{quote}
+\textit{“Doanh thu quý này tăng 3\% so với quý trước.”}
+\end{quote}
+
+\noindent Câu này gần như vô dụng khi đứng một mình. Công ty nào? Quý nào? 3\% của bao nhiêu? Vector nhúng của nó sẽ nằm gần mọi câu nói về tăng trưởng doanh thu của mọi công ty trong cơ sở tri thức. Đây không phải lỗi của bộ nhúng -- đây là lỗi của việc cắt.
+
+\textbf{Contextual Retrieval} \cite{anthropic2024contextual} là một thủ pháp đơn giản đến mức gần như hiển nhiên sau khi nghe: trước khi nhúng, hãy dùng một LLM sinh ra một đoạn ngữ cảnh ngắn (khoảng 50--100 token) định vị chunk đó trong tài liệu mẹ, rồi \textbf{nối đoạn ngữ cảnh ấy vào đầu chunk}. Chunk trên trở thành:
+
+\begin{quote}
+\textit{“Đoạn này trích từ báo cáo quý 2 năm 2023 của ACME Corp; doanh thu quý 1 năm 2023 là 314 triệu đô-la. Doanh thu quý này tăng 3\% so với quý trước.”}
+\end{quote}
+
+\noindent Điểm then chốt: văn bản đã bổ sung ngữ cảnh được dùng cho \emph{cả} vector nhúng \emph{lẫn} chỉ mục BM25.
+
+\paragraph{Và nó có số đo hiếm hoi rõ ràng.} Đây là một trong rất ít kỹ thuật RAG có con số trước/sau trên cùng một pipeline. Tính theo tỷ lệ truy hồi \emph{trượt} trong top-20, xuất phát từ 5{,}7\%:
+\begin{center}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Cấu hình} & \textbf{Tỷ lệ trượt} & \textbf{Mức giảm} \\
+\midrule
+Nhúng thường (đường cơ sở) & 5{,}7\% & -- \\
+Nhúng có ngữ cảnh & 3{,}7\% & 35\% \\
+\quad + BM25 có ngữ cảnh & 2{,}9\% & 49\% \\
+\quad\quad + bộ xếp hạng lại & \textbf{1{,}9\%} & \textbf{67\%} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Vì sao nó khả thi về kinh tế.} Thoạt nghe, gọi LLM một lần cho \emph{mỗi} chunk là một đề xuất đắt đỏ. Thứ cứu nó là \textbf{bộ nhớ đệm prompt}: tài liệu gốc chỉ cần nạp vào đệm một lần rồi tham chiếu lại cho từng chunk của nó, thay vì gửi lại mỗi lượt. Với giả định tài liệu 8K token và chunk 800 token, chi phí một lần ước tính khoảng \textbf{1 đô-la cho mỗi triệu token tài liệu}. Đây là một ví dụ đẹp về việc một tính năng hạ tầng (đệm prompt) mở khóa cho một kỹ thuật thuật toán vốn không khả thi trước đó.
+
+\subsection{RAPTOR: chỉ mục có nhiều tầng trừu tượng}
+\label{ssec:raptor}
+
+Giả định bị phá ở đây là giả định rằng câu trả lời luôn nằm trong \emph{một} chunk. Hãy thử hỏi: “Lập luận chính của chương 3 là gì?”. Không chunk nào chứa câu trả lời; nó phải được \emph{tổng hợp} từ nhiều chunk.
+
+\textbf{RAPTOR} \cite{sarthi2024raptor} xử lý bằng cách xây chỉ mục thành một cái cây:
+\begin{enumerate}
+	\item Gom các chunk thành cụm theo độ tương đồng.
+	\item Dùng LLM tóm tắt từng cụm.
+	\item Coi các bản tóm tắt đó như chunk mới, và lặp lại -- cho tới khi còn một nút gốc.
+	\item Khi truy hồi, tìm trên \emph{mọi} tầng của cây cùng lúc.
+\end{enumerate}
+Nhờ vậy, một câu hỏi chi tiết sẽ khớp với lá, còn một câu hỏi tổng hợp sẽ khớp với một nút tóm tắt ở tầng cao. Kết quả được báo cáo: ghép RAPTOR với GPT-4 nâng kết quả tốt nhất trước đó trên benchmark QuALITY thêm khoảng 20 điểm phần trăm.
+
+\paragraph{Cái giá.} Chi phí lập chỉ mục cao hơn hẳn -- mỗi tầng là một lượt tóm tắt bằng LLM trên toàn bộ corpus -- và cái cây phải dựng lại khi tài liệu thay đổi. RAPTOR hợp với corpus tương đối tĩnh và có giá trị cao, không hợp với cơ sở tri thức cập nhật liên tục.
+
+\subsection{Self-RAG và CRAG: thêm vòng phản hồi}
+\label{ssec:self_crag}
+
+Giả định bị phá ở đây là: \emph{một lượt truy hồi là đủ, và những gì tìm được thì dùng được}. RAG cơ bản không bao giờ đặt câu hỏi “thứ tôi vừa tìm được có thật sự giúp trả lời không?”.
+
+\paragraph{Self-RAG \cite{asai2023selfrag}} huấn luyện chính mô hình sinh ra các \textbf{token phản chiếu} (reflection token) xen giữa văn bản. Các token này cho mô hình tự quyết định hai việc: \emph{có cần truy hồi hay không} ở thời điểm này, và \emph{đoạn vừa truy hồi có liên quan, câu trả lời có được nó hỗ trợ hay không}. Điểm đáng chú ý nhất không phải phần tự chấm, mà là phần đầu: \textbf{truy hồi theo nhu cầu} thay vì luôn luôn truy hồi một số đoạn cố định. Với những câu hỏi mà mô hình vốn đã biết câu trả lời, việc nhét thêm đoạn truy hồi chỉ làm nhiễu.
+
+\paragraph{CRAG \cite{yan2024crag}} đi đường nhẹ hơn và không đòi huấn luyện lại mô hình chính. Một \textbf{bộ đánh giá nhẹ} chấm chất lượng tổng thể của tập tài liệu truy hồi được và trả về một mức tin cậy; mức đó quyết định hành động tiếp theo. Khi corpus tĩnh có vẻ sẽ cho kết quả yếu, hệ thống \textbf{bổ sung bằng tìm kiếm web}.
+
+\paragraph{Điểm chung đáng rút ra.} Cả hai đều biến RAG từ một \emph{đường ống thẳng} thành một \emph{vòng lặp có điều kiện}. Và cả hai đều cho thấy chỗ hở lớn nhất của RAG cơ bản không nằm ở bộ truy hồi mà nằm ở chỗ \emph{không ai kiểm tra kết quả truy hồi trước khi tin nó}.
+
+\subsection{GraphRAG: khi câu hỏi hỏi về toàn bộ corpus}
+\label{ssec:graphrag}
+
+Giả định cuối bị phá: \emph{mọi câu hỏi đều trả lời được bằng cách tìm những đoạn giống câu hỏi}.
+
+Hãy thử: “Những chủ đề xuyên suốt toàn bộ tập tài liệu này là gì?”. Không có đoạn nào chứa câu trả lời, và không có đoạn nào \emph{giống} câu hỏi. Tìm kiếm theo độ tương đồng hoàn toàn bất lực -- đây là loại câu hỏi \textbf{tổng hợp toàn cục}, không phải câu hỏi tra cứu.
+
+\textbf{GraphRAG} \cite{edge2024graphrag} đổi hẳn cấu trúc chỉ mục:
+\begin{enumerate}
+	\item Dùng LLM đọc toàn bộ tài liệu và dựng một \textbf{đồ thị tri thức thực thể} làm chỉ mục.
+	\item Gom các thực thể liên quan chặt chẽ thành các \textbf{cộng đồng}.
+	\item Sinh sẵn một bản tóm tắt cho mỗi cộng đồng, ngay từ lúc lập chỉ mục.
+	\item Khi có câu hỏi, mỗi bản tóm tắt cộng đồng cho một \emph{câu trả lời bộ phận}; các câu trả lời bộ phận được gộp lại thành câu trả lời cuối.
+\end{enumerate}
+
+\paragraph{Đừng hiểu nhầm nó là bản thay thế.} GraphRAG không thay thế RAG vector cho các câu hỏi tra cứu thông thường -- nó đắt hơn nhiều ở khâu lập chỉ mục và không nhanh hơn ở khâu tra cứu. Nó là công cụ cho một \emph{loại câu hỏi khác}. Một hệ thống thực tế thường định tuyến: câu hỏi tra cứu đi đường vector, câu hỏi tổng hợp đi đường đồ thị.
+
+\subsection{Bốn hướng khác đáng biết}
+\label{ssec:other_rag_variants}
+
+\paragraph{Late chunking: nhúng trước, cắt sau \cite{gunther2024latechunking}.} Truy hồi theo ngữ cảnh (mục~\ref{ssec:contextual_retrieval}) sửa vấn đề “chunk mất gốc” bằng cách gọi LLM cho từng chunk. Late chunking sửa cùng vấn đề đó mà \emph{không cần} LLM nào: đưa \emph{toàn bộ} tài liệu qua một mô hình nhúng ngữ cảnh dài trước, thu được embedding ở mức token đã mang thông tin toàn văn bản, rồi mới gộp các token thành chunk. Mỗi vector chunk vì thế đã “biết” về phần còn lại của tài liệu. Ưu điểm lớn: không cần huấn luyện thêm và rẻ hơn hẳn. Hạn chế: bị chặn bởi độ dài ngữ cảnh của chính mô hình nhúng.
+
+\paragraph{Adaptive-RAG: định tuyến theo độ khó \cite{jeong2024adaptiverag}.} Self-RAG và CRAG đều thêm một bước kiểm tra \emph{sau} khi truy hồi. Adaptive-RAG đặt câu hỏi sớm hơn: \emph{câu này có cần truy hồi không, và cần bao nhiêu lượt?} Một mô hình nhỏ đóng vai bộ phân loại, dự đoán độ phức tạp của câu hỏi rồi chọn một trong ba đường: \textbf{không truy hồi}, \textbf{truy hồi một lượt}, hoặc \textbf{truy hồi lặp nhiều lượt}. Giá trị thực tế nằm ở phân phối: phần lớn câu hỏi trong một hệ thống thật là câu dễ, và việc để chúng đi đường rẻ nhất tiết kiệm rất nhiều.
+
+\paragraph{RAFT: dạy mô hình phớt lờ đoạn nhiễu \cite{zhang2024raft}.} Mọi kỹ thuật tới đây đều cố đưa \emph{đúng} đoạn văn vào prompt. RAFT chấp nhận rằng sẽ luôn có đoạn nhiễu lọt vào, và tinh chỉnh chính LLM để chịu được điều đó: khi huấn luyện, mô hình được cho xem cả đoạn đúng lẫn \emph{đoạn gây nhiễu}, và học cách bỏ qua đoạn nhiễu đồng thời trích dẫn nguyên văn đoạn có ích. Đây là lời giải ở tầng mô hình cho điểm hỏng FP4 ở mục~\ref{ssec:seven_failure_points}.
+
+\paragraph{Các biến thể đồ thị nhẹ hơn.} Chi phí lập chỉ mục là rào cản lớn nhất của GraphRAG. Hai hướng giảm nó: \textbf{LazyGraphRAG} hoãn việc sinh tóm tắt cộng đồng cho tới khi có câu hỏi thật sự cần -- Microsoft công bố rằng cách này đưa chi phí thiết lập xuống còn khoảng 0{,}1\% so với GraphRAG đầy đủ; và \textbf{LightRAG} \cite{guo2024lightrag} dùng truy hồi hai tầng kèm một thuật toán \emph{cập nhật tăng dần}, nên chỉ mục không phải dựng lại từ đầu mỗi khi có tài liệu mới -- đúng điểm yếu đã nêu của RAPTOR và GraphRAG.

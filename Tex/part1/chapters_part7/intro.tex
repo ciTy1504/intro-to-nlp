@@ -1,13 +1,12 @@
 \chapter{CÁC HỆ THỐNG VÀ KIẾN TRÚC NÂNG CAO}
 \label{chap:advanced_systems}
 
-Ở các chương trước, chúng ta đã trao cho “bộ não” AI một “thư viện” khổng lồ và đáng tin cậy (RAG), rồi làm cho nó đủ nhỏ gọn và nhanh để triển khai thực tế. Tuy nhiên, để xây dựng các hệ thống AI thực sự toàn diện, chúng ta cần trang bị cho chúng nhiều khả năng hơn là chỉ đọc và tổng hợp văn bản. Liệu chúng có thể “nhìn” và “hành động”?
+Các chương trước đã trình bày pipeline RAG, rồi các kỹ thuật thu nhỏ và tăng tốc mô hình để triển khai thực tế. Chương này đi ra ngoài khuôn khổ một pipeline RAG tiêu chuẩn: LLM được ghép thêm những thành phần cho phép nó nhận đầu vào ngoài văn bản và thực hiện hành động, thay vì chỉ đọc và tổng hợp văn bản.
 
-Chương này sẽ đưa chúng ta vượt ra ngoài khuôn khổ của một pipeline RAG tiêu chuẩn, khám phá một loạt các kiến trúc và hệ thống nâng cao để biến LLM thành một thành phần trung tâm trong các ứng dụng phức tạp hơn.
 \begin{itemize}
-	\item Đầu tiên, chúng ta sẽ dạy cho LLM cách “nhìn” và hiểu thế giới đa phương thức, kết hợp văn bản với hình ảnh trong các \textbf{Mô hình Đa phương thức (Multimodal Models)}.
-	\item Sau đó, chúng ta sẽ trao cho LLM “tay chân” để tương tác với thế giới số, sử dụng các công cụ và API thông qua các \textbf{Hệ thống Tác tử (Agentic Systems)}.
-	\item Cuối cùng, chúng ta sẽ suy ngẫm về một khái niệm sâu sắc hơn: liệu LLM có đang âm thầm xây dựng một \textbf{Mô hình Thế giới (World Model)} bên trong để hiểu và mô phỏng thực tại hay không.
+	\item \textbf{Mô hình đa phương thức (Multimodal Models)} xử lý hình ảnh cùng với văn bản trong một mô hình.
+	\item \textbf{Hệ thống tác tử (Agentic Systems)} cho LLM gọi công cụ và API để tương tác với thế giới số.
+	\item \textbf{Mô hình thế giới (World Model)} là giả thuyết cho rằng LLM xây dựng bên trong nó một biểu diễn về thế giới để hiểu và mô phỏng thực tại.
 \end{itemize}
 
-Đây là bước cuối cùng trong hành trình khám phá lý thuyết, nơi chúng ta kết hợp tất cả các khối xây dựng đã học để tạo ra các hệ thống AI có khả năng tiệm cận với trí thông minh tổng quát.
+Các kiến trúc trong chương này kết hợp những khối xây dựng đã trình bày ở các chương trước.

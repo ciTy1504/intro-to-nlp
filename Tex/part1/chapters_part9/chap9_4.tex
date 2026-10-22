@@ -5,36 +5,33 @@
 \section{Đánh giá dựa trên LLM (LLM-as-a-Judge)}
 \label{sec:llm_as_a_judge}
 
-Như chúng ta đã thấy, việc đánh giá các kết quả đầu ra của LLM, đặc biệt là trong các tác vụ mở như đối thoại hay tóm tắt sáng tạo, là một thách thức lớn. Các metric tự động (BLEU, ROUGE) thì quá hời hợt, trong khi đánh giá bởi con người lại quá tốn kém và chậm chạp.
+Với các tác vụ mở như đối thoại hay tóm tắt sáng tạo, metric tự động (BLEU, ROUGE) quá hời hợt, còn đánh giá bởi con người quá tốn kém và chậm.
 
-Trong bối cảnh đó, một hướng tiếp cận mới đã nổi lên, tận dụng chính sức mạnh của các mô hình ngôn ngữ lớn: \textbf{sử dụng một LLM mạnh mẽ để đóng vai một “giám khảo” (judge) và đánh giá các câu trả lời do các mô hình khác tạo ra}.
+\textbf{LLM-as-a-Judge} dùng một LLM mạnh làm “giám khảo” (judge) để chấm các câu trả lời do mô hình khác tạo ra.
 
-\subsection{Nguyên lý và Cách tiếp cận}
+\subsection{Nguyên lý và cách tiếp cận}
 \label{ssec:llm_judge_principles}
 
-\begin{tcolorbox}[
-    title=Trực giác cốt lõi,
-    colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries
-]
-Nếu một LLM đủ mạnh (như GPT-4) có khả năng hiểu các chỉ dẫn phức tạp và tạo ra các câu trả lời chất lượng cao, thì nó cũng có khả năng hiểu các \textbf{tiêu chí đánh giá (evaluation criteria)} phức tạp và áp dụng chúng để chấm điểm hoặc so sánh các câu trả lời. Về cơ bản, chúng ta đang biến bài toán đánh giá thành một bài toán Hỏi-đáp hoặc Suy luận khác cho một LLM giám khảo.
-\end{tcolorbox}
+\begin{keyidea}{Giả định nền của LLM-as-a-Judge}
+Nếu một LLM đủ mạnh (như GPT-4) hiểu được các chỉ dẫn phức tạp và tạo ra câu trả lời chất lượng cao, thì nó cũng hiểu được các \textbf{tiêu chí đánh giá (evaluation criteria)} phức tạp và áp dụng được chúng để chấm điểm hoặc so sánh các câu trả lời. Bài toán đánh giá vì thế được chuyển thành một bài toán hỏi--đáp hoặc suy luận khác cho LLM giám khảo.
+\end{keyidea}
 
 Có hai cách tiếp cận chính để sử dụng LLM-as-a-Judge:
 
-\subsubsection{Đánh giá dựa trên Điểm số (Score-based Evaluation)}
+\subsubsection{Đánh giá dựa trên điểm số (Score-based Evaluation)}
 \begin{itemize}
-    \item \textbf{Cơ chế:} LLM giám khảo được cung cấp một bộ các tiêu chí đánh giá (ví dụ: độ chính xác, sự mạch lạc, tính hữu ích), một thang điểm (ví dụ: từ 1 đến 10), cùng với prompt và câu trả lời cần đánh giá. Sau đó, nó được yêu cầu đưa ra một điểm số cho mỗi tiêu chí và một lời giải thích cho điểm số đó.
-    \item \textbf{Ví dụ Prompt cho Giám khảo:}
-        \begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black, sharp corners]
+    \item \textbf{Cơ chế:} LLM giám khảo được cung cấp một bộ tiêu chí đánh giá (độ chính xác, sự mạch lạc, tính hữu ích), một thang điểm (ví dụ từ 1 đến 10), cùng với prompt và câu trả lời cần đánh giá. Nó phải đưa ra điểm số cho mỗi tiêu chí kèm lời giải thích.
+    \item \textbf{Ví dụ prompt cho giám khảo:}
+        \begin{promptbox}
         Bạn là một giám khảo AI công tâm. Hãy đánh giá câu trả lời sau đây dựa trên các tiêu chí: Mạch lạc, Trung thực, Hữu ích, trên thang điểm từ 1 đến 10. Hãy đưa ra lý do cho điểm số của bạn.
 
-        \textbf{Câu hỏi:} “Trình bày những lợi ích chính của Học Tăng cường từ Phản hồi Con người (RLHF).”
+        \textbf{Câu hỏi:} “Trình bày những lợi ích chính của học tăng cường từ phản hồi con người (RLHF).”
 
         \textbf{Câu trả lời cần đánh giá:} “RLHF là một phương pháp giúp mô hình tốt hơn. Nó sử dụng con người để chấm điểm và làm cho AI an toàn hơn.”
 
         \textbf{Đánh giá của bạn (dưới dạng JSON):}
-        \end{tcolorbox}
-    \item \textbf{Đầu ra mong muốn của Giám khảo:}
+        \end{promptbox}
+    \item \textbf{Đầu ra mong muốn của giám khảo:}
         \begin{verbatim}
         {
           "scores": {
@@ -47,78 +44,78 @@ Có hai cách tiếp cận chính để sử dụng LLM-as-a-Judge:
         \end{verbatim}
 \end{itemize}
 
-\subsubsection{Đánh giá dựa trên So sánh Cặp (Pairwise Comparison)}
+\subsubsection{Đánh giá dựa trên so sánh cặp (Pairwise Comparison)}
 \begin{itemize}
-    \item \textbf{Cơ chế:} Thay vì cho điểm một câu trả lời một cách độc lập (việc này rất khó và không nhất quán), LLM giám khảo được cung cấp cùng một prompt và \textbf{hai câu trả lời} khác nhau (ví dụ: từ Model A và Model B). Sau đó, nó được yêu cầu cho biết câu trả lời nào tốt hơn và tại sao.
-    \item \textbf{Lợi ích:} Giống như con người, việc so sánh hai đối tượng và chọn ra cái tốt hơn thường dễ dàng và đáng tin cậy hơn nhiều so với việc cho một điểm số tuyệt đối.
-    \item \textbf{Ví dụ Prompt cho Giám khảo:}
-        \begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black, sharp corners]
+    \item \textbf{Cơ chế:} Thay vì cho điểm một câu trả lời một cách độc lập (việc này khó và không nhất quán), LLM giám khảo được cung cấp cùng một prompt và hai câu trả lời khác nhau, ví dụ từ Model A và Model B, rồi phải cho biết câu trả lời nào tốt hơn và vì sao.
+    \item \textbf{Lợi ích:} So sánh hai đối tượng và chọn cái tốt hơn dễ và nhất quán hơn nhiều so với việc cho một điểm số tuyệt đối, với giám khảo LLM cũng như với người.
+    \item \textbf{Ví dụ prompt cho giám khảo:}
+        \begin{promptbox}
         Bạn là một giám khảo AI công tâm. Dưới đây là một câu hỏi và hai câu trả lời từ hai trợ lý AI khác nhau. Hãy so sánh chúng và quyết định câu trả lời nào tốt hơn. Hãy giải thích chi tiết cho lựa chọn của bạn.
 
         \textbf{Câu hỏi:} [Câu hỏi gốc...]
         
-        \textbf{[Bắt đầu Câu trả lời A]}
+        \textbf{[Bắt đầu câu trả lời A]}
         [Nội dung câu trả lời của Model A...]
-        \textbf{[Kết thúc Câu trả lời A]}
+        \textbf{[Kết thúc câu trả lời A]}
 
-        \textbf{[Bắt đầu Câu trả lời B]}
+        \textbf{[Bắt đầu câu trả lời B]}
         [Nội dung câu trả lời của Model B...]
-        \textbf{[Kết thúc Câu trả lời B]}
-        
-        \textbf{Phân tích và Quyết định của bạn:}
-        \end{tcolorbox}
-    \item \textbf{Kết quả:} Sau khi thực hiện nhiều so sánh cặp, chúng ta có thể sử dụng các hệ thống xếp hạng như Elo để tính ra một bảng xếp hạng tổng thể cho các mô hình. Các bảng xếp hạng LLM lớn như \textbf{Chatbot Arena Leaderboard} hoạt động dựa trên nguyên tắc này (nhưng với sự so sánh của con người).
+        \textbf{[Kết thúc câu trả lời B]}
+
+        \textbf{Phân tích và quyết định của bạn:}
+        \end{promptbox}
+    \item \textbf{Kết quả:} Sau nhiều so sánh cặp, có thể dùng các hệ thống xếp hạng như Elo để tính ra bảng xếp hạng tổng thể cho các mô hình. Các bảng xếp hạng LLM lớn như \textbf{Chatbot Arena Leaderboard} hoạt động theo nguyên tắc này, nhưng với so sánh của con người.
 \end{itemize}
 
-\subsection{MT-Bench và Chatbot Arena: Kiểm chứng LLM-as-a-Judge}
+\subsection{MT-Bench và Chatbot Arena: kiểm chứng LLM-as-a-Judge}
 \label{ssec:mtbench_arena}
-Zheng et al. \cite{zheng2023judging} là nghiên cứu hệ thống đầu tiên trả lời câu hỏi: \emph{giám khảo LLM đáng tin đến mức nào?} Họ xây dựng hai benchmark bổ trợ nhau:
+Zheng et al. \cite{zheng2023judging} là nghiên cứu hệ thống đầu tiên đo mức đáng tin của giám khảo LLM. Họ xây dựng hai benchmark bổ trợ nhau:
 \begin{itemize}
-	\item \textbf{MT-Bench:} 80 câu hỏi \textbf{hội thoại nhiều lượt} chất lượng cao, trải trên 8 nhóm: viết, nhập vai, trích xuất thông tin, suy luận, toán, lập trình, kiến thức STEM, và khoa học xã hội--nhân văn. Lượt thứ hai thường yêu cầu sửa đổi hoặc mở rộng câu trả lời đầu -- kiểm tra khả năng theo dõi hội thoại mà các benchmark một lượt bỏ qua.
-	\item \textbf{Chatbot Arena:} Nền tảng đánh giá cộng đồng: người dùng gửi câu hỏi tùy ý tới \emph{hai mô hình ẩn danh}, đọc hai câu trả lời và bình chọn bên tốt hơn; tên mô hình chỉ được tiết lộ sau khi bình chọn. Xếp hạng được tính bằng mô hình Bradley--Terry (tương tự Elo) \cite{chiang2024arena}:
+	\item \textbf{MT-Bench:} 80 câu hỏi hội thoại nhiều lượt, trải trên 8 nhóm: viết, nhập vai, trích xuất thông tin, suy luận, toán, lập trình, kiến thức STEM, và khoa học xã hội--nhân văn. Lượt thứ hai thường yêu cầu sửa đổi hoặc mở rộng câu trả lời đầu, qua đó kiểm tra khả năng theo dõi hội thoại mà các benchmark một lượt bỏ qua.
+	\item \textbf{Chatbot Arena:} Nền tảng đánh giá cộng đồng. Người dùng gửi câu hỏi tùy ý tới \emph{hai mô hình ẩn danh}, đọc hai câu trả lời và bình chọn bên tốt hơn; tên mô hình chỉ được tiết lộ sau khi bình chọn. Xếp hạng được tính bằng mô hình Bradley--Terry (tương tự Elo) \cite{chiang2024arena}:
 	\[
 	P(\text{mô hình } i \text{ thắng mô hình } j) = \frac{1}{1 + e^{-(\xi_i - \xi_j)}},
 	\]
 	với $\xi_i$ là “điểm năng lực” của mô hình $i$, ước lượng bằng hợp lý cực đại trên toàn bộ các lượt bình chọn, kèm khoảng tin cậy.
 \end{itemize}
 
-\paragraph{Phát hiện chính.} Với đánh giá so sánh cặp, \textbf{GPT-4 làm giám khảo đạt mức đồng thuận hơn 80\% với chuyên gia con người} -- ngang mức đồng thuận giữa hai người đánh giá với nhau. Nghiên cứu cũng định lượng các thiên vị của giám khảo (vị trí, độ dài, tự đề cao -- self-enhancement; xem thêm mục~\ref{ssec:llm_judge_challenges}) và năng lực chấm toán/suy luận hạn chế, rồi đề xuất cách giảm nhẹ:
+\paragraph{Phát hiện chính.} Với đánh giá so sánh cặp, GPT-4 làm giám khảo đạt mức đồng thuận hơn 80\% với chuyên gia con người, ngang mức đồng thuận giữa hai người đánh giá với nhau. Nghiên cứu cũng định lượng các thiên vị của giám khảo (vị trí, độ dài, tự đề cao -- self-enhancement; xem thêm mục~\ref{ssec:llm_judge_challenges}) và năng lực chấm toán/suy luận hạn chế, rồi đề xuất cách giảm nhẹ:
 \begin{itemize}
-	\item \textbf{Đổi chỗ hai câu trả lời} và chỉ tính thắng khi giám khảo nhất quán ở cả hai thứ tự;
-	\item \textbf{Chấm có tham chiếu (reference-guided):} Để giám khảo tự giải (hoặc được cung cấp lời giải mẫu) trước khi chấm các câu toán/lập trình;
-	\item \textbf{Chain-of-Thought cho giám khảo} và ví dụ few-shot về cách chấm.
+	\item đổi chỗ hai câu trả lời và chỉ tính thắng khi giám khảo nhất quán ở cả hai thứ tự;
+	\item \textbf{chấm có tham chiếu (reference-guided)}: để giám khảo tự giải, hoặc cung cấp cho nó lời giải mẫu, trước khi chấm các câu toán và lập trình;
+	\item dùng Chain-of-Thought cho giám khảo, kèm ví dụ few-shot về cách chấm.
 \end{itemize}
 
-\begin{tcolorbox}[title={Arena có phải “sự thật”?}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{pitfall}{Arena đo sở thích, không đo độ chính xác}
 Chatbot Arena đo \emph{sở thích của người dùng trên câu hỏi họ tự đặt ra}, không phải độ chính xác. Nó dễ bị ảnh hưởng bởi văn phong (định dạng markdown đẹp, câu trả lời dài), phân phối câu hỏi nghiêng về một số chủ đề, và việc các nhà phát triển tối ưu riêng cho bảng xếp hạng (định luật Goodhart, mục~\ref{ssec:goodharts_law}). Arena về sau bổ sung các biện pháp như kiểm soát yếu tố văn phong, nhưng nên luôn đọc nó cùng các benchmark có đáp án kiểm chứng được.
-\end{tcolorbox}
+\end{pitfall}
 
-\subsection{Ứng dụng và Tiềm năng}
+\subsection{Ứng dụng}
 \label{ssec:llm_judge_applications}
 
 \begin{itemize}
-    \item \textbf{Tăng tốc Chu trình Đánh giá:} LLM-as-a-Judge nhanh hơn và rẻ hơn đánh giá của con người hàng nghìn lần, cho phép các nhà phát triển nhanh chóng lặp lại và thử nghiệm các ý tưởng mới.
-    \item \textbf{Tự động hóa việc tạo Dữ liệu Sở thích:} Như đã thấy trong Constitutional AI (mục \ref{ssec:rlhf_alternatives}), LLM có thể được dùng để tự động tạo ra các cặp dữ liệu sở thích (câu trả lời tốt hơn > câu trả lời kém hơn), sau đó dữ liệu này có thể được dùng để tinh chỉnh mô hình bằng các phương pháp như DPO.
-    \item \textbf{Đánh giá các khía cạnh khó đo lường:} Cho phép đánh giá các thuộc tính như “sự sáng tạo”, “sự đồng cảm”, hay “tính an toàn” mà các metric tự động truyền thống không thể chạm tới.
+    \item \textbf{Rút ngắn chu trình đánh giá:} LLM-as-a-Judge nhanh hơn và rẻ hơn đánh giá của con người hàng nghìn lần, nên có thể chạy lại sau mỗi thay đổi nhỏ trong quá trình phát triển.
+    \item \textbf{Tự động tạo dữ liệu sở thích:} Như trong Constitutional AI (mục \ref{ssec:rlhf_alternatives}), LLM tự sinh ra các cặp dữ liệu sở thích (câu trả lời tốt hơn > câu trả lời kém hơn), rồi dữ liệu này được dùng để tinh chỉnh mô hình bằng các phương pháp như DPO.
+    \item \textbf{Đánh giá các khía cạnh khó đo:} Các thuộc tính như “sự sáng tạo”, “sự đồng cảm” hay “tính an toàn” mà metric tự động truyền thống không đo được.
 \end{itemize}
 
-\subsection{Thách thức và Những điều cần Lưu ý}
+\subsection{Thách thức và hạn chế}
 \label{ssec:llm_judge_challenges}
-Việc sử dụng LLM-as-a-Judge không phải là một viên đạn bạc và đi kèm với những thách thức riêng.
+LLM-as-a-Judge đi kèm ba nhóm vấn đề riêng.
 
-\paragraph{Thiên vị của Giám khảo (Judge's Bias)}
-LLM giám khảo cũng có những thiên vị của riêng nó, có thể ảnh hưởng đến kết quả đánh giá:
+\paragraph{Thiên vị của giám khảo (Judge's Bias)}
+LLM giám khảo có những thiên vị của riêng nó, ảnh hưởng tới kết quả đánh giá:
 \begin{itemize}
-    \item \textbf{Thiên vị về vị trí (Position Bias):} Có xu hướng ưu tiên câu trả lời xuất hiện ở vị trí đầu tiên.
-    \item \textbf{Thiên vị về sự dài dòng (Verbosity Bias):} Có xu hướng cho điểm cao hơn cho các câu trả lời dài hơn và chi tiết hơn, ngay cả khi chúng không chính xác hơn.
-    \item \textbf{Thiên vị về văn phong (Style Bias):} Có xu hướng ưa thích các câu trả lời có văn phong giống với văn phong của chính nó. Điều này đặc biệt có vấn đề khi một mô hình (ví dụ: GPT-4) được dùng để đánh giá chính nó hoặc các biến thể của nó.
+    \item \textbf{Thiên vị về vị trí (Position Bias):} Ưu tiên câu trả lời xuất hiện ở vị trí đầu tiên.
+    \item \textbf{Thiên vị về sự dài dòng (Verbosity Bias):} Cho điểm cao hơn cho các câu trả lời dài và chi tiết hơn, ngay cả khi chúng không chính xác hơn.
+    \item \textbf{Thiên vị về văn phong (Style Bias):} Ưa thích các câu trả lời có văn phong giống văn phong của chính nó. Điều này thành vấn đề khi một mô hình, ví dụ GPT-4, được dùng để đánh giá chính nó hoặc các biến thể của nó.
 \end{itemize}
 
-\paragraph{Hạn chế về Kiến thức và Suy luận}
-Nếu một bài toán đòi hỏi kiến thức chuyên môn sâu hoặc khả năng suy luận phức tạp (ví dụ: một bài toán toán học khó), LLM giám khảo có thể không đủ năng lực để xác định câu trả lời nào là đúng. Nó có thể bị “đánh lừa” bởi một câu trả lời sai nhưng được trình bày một cách rất thuyết phục và có cấu trúc.
+\paragraph{Hạn chế về kiến thức và suy luận}
+Nếu bài toán đòi hỏi kiến thức chuyên môn sâu hoặc suy luận phức tạp, chẳng hạn một bài toán khó, LLM giám khảo có thể không đủ năng lực để xác định câu trả lời nào đúng. Nó có thể bị đánh lừa bởi một câu trả lời sai nhưng được trình bày thuyết phục và có cấu trúc.
 
-\paragraph{Sự cần thiết của việc Hiệu chỉnh (Calibration)}
-Các nghiên cứu đã chỉ ra rằng điểm số từ LLM-as-a-Judge thường có độ tương quan cao với đánh giá của con người, nhưng không phải là hoàn hảo. Việc sử dụng các kỹ thuật như prompting cẩn thận, cung cấp các ví dụ minh họa (few-shot examples of good evaluation), và tổng hợp kết quả từ nhiều lần chạy là rất quan trọng để có được kết quả đáng tin cậy.
+\paragraph{Hiệu chỉnh (Calibration)}
+Điểm số từ LLM-as-a-Judge tương quan cao với đánh giá của con người, nhưng không khớp hoàn toàn. Để kết quả đáng tin cậy, cần prompting cẩn thận, cung cấp ví dụ minh họa về cách chấm (few-shot examples of good evaluation), và tổng hợp kết quả từ nhiều lần chạy.
 
-Mặc dù có những thách thức, LLM-as-a-Judge đã trở thành một công cụ không thể thiếu trong việc phát triển và đánh giá các mô hình ngôn ngữ thế hệ mới, cung cấp một giải pháp cân bằng giữa tốc độ của các metric tự động và chiều sâu của đánh giá bởi con người.
+LLM-as-a-Judge nay được dùng rộng rãi khi phát triển mô hình vì nó nằm giữa hai cực: nhanh hơn đánh giá bởi con người, và bắt được nhiều khía cạnh hơn metric tự động.
 
