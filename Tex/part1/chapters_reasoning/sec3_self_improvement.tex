@@ -1,10 +1,10 @@
 % !TEX root = ../main.tex
 % File: part1/chapters_reasoning/sec3_self_improvement.tex
 
-\section{Tự học Suy luận: STaR, ReST\texorpdfstring{$^{EM}$}{-EM} và Quiet-STaR}
+\section{Tự học suy luận: STaR, ReST\texorpdfstring{$^{EM}$}{-EM} và Quiet-STaR}
 \label{sec:self_improvement}
 
-Dữ liệu chuỗi suy luận do con người viết rất đắt và khó mở rộng. Một ý tưởng hấp dẫn: để mô hình \textbf{tự sinh ra lời giải}, \textbf{giữ lại những lời giải đúng}, rồi \textbf{học lại từ chính chúng}. Ba công trình dưới đây là các bậc thang dẫn tới học tăng cường cho suy luận.
+Dữ liệu chuỗi suy luận do con người viết rất đắt và khó mở rộng. Cách thay thế: để mô hình \textbf{tự sinh ra lời giải}, \textbf{giữ lại những lời giải đúng}, rồi \textbf{học lại từ chính chúng}. Ba công trình dưới đây lần lượt dẫn tới học tăng cường cho suy luận.
 
 \subsection{STaR: Tự khởi động suy luận bằng suy luận}
 \label{ssec:star}
@@ -24,11 +24,11 @@ Trên CommonsenseQA, STaR với GPT-J 6B đạt kết quả tương đương vi�
 	\item \textbf{Bước E (Generate):} Lấy mẫu nhiều lời giải cho mỗi bài toán từ mô hình hiện tại; dùng phản hồi tự động (đáp án đúng cho toán, test case cho mã) làm phần thưởng nhị phân để lọc.
 	\item \textbf{Bước M (Improve):} Tinh chỉnh mô hình để cực đại log-likelihood của các lời giải đã lọc (có trọng số theo phần thưởng). Giống STaR, mỗi vòng tinh chỉnh bắt đầu lại từ \emph{mô hình tiền huấn luyện gốc} thay vì mô hình của vòng trước, để giảm quá khớp.
 \end{itemize}
-Thí nghiệm với các mô hình PaLM 2 trên toán (MATH) và lập trình (APPS) cho thấy ReST$^{EM}$ \textbf{mở rộng tốt theo kích thước mô hình} và \textbf{vượt đáng kể việc tinh chỉnh chỉ trên dữ liệu người viết}. Chỉ vài vòng lặp là đủ -- nhiều vòng hơn có thể gây quá khớp trên tập huấn luyện. Thông điệp: với các tác vụ có thể tự động kiểm chứng, \emph{dữ liệu do mô hình tự sinh có thể tốt hơn dữ liệu con người}.
+Thí nghiệm với các mô hình PaLM 2 trên toán (MATH) và lập trình (APPS) cho thấy ReST$^{EM}$ \textbf{mở rộng tốt theo kích thước mô hình} và \textbf{vượt đáng kể việc tinh chỉnh chỉ trên dữ liệu người viết}. Chỉ vài vòng lặp là đủ -- nhiều vòng hơn có thể gây quá khớp trên tập huấn luyện. Kết luận rút ra: với các tác vụ có thể tự động kiểm chứng, \emph{dữ liệu do mô hình tự sinh có thể tốt hơn dữ liệu con người}.
 
 \subsection{Quiet-STaR: Suy nghĩ trước khi nói, ở mọi token}
 \label{ssec:quiet_star}
-STaR và ReST$^{EM}$ học suy luận cho các \emph{bài toán hỏi--đáp}. \textbf{Quiet-STaR} \cite{zelikman2024quietstar} đặt câu hỏi tổng quát hơn: văn bản thông thường cũng chứa nhiều suy luận ngầm “giữa các dòng” -- liệu mô hình có thể học cách tự suy nghĩ \emph{trước khi dự đoán mỗi token} trên văn bản internet bất kỳ?
+STaR và ReST$^{EM}$ học suy luận cho các \emph{bài toán hỏi--đáp}. \textbf{Quiet-STaR} \cite{zelikman2024quietstar} đặt bài toán tổng quát hơn: văn bản thông thường cũng chứa nhiều suy luận ngầm “giữa các dòng”, nên mô hình có thể học cách tự suy nghĩ \emph{trước khi dự đoán mỗi token} trên văn bản internet bất kỳ.
 
 \paragraph{Cơ chế.}
 \begin{enumerate}
@@ -39,6 +39,6 @@ STaR và ReST$^{EM}$ học suy luận cho các \emph{bài toán hỏi--đáp}. \
 
 \paragraph{Kết quả.} Sau khi tiếp tục tiền huấn luyện Mistral 7B trên văn bản internet bằng Quiet-STaR, độ chính xác \textbf{zero-shot} (không hề tinh chỉnh trên các tác vụ này) tăng từ 5.9\% lên 10.9\% trên GSM8K và từ 36.3\% lên 47.2\% trên CommonsenseQA. Các token khó dự đoán hưởng lợi nhiều nhất từ việc “suy nghĩ”.
 
-\begin{tcolorbox}[title={Từ tự học đến học tăng cường}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{deepdive}{Từ tự học đến học tăng cường}
 Cả ba phương pháp đều là các dạng \textbf{học tăng cường với phần thưởng nhị phân}, được thực hiện “gián tiếp” qua lọc dữ liệu (STaR, ReST$^{EM}$) hoặc REINFORCE (Quiet-STaR). Điểm hạn chế chung: chúng \emph{chỉ học từ lời giải đúng} (hoặc chỉ theo tín hiệu tương đối yếu), bỏ phí thông tin từ các lời giải sai. Học tăng cường trực tuyến với advantage có dấu (mục tiếp theo) tận dụng được cả hai phía: đẩy xác suất của lời giải tốt lên \emph{và} kéo xác suất của lời giải tệ xuống.
-\end{tcolorbox}
+\end{deepdive}

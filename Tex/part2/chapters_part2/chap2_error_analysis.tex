@@ -2,12 +2,12 @@
 % File: part2/chapters_part2/chap2_error_analysis.tex
 % Phân tích lỗi như một phương pháp
 
-\section{Phân tích Lỗi: một phương pháp, không phải một cảm giác}
+\section{Phân tích lỗi như một phương pháp}
 \label{sec:error_analysis}
 
 Mục trước cho bạn các chỉ số. Nhưng với một sản phẩm dựa trên LLM, chỉ số hiếm khi là thứ nói cho bạn biết phải sửa gì. F1 bằng 0{,}78 không cho biết \emph{tại sao} 22\% kia sai, và điểm trung bình của một giám khảo LLM lại càng không.
 
-Thứ thay thế không phải trực giác mà là một \textbf{phương pháp có quy trình, có số lượng mẫu, và có kiểm định}. Những người hành nghề dạy về đánh giá LLM tự báo cáo rằng họ dành \textbf{60--80\% thời gian phát triển} cho phân tích lỗi và đánh giá -- con số tự khai, nhưng nó nói lên vị trí của công việc này trong thực tế, và nó hoàn toàn vắng mặt trong phần lớn tài liệu dạy học.
+Thứ thay thế là một \textbf{phương pháp có quy trình, có số lượng mẫu và có kiểm định}, không phải trực giác. Những người hành nghề dạy về đánh giá LLM tự báo cáo rằng họ dành \textbf{60--80\% thời gian phát triển} cho phân tích lỗi và đánh giá -- con số tự khai, nhưng nó nói lên vị trí của công việc này trong thực tế, và nó hoàn toàn vắng mặt trong phần lớn tài liệu dạy học.
 
 \subsection{Đừng viết tiêu chí chấm trước}
 \label{ssec:no_rubric_first}
@@ -47,9 +47,9 @@ Nếu bạn cần đo tiến bộ dần dần, đừng quay lại thang điểm 
 
 Đây là phần dễ dạy nhất, rẻ nhất để áp dụng, và gần như không bao giờ xuất hiện trong tài liệu về LLM.
 
-Giả sử yêu cầu là \emph{tỷ lệ lỗi phải dưới 5\%}. Bạn chạy 200 mẫu, thấy 6 ca lỗi -- tỷ lệ quan sát 3\%. Đã đạt yêu cầu chưa?
+Giả sử yêu cầu là \emph{tỷ lệ lỗi phải dưới 5\%}. Bạn chạy 200 mẫu, thấy 6 ca lỗi -- tỷ lệ quan sát 3\%. Tỷ lệ đó vẫn chưa chứng minh được rằng yêu cầu đã đạt.
 
-\textbf{Chưa.} Với tỷ lệ quan sát $\hat p$ trên $n$ mẫu, sai số chuẩn là $\sqrt{\hat p(1-\hat p)/n}$, và khoảng tin cậy 95\% xấp xỉ $\hat p \pm 1{,}96\,\text{SE}$:
+Với tỷ lệ quan sát $\hat p$ trên $n$ mẫu, sai số chuẩn là $\sqrt{\hat p(1-\hat p)/n}$, và khoảng tin cậy 95\% xấp xỉ $\hat p \pm 1{,}96\,\text{SE}$:
 
 \begin{table}[H]
 \centering
@@ -64,17 +64,17 @@ Giả sử yêu cầu là \emph{tỷ lệ lỗi phải dưới 5\%}. Bạn chạ
 800  & 0{,}60\% & $\pm 1{,}18\%$ & $(1{,}82\%;\ 4{,}18\%)$ & Có \\
 \bottomrule
 \end{tabular}
-\caption{Tỷ lệ lỗi quan sát được là 3\% trong mọi hàng. Chỉ số mẫu thay đổi.}
+\caption{Tỷ lệ lỗi quan sát được là 3\% trong mọi hàng. Chỉ số mẫu thay đổi. Khoảng tin cậy tính theo xấp xỉ Wald; ở hàng $n = 100$ cận dưới thô là $-0{,}34\%$ nên bảng ghi $0{,}00\%$. Một khoảng tin cậy cho tỷ lệ không thể nhận giá trị âm, và việc Wald cho ra giá trị âm chính là dấu hiệu nó không còn dùng được ở cỡ mẫu này với $\hat p$ gần 0; khi đó nên dùng khoảng Wilson.}
 \label{tab:eval_sample_size}
 \end{table}
 
 \noindent Với 200 mẫu, cận trên của khoảng tin cậy là 5{,}36\% -- \emph{vẫn} vượt ngưỡng 5\%. Bạn chưa chứng minh được gì cả. Phải tới 400 mẫu thì cận trên mới xuống 4{,}67\% và kết luận mới đứng vững.
 
-\begin{tcolorbox}[title={Quy tắc căn bậc hai}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+\begin{pitfall}{Quy tắc căn bậc hai}
 Sai số chuẩn co lại theo $\sqrt{n}$. Nghĩa là \textbf{muốn giảm một nửa biên sai số, bạn cần gấp bốn lần số mẫu}. Đây là lý do việc “thêm vài chục mẫu nữa cho chắc” hầu như không thay đổi gì, còn việc quyết định đúng kích thước tập đánh giá \emph{ngay từ đầu} lại quan trọng.
 
 Mục tiêu thực dụng mà những người làm nghề đưa ra: nhắm tới \textbf{50--100 ca lỗi} trong tổng số \textbf{200 mẫu trở lên}. Chú ý đó là số \emph{ca lỗi}, không phải số mẫu -- nếu mô hình của bạn đã tốt, bạn sẽ cần tập lớn hơn nhiều để gom đủ ca lỗi mà phân tích.
-\end{tcolorbox}
+\end{pitfall}
 
 \paragraph{Mẹo lấy ca lỗi.} Nếu mô hình hiện tại quá tốt để sinh đủ lỗi, hãy \textbf{sinh lỗi bằng một mô hình nhỏ hơn}. Lỗi tự nhiên của một mô hình yếu giống với lỗi thật trong sản xuất hơn nhiều so với lỗi bạn tự nghĩ ra -- lỗi bịa thường nằm ngoài phân phối và dạy bạn những điều không đúng.
 
@@ -91,15 +91,15 @@ Giám khảo LLM rất tiện và hoàn toàn có thể dùng được -- nhưng
 	\item Đo bằng \textbf{precision, recall và hệ số Cohen's Kappa} -- và \emph{ưu tiên recall trên lớp “không đạt”}, vì bỏ sót lỗi tốn kém hơn báo nhầm.
 \end{enumerate}
 
-\begin{tcolorbox}[title={Chuẩn so sánh là con người, không phải sự hoàn hảo}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{assess}{Chuẩn so sánh là con người, không phải sự hoàn hảo}
 Ngưỡng tham khảo cho Cohen's Kappa: \textbf{0{,}4--0{,}6 là khá}, \textbf{trên 0{,}7 là tốt}.
 
 Nhưng con số đáng nhớ nhất là con số này: \textbf{mức đồng thuận giữa hai \emph{người} chấm thường chỉ vào khoảng 0{,}2--0{,}3}, và người chấm bỏ sót một tỷ lệ lỗi rất đáng kể. Nếu bạn đòi giám khảo LLM phải đạt Kappa 0{,}9, bạn đang đòi nó vượt xa chính những người mà nó đang thay thế.
-\end{tcolorbox}
+\end{assess}
 
 \paragraph{Và đừng dùng các chỉ số chung chung.} “Độ hữu ích”, “tính mạch lạc”, “chất lượng tổng thể” -- những chiều này tạo ra cảm giác tự tin giả. Chúng không gắn với một lỗi cụ thể nào, nên khi điểm giảm bạn không biết phải sửa gì. Mọi giám khảo nên được định nghĩa từ một \emph{nhóm lỗi} đã quan sát được trong bước mã hóa trục.
 
-\subsection{Đánh giá tác tử: chấm hành trình, không chấm bản tóm tắt}
+\subsection{Đánh giá tác tử: chấm chuỗi hành động, không chấm bản tóm tắt}
 \label{ssec:agent_eval}
 
 Với một tác tử nhiều bước, phần lớn thông tin nằm ở \emph{chuỗi hành động}, không nằm ở câu trả lời cuối. Một đội kỹ thuật kể lại một trường hợp rất rõ: giám khảo LLM của họ chỉ đọc văn bản tóm tắt cuối cùng của tác tử và \textbf{đánh trượt 3 trong 11 lượt vốn đã thực sự thành công}. Trong một ca, tác tử \emph{đã} chạy đúng lệnh kiểm tra an toàn được yêu cầu, nhưng phần tóm tắt lại nói về rủi ro mất dữ liệu thay vì khoe rằng nó đã kiểm tra. Giám khảo phạt tác tử vì đã làm đúng mà không kể công.
@@ -111,7 +111,7 @@ Với một tác tử nhiều bước, phần lớn thông tin nằm ở \emph{c
 	\item \textbf{So khớp chuỗi công cụ một cách cứng nhắc là sai}, vì tác tử thường tới đích bằng những đường bạn không lường trước. Hãy cho điểm từng phần theo tiến độ đo được, và chỉ bắt đúng thứ tự ở những chỗ mà thứ tự ảnh hưởng tới tính đúng đắn hoặc an toàn.
 \end{itemize}
 
-\subsection{Ba mẹo nhỏ, giá trị lớn}
+\subsection{Ba mẹo thực hành}
 \label{ssec:eval_tips}
 
 \paragraph{Phép thử thực tập sinh.} Trước khi kết luận “mô hình không đủ thông minh”, hãy hỏi: \emph{một sinh viên trung bình, với đúng ngữ cảnh và đúng chỉ dẫn này, có làm được việc đó không?} Nếu câu trả lời là không, vấn đề nằm ở ngữ cảnh hoặc ở cách bạn chia nhỏ tác vụ, không nằm ở mô hình. Đây là công cụ gỡ lỗi rẻ nhất trong cả mục này.
@@ -120,12 +120,12 @@ Với một tác tử nhiều bước, phần lớn thông tin nằm ở \emph{c
 
 \paragraph{Ghi lại cả những gì \emph{không} xuất hiện.} Nhật ký thường chỉ ghi những gì đã xảy ra. Nhưng một câu trả lời thiếu mất phần trích dẫn, hay một lần truy hồi trả về rỗng, cũng là dữ liệu -- và thường là dữ liệu quan trọng hơn.
 
-\begin{tcolorbox}[title={Một bất đồng thật giữa những người có uy tín}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{pitfall}{Một bất đồng thật giữa những người có uy tín}
 Bạn sẽ gặp hai lời khuyên nghe có vẻ mâu thuẫn, và cả hai đều từ những người đáng tin:
 
 \textbf{“Hãy xây tập đánh giá trước khi xây tính năng.”} Định nghĩa thành công bằng số đo trước, rồi mới tối ưu -- nếu không bạn sẽ tối ưu theo cảm giác.
 
 \textbf{“Chỉ viết bộ chấm cho những lỗi bạn đã thực sự quan sát được, đừng viết cho lỗi bạn tưởng tượng ra.”} Vì bộ chấm viết cho lỗi tưởng tượng sẽ tạo cảm giác an toàn giả và làm bạn bỏ sót lỗi thật.
 
-\textbf{Cách hòa giải:} hai lời khuyên nói về hai thứ khác nhau. Cái đầu nói về việc có một tập mẫu vàng và một đường cơ sở \emph{trước} khi bắt đầu -- kể cả chỉ là 20 ví dụ chấm tay. Cái sau nói về việc xây dựng \emph{bảng phân loại lỗi} và các bộ chấm tự động, vốn phải đến \emph{sau} khi đã nhìn dữ liệu thật. Ngoại lệ duy nhất của vế thứ hai là các ràng buộc cứng mà bạn biết chắc từ đầu (“không bao giờ được nhắc tên đối thủ”) -- những cái đó viết trước được.
-\end{tcolorbox}
+\textbf{Cách hòa giải:} Hai lời khuyên nói về hai thứ khác nhau. Cái đầu nói về việc có một tập mẫu vàng và một đường cơ sở \emph{trước} khi bắt đầu -- kể cả chỉ là 20 ví dụ chấm tay. Cái sau nói về việc xây dựng \emph{bảng phân loại lỗi} và các bộ chấm tự động, vốn phải đến \emph{sau} khi đã nhìn dữ liệu thật. Ngoại lệ duy nhất của vế thứ hai là các ràng buộc cứng mà bạn biết chắc từ đầu (“không bao giờ được nhắc tên đối thủ”) -- những cái đó viết trước được.
+\end{pitfall}

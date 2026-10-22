@@ -4,59 +4,58 @@
 \begin{center}
 	\vspace*{4cm}
 	{\Huge \textbf{KẾT THÚC PHẦN 1}} \\[1.5cm]
-	
+
 	\rule{0.8\textwidth}{0.4pt} \\[0.8cm]
-	
+
 	\parbox{0.9\textwidth}{
 		\centering
 		\textit{
-			Phần 1 của giáo trình đã cung cấp cho bạn một nền tảng lý thuyết toàn diện, 
-			từ những nguyên lý ngôn ngữ học cơ bản, các mô hình thống kê, 
-			các kiến trúc nơ-ron kinh điển, cho đến sự thống trị của Transformer 
-			và các kỹ thuật tiên tiến để tinh chỉnh, căn chỉnh, và đánh giá các 
-			Mô hình Ngôn ngữ Lớn. Với nền tảng này, bạn đã sẵn sàng để bước sang 
-			Phần 2, nơi chúng ta sẽ biến những lý thuyết này thành các kỹ năng và 
-			quy trình thực chiến để xây dựng các ứng dụng NLP thực tế.
+			Phần 1 đã trình bày nền tảng lý thuyết của NLP: các nguyên lý
+			ngôn ngữ học cơ bản, các mô hình thống kê, các kiến trúc nơ-ron
+			kinh điển, kiến trúc Transformer, và các kỹ thuật tinh chỉnh,
+			căn chỉnh và đánh giá mô hình ngôn ngữ lớn. Phần 2 chuyển từ
+			các lý thuyết này sang những kỹ năng và quy trình để xây dựng
+			ứng dụng NLP thực tế.
 		}
 	} \\[1cm]
-	
+
 	\rule{0.8\textwidth}{0.4pt} \\[2cm]
 \end{center}
 
 \noindent
 \textbf{Tóm lược nội dung Phần 1:}
 \begin{itemize}
-	\item \textbf{Chương 1 – Nhập môn và Nguyên lý nền tảng:} 
-	Định nghĩa NLP, mối quan hệ với AI, các kỷ nguyên phát triển, 
+	\item \textbf{Chương 1 -- Nhập môn và nguyên lý nền tảng:}
+	Định nghĩa NLP, mối quan hệ với AI, các kỷ nguyên phát triển,
 	kiến thức ngôn ngữ học, toán học, và các vấn đề đạo đức trong NLP.
-	\item \textbf{Chương 2 – Biểu diễn văn bản và Mô hình thống kê:} 
-	Các kỹ thuật BoW, TF-IDF, N-gram, smoothing, 
+	\item \textbf{Chương 2 -- Biểu diễn văn bản và mô hình thống kê:}
+	Các kỹ thuật BoW, TF-IDF, N-gram, smoothing,
 	mô hình phân loại, học chuỗi, và LDA.
-	\item \textbf{Chương 3 – Các kiến trúc mạng nơ-ron kinh điển:} 
-	Word embeddings (Word2Vec, GloVe, FastText), 
-	autoencoder, RNN/LSTM/GRU, seq2seq với attention, 
+	\item \textbf{Chương 3 -- Các kiến trúc mạng nơ-ron kinh điển:}
+	Word embeddings (Word2Vec, GloVe, FastText),
+	autoencoder, RNN/LSTM/GRU, seq2seq với attention,
 	CNN cho NLP, contextualized embeddings, và các mô hình sinh pre-Transformer.
-	\item \textbf{Chương 4 – Kỷ nguyên Transformer và LLMs:}
+	\item \textbf{Chương 4 -- Kỷ nguyên Transformer và LLMs:}
 	Kiến trúc Transformer gốc, phân loại LLMs, tokenization hiện đại,
 	ngữ cảnh dài (FlashAttention, YaRN, Ring Attention), MoE (Switch, DeepSeekMoE),
 	khối decoder hiện đại (GQA, MLA, MTP).
-	\item \textbf{Chương 5 – Tiền huấn luyện LLM:}
+	\item \textbf{Chương 5 -- Tiền huấn luyện LLM:}
 	Scaling laws (Kaplan, Chinchilla), dữ liệu tiền huấn luyện (The Pile, RefinedWeb, FineWeb, DCLM, DoReMi, dữ liệu tổng hợp),
 	bộ tối ưu (AdamW, Sophia, Adam-mini, Muon), công thức Llama 3 và DeepSeek-V3.
-	\item \textbf{Chương 6 – Tinh chỉnh và Căn chỉnh mô hình:}
+	\item \textbf{Chương 6 -- Tinh chỉnh và căn chỉnh mô hình:}
 	Fine-tuning và thích ứng miền, PEFT (LoRA, DoRA, QLoRA, Adapter, IA$^3$), prompt engineering,
 	instruction tuning, RLHF (InstructGPT), DPO, KTO, ORPO, GRPO.
-	\item \textbf{Chương 7 – Mô hình suy luận và tính toán lúc suy luận:}
+	\item \textbf{Chương 7 -- Mô hình suy luận và tính toán lúc suy luận:}
 	Verifier (ORM, PRM), scaling test-time compute, STaR/ReST$^{EM}$/Quiet-STaR,
 	học tăng cường với phần thưởng kiểm chứng được (DeepSeek-R1, DAPO, GSPO).
-	\item \textbf{Chương 8 – Tìm kiếm và Sinh Tăng cường (RAG):}
+	\item \textbf{Chương 8 -- Tìm kiếm và sinh tăng cường (RAG):}
 	Pipeline RAG từ cơ bản đến nâng cao, biểu diễn chuyên biệt cho truy xuất, RAG đa bước và RAG dạng tác tử.
-	\item \textbf{Chương 9 – Hiệu quả LLM:}
+	\item \textbf{Chương 9 -- Hiệu quả LLM:}
 	Chưng cất (MiniLLM, GKD, Distilling Step-by-Step, KARD, RLAD), lượng tử hóa (LLM.int8, SmoothQuant, GPTQ, AWQ),
 	PagedAttention, giải mã suy đoán, phục vụ tách rời prefill/decode.
-	\item \textbf{Chương 10 – Hệ thống và Kiến trúc nâng cao:}
+	\item \textbf{Chương 10 -- Hệ thống và kiến trúc nâng cao:}
 	Mô hình đa phương thức (CLIP, LLaVA, Gemini), hệ thống tác tử, world models.
-	\item \textbf{Chương 11 – Đánh giá và Benchmark:}
+	\item \textbf{Chương 11 -- Đánh giá và benchmark:}
 	Các metric kinh điển, benchmark (GLUE, MMLU, GSM8K, MATH, TruthfulQA, HELM),
 	thách thức trong đánh giá, LLM-as-a-Judge và Chatbot Arena,
 	đánh giá tác tử (AgentBench, GAIA, SWE-bench) và tính tái lập.

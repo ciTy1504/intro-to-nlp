@@ -1,12 +1,12 @@
 % !TEX root = ../main.tex
 % File: part1/chapters_efficiency/sec5_speculative_decoding.tex
 
-\section{Giải mã Suy đoán (Speculative Decoding)}
+\section{Giải mã suy đoán (Speculative Decoding)}
 \label{sec:speculative_decoding}
 
-\begin{tcolorbox}[title={Trực giác cốt lõi}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
-Ở pha decode, một lượt forward của mô hình lớn cho \emph{một} token và GPU gần như rảnh về tính toán (nút thắt là đọc bộ nhớ). Nhưng một lượt forward trên \emph{$\gamma$ token cùng lúc} tốn gần như cùng thời gian. Vậy: để một mô hình nhỏ \textbf{đoán nhanh} $\gamma$ token, rồi dùng mô hình lớn \textbf{kiểm tra song song} tất cả trong một lượt. Nhiều token đúng được “chấp nhận” cùng lúc -- và quan trọng nhất, phân phối đầu ra \emph{giống hệt} như chỉ dùng mô hình lớn.
-\end{tcolorbox}
+\begin{keyidea}{Mô hình nhỏ đoán, mô hình lớn kiểm tra song song}
+Ở pha decode, một lượt forward của mô hình lớn cho \emph{một} token và GPU gần như rảnh về tính toán (nút thắt là đọc bộ nhớ). Nhưng một lượt forward trên \emph{$\gamma$ token cùng lúc} tốn gần như cùng thời gian. Cách khai thác chênh lệch đó: cho một mô hình nhỏ đoán nhanh $\gamma$ token, rồi dùng mô hình lớn kiểm tra song song tất cả trong một lượt. Nhiều token đúng được “chấp nhận” cùng lúc, và phân phối đầu ra \emph{giống hệt} như khi chỉ dùng mô hình lớn.
+\end{keyidea}
 
 \subsection{Thuật toán speculative sampling}
 \label{ssec:speculative_sampling}
@@ -25,34 +25,34 @@ Leviathan et al. \cite{leviathan2023speculative} (và đồng thời Chen et al.
 	và dừng. Nếu cả $\gamma$ token được chấp nhận, lấy mẫu thêm một token từ $p$ tại vị trí $\gamma + 1$.
 \end{enumerate}
 
-\paragraph{Vì sao phân phối không đổi?} Xác suất cuối cùng nhận được token $x$ là $\min(q(x), p(x))$ (đoán đúng và được chấp nhận) cộng với phần từ chối rồi lấy mẫu lại, tổng lại đúng bằng $p(x)$. Đây là một dạng lấy mẫu loại bỏ (rejection sampling), nên speculative decoding \textbf{không làm thay đổi chất lượng} -- khác với các phương pháp xấp xỉ như lượng tử hóa hay chưng cất.
+\paragraph{Phân phối đầu ra không đổi.} Xác suất cuối cùng nhận được token $x$ là $\min(q(x), p(x))$ (đoán đúng và được chấp nhận) cộng với phần từ chối rồi lấy mẫu lại, tổng lại đúng bằng $p(x)$. Đây là một dạng lấy mẫu loại bỏ (rejection sampling), nên speculative decoding không làm thay đổi chất lượng, khác với các phương pháp xấp xỉ như lượng tử hóa hay chưng cất.
 
 \paragraph{Phân tích tăng tốc.} Gọi $\alpha$ là \textbf{tỷ lệ chấp nhận} kỳ vọng ($\alpha = \mathbb{E}_x\big[\sum_{x'}\min(p(x'), q(x'))\big]$, càng cao khi mô hình nháp càng giống mô hình đích). Số token sinh ra kỳ vọng mỗi vòng là
 \[
 \mathbb{E}[\#\text{token}] = \frac{1 - \alpha^{\gamma+1}}{1 - \alpha}.
 \]
-Nếu một lượt của $M_q$ tốn $c$ lần chi phí một lượt của $M_p$, hệ số giảm thời gian thực tế là $\dfrac{1 - \alpha^{\gamma+1}}{(1-\alpha)(\gamma c + 1)}$. Ví dụ với $\alpha = 0.8$, $\gamma = 4$ và $c \approx 0$: mỗi vòng sinh trung bình khoảng 3.4 token thay vì 1. Trên T5-XXL (11B), các tác giả đạt tăng tốc \textbf{2--3 lần} mà đầu ra giống hệt.
+Nếu một lượt của $M_q$ tốn $c$ lần chi phí một lượt của $M_p$, hệ số giảm thời gian thực tế là $\dfrac{1 - \alpha^{\gamma+1}}{(1-\alpha)(\gamma c + 1)}$. Ví dụ với $\alpha = 0.8$, $\gamma = 4$ và $c \approx 0$: mỗi vòng sinh trung bình khoảng 3.4 token thay vì 1. Trên T5-XXL (11B), các tác giả đạt tăng tốc 2--3 lần mà đầu ra giống hệt.
 
-\begin{example}{Chọn $\gamma$ thế nào?}{ex:choose_gamma}
+\begin{example}{Ảnh hưởng của $\gamma$ tới số token mỗi vòng}{ex:choose_gamma}
 Với $\alpha = 0.6$: $\gamma = 2$ cho $\frac{1-0.6^3}{0.4} \approx 1.96$ token/vòng; $\gamma = 5$ cho $\approx 2.38$; $\gamma = 10$ cho $\approx 2.49$. Lợi ích giảm dần nhanh khi $\gamma$ tăng trong khi chi phí chạy mô hình nháp tăng tuyến tính. Khi $\alpha$ thấp, nên chọn $\gamma$ nhỏ; chỉ khi mô hình nháp rất giống mô hình đích ($\alpha \geq 0.8$) mới đáng dùng $\gamma$ lớn.
 \end{example}
 
 \subsection{SpecInfer: Suy đoán theo cây}
 \label{ssec:specinfer}
-Một chuỗi nháp duy nhất sẽ “chết” ngay tại token đầu tiên bị từ chối. \textbf{SpecInfer} \cite{miao2024specinfer} tăng xác suất trúng bằng cách đoán \textbf{nhiều nhánh}:
+Một chuỗi nháp duy nhất dừng lại ngay tại token đầu tiên bị từ chối. \textbf{SpecInfer} \cite{miao2024specinfer} tăng xác suất trúng bằng cách đoán nhiều nhánh:
 \begin{itemize}
 	\item \textbf{Cây token suy đoán:} Kết hợp nhiều mô hình nháp nhỏ (được “boost-tuning” để bổ trợ cho nhau), hoặc lấy nhiều ứng viên top-$k$ ở mỗi bước, tạo thành một \emph{cây} các chuỗi ứng viên.
-	\item \textbf{Kiểm tra cây song song:} Mô hình đích kiểm tra toàn bộ cây trong một lượt forward nhờ \textbf{tree attention} -- một mặt nạ attention đặc biệt để mỗi nút chỉ nhìn thấy tổ tiên của nó trên cây.
+	\item \textbf{Kiểm tra cây song song:} Mô hình đích kiểm tra toàn bộ cây trong một lượt forward nhờ \textbf{tree attention}, một mặt nạ attention đặc biệt để mỗi nút chỉ nhìn thấy tổ tiên của nó trên cây.
 	\item \textbf{Xác minh bảo toàn phân phối:} Mở rộng thuật toán chấp nhận/từ chối ở trên cho nhiều ứng viên.
 \end{itemize}
 SpecInfer tăng tốc 1.5--2.8 lần cho suy luận LLM phân tán và 2.6--3.5 lần cho suy luận có offloading, với đầu ra giữ nguyên chất lượng.
 
 \subsection{Không cần mô hình nháp riêng: Medusa, EAGLE và MTP}
 \label{ssec:draft_free}
-Duy trì một mô hình nháp riêng (cùng tokenizer, tốn bộ nhớ, phải huấn luyện đồng bộ) khá phiền phức. Các hướng tiếp cận thế hệ sau gắn bộ nháp vào \emph{chính} mô hình đích:
+Duy trì một mô hình nháp riêng có nhiều bất lợi: phải dùng cùng tokenizer, tốn bộ nhớ, và phải huấn luyện đồng bộ với mô hình đích. Các hướng tiếp cận thế hệ sau gắn bộ nháp vào \emph{chính} mô hình đích:
 \begin{itemize}
 	\item \textbf{Medusa} \cite{cai2024medusa}: Thêm nhiều “đầu giải mã” nhẹ trên trạng thái ẩn cuối cùng, đầu thứ $k$ dự đoán token ở vị trí $t+k$; các ứng viên được tổ hợp thành cây và kiểm tra bằng tree attention.
 	\item \textbf{EAGLE} \cite{li2024eagle}: Thay vì đoán token, đoán \emph{đặc trưng} (trạng thái ẩn ở lớp gần cuối) bằng một đầu tự hồi quy nhỏ, được cung cấp thêm token của bước kế tiếp để giảm bất định; việc đoán ở mức đặc trưng chính xác hơn nhiều so với ở mức token.
-	\item \textbf{Multi-Token Prediction}: Các module MTP được huấn luyện sẵn trong lúc tiền huấn luyện (mục~\ref{ssec:mtp}) đóng vai trò bộ nháp miễn phí; DeepSeek-V3 báo cáo token dự đoán thêm được chấp nhận 85--90\% số lần.
+	\item \textbf{Multi-Token Prediction}: Các module MTP được huấn luyện sẵn trong lúc tiền huấn luyện (mục~\ref{ssec:mtp}) dùng luôn làm bộ nháp, không tốn thêm chi phí; DeepSeek-V3 báo cáo token dự đoán thêm được chấp nhận 85--90\% số lần.
 \end{itemize}
 Trong thực tế, các engine như vLLM và SGLang hỗ trợ sẵn nhiều dạng giải mã suy đoán (mô hình nháp, n-gram, EAGLE, MTP). Lợi ích lớn nhất khi batch nhỏ (GPU còn dư tính toán); ở batch rất lớn, GPU đã bận tính toán nên tăng tốc giảm đi.

@@ -1,0 +1,169 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_part6/chap6_8.tex
+% Chẩn đoán và sửa chữa hệ thống RAG
+
+\section{Chẩn đoán và sửa chữa hệ thống RAG}
+\label{sec:rag_diagnosis}
+
+Phần lớn các đội sửa RAG bằng cảm giác: đổi một thiết lập, thử ba câu hỏi, rồi kết luận “có vẻ khá hơn”. Đó chính xác là cách một hệ thống tệ dần đi mà không ai nhìn thấy. Mục này là quy trình thay cho cảm giác.
+
+\subsection{Nguyên tắc: làm việc như bác sĩ}
+\label{ssec:rag_doctor}
+
+Chương này đã trình bày rất nhiều kỹ thuật. Cám dỗ tự nhiên là bật hết. Đừng.
+
+\textbf{Mỗi kỹ thuật thêm vào đều mang theo ba thứ: chi phí, độ trễ, và một thành phần nữa có thể hỏng.} Một pipeline có viết lại truy vấn, đa truy vấn, truy hồi theo ngữ cảnh, xếp hạng lại và nén ngữ cảnh sẽ chậm hơn nhiều lần so với RAG cơ bản, và khi nó cho câu trả lời sai bạn sẽ không biết khâu nào gây ra.
+
+Quy trình đúng giống quy trình chẩn đoán y khoa: \textbf{đo trước $\rightarrow$ tìm điểm yếu $\rightarrow$ thêm \emph{một} kỹ thuật $\rightarrow$ đo lại}.
+
+Để định hướng, mọi kỹ thuật trong chương này rơi vào đúng bốn nhóm:
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Nhóm} & \textbf{Ví dụ} \\
+\midrule
+1. Sửa \emph{câu hỏi} & Viết lại truy vấn, đa truy vấn, HyDE, phân rã, lùi một bước, định tuyến \\
+2. Sửa \emph{chỉ mục} & Small-to-big, truy hồi theo ngữ cảnh, cây tóm tắt, late chunking, tinh chỉnh bộ nhúng \\
+3. Sửa \emph{kết quả} & Xếp hạng lại, nén ngữ cảnh, bỏ trùng, sắp xếp thứ tự \\
+4. \emph{Kiểm tra} công việc & CRAG, Self-RAG, Adaptive-RAG \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Chấm hai nửa riêng ra}
+\label{ssec:score_two_halves}
+
+Một hệ thống RAG có hai nửa: nửa \emph{tìm} và nửa \emph{viết}. Khi câu trả lời sai, câu hỏi đầu tiên luôn phải là: \textbf{nửa nào hỏng?} Gộp hai nửa vào một điểm số duy nhất là tự bịt mắt mình.
+
+\paragraph{Chấm nửa tìm kiếm.} Một ví dụ cụ thể làm rõ mọi thứ. Giả sử có \textbf{4} chunk thật sự chứa câu trả lời. Hệ thống trả về \textbf{5} chunk, trong đó \textbf{3} chunk là đúng.
+\[
+\text{Recall} = \frac{3}{4} = 75\% \qquad\qquad \text{Precision} = \frac{3}{5} = 60\%
+\]
+Recall 75\% nghĩa là bạn bỏ sót một chunk đúng. Precision 60\% nghĩa là hai chunk trả về là nhiễu.
+
+\begin{keyidea}{Thứ tự ưu tiên: recall trước, precision sau}
+Trong RAG, \textbf{hãy sửa recall trước}. Lý do rất đơn giản và rất quyết định: \emph{nếu chunk đúng không bao giờ được tìm thấy, thì không có bước nào phía sau cứu được câu trả lời}. Không bộ xếp hạng lại nào xếp được một thứ không có trong danh sách; không prompt nào trích dẫn được một đoạn văn không tồn tại trong ngữ cảnh.
+
+Chỉ sau khi recall đã đủ cao thì bộ xếp hạng lại mới vào việc -- và việc của nó chính là nâng precision bằng cách đẩy chunk đúng lên trên.
+\end{keyidea}
+
+\subsection{Bộ ba chẩn đoán}
+\label{ssec:rag_triad}
+
+Ba chỉ số đã nêu ở mục~\ref{sec:reasoning_rag} không chỉ là ba con số để báo cáo. Chúng tạo thành một \textbf{cây quyết định}:
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+\textbf{Phép kiểm} & \textbf{Hỏi gì} & \textbf{Nếu hỏng thì sửa ở đâu} \\
+\midrule
+1. Context relevance & Có tìm được đúng đoạn văn không? & \textbf{Sửa khâu tìm kiếm}: bộ nhúng, tìm kiếm lai, chiến lược chunk, xếp hạng lại. \\
+2. Faithfulness & Câu trả lời có bám vào đoạn đã tìm được không? & \textbf{Sửa prompt hoặc khâu sinh}: buộc trích dẫn, giảm nhiễu, cho phép nói “không biết”. \\
+3. Answer relevance & Câu trả lời có đúng là trả lời câu được hỏi không? & \textbf{Sửa prompt hoặc khâu sinh}: làm rõ yêu cầu, viết lại truy vấn. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\noindent Giá trị của cách sắp xếp này nằm ở chỗ nó \emph{định tuyến} công việc sửa chữa. Một câu trả lời có thể hoàn toàn đúng sự thật mà vẫn trượt phép kiểm 2 -- vì nó đúng nhờ tri thức có sẵn của mô hình chứ không nhờ đoạn văn được cung cấp. Trường hợp đó trông như thành công nhưng thực ra là một quả bom hẹn giờ: lần sau, với một chủ đề mô hình không biết, nó sẽ bịa.
+
+\subsection{Bảy điểm hỏng của RAG}
+\label{ssec:seven_failure_points}
+
+Barnett và cộng sự \cite{barnett2024seven} khảo sát các hệ thống RAG thực tế qua ba nghiên cứu trường hợp và rút ra bảy điểm hỏng. Đây là bảng phân loại lỗi hữu ích nhất hiện có cho RAG, vì nó bám theo đúng đường đi của dữ liệu.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}llX@{}}
+\toprule
+& \textbf{Điểm hỏng} & \textbf{Chuyện gì xảy ra, và thử gì} \\
+\midrule
+FP1 & Thiếu nội dung & Câu trả lời \emph{không có} trong tài liệu, nhưng hệ thống vẫn trả lời vì câu hỏi \emph{liên quan} tới nội dung có sẵn. $\rightarrow$ Bổ sung tài liệu; dạy ứng dụng nói “tôi không biết”. \\
+FP2 & Xếp hạng quá thấp & Đoạn đúng có tồn tại nhưng không lọt vào danh sách trả về. $\rightarrow$ Tìm kiếm lai, bộ xếp hạng lại, bộ nhúng tốt hơn. \\
+FP3 & Không vào được ngữ cảnh & Đoạn đúng đã được tìm thấy nhưng bị loại trong lúc hợp nhất và dựng prompt. $\rightarrow$ Tăng top-$k$, nới chỗ trong prompt, xem lại luật cắt. \\
+FP4 & Không trích xuất được & Đoạn đúng \emph{nằm trong} prompt nhưng mô hình không rút ra được, thường do nhiễu hoặc do thông tin mâu thuẫn. $\rightarrow$ Giảm nhiễu, xếp đoạn tốt nhất lên đầu, prompt rõ hơn. \\
+FP5 & Sai định dạng & Mô hình phớt lờ yêu cầu định dạng (bảng, danh sách). $\rightarrow$ Quy tắc định dạng rõ ràng, kèm một ví dụ đầu ra. \\
+FP6 & Sai mức độ chi tiết & Câu trả lời quá chung chung hoặc quá chi tiết so với nhu cầu. $\rightarrow$ Nói rõ người đọc là ai; viết lại truy vấn. \\
+FP7 & Trả lời thiếu & Câu trả lời không sai, nhưng bỏ sót thông tin vốn đã có sẵn trong ngữ cảnh. $\rightarrow$ Phân rã truy vấn, tăng số đoạn. \\
+\bottomrule
+\end{tabularx}
+\caption{Bảy điểm hỏng của RAG theo Barnett và cộng sự, kèm hướng xử lý.}
+\label{tab:seven_failure_points}
+\end{table}
+
+\noindent Hãy để ý cấu trúc: FP1--FP3 là \textbf{lỗi tìm kiếm}, FP4--FP7 là \textbf{lỗi sinh}. Đúng ranh giới hai nửa ở mục trên.
+
+\paragraph{Một lưu ý về chữ “tăng top-$k$”.} Lời khuyên tăng top-$k$ ở FP3 và FP7 chỉ đúng trong một điều kiện hẹp, và cần đọc cùng mục~\ref{ssec:context_rot} với mục~\ref{ssec:rag_cost} để không hiểu ngược. Tăng top-$k$ có lợi khi chẩn đoán cho thấy \textbf{đoạn đúng đã được tìm thấy nhưng bị cắt khỏi prompt} -- tức khi recall của khâu tìm kiếm đã cao hơn số chỗ bạn đang chừa trong ngữ cảnh; lúc đó nới chỗ là lấy lại thứ vốn đã có. Ngược lại, khi recall vốn đã thấp, tăng top-$k$ không tạo ra được đoạn đúng mà chỉ thêm nhiễu: nó làm loãng ngữ cảnh (mục~\ref{ssec:context_rot}) và nhân chi phí mỗi truy vấn lên theo đúng tỷ lệ (mục~\ref{ssec:rag_cost}). Nói gọn: tăng top-$k$ là một bản sửa có điều kiện cho một điểm hỏng cụ thể, không phải một thiết lập mặc định nên nâng lên cho chắc.
+
+\subsection{Quy trình gỡ lỗi}
+\label{ssec:rag_debug_routine}
+
+\begin{enumerate}
+	\item \textbf{Gom 50 câu trả lời tệ.} Từ phản hồi người dùng, từ nhật ký, từ chính golden set.
+	\item \textbf{Mở vết (trace) của từng cái. Đọc các chunk \emph{trước} khi đọc câu trả lời.} Thứ tự này quan trọng: nếu đọc câu trả lời trước, bạn sẽ bị nó dẫn dắt và có xu hướng đổ lỗi cho mô hình.
+	\item \textbf{Gắn nhãn} mỗi ca theo một trong bảy điểm hỏng.
+	\item \textbf{Đếm nhãn.} Gần như luôn luôn có một hoặc hai loại chiếm đa số.
+	\item \textbf{Sửa cái lớn nhất}, và chỉ cái đó.
+	\item \textbf{Chạy lại toàn bộ golden set} để chắc chắn bản sửa không phá những câu vốn đang đúng.
+\end{enumerate}
+
+\begin{keyidea}{Nhìn các chunk trước khi nhìn câu trả lời}
+\textbf{Khi một câu trả lời sai, hãy nhìn các chunk trước. Phần lớn vấn đề của RAG là vấn đề tìm kiếm, không phải vấn đề của mô hình ngôn ngữ.}
+
+Đây là lý do bước số 2 ở trên bắt buộc phải theo đúng thứ tự, và cũng là lý do việc đổi sang một LLM mạnh hơn thường không cải thiện gì -- nó không sửa được FP1, FP2 hay FP3.
+\end{keyidea}
+
+\subsection{Dựng golden set cho RAG}
+\label{ssec:rag_golden_set}
+
+Mục~\ref{sec:error_analysis} bàn về golden set nói chung. Với RAG có một khác biệt cốt yếu: \textbf{golden set phải ghi cả \emph{chunk nào} chứa câu trả lời}, không chỉ ghi câu trả lời. Không có thông tin đó thì bạn không chấm được nửa tìm kiếm.
+
+\begin{enumerate}
+	\item Thu \textbf{50--100 câu hỏi thật}. Nhật ký trò chuyện và ticket hỗ trợ là nguồn tốt nhất -- câu hỏi do bạn tự nghĩ ra luôn sạch sẽ hơn câu hỏi thật.
+	\item Với mỗi câu, viết câu trả lời đúng \textbf{và ghi chú chunk nào chứa nó}.
+	\item Thêm các ca khó: câu hỏi \emph{mơ hồ}, câu hỏi có \emph{lỗi chính tả}, câu hỏi cần \emph{hai tài liệu} mới trả lời được.
+	\item Thêm vài câu hỏi mà tài liệu của bạn \textbf{không thể} trả lời. Đáp án đúng cho chúng là “tôi không biết”.
+	\item Nhờ một người \textbf{am hiểu lĩnh vực} rà lại.
+	\item \textbf{Tiếp tục bổ sung}: mỗi câu trả lời tệ mà người dùng báo cáo là một câu hỏi kiểm thử mới.
+\end{enumerate}
+
+\subsection{Bảng tra: triệu chứng \texorpdfstring{$\rightarrow$}{->} kỹ thuật}
+\label{ssec:rag_symptom_table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}XX@{}}
+\toprule
+\textbf{Triệu chứng bạn quan sát được} & \textbf{Thử trước tiên} \\
+\midrule
+Người dùng hỏi ngắn và mơ hồ & Viết lại truy vấn, rồi đa truy vấn \\
+Câu hỏi nối tiếp trong hội thoại bị hỏng & Viết lại truy vấn có đọc lịch sử hội thoại \\
+Mã sản phẩm, tên riêng, số hiệu bị bỏ sót & Tìm kiếm lai (BM25 + vector) \\
+Tìm đúng đoạn nhưng câu trả lời thiếu chi tiết & Small-to-big / parent--child \\
+Chunk mất nghĩa khi tách khỏi trang & Truy hồi theo ngữ cảnh \\
+Câu hỏi tổng quát về cả tài liệu bị trượt & Cây tóm tắt (RAPTOR) hoặc đồ thị \\
+Lĩnh vực có ngôn ngữ riêng (luật, y) & Tinh chỉnh bộ nhúng \\
+Prompt dài và tốn kém & Xếp hạng lại, giảm top-$k$, nén ngữ cảnh \\
+Tìm kiếm trả về rác mà không ai phát hiện & CRAG \\
+Câu hỏi cần nhiều bước & RAG dạng tác tử (mục~\ref{ssec:reasoning_rag_patterns}) \\
+\bottomrule
+\end{tabularx}
+\caption{Chọn kỹ thuật theo triệu chứng, không theo độ mới của kỹ thuật.}
+\label{tab:rag_symptom}
+\end{table}
+
+\subsection{Một con số để giữ cho tỉnh táo}
+\label{ssec:rag_sober}
+
+Năm 2024, một nhóm ở Stanford kiểm thử các sản phẩm nghiên cứu pháp lý thương mại được xây trên RAG \cite{magesh2024hallucination}. Đây là những sản phẩm trả phí của các nhà cung cấp lớn, được quảng cáo là đã giải quyết vấn đề ảo giác. Kết quả đo được: chúng vẫn đưa ra thông tin sai lệch \textbf{từ 17\% đến 33\% số lần}.
+
+Tỷ lệ đó thấp hơn một chatbot đa dụng, nên kết luận \emph{không} phải là RAG thất bại. Kết luận là:
+
+\begin{center}
+\textbf{RAG làm giảm tỷ lệ ảo giác. Nó không đưa tỷ lệ đó về không.}
+\end{center}
+
+\noindent Hệ quả thực hành: hãy tiếp tục kiểm thử sau khi triển khai, và giữ một con người trong vòng lặp ở những chỗ mà một câu trả lời sai sẽ phải trả giá đắt.

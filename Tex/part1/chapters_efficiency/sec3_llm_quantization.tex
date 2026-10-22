@@ -1,7 +1,7 @@
 % !TEX root = ../main.tex
 % File: part1/chapters_efficiency/sec3_llm_quantization.tex
 
-\section{Lượng tử hóa LLM sau Huấn luyện}
+\section{Lượng tử hóa LLM sau huấn luyện}
 \label{sec:llm_quantization}
 
 Mục~\ref{ssec:quantization} đã giới thiệu các nguyên lý của lượng tử hóa. Với LLM, hầu hết các phương pháp thành công đều là \textbf{lượng tử hóa sau huấn luyện (Post-Training Quantization -- PTQ)}: không huấn luyện lại (quá đắt với mô hình hàng trăm tỷ tham số), chỉ dùng một tập hiệu chỉnh (calibration) nhỏ vài trăm mẫu.
@@ -9,20 +9,20 @@ Mục~\ref{ssec:quantization} đã giới thiệu các nguyên lý của lượn
 \subsection{Hai chế độ lượng tử hóa và lý do chúng tăng tốc}
 \label{ssec:quant_regimes}
 \begin{itemize}
-	\item \textbf{Chỉ lượng tử trọng số (weight-only, ví dụ W4A16):} Trọng số lưu ở 4 bit, được giải lượng tử sang 16 bit ngay trước phép nhân ma trận. Không tăng tốc phép tính, nhưng ở pha decode, nút thắt là \emph{băng thông bộ nhớ} (mỗi token phải đọc toàn bộ trọng số, mục~\ref{ssec:kv_cache}); trọng số nhỏ hơn 4 lần nghĩa là đọc nhanh hơn -- tăng tốc thực sự khi batch nhỏ.
+	\item \textbf{Chỉ lượng tử trọng số (weight-only, ví dụ W4A16):} Trọng số lưu ở 4 bit, được giải lượng tử sang 16 bit ngay trước phép nhân ma trận. Không tăng tốc phép tính, nhưng ở pha decode, nút thắt là \emph{băng thông bộ nhớ} (mỗi token phải đọc toàn bộ trọng số, mục~\ref{ssec:kv_cache}); trọng số nhỏ hơn 4 lần nghĩa là đọc nhanh hơn, tức tăng tốc thực sự khi batch nhỏ.
 	\item \textbf{Lượng tử cả trọng số và kích hoạt (ví dụ W8A8):} Phép nhân ma trận chạy trực tiếp bằng số nguyên 8 bit (hoặc FP8), tăng tốc cả pha prefill nặng tính toán và phục vụ batch lớn. Khó hơn nhiều, vì kích hoạt có \emph{giá trị ngoại lai}.
 \end{itemize}
 
 \subsection{LLM.int8(): Phát hiện đặc trưng ngoại lai}
 \label{ssec:llm_int8}
-Dettmers et al. \cite{dettmers2022llmint8} phát hiện một hiện tượng quyết định đối với mọi phương pháp lượng tử hóa LLM: khi mô hình vượt khoảng \textbf{6.7B tham số}, xuất hiện các \textbf{đặc trưng ngoại lai (outlier features)} -- một số rất ít chiều của trạng thái ẩn có độ lớn gấp hàng chục lần các chiều khác, xuất hiện một cách có hệ thống ở gần như \emph{mọi} lớp và mọi token. Lượng tử hóa INT8 thông thường cho một tensor thì các giá trị ngoại lai này chiếm hết dải biểu diễn, khiến mọi giá trị khác bị làm tròn về 0 -- chất lượng sụp đổ.
+Dettmers et al. \cite{dettmers2022llmint8} phát hiện một hiện tượng quyết định đối với mọi phương pháp lượng tử hóa LLM: khi mô hình vượt khoảng 6.7B tham số, xuất hiện các \textbf{đặc trưng ngoại lai (outlier features)}: một số rất ít chiều của trạng thái ẩn có độ lớn gấp hàng chục lần các chiều khác, xuất hiện một cách có hệ thống ở gần như \emph{mọi} lớp và mọi token. Lượng tử hóa INT8 thông thường cho một tensor thì các giá trị ngoại lai này chiếm hết dải biểu diễn, khiến mọi giá trị khác bị làm tròn về 0 và chất lượng sụp đổ.
 
 \paragraph{Giải pháp: hai kỹ thuật.}
 \begin{enumerate}
 	\item \textbf{Lượng tử theo vector (vector-wise):} Mỗi hàng của ma trận kích hoạt và mỗi cột của ma trận trọng số có hằng số tỷ lệ riêng, thay vì một hằng số cho cả tensor.
 	\item \textbf{Phân rã độ chính xác hỗn hợp (mixed-precision decomposition):} Tách các chiều chứa giá trị ngoại lai (độ lớn vượt ngưỡng, ví dụ 6.0) ra và nhân chúng ở FP16; phần còn lại (chiếm tuyệt đại đa số) nhân ở INT8; cộng hai kết quả lại.
 \end{enumerate}
-LLM.int8() cho phép chạy suy luận các mô hình tới 175B tham số ở 8 bit \textbf{không suy giảm chất lượng}, giảm một nửa bộ nhớ. Nhược điểm: phép tách/ghép làm chậm hơn FP16. Thư viện \texttt{bitsandbytes} (nền tảng của QLoRA) ra đời từ công trình này.
+LLM.int8() cho phép chạy suy luận các mô hình tới 175B tham số ở 8 bit mà không suy giảm chất lượng, giảm một nửa bộ nhớ. Nhược điểm: phép tách/ghép làm chậm hơn FP16. Thư viện \texttt{bitsandbytes} (nền tảng của QLoRA) ra đời từ công trình này.
 
 \subsection{SmoothQuant: Chuyển độ khó từ kích hoạt sang trọng số}
 \label{ssec:smoothquant}
@@ -52,18 +52,18 @@ với $\alpha$ là \textbf{độ mạnh chuyển dịch} (thường $\alpha = 0.
 \[
 \delta_F = -\frac{w_q - \text{quant}(w_q)}{[H_F^{-1}]_{qq}} \cdot \big(H_F^{-1}\big)_{:,q}.
 \]
-Để mở rộng tới mô hình 175B, GPTQ thêm ba cải tiến: (1) lượng tử các cột theo \textbf{cùng một thứ tự cố định} cho mọi hàng, nên $H^{-1}$ chỉ cần cập nhật một lần cho mỗi cột; (2) \textbf{cập nhật lười theo khối} (ví dụ 128 cột một lần) để tận dụng GPU; (3) dùng \textbf{phân rã Cholesky} của $H^{-1}$ để ổn định số học.
-\paragraph{Kết quả.} Lượng tử một mô hình 175B tham số trong khoảng \textbf{4 giờ GPU}, xuống 3--4 bit với suy giảm chất lượng không đáng kể; lần đầu chạy được OPT-175B trên một GPU A100 80GB; tăng tốc suy luận khoảng 3.25 lần trên A100 và 4.5 lần trên A6000 so với FP16.
+Để mở rộng tới mô hình 175B, GPTQ thêm ba cải tiến: (1) lượng tử các cột theo cùng một thứ tự cố định cho mọi hàng, nên $H^{-1}$ chỉ cần cập nhật một lần cho mỗi cột; (2) cập nhật lười theo khối (ví dụ 128 cột một lần) để tận dụng GPU; (3) dùng phân rã Cholesky của $H^{-1}$ để ổn định số học.
+\paragraph{Kết quả.} Lượng tử một mô hình 175B tham số trong khoảng 4 giờ GPU, xuống 3--4 bit với suy giảm chất lượng không đáng kể; lần đầu chạy được OPT-175B trên một GPU A100 80GB; tăng tốc suy luận khoảng 3.25 lần trên A100 và 4.5 lần trên A6000 so với FP16.
 
 \subsection{AWQ: Bảo vệ trọng số quan trọng dựa trên kích hoạt}
 \label{ssec:awq}
-\textbf{AWQ} \cite{lin2024awq} (giải bài báo xuất sắc nhất MLSys 2024) bắt đầu từ quan sát: \emph{không phải mọi trọng số đều quan trọng như nhau}. Giữ nguyên chỉ khoảng \textbf{1\% kênh trọng số quan trọng} ở FP16 đã giảm đáng kể sai số lượng tử hóa. Điều bất ngờ là kênh quan trọng nên được xác định dựa trên \textbf{độ lớn của kích hoạt} đi vào kênh đó, chứ không phải độ lớn của chính trọng số -- vì kênh nhận kích hoạt lớn sẽ khuếch đại sai số.
+\textbf{AWQ} \cite{lin2024awq} (giải bài báo xuất sắc nhất MLSys 2024) bắt đầu từ quan sát: \emph{không phải mọi trọng số đều quan trọng như nhau}. Giữ nguyên chỉ khoảng 1\% kênh trọng số quan trọng ở FP16 đã giảm đáng kể sai số lượng tử hóa. Kênh quan trọng được xác định dựa trên độ lớn của kích hoạt đi vào kênh đó, chứ không phải độ lớn của chính trọng số, vì kênh nhận kích hoạt lớn sẽ khuếch đại sai số.
 
-Nhưng giữ một phần trọng số ở FP16 lại không thân thiện với phần cứng. AWQ thay bằng \textbf{phép co giãn theo kênh}: nhân kênh quan trọng với $s > 1$ trước khi lượng tử (sai số làm tròn tương đối giảm đi), rồi chia đầu vào tương ứng cho $s$:
+Nhưng giữ một phần trọng số ở FP16 lại không thân thiện với phần cứng. AWQ thay bằng \textbf{phép co giãn theo kênh}: nhân mỗi kênh trọng số với một hệ số $s$ trước khi lượng tử rồi chia đầu vào tương ứng cho $s$, sao cho kênh quan trọng nhận hệ số lớn hơn \emph{tương đối} so với các kênh còn lại và nhờ đó có sai số làm tròn tương đối nhỏ hơn:
 \[
 Q(w \cdot s)\cdot \frac{x}{s}, \qquad s = s_X^{\alpha}, \quad \alpha^\star = \arg\min_{\alpha\in[0,1]} \Big\|Q(W\cdot \text{diag}(s))\,\big(\text{diag}(s)^{-1}X\big) - WX\Big\|,
 \]
-với $s_X$ là độ lớn trung bình của kích hoạt theo kênh và $\alpha$ được tìm bằng lưới đơn giản. AWQ \textbf{không cần lan truyền ngược hay tái tạo} như GPTQ, nên ít quá khớp với tập hiệu chỉnh và tổng quát hóa tốt sang các miền khác (lập trình, toán) và mô hình đa phương thức. Framework TinyChat đi kèm tăng tốc hơn 3 lần so với cài đặt FP16 của Hugging Face trên cả GPU desktop và thiết bị di động.
+với $s_X$ là độ lớn trung bình của kích hoạt theo kênh và $\alpha$ được tìm bằng lưới đơn giản: $\alpha = 0$ là không co giãn, $\alpha = 1$ là co giãn mạnh nhất trong không gian tìm kiếm. Bản thân $s$ không nhất thiết lớn hơn 1 -- điều có ý nghĩa là tỷ lệ giữa các kênh. Cũng không thể đẩy hệ số lên tùy ý: co giãn quá mạnh làm tăng sai số tương đối của những kênh không quan trọng và kéo chất lượng chung xuống, nên $\alpha$ là chỗ đánh đổi giữa hai nhóm kênh. AWQ không cần lan truyền ngược hay tái tạo như GPTQ, nên ít quá khớp với tập hiệu chỉnh và tổng quát hóa tốt sang các miền khác (lập trình, toán) và mô hình đa phương thức. Framework TinyChat đi kèm tăng tốc hơn 3 lần so với cài đặt FP16 của Hugging Face trên cả GPU desktop và thiết bị di động.
 
 \begin{table}[H]
 \centering
@@ -71,7 +71,7 @@ với $s_X$ là độ lớn trung bình của kích hoạt theo kênh và $\alph
 \label{tab:llm_quant_comparison}
 \begin{tabularx}{\textwidth}{@{}lccX@{}}
 \toprule
-\textbf{Phương pháp} & \textbf{Chế độ} & \textbf{Cần dữ liệu hiệu chỉnh} & \textbf{Ý tưởng then chốt} \\
+\textbf{Phương pháp} & \textbf{Chế độ} & \textbf{Cần dữ liệu hiệu chỉnh} & \textbf{Ý tưởng chính} \\
 \midrule
 LLM.int8() & W8A8 hỗn hợp & Không & Tách chiều ngoại lai ra FP16 \\
 SmoothQuant & W8A8 & Có (thống kê) & Chuyển ngoại lai từ kích hoạt sang trọng số \\
@@ -81,10 +81,10 @@ AWQ & W4 (A16) & Có (thống kê) & Co giãn kênh quan trọng theo độ lớ
 \end{tabularx}
 \end{table}
 
-\begin{tcolorbox}[title={Thực tế triển khai năm 2026}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{deepdive}{Thực tế triển khai năm 2026}
 \begin{itemize}
-	\item \textbf{GPU mới (H100/H200/B200)} hỗ trợ FP8 phần cứng; W8A8-FP8 gần như không mất chất lượng và là lựa chọn mặc định khi phục vụ quy mô lớn. Định dạng 4 bit dạng dấu phẩy động theo khối (MXFP4, NVFP4) ngày càng phổ biến -- ví dụ gpt-oss được phát hành với trọng số MoE ở MXFP4.
+	\item \textbf{GPU mới (H100/H200/B200)} hỗ trợ FP8 phần cứng; W8A8-FP8 gần như không mất chất lượng và là lựa chọn mặc định khi phục vụ quy mô lớn. Định dạng 4 bit dạng dấu phẩy động theo khối (MXFP4, NVFP4) ngày càng phổ biến; ví dụ gpt-oss được phát hành với trọng số MoE ở MXFP4.
 	\item \textbf{GPU tiêu dùng / thiết bị biên:} W4A16 với AWQ hoặc GPTQ (qua vLLM, SGLang), hoặc các định dạng lượng tử của llama.cpp (GGUF).
 	\item \textbf{Luôn đánh giá lại} trên tác vụ của chính bạn: suy giảm do lượng tử hóa thường lớn hơn ở suy luận toán học, lập trình và ngữ cảnh dài so với perplexity trên văn bản thông thường.
 \end{itemize}
-\end{tcolorbox}
+\end{deepdive}

@@ -1,36 +1,36 @@
 % !TEX root = ../../main.tex
 % File: part2/chapters4/chap4_3.tex
 
-\section{Recipe 3: Fine-tuning một LLM cho Tác vụ Phân loại}
+\section{Recipe 3: fine-tuning một LLM cho tác vụ phân loại}
 \label{sec:recipe_classification_finetuning}
 
-\textbf{Mục tiêu:} Fine-tune một LLM lớn (ví dụ: Qwen3 8B hoặc Llama 3.1 8B) cho một tác vụ phân loại văn bản một cách hiệu quả về bộ nhớ bằng cách sử dụng QLoRA.
+\textbf{Mục tiêu:} Fine-tune một LLM lớn (ví dụ: Qwen3 8B hoặc Llama 3.1 8B) cho một tác vụ phân loại văn bản, tiết kiệm bộ nhớ bằng QLoRA.
 
-\begin{tcolorbox}[colback=yellow!10!white, colframe=yellow!50!black, title={Khi nào \emph{không} nên dùng công thức này}, fonttitle=\bfseries]
+\begin{keyidea}{Khi nào \emph{không} nên dùng công thức này}
 Với phần lớn bài toán phân loại, một mô hình encoder nhỏ (BERT/RoBERTa/PhoBERT, dưới 1B tham số) được tinh chỉnh toàn bộ vẫn là lựa chọn tốt nhất: rẻ hơn, nhanh hơn, dễ triển khai hơn và thường chính xác không kém. Hãy dùng LLM lớn khi nhãn phụ thuộc vào suy luận phức tạp, khi dữ liệu gán nhãn rất ít (tận dụng kiến thức nền), hoặc khi bạn cần một mô hình đa nhiệm duy nhất.
-\end{tcolorbox}
+\end{keyidea}
 
 \textbf{Thành phần chính:}
 \begin{itemize}
-    \item \textbf{`transformers`:} Sử dụng `AutoModelForSequenceClassification` và `Trainer` API.
-    \item \textbf{`datasets`:} Để tải và xử lý bộ dữ liệu.
-    \item \textbf{`peft`:} Để áp dụng cấu hình LoRA.
-    \item \textbf{`bitsandbytes`:} Để lượng tử hóa mô hình sang 4-bit.
+    \item \textbf{\texttt{transformers}:} Sử dụng \texttt{Auto\allowbreak Model\allowbreak For\allowbreak Sequence\allowbreak Classification} và \texttt{Trainer} API.
+    \item \textbf{\texttt{datasets}:} Để tải và xử lý bộ dữ liệu.
+    \item \textbf{\texttt{peft}:} Để áp dụng cấu hình LoRA.
+    \item \textbf{\texttt{bitsandbytes}:} Để lượng tử hóa mô hình sang 4-bit.
 \end{itemize}
 
 \textbf{Các bước thực hiện:}
 \begin{enumerate}
     \item \textbf{Tải dữ liệu và tokenizer:} Tải một bộ dữ liệu phân loại và tokenizer tương ứng.
-    \item \textbf{Tiền xử lý dữ liệu:} Tokenize văn bản.
-    \item \textbf{Tải mô hình cơ sở đã được lượng tử hóa:} Tải LLM với `BitsAndBytesConfig` ở chế độ NF4 4-bit.
-    \item \textbf{Áp dụng cấu hình PEFT (LoRA):} Bọc mô hình cơ sở bằng một `PeftModel`.
-    \item \textbf{Thiết lập `Trainer`:} Định nghĩa `TrainingArguments` và `Trainer`, truyền vào hàm `compute\_metrics`.
+    \item \textbf{Tiền xử lý dữ liệu:} Tokenize văn bản, cắt ở một \texttt{max\_length} cụ thể. Phần đệm để \texttt{Trainer} lo: khi bạn truyền \texttt{processing\_class}, nó tự dùng \texttt{Data\allowbreak Collator\allowbreak With\allowbreak Padding} và đệm động theo từng batch.
+    \item \textbf{Tải mô hình cơ sở đã được lượng tử hóa:} Tải LLM với \texttt{BitsAndBytesConfig} ở chế độ NF4 4-bit.
+    \item \textbf{Áp dụng cấu hình PEFT (LoRA):} Bọc mô hình cơ sở bằng một \texttt{PeftModel}.
+    \item \textbf{Thiết lập \texttt{Trainer}:} Định nghĩa \texttt{TrainingArguments} và \texttt{Trainer}, truyền vào hàm \texttt{compute\_metrics}.
     \item \textbf{Huấn luyện:} Bắt đầu quá trình fine-tuning.
 \end{enumerate}
 
 \textbf{Mã nguồn:}
 
-\begin{example}{Fine-tuning một LLM cho Tác vụ Phân loại}{ex:finetune_classificationclassification}
+\begin{example}{Fine-tuning một LLM cho tác vụ phân loại}{ex:finetune_classification}
     \begin{minted}{python}
     # Bước 1: Cài đặt
     # pip install transformers datasets accelerate evaluate peft bitsandbytes
@@ -53,8 +53,10 @@ Với phần lớn bài toán phân loại, một mô hình encoder nhỏ (BERT/
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     tokenizer.pad_token = tokenizer.eos_token # nhiều LLM không có pad token riêng
     
+    # Luôn đặt max_length cụ thể: padding="max_length" không kèm max_length sẽ
+    # đệm mọi mẫu lên model_max_length (131072 với Qwen3) và demo không chạy nổi.
     def tokenize_function(examples):
-        return tokenizer(examples["text"], padding="max_length", truncation=True)
+        return tokenizer(examples["text"], truncation=True, max_length=512)
     
     tokenized_datasets = dataset.map(tokenize_function, batched=True)
     # Giảm kích thước để chạy demo nhanh

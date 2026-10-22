@@ -1,15 +1,15 @@
 % !TEX root = main.tex
 % Phụ lục: ánh xạ danh sách đọc nghiên cứu LLM 2026 sang các mục trong sách.
 
-\chapter*{Phụ lục A: Bản đồ Danh sách đọc 2026 \texorpdfstring{$\rightarrow$}{->} Chương mục}
-\addcontentsline{toc}{chapter}{Phụ lục A: Bản đồ Danh sách đọc 2026}
-\markboth{Phụ lục A: Bản đồ Danh sách đọc}{}
+\chapter*{Phụ lục A: Bản đồ danh sách đọc 2026 \texorpdfstring{$\rightarrow$}{->} chương mục}
+\addcontentsline{toc}{chapter}{Phụ lục A: Bản đồ danh sách đọc 2026}
+\markboth{Phụ lục A: Bản đồ danh sách đọc}{}
 
 Bản cập nhật 2026 của cuốn sách được rà soát theo một danh sách đọc nghiên cứu LLM gồm mười trục. Bảng dưới đây cho biết mỗi bài báo được trình bày ở đâu, để bạn có thể đọc paper gốc song song với phần lý thuyết tương ứng.
 
-\begin{tcolorbox}[title={Cách dùng bảng này}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{deepdive}{Cách dùng bảng này}
 Với mỗi bài báo, hãy tự trả lời năm câu hỏi của danh sách đọc: (1) Nó thay đổi \emph{giả định} nào? (2) Nó giải quyết \emph{nút thắt} nào? (3) Nó \emph{đánh đổi} gì để lấy gì? (4) Có \emph{scaling law / ablation / so sánh cùng compute} không? (5) Có \emph{mã nguồn và khả năng tái lập} không? Các mục trong sách đều được viết theo khung câu hỏi này.
-\end{tcolorbox}
+\end{deepdive}
 
 \section*{1. Kiến trúc}
 \begin{longtable}{@{}p{7.2cm}p{7.6cm}@{}}
@@ -177,6 +177,6 @@ Efficient Transformers: A Survey \cite{tay2022efficient} & Mục~\ref{sec:long_c
 \bottomrule
 \end{longtable}
 
-\begin{tcolorbox}[title={Giữ cho kiến thức luôn mới}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
-Mỗi tuần, chỉ cần quét arXiv theo các từ khóa: \emph{architecture, MoE, MLA, attention, optimizer, Muon, pretraining, synthetic data, SFT, PEFT, LoRA, QLoRA, DPO, GRPO, RL, reasoning, test-time compute, distillation, quantization, speculative decoding, KV cache, serving, evaluation, agents}. Và nhớ nguyên tắc: \textbf{đừng đọc một paper chỉ vì nó mới} -- hãy đọc để trả lời năm câu hỏi ở đầu phụ lục này.
-\end{tcolorbox}
+\begin{assess}{Cách theo dõi bài báo mới mỗi tuần}
+Mỗi tuần, chỉ cần quét arXiv theo các từ khóa: \emph{architecture, MoE, MLA, attention, optimizer, Muon, pretraining, synthetic data, SFT, PEFT, LoRA, QLoRA, DPO, GRPO, RL, reasoning, test-time compute, distillation, quantization, speculative decoding, KV cache, serving, evaluation, agents}. Nguyên tắc: \textbf{đừng đọc một paper chỉ vì nó mới} -- hãy đọc để trả lời năm câu hỏi ở đầu phụ lục này.
+\end{assess}

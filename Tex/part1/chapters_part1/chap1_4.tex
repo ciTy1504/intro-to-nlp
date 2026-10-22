@@ -2,127 +2,89 @@
 % File: chapters_part1/chap1_4.tex
 % Nội dung cho Phần 1.4: Các Kiến thức Toán học Cần trang bị
 
-\section{Các Kiến thức Toán học Cần trang bị}
+\section{Các kiến thức toán học cần trang bị}
 \label{sec:kien_thuc_toan_hoc}
 
-NLP hiện đại, đặc biệt là trong kỷ nguyên Học sâu, có nền tảng vững chắc là toán học. Các mô hình phức tạp như Transformer về bản chất là những hàm số khổng lồ, và quá trình “học” của chúng chính là một bài toán tối ưu hóa.
+NLP hiện đại, đặc biệt là trong kỷ nguyên học sâu, dựa trên toán học. Các mô hình phức tạp như Transformer về bản chất là những hàm số khổng lồ, và quá trình “học” của chúng là một bài toán tối ưu hóa.
 
-Mục này không nhằm mục đích dạy lại toàn bộ các môn toán. Thay vào đó, nó đóng vai trò là một danh mục tham khảo, một bản đồ chỉ ra những khái niệm toán học nào là \textbf{thiết yếu} và giải thích \textbf{tại sao} chúng lại quan trọng trong NLP. Việc nắm vững những kiến thức này sẽ giúp bạn đi từ một người “sử dụng” thư viện thành một người thực sự “hiểu” và có khả năng “xây dựng” các mô hình.
+Mục này không dạy lại các môn toán. Nó là một danh mục tham khảo: những khái niệm nào là \textbf{thiết yếu}, và \textbf{tại sao} chúng quan trọng trong NLP.
 
-\subsection{Đại số Tuyến tính: Vector, Ma trận, Tensor, SVD}
+\subsection{Đại số tuyến tính: vector, ma trận, tensor, SVD}
 \label{ssec:dai_so_tuyen_tinh}
-Đại số Tuyến tính là ngôn ngữ của dữ liệu trong Học sâu. Mọi thứ trong NLP, từ một từ đơn lẻ đến cả một kho tài liệu, đều sẽ được biểu diễn dưới dạng các đối tượng của Đại số Tuyến tính.
+Mọi thứ trong NLP, từ một từ đơn lẻ đến cả một kho tài liệu, đều được biểu diễn dưới dạng các đối tượng của đại số tuyến tính.
 
 \paragraph{Vector}
-Một vector là một mảng số một chiều. Trong NLP, vector không chỉ là một dãy số, mà nó là \textbf{biểu diễn ngữ nghĩa} của một đối tượng.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Một từ, một câu, hay một tài liệu hoàn chỉnh đều có thể được “nhúng” (embed) vào một không gian vector nhiều chiều. Vector này, hay còn gọi là \textbf{embedding}, nắm bắt các đặc tính ngữ nghĩa của đối tượng. Các từ có nghĩa tương tự nhau (ví dụ: “vua” và “nữ hoàng”) sẽ có các vector biểu diễn nằm gần nhau trong không gian. Đây là nền tảng của Word2Vec, GloVe, và mọi mô hình ngôn ngữ hiện đại.
-    \item \textbf{Ký hiệu:} Một vector $v$ trong không gian $d$ chiều được ký hiệu là $v \in \mathbb{R}^d$.
-\end{itemize}
+Một vector là một mảng số một chiều. Trong NLP, vector còn là \textbf{biểu diễn ngữ nghĩa} của một đối tượng: một từ, một câu hay một tài liệu hoàn chỉnh đều có thể được “nhúng” (embed) vào một không gian vector nhiều chiều. Vector này, hay còn gọi là \textbf{embedding}, nắm bắt các đặc tính ngữ nghĩa của đối tượng. Các từ có nghĩa tương tự nhau (ví dụ: “vua” và “nữ hoàng”) sẽ có các vector biểu diễn nằm gần nhau trong không gian. Đây là nền tảng của Word2Vec, GloVe, và mọi mô hình ngôn ngữ hiện đại. Một vector $v$ trong không gian $d$ chiều được ký hiệu là $v \in \mathbb{R}^d$.
 
 \paragraph{Ma trận (Matrix)}
-Một ma trận là một mảng số hai chiều.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Ma trận có vô số ứng dụng:
-        \begin{enumerate}
-            \item \textbf{Tập hợp các vector từ:} Một ma trận có thể biểu diễn toàn bộ từ vựng, trong đó mỗi hàng là vector embedding của một từ.
-            \item \textbf{Trọng số của mạng nơ-ron:} Mỗi lớp (layer) trong một mạng nơ-ron thực chất là một ma trận trọng số. Quá trình học chính là điều chỉnh các giá trị trong ma trận này.
-            \item \textbf{Ma trận chú ý (Attention Matrix):} Trong kiến trúc Transformer, ma trận chú ý lưu trữ điểm số thể hiện mức độ “quan tâm” của một từ đến các từ khác trong câu.
-        \end{enumerate}
-\end{itemize}
+Một ma trận là một mảng số hai chiều. Ma trận có nhiều ứng dụng trong NLP:
+\begin{enumerate}
+    \item \textbf{Tập hợp các vector từ:} Một ma trận có thể biểu diễn toàn bộ từ vựng, trong đó mỗi hàng là vector embedding của một từ.
+    \item \textbf{Trọng số của mạng nơ-ron:} Mỗi lớp (layer) trong một mạng nơ-ron thực chất là một ma trận trọng số. Quá trình học chính là điều chỉnh các giá trị trong ma trận này.
+    \item \textbf{Ma trận chú ý (Attention Matrix):} Trong kiến trúc Transformer, ma trận chú ý lưu trữ điểm số thể hiện mức độ “quan tâm” của một từ đến các từ khác trong câu.
+\end{enumerate}
 
 \paragraph{Tensor}
-Tensor là sự tổng quát hóa của vector và ma trận lên nhiều chiều hơn. Một vector là tensor bậc 1, một ma trận là tensor bậc 2.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Các framework Học sâu như PyTorch và TensorFlow đều hoạt động dựa trên tensor. Khi xử lý dữ liệu theo lô (batch), chúng ta thường làm việc với các tensor bậc 3. Ví dụ, một lô 32 câu, mỗi câu dài 50 từ, mỗi từ được biểu diễn bằng vector 256 chiều sẽ tạo thành một tensor có kích thước `(32, 50, 256)`.
-\end{itemize}
+Tensor là sự tổng quát hóa của vector và ma trận lên nhiều chiều hơn. Một vector là tensor bậc 1, một ma trận là tensor bậc 2. Các framework học sâu như PyTorch và TensorFlow đều hoạt động dựa trên tensor. Khi xử lý dữ liệu theo lô (batch), ta thường làm việc với các tensor bậc 3: một lô 32 câu, mỗi câu dài 50 từ, mỗi từ được biểu diễn bằng vector 256 chiều sẽ tạo thành một tensor có kích thước \texttt{(32, 50, 256)}.
 
-\paragraph{Phân tích Giá trị suy biến (Singular Value Decomposition - SVD)}
-Là một kỹ thuật phân rã một ma trận thành ba ma trận khác.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Trong các mô hình NLP cổ điển hơn, SVD được dùng trong Phân tích Ngữ nghĩa Tiềm ẩn (Latent Semantic Analysis - LSA) để giảm chiều dữ liệu và tìm ra các “chủ đề” ẩn trong kho văn bản. Mặc dù ít được dùng trực tiếp trong các mô hình hiện đại, các ý tưởng về phân rã ma trận vẫn là nền tảng quan trọng.
-\end{itemize}
+\paragraph{Phân tích giá trị suy biến (Singular Value Decomposition - SVD)}
+Là một kỹ thuật phân rã một ma trận thành ba ma trận khác. Trong các mô hình NLP cổ điển hơn, SVD được dùng trong phân tích ngữ nghĩa tiềm ẩn (Latent Semantic Analysis - LSA) để giảm chiều dữ liệu và tìm ra các “chủ đề” ẩn trong kho văn bản. Nó ít được dùng trực tiếp trong các mô hình hiện đại, nhưng ý tưởng phân rã ma trận vẫn là nền tảng quan trọng.
 
-\subsection{Giải tích: Đạo hàm, Gradient, Chain Rule}
+\subsection{Giải tích: đạo hàm, gradient, quy tắc chuỗi}
 \label{ssec:giai_tich}
-Nếu Đại số Tuyến tính là cách chúng ta biểu diễn dữ liệu, thì Giải tích là cách chúng ta khiến các mô hình “học” từ dữ liệu đó. Cốt lõi của việc huấn luyện mạng nơ-ron là tối ưu hóa một \textbf{hàm mất mát (loss function)}, $\mathcal{L}$, để đo lường mức độ “tệ” của dự đoán từ mô hình so với kết quả thực tế. Giải tích cung cấp bộ công cụ để thực hiện việc tối ưu hóa này.
+Đại số tuyến tính là cách biểu diễn dữ liệu; giải tích là cách khiến mô hình “học” từ dữ liệu đó. Cốt lõi của việc huấn luyện mạng nơ-ron là tối ưu hóa một \textbf{hàm mất mát (loss function)}, $\mathcal{L}$, đo mức độ “tệ” của dự đoán từ mô hình so với kết quả thực tế. Giải tích cung cấp bộ công cụ cho việc tối ưu hóa này.
 
-\paragraph{Hàm Mất mát (Loss Function)}
-Là một hàm số tính toán một giá trị vô hướng (scalar) biểu thị “sai số” hoặc “chi phí” của mô hình trên một tập dữ liệu. Mục tiêu của việc huấn luyện là tìm bộ tham số (trọng số) $\theta$ của mô hình sao cho giá trị của hàm mất mát là nhỏ nhất.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Việc lựa chọn hàm mất mát phụ thuộc vào tác vụ. Ví dụ, hàm Cross-Entropy (xem Mục \ref{ssec:ly_thuyet_thong_tin}) thường được dùng cho các bài toán phân loại. Quá trình học chính là việc tìm kiếm $\theta^* = \arg\min_{\theta} \mathcal{L}(\theta)$.
-\end{itemize}
+\paragraph{Hàm mất mát (Loss Function)}
+Là một hàm số tính một giá trị vô hướng (scalar) biểu thị “sai số” hoặc “chi phí” của mô hình trên một tập dữ liệu. Mục tiêu của việc huấn luyện là tìm bộ tham số (trọng số) $\theta$ của mô hình sao cho giá trị của hàm mất mát là nhỏ nhất, tức là tìm $\theta^* = \arg\min_{\theta} \mathcal{L}(\theta)$. Việc lựa chọn hàm mất mát phụ thuộc vào tác vụ: hàm Cross-Entropy (xem Mục \ref{ssec:ly_thuyet_thong_tin}) thường được dùng cho các bài toán phân loại.
 
 \paragraph{Đạo hàm (Derivative)}
-Đo lường tốc độ thay đổi của một hàm số.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Cho biết việc thay đổi một trọng số nhỏ trong mạng nơ-ron sẽ ảnh hưởng đến hàm mất mát tổng thể như thế nào.
-\end{itemize}
+Đo lường tốc độ thay đổi của một hàm số. Trong NLP, đạo hàm cho biết việc thay đổi một trọng số nhỏ trong mạng nơ-ron sẽ ảnh hưởng đến hàm mất mát tổng thể như thế nào.
 
 \paragraph{Gradient}
-Là một vector chứa tất cả các đạo hàm riêng (partial derivatives) của hàm mất mát $\mathcal{L}$ theo từng tham số $\theta_i$ trong mô hình, ký hiệu là $\nabla_{\theta}\mathcal{L}(\theta)$.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Gradient chỉ ra hướng mà tại đó hàm mất mát \textbf{tăng nhanh nhất}. Để tối ưu hóa mô hình (giảm thiểu mất mát), thuật toán \textbf{Gradient Descent} sẽ cập nhật các trọng số theo hướng \textit{ngược lại} với gradient: $\theta \leftarrow \theta - \eta \nabla_{\theta}\mathcal{L}(\theta)$, trong đó $\eta$ là tốc độ học (learning rate).
-\end{itemize}
+Là một vector chứa tất cả các đạo hàm riêng (partial derivatives) của hàm mất mát $\mathcal{L}$ theo từng tham số $\theta_i$ trong mô hình, ký hiệu là $\nabla_{\theta}\mathcal{L}(\theta)$. Gradient chỉ ra hướng mà tại đó hàm mất mát \textbf{tăng nhanh nhất}. Để tối ưu hóa mô hình (giảm thiểu mất mát), thuật toán \textbf{Gradient Descent} cập nhật các trọng số theo hướng \textit{ngược lại} với gradient: $\theta \leftarrow \theta - \eta \nabla_{\theta}\mathcal{L}(\theta)$, trong đó $\eta$ là tốc độ học (learning rate).
 
 \paragraph{Quy tắc chuỗi (Chain Rule)}
-Là một công thức để tính đạo hàm của một hàm hợp.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Mạng nơ-ron sâu là một chuỗi các hàm số lồng vào nhau rất phức tạp. Quy tắc chuỗi là nền tảng toán học của thuật toán \textbf{lan truyền ngược (Backpropagation)} \cite{rumelhart1986learning}, cho phép chúng ta tính toán gradient của hàm mất mát theo từng tham số một cách hiệu quả, từ lớp cuối cùng ngược về lớp đầu tiên. Đây là một trong những khái niệm quan trọng nhất của Học sâu.
-\end{itemize}
+Là một công thức để tính đạo hàm của một hàm hợp. Mạng nơ-ron sâu là một chuỗi các hàm số lồng vào nhau rất phức tạp, nên quy tắc chuỗi là nền tảng toán học của thuật toán \textbf{lan truyền ngược (Backpropagation)} \cite{rumelhart1986learning}: nó cho phép tính gradient của hàm mất mát theo từng tham số một cách hiệu quả, từ lớp cuối cùng ngược về lớp đầu tiên. Đây là một trong những khái niệm quan trọng nhất của học sâu.
 
-\subsection{Xác suất và Thống kê: Định lý Bayes, MLE}
+\subsection{Xác suất và thống kê: định lý Bayes, MLE}
 \label{ssec:xac_suat_thong_ke}
-Ngôn ngữ tự nhiên vốn dĩ không chắc chắn và đầy mơ hồ. Xác suất và Thống kê cung cấp một bộ khung để mô hình hóa sự không chắc chắn này.
+Ngôn ngữ tự nhiên vốn không chắc chắn và đầy mơ hồ. Xác suất và thống kê cung cấp bộ khung để mô hình hóa sự không chắc chắn này.
 
 \paragraph{Định lý Bayes (Bayes' Theorem)}
-Mô tả xác suất của một sự kiện, dựa trên kiến thức có trước về các điều kiện có thể liên quan đến sự kiện đó.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Là nền tảng của các mô hình sinh (generative models) và là trái tim của bộ phân loại \textbf{Naive Bayes}, một thuật toán phân loại văn bản kinh điển và hiệu quả.
-\end{itemize}
+Mô tả xác suất của một sự kiện, dựa trên kiến thức có trước về các điều kiện có thể liên quan đến sự kiện đó. Trong NLP, định lý Bayes là nền tảng của các mô hình sinh (generative models) và của bộ phân loại \textbf{Naive Bayes}, một thuật toán phân loại văn bản kinh điển và hiệu quả.
 
-\paragraph{Ước lượng Hợp lý Cực đại (Maximum Likelihood Estimation - MLE)}
-Là một phương pháp ước tính các tham số của một mô hình thống kê.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Ý tưởng cốt lõi của MLE là: “Hãy tìm bộ tham số (trọng số của mô hình) sao cho dữ liệu quan sát được là có khả năng xảy ra cao nhất”. Việc huấn luyện hầu hết các mô hình học có giám sát bằng cách tối thiểu hóa một hàm mất mát (như Cross-Entropy) về mặt toán học tương đương với việc thực hiện MLE.
-\end{itemize}
+\paragraph{Ước lượng hợp lý cực đại (Maximum Likelihood Estimation - MLE)}
+Là một phương pháp ước tính các tham số của một mô hình thống kê. Ý tưởng cốt lõi của MLE là tìm bộ tham số (trọng số của mô hình) sao cho dữ liệu quan sát được là có khả năng xảy ra cao nhất. Việc huấn luyện hầu hết các mô hình học có giám sát bằng cách tối thiểu hóa một hàm mất mát (như Cross-Entropy) về mặt toán học tương đương với việc thực hiện MLE.
 
-\subsection{Lý thuyết Thông tin: Entropy, Cross-Entropy, KL Divergence}
+\subsection{Lý thuyết thông tin: entropy, cross-entropy, KL divergence}
 \label{ssec:ly_thuyet_thong_tin}
-Lý thuyết Thông tin \cite{shannon1948mathematical}, một nhánh của toán học ứng dụng, cung cấp các công cụ để định lượng thông tin. Trong NLP, nó đặc biệt hữu ích để định nghĩa các hàm mất mát.
+Lý thuyết thông tin \cite{shannon1948mathematical}, một nhánh của toán học ứng dụng, cung cấp các công cụ để định lượng thông tin. Trong NLP, nó đặc biệt hữu ích để định nghĩa các hàm mất mát.
 
 \paragraph{Entropy}
-Đo lường mức độ “bất ngờ” hay “không chắc chắn” trung bình của một biến ngẫu nhiên. Một phân phối đều (mọi kết quả có xác suất như nhau) có entropy cao nhất.
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Là một khái niệm nền tảng để hiểu các hàm mất mát.
-    \item \textbf{Công thức:}
-        \begin{equation}
-            H(X) = -\sum_{i=1}^{n} p(x_i) \log_2 p(x_i)
-            \label{eq:entropy}
-        \end{equation}
-\end{itemize}
+Đo lường mức độ “bất ngờ” hay “không chắc chắn” trung bình của một biến ngẫu nhiên. Một phân phối đều (mọi kết quả có xác suất như nhau) có entropy cao nhất. Đây là khái niệm nền tảng để hiểu các hàm mất mát.
+\begin{equation}
+    H(X) = -\sum_{i=1}^{n} p(x_i) \log_2 p(x_i)
+    \label{eq:entropy}
+\end{equation}
 
 \paragraph{Cross-Entropy (Entropy chéo)}
-Đo lường “khoảng cách” giữa hai phân phối xác suất, $p$ (phân phối thật) và $q$ (phân phối dự đoán).
-\begin{itemize}
-    \item \textbf{Vai trò trong NLP:} Đây là \textbf{hàm mất mát phổ biến nhất} cho các bài toán phân loại \cite{goodfellow2016deep}. Trong một bài toán như vậy, chúng ta có phân phối xác suất “thật” $p$ (ví dụ: nhãn đúng là 1, các nhãn khác là 0) và phân phối xác suất “dự đoán” $q$ từ mô hình (đầu ra của lớp softmax). Mục tiêu của việc huấn luyện là tối thiểu hóa Cross-Entropy, tức là làm cho phân phối dự đoán $q$ càng giống phân phối thật $p$ càng tốt.
-    \item \textbf{Công thức:}
-        \begin{equation}
-            H(p, q) = -\sum_{i=1}^{n} p(x_i) \log_2 q(x_i)
-            \label{eq:cross_entropy}
-        \end{equation}
-\end{itemize}
+Đo lường “khoảng cách” giữa hai phân phối xác suất, $p$ (phân phối thật) và $q$ (phân phối dự đoán):
+\begin{equation}
+    H(p, q) = -\sum_{i=1}^{n} p(x_i) \log_2 q(x_i)
+    \label{eq:cross_entropy}
+\end{equation}
+Đây là \textbf{hàm mất mát phổ biến nhất} cho các bài toán phân loại \cite{goodfellow2016deep}. Trong một bài toán phân loại, ta có phân phối xác suất “thật” $p$ (ví dụ: nhãn đúng là 1, các nhãn khác là 0) và phân phối xác suất “dự đoán” $q$ từ mô hình (đầu ra của lớp softmax). Mục tiêu của việc huấn luyện là tối thiểu hóa Cross-Entropy, tức là làm cho phân phối dự đoán $q$ càng giống phân phối thật $p$ càng tốt.
 
 \paragraph{Phân kỳ Kullback-Leibler (KL Divergence)}
 Đo mức “lệch” của một phân phối $q$ so với phân phối tham chiếu $p$:
 \begin{equation}
-    D_{KL}(p \,\|\, q) = \sum_{i} p(x_i) \log \frac{p(x_i)}{q(x_i)} \;\ge\; 0 ,
+    D_{KL}(p \,\|\, q) = \sum_{i} p(x_i) \log_2 \frac{p(x_i)}{q(x_i)} \;\ge\; 0 ,
     \label{eq:kl}
 \end{equation}
 và bằng $0$ khi và chỉ khi $p \equiv q$. Nó gắn chặt với Cross-Entropy qua $H(p, q) = H(p) + D_{KL}(p \| q)$. Vì $H(p)$ là hằng số khi $p$ là phân phối dữ liệu, \textbf{tối thiểu hóa cross-entropy chính là tối thiểu hóa KL} -- đó là lý do hai khái niệm này hay bị dùng thay nhau.
 
 \paragraph{KL không đối xứng, và chiều của nó quyết định hành vi mô hình}
-Nói chung $D_{KL}(p\|q) \neq D_{KL}(q\|p)$: KL không phải khoảng cách theo nghĩa hình học (không có bất đẳng thức tam giác). Sự bất đối xứng này không phải khiếm khuyết -- nó cho ta \emph{hai mục tiêu tối ưu khác hẳn nhau}, và biết chọn chiều nào là một kỹ năng thật sự.
+Nói chung $D_{KL}(p\|q) \neq D_{KL}(q\|p)$: KL không phải khoảng cách theo nghĩa hình học (không có bất đẳng thức tam giác). Sự bất đối xứng này không phải khiếm khuyết: nó cho ta \emph{hai mục tiêu tối ưu khác hẳn nhau}.
 \begin{itemize}
     \item \textbf{KL xuôi $D_{KL}(p\|q)$ -- “né số không”, bám trung bình (mean-seeking).} Ở những chỗ $p(x) > 0$ mà $q(x) \to 0$, số hạng $p \log(p/q)$ tiến ra vô cùng. Vậy $q$ \emph{bắt buộc} phải phủ mọi nơi $p$ có khối lượng. Nếu $p$ có hai đỉnh mà $q$ chỉ đủ sức mô tả một đỉnh, $q$ sẽ bị kéo ra trải giữa hai đỉnh -- kể cả khi vùng ở giữa thực tế chẳng có dữ liệu nào.
     \item \textbf{KL ngược $D_{KL}(q\|p)$ -- “ép về không”, bám đỉnh (mode-seeking).} Ở những chỗ $p(x) \approx 0$, muốn tổng hữu hạn thì $q(x)$ cũng phải $\approx 0$. Ngược lại, $q$ hoàn toàn được phép \emph{bỏ qua} hẳn một đỉnh của $p$ mà không bị phạt. Kết quả: $q$ co lại, bám chặt một đỉnh -- an toàn, sắc nét, nhưng kém đa dạng.
@@ -136,7 +98,7 @@ Nói chung $D_{KL}(p\|q) \neq D_{KL}(q\|p)$: KL không phải khoảng cách the
 \end{itemize}
 \noindent \textbf{Một hệ quả thực hành rất tốn tiền:} KL xuôi chỉ cần mẫu lấy từ $p$, tức là dữ liệu có sẵn. KL ngược cần mẫu lấy từ $q$ -- tức là phải \emph{sinh văn bản trong lúc huấn luyện}. Đó là lý do mọi phương pháp dùng KL ngược (MiniLLM, GKD, RLHF) đều đắt hơn hẳn huấn luyện thường: chúng phải chạy suy luận ở mỗi bước.
 
-\subsection{Hàm Softmax: từ điểm số đến xác suất}
+\subsection{Hàm softmax: từ điểm số đến xác suất}
 \label{ssec:softmax}
 
 Gần như mọi mô hình trong quyển sách này đều kết thúc bằng một hàm softmax: word2vec dự đoán từ trung tâm, cơ chế chú ý phân bổ trọng số, LLM chọn token tiếp theo. Công thức thì ai cũng thuộc:
@@ -177,9 +139,9 @@ nghĩa là \emph{độ tăng của $h$ trên một đoạn dài $c$ không phụ
 \]
 và hằng số $f(0)$ bị triệt tiêu khi chuẩn hóa. Yêu cầu 2 (đơn điệu tăng) chỉ thêm một điều kiện duy nhất: $\beta > 0$.
 
-\begin{tcolorbox}[title={Kết luận quan trọng}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+\begin{keyidea}{Hàm mũ là dạng duy nhất thỏa ba yêu cầu}
 Hàm mũ không phải là “một lựa chọn tự nhiên” trong số nhiều lựa chọn khả dĩ. Với ba yêu cầu -- \textbf{dương}, \textbf{liên tục}, \textbf{bất biến với phép tịnh tiến của logit} -- nó là dạng hàm \textbf{duy nhất} có thể dùng. Tất cả những gì còn lại để chọn chỉ là hệ số $\beta$ trong số mũ.
-\end{tcolorbox}
+\end{keyidea}
 
 \subsubsection{Vậy còn cơ số $e$?}
 Hệ số $\beta$ ở trên chính là câu chuyện về cơ số. Với mọi $a > 0$,
@@ -217,11 +179,11 @@ Viết softmax với một tham số $T$:
 \[
 p_i = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}} .
 \]
-Khi $T \to 0$, phân phối tiến tới one-hot đặt toàn bộ khối lượng vào logit lớn nhất (tức là $\arg\max$); khi $T \to \infty$, nó tiến tới phân phối đều. Và vì $a^z = e^{z \ln a}$, \textbf{đổi cơ số sang $a$ chính là đặt $T = 1/\ln a$}: cơ số lớn hơn $e$ làm phân phối sắc hơn, nhỏ hơn $e$ làm nó phẳng ra. Đây không phải một tham số phụ mà là một trong những núm vặn được dùng nhiều nhất trong sách này:
+Khi $T \to 0$, phân phối tiến tới one-hot đặt toàn bộ khối lượng vào logit lớn nhất (tức là $\arg\max$); khi $T \to \infty$, nó tiến tới phân phối đều. Và vì $a^z = e^{z \ln a}$, \textbf{đổi cơ số sang $a$ chính là đặt $T = 1/\ln a$}: cơ số lớn hơn $e$ làm phân phối sắc hơn, nhỏ hơn $e$ làm nó phẳng ra. Đây là một trong những núm vặn được dùng nhiều nhất trong sách này:
 \begin{itemize}
     \item \textbf{Sinh văn bản:} “nhiệt độ” khi lấy mẫu token tiếp theo chính là $T$ này -- thấp thì đầu ra an toàn và lặp, cao thì đa dạng và dễ lan man.
-    \item \textbf{Chưng cất tri thức:} tăng $T$ để làm mềm phân phối của mô hình thầy, làm lộ ra thông tin về các lớp gần đúng thay vì chỉ lớp đúng (mục~\ref{sec:model_optimization}).
-    \item \textbf{Chú ý:} hệ số $1/\sqrt{d_k}$ trong scaled dot-product attention (mục~\ref{ssec:self_attention}) thực chất là một nhiệt độ. Nếu các thành phần của $q$ và $k$ độc lập, kỳ vọng $0$ và phương sai $1$ thì $q^\top k$ có phương sai $d_k$; chia cho $\sqrt{d_k}$ kéo phương sai về $1$, giữ softmax khỏi rơi vào vùng bão hòa nơi một logit áp đảo tất cả và gradient gần như triệt tiêu.
+    \item \textbf{Chưng cất tri thức:} Tăng $T$ để làm mềm phân phối của mô hình thầy, làm lộ ra thông tin về các lớp gần đúng thay vì chỉ lớp đúng (mục~\ref{sec:model_optimization}).
+    \item \textbf{Chú ý:} Hệ số $1/\sqrt{d_k}$ trong scaled dot-product attention (mục~\ref{ssec:self_attention}) thực chất là một nhiệt độ. Nếu các thành phần của $q$ và $k$ độc lập, kỳ vọng $0$ và phương sai $1$ thì $q^\top k$ có phương sai $d_k$; chia cho $\sqrt{d_k}$ kéo phương sai về $1$, giữ softmax khỏi rơi vào vùng bão hòa nơi một logit áp đảo tất cả và gradient gần như triệt tiêu.
 \end{itemize}
 
 \subsubsection{Hệ quả thực hành: log-sum-exp và ổn định số}
@@ -237,7 +199,7 @@ L = -z_y + m + \log \sum_j e^{z_j - m} .
 \]
 Đây chính là lý do trong PyTorch, \texttt{F.cross\_entropy} nhận vào \textbf{logit} chứ không nhận xác suất, và \texttt{log\_softmax} tồn tại như một phép toán riêng thay vì viết \texttt{log(softmax(x))}.
 
-\begin{tcolorbox}[title={Đọc thêm: softmax đến từ nguyên lý Entropy cực đại}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries, breakable]
+\begin{deepdive}{Đọc thêm: softmax đến từ nguyên lý entropy cực đại}
 Có một con đường khác dẫn tới softmax, không giả định gì về dạng của $f$. Giả sử về phân phối cần tìm, ta chỉ biết đúng một điều: giá trị kỳ vọng của điểm số, $\sum_i p_i z_i = C$. Trong vô số phân phối thỏa ràng buộc đó, hãy chọn phân phối \emph{ít võ đoán nhất} -- tức có entropy $H(p) = -\sum_i p_i \log p_i$ lớn nhất (mục~\ref{ssec:ly_thuyet_thong_tin}). Lập hàm Lagrange với hai ràng buộc (kỳ vọng và tổng bằng $1$) rồi cho đạo hàm theo $p_i$ bằng $0$ sẽ dẫn thẳng tới
 \[
 p_i \propto e^{\beta z_i} .
@@ -247,7 +209,7 @@ Softmax vì thế không phải một thủ thuật kỹ thuật: nó là phân 
 \log p_i = z_i - \log Z
 \]
 có dạng “một số hạng tuyến tính trừ đi một số hạng chuẩn hóa” -- cấu trúc lặp đi lặp lại khắp thống kê, học máy và cơ học thống kê.
-\end{tcolorbox}
+\end{deepdive}
 
 \subsubsection{Giới hạn: khi softmax không còn là lựa chọn tốt}
 \begin{itemize}
@@ -256,4 +218,4 @@ có dạng “một số hạng tuyến tính trừ đi một số hạng chuẩ
     \item \textbf{Chi phí ở lớp ra.} Mẫu số chạy trên toàn bộ từ vựng, nên với $V$ cỡ $10^5$--$10^6$, riêng softmax cuối cùng đã chiếm phần lớn chi phí huấn luyện. Đây chính là vấn đề buộc word2vec phải dùng hierarchical softmax và negative sampling (mục~\ref{sec:word_embeddings}).
 \end{itemize}
 
-\paragraph{Tóm lại, ba tầng.} \textbf{Tầng xác suất:} cần dương, liên tục và bất biến với phép tịnh tiến logit $\Rightarrow$ bắt buộc phải là $e^{\beta z}$. \textbf{Tầng giải tích:} $e$ là cơ số duy nhất thỏa $\frac{d}{dz}e^z = e^z$ và $\ln e^z = z$. \textbf{Tầng học máy:} nhờ hai điều trên, softmax ghép với cross-entropy cho $\nabla_z L = p - y$. Cơ số $e$ không làm mô hình mạnh hơn -- nó làm \emph{toán} gọn hơn, và đó là lý do duy nhất nhưng hoàn toàn đủ.
+\paragraph{Ba tầng của câu trả lời.} \textbf{Tầng xác suất:} Cần dương, liên tục và bất biến với phép tịnh tiến logit $\Rightarrow$ bắt buộc phải là $e^{\beta z}$. \textbf{Tầng giải tích:} $e$ là cơ số duy nhất thỏa $\frac{d}{dz}e^z = e^z$ và $\ln e^z = z$. \textbf{Tầng học máy:} Nhờ hai điều trên, softmax ghép với cross-entropy cho $\nabla_z L = p - y$. Cơ số $e$ không làm mô hình mạnh hơn -- nó làm \emph{toán} gọn hơn, và đó là lý do duy nhất nhưng hoàn toàn đủ.

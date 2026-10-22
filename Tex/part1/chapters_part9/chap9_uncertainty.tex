@@ -1,0 +1,239 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_part9/chap9_uncertainty.tex
+% Độ bất định của phép đo
+
+\section{Độ bất định của phép đo}
+\label{sec:measurement_uncertainty}
+
+Mục trước trình bày các metric. Mục này trả lời câu hỏi mà phần lớn báo cáo bỏ qua: con số đó sai bao nhiêu.
+
+Phần lớn nội dung ở đây không dành riêng cho LLM. Nó dành cho những bài toán NLP chiếm đa số công việc thực tế -- phân loại văn bản, gán nhãn chuỗi, trích xuất thông tin, hồi quy trên văn bản -- nơi tập kiểm thử thường chỉ vài trăm tới vài nghìn mẫu, và nơi độ bất định lớn hơn nhiều so với trực giác.
+
+\begin{keyidea}{Nguyên tắc nền}
+Một con số không kèm thanh sai số là một ý kiến, không phải một phép đo.
+
+Hệ quả trực tiếp: phần lớn những cải thiện “0{,}5 điểm” mà bạn đọc được trong báo cáo nội bộ, và trong không ít bài báo, nằm hoàn toàn trong phạm vi nhiễu.
+\end{keyidea}
+
+\subsection{Khoảng tin cậy cho accuracy}
+\label{ssec:accuracy_ci}
+
+Accuracy là tỷ lệ mẫu đúng, nên nó là một tỷ lệ nhị thức. Với $n$ mẫu và tỷ lệ quan sát $\hat p$, sai số chuẩn và khoảng tin cậy 95\% xấp xỉ:
+\begin{equation}
+	\mathrm{SE} = \sqrt{\frac{\hat p (1-\hat p)}{n}}, \qquad
+	\mathrm{KTC}_{95\%} \approx \hat p \pm 1{,}96\,\mathrm{SE}.
+	\label{eq:wald_ci}
+\end{equation}
+
+\begin{center}
+\bookimage[0.98\textwidth]{eval_uncertainty}{Hai biểu đồ. Trái: nửa bề rộng khoảng tin cậy 95\% của accuracy theo kích thước tập kiểm thử, trục log-log, ba đường cho accuracy 70\%, 90\% và 98\%. Phải: biểu đồ độ tin cậy (reliability diagram) với đường chéo hiệu chuẩn hoàn hảo, một đường trước hiệu chuẩn nằm lệch và một đường sau hiệu chuẩn bám sát đường chéo.}
+\captionof{figure}{\textbf{Trái:} Với accuracy 90\% trên tập kiểm thử 200 mẫu, khoảng tin cậy là $\pm 4{,}2$ điểm phần trăm -- nghĩa là một mô hình đo được 88\% và một mô hình đo được 91\% \emph{không phân biệt được}. Chú ý độ dốc: đường thẳng trên trục log-log phản ánh quy luật $1/\sqrt{n}$. \textbf{Phải:} Biểu đồ độ tin cậy cho một mô hình quá tự tin (mô phỏng). Trước hiệu chuẩn, đường cong nằm \emph{dưới} đường chéo ở vùng tự tin cao: mô hình nói 90\% nhưng chỉ đúng khoảng 82\%. Một tham số nhiệt độ duy nhất kéo ECE từ 0{,}118 xuống 0{,}009.}
+\label{fig:eval_uncertainty}
+\end{center}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}rccc@{}}
+\toprule
+& \multicolumn{3}{c}{\textbf{Nửa bề rộng KTC 95\% (điểm \%)}} \\
+\cmidrule(l){2-4}
+$n$ & acc $=70\%$ & acc $=90\%$ & acc $=98\%$ \\
+\midrule
+100    & 8{,}98 & 5{,}88 & 2{,}74 \\
+200    & 6{,}35 & 4{,}16 & 1{,}94 \\
+500    & 4{,}02 & 2{,}63 & 1{,}23 \\
+1\,000 & 2{,}84 & 1{,}86 & 0{,}87 \\
+5\,000 & 1{,}27 & 0{,}83 & 0{,}39 \\
+\bottomrule
+\end{tabular}
+\caption{Nửa bề rộng khoảng tin cậy 95\% của accuracy, theo kích thước tập kiểm thử $n$ và mức accuracy quan sát được.}
+\label{tab:ci_accuracy}
+\end{table}
+
+\paragraph{Hai cảnh báo về công thức~\eqref{eq:wald_ci}.} Nó là xấp xỉ Wald, và nó \emph{hỏng} ở hai chỗ: khi $n$ nhỏ, và khi $\hat p$ gần 0 hoặc gần 1 -- chính là vùng bạn hay làm việc khi mô hình đã tốt. Ở $\hat p = 0{,}98$ với $n = 100$, công thức cho cận trên vượt quá 100\%. Khi đó hãy dùng \textbf{khoảng Wilson}:
+\[
+\frac{\hat p + \frac{z^2}{2n} \pm z\sqrt{\dfrac{\hat p(1-\hat p)}{n} + \dfrac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}, \qquad z = 1{,}96 .
+\]
+Nó luôn nằm trong $[0,1]$ và chính xác hơn hẳn ở đuôi. Mọi thư viện thống kê đều có sẵn.
+
+\subsection{Bootstrap: khoảng tin cậy cho metric bất kỳ}
+\label{ssec:bootstrap}
+
+Accuracy có công thức đóng. F1, AUC, BLEU, ROUGE và gần như mọi metric khác thì \emph{không}. Giải pháp tổng quát là \textbf{bootstrap}: lấy mẫu lại chính tập kiểm thử.
+
+\begin{enumerate}
+	\item Từ tập kiểm thử $n$ mẫu, rút \emph{có hoàn lại} $n$ mẫu để tạo một tập giả.
+	\item Tính lại metric trên tập giả đó.
+	\item Lặp $B$ lần ($B = 1000$ là đủ cho khoảng tin cậy; $B = 10\,000$ nếu cần đuôi chính xác).
+	\item Khoảng tin cậy 95\% là phân vị 2{,}5\% và 97{,}5\% của $B$ giá trị thu được.
+\end{enumerate}
+
+\begin{minted}{python}
+import numpy as np
+from sklearn.metrics import f1_score
+
+def bootstrap_ci(y_true, y_pred, metric=f1_score, B=1000, seed=0):
+    rng = np.random.default_rng(seed)
+    n = len(y_true)
+    stats = np.empty(B)
+    for b in range(B):
+        idx = rng.integers(0, n, n)          # rút có hoàn lại
+        stats[b] = metric(y_true[idx], y_pred[idx])
+    return np.percentile(stats, [2.5, 97.5])
+\end{minted}
+
+\begin{pitfall}{Cái bẫy quan trọng nhất của bootstrap}
+\textbf{Phải lấy mẫu lại ở đúng cấp đơn vị độc lập.}
+
+Nếu bạn gán nhãn thực thể và lấy mẫu lại theo \emph{token}, bạn đã giả định các token độc lập với nhau -- trong khi các token trong cùng một câu rõ ràng không độc lập. Khoảng tin cậy thu được sẽ \emph{hẹp hơn sự thật}, có khi hẹp hơn nhiều lần, và bạn sẽ tự tin vào một kết quả không có.
+
+Đơn vị độc lập thường là \textbf{tài liệu} hoặc \textbf{câu}, không phải token. Nếu dữ liệu có nhiều mẫu từ cùng một người dùng, đơn vị độc lập có thể là \emph{người dùng}.
+\end{pitfall}
+
+\subsection{Bất định của Precision, Recall và F1}
+\label{ssec:prf_uncertainty}
+
+Dùng bootstrap như trên. Nhưng có một đặc điểm riêng cần cảnh báo: macro-F1 trên các lớp hiếm có phương sai rất lớn. Macro-F1 lấy trung bình F1 của từng lớp \emph{với trọng số bằng nhau}. Nếu một lớp chỉ có 12 mẫu trong tập kiểm thử, F1 của lớp đó được tính trên mẫu số bằng 12: một mẫu đổi nhãn làm nó nhảy vài điểm phần trăm, và cú nhảy đó được truyền nguyên vẹn vào macro-F1.
+
+Hệ quả thực hành: hãy báo cáo khoảng tin cậy cho \emph{từng lớp}, không chỉ cho số macro. Nó sẽ cho thấy ngay rằng “macro-F1 tăng 2 điểm” thực ra là “một lớp hiếm may mắn hơn ở lần chạy này”.
+
+\subsection{ROC-AUC và PR-AUC}
+\label{ssec:auc}
+
+AUC có một diễn giải xác suất rất gọn: AUC là xác suất mô hình chấm một mẫu dương ngẫu nhiên cao hơn một mẫu âm ngẫu nhiên. Vì vậy AUC $= 0{,}5$ là đoán mò, và AUC \emph{không phụ thuộc ngưỡng} -- đó vừa là ưu điểm vừa là giới hạn của nó.
+
+\begin{itemize}
+	\item \textbf{Khoảng tin cậy:} Bootstrap như trên. Có công thức giải tích cổ điển, nhưng bootstrap dễ hơn và ít giả định hơn.
+	\item \textbf{Với dữ liệu mất cân bằng, hãy dùng PR-AUC thay vì ROC-AUC.} ROC-AUC dùng tỷ lệ dương tính giả, mà mẫu số của nó là \emph{toàn bộ} lớp âm. Khi lớp âm áp đảo, cả nghìn dương tính giả cũng chỉ nhích tỷ lệ đó lên chút xíu, nên ROC-AUC trông đẹp trong khi hệ thống thực tế không dùng được. PR-AUC nhạy đúng với điều bạn quan tâm.
+	\item \textbf{PR-AUC và độ chính xác trung bình không phải một.} \textbf{Độ chính xác trung bình} (average precision, AP) là \emph{một ước lượng cụ thể} của diện tích dưới đường PR: nó lấy tổng $\sum_k (R_k - R_{k-1}) P_k$ trên các ngưỡng, không nội suy giữa các điểm hoạt động. Diện tích tính bằng quy tắc hình thang thì có nội suy và thường cho con số lạc quan hơn. Hai giá trị rất gần nhau nhưng không đồng nhất, nên khi báo cáo hãy nói rõ đã dùng cách tính nào.
+	\item \textbf{AUC không nói gì về ngưỡng bạn sẽ triển khai.} Một mô hình AUC cao vẫn có thể vô dụng ở mọi ngưỡng thực tế nếu đường cong có hình dạng xấu ở vùng bạn cần.
+\end{itemize}
+
+\subsection{Bất định của lỗi hồi quy}
+\label{ssec:regression_uncertainty}
+
+Với các bài toán hồi quy trên văn bản -- chấm điểm bài luận, dự đoán mức độ nghiêm trọng, ước lượng thời gian xử lý -- metric thường là MAE hoặc RMSE. Cả hai cũng cần khoảng tin cậy, và cũng lấy bằng bootstrap.
+
+Hai lưu ý:
+\begin{itemize}
+	\item RMSE bị chi phối bởi điểm ngoại lai vì nó bình phương sai số; MAE thì không. Hai metric có thể xếp hạng hai mô hình \emph{ngược nhau}. Hãy báo cáo cả hai, và nếu chúng bất đồng thì đó là thông tin chứ không phải phiền phức: nó nói rằng hai mô hình khác nhau ở phần đuôi.
+	\item Khoảng tin cậy của RMSE thường \emph{rộng hơn} của MAE trên cùng dữ liệu, đúng vì lý do trên.
+\end{itemize}
+
+\subsection{So sánh hai mô hình: bắt buộc dùng kiểm định cặp}
+\label{ssec:paired_comparison}
+
+Đây là lỗi phổ biến nhất trong cả mục này.
+
+\begin{pitfall}{Sai lầm: so hai khoảng tin cậy}
+Mô hình A đạt $86{,}0\% \pm 2{,}1$, mô hình B đạt $88{,}5\% \pm 2{,}1$. Hai khoảng \emph{chồng lên nhau}, nên nhiều người kết luận “khác biệt không có ý nghĩa thống kê”.
+
+Kết luận đó không đúng. Hai khoảng tin cậy độc lập chồng nhau \emph{không} đồng nghĩa với không có khác biệt. Lý do: hai mô hình được đo trên \emph{cùng một} tập kiểm thử, nên sai số của chúng tương quan rất mạnh, cả hai cùng sai trên những mẫu khó. Phép so sánh đúng phải khai thác chính sự tương quan đó.
+\end{pitfall}
+
+\paragraph{Kiểm định McNemar (cho phân loại).} Chỉ nhìn vào các mẫu mà hai mô hình \emph{bất đồng}. Gọi $b$ là số mẫu A đúng B sai, $c$ là số mẫu A sai B đúng. Nếu hai mô hình tương đương thì $b$ và $c$ phải xấp xỉ nhau, và
+\[
+\chi^2 = \frac{(|b - c| - 1)^2}{b + c}
+\]
+tuân theo phân phối chi bình phương một bậc tự do. Những mẫu cả hai cùng đúng hoặc cùng sai \emph{không mang thông tin} về sự khác biệt -- đó chính là lý do kiểm định cặp mạnh hơn.
+
+\paragraph{Bootstrap cặp (cho metric bất kỳ).} Lấy mẫu lại tập kiểm thử \emph{một lần}, rồi tính metric cho \emph{cả hai} mô hình trên cùng tập giả đó, và ghi lại \emph{hiệu}. Lặp $B$ lần. Nếu khoảng tin cậy của hiệu không chứa 0, khác biệt có ý nghĩa.
+
+\paragraph{Kiểm định hoán vị.} Dưới giả thuyết không, nhãn “mô hình A” và “mô hình B” là hoán đổi được. Hoán đổi ngẫu nhiên dự đoán của hai mô hình trên từng mẫu, tính lại hiệu metric, lặp nhiều lần, rồi xem hiệu thật nằm ở đâu trong phân phối đó. Đây là kiểm định được khuyến nghị rộng rãi nhất trong NLP vì nó gần như không giả định gì \cite{dror2018hitchhiker}.
+
+\paragraph{Vấn đề so sánh bội.} Nếu bạn thử 20 cấu hình rồi báo cáo cấu hình tốt nhất, thì ở mức $p < 0{,}05$, \emph{kỳ vọng} có một cấu hình trông có ý nghĩa thống kê hoàn toàn do ngẫu nhiên. Hãy hiệu chỉnh (Bonferroni là cách thô nhưng an toàn), hoặc tối thiểu là báo cáo bạn đã thử bao nhiêu cấu hình.
+
+\subsection{Lặp lại nhiều lần: hạt giống ngẫu nhiên cũng là một nguồn bất định}
+\label{ssec:seed_variance}
+
+Bất định không chỉ đến từ tập kiểm thử. Nó còn đến từ \emph{quá trình huấn luyện}: khởi tạo ngẫu nhiên, thứ tự dữ liệu, dropout, phân mảnh phi tất định trên GPU.
+
+Quy tắc tối thiểu: huấn luyện lại với ít nhất 3--5 hạt giống và báo cáo trung bình kèm độ lệch chuẩn. Một cải thiện 0{,}3 điểm từ một lần chạy duy nhất, trên một mô hình mà độ lệch chuẩn giữa các hạt giống là 0{,}6 điểm, không phải là một cải thiện mà là nhiễu được báo cáo như một kết quả.
+
+Với dữ liệu nhỏ, hãy kết hợp thêm \textbf{kiểm chứng chéo $k$-fold lặp lại}: chia $k$ phần, lặp toàn bộ quy trình với nhiều cách chia khác nhau. Nó cho bạn ước lượng ổn định hơn nhiều so với một lần chia duy nhất, và trên tập vài trăm mẫu thì chênh lệch giữa hai cách chia có thể lớn hơn chênh lệch giữa hai mô hình.
+
+\subsection{Hiệu chuẩn xác suất}
+\label{ssec:calibration}
+
+Một mô hình có thể \emph{chính xác} mà vẫn \emph{không trung thực} về độ tự tin của mình. Nếu bạn lấy tất cả những dự đoán mà mô hình nói “90\% chắc chắn” và chỉ 70\% trong số đó đúng, mô hình đó quá tự tin, và mọi quyết định bạn xây trên con số 90\% kia đều sai.
+
+Guo và cộng sự \cite{guo2017calibration} chỉ ra rằng mạng nơ-ron hiện đại bị hiệu chuẩn kém hơn hẳn các mạng thế hệ trước, và các yếu tố góp phần gồm độ sâu, độ rộng, weight decay và batch normalization.
+
+\paragraph{Cách đo.}
+\begin{itemize}
+	\item \textbf{Biểu đồ độ tin cậy} (hình~\ref{fig:eval_uncertainty}, phải): chia dự đoán thành các khoảng theo độ tự tin, rồi vẽ độ tự tin trung bình so với tỷ lệ đúng thực tế. Hiệu chuẩn hoàn hảo là đường chéo.
+	\item \textbf{ECE} (Expected Calibration Error): trung bình có trọng số của $|\text{tỷ lệ đúng} - \text{độ tự tin}|$ trên các khoảng.
+\end{itemize}
+
+\paragraph{Cách sửa, theo thứ tự nên thử.}
+\begin{enumerate}
+	\item \textbf{Temperature scaling:} Chia logit cho một hằng số $T$ học được trên tập validation. \emph{Một tham số duy nhất}, không đổi thứ hạng dự đoán nên không làm thay đổi accuracy, và thường là đủ. Trong hình~\ref{fig:eval_uncertainty}, nó kéo ECE từ 0{,}118 xuống 0{,}009.
+	\item \textbf{Platt scaling:} Hồi quy logistic trên logit (hai tham số).
+	\item \textbf{Hồi quy đẳng hướng (isotonic):} Phi tham số, mạnh hơn nhưng dễ quá khớp nếu tập validation nhỏ.
+\end{enumerate}
+
+\begin{deepdive}{Khi nào hiệu chuẩn \emph{chính là} sản phẩm}
+Hiệu chuẩn trở thành yêu cầu bắt buộc mỗi khi bạn \emph{dùng} con số xác suất chứ không chỉ dùng nhãn:
+\begin{itemize}
+	\item Bạn đặt ngưỡng để tự động hóa: “tự xử lý nếu độ tin cậy $> 0{,}95$, còn lại chuyển cho người”.
+	\item Bạn định tuyến theo độ khó: câu dễ cho mô hình nhỏ, câu khó cho mô hình lớn.
+	\item Bạn cho phép mô hình \emph{từ chối trả lời} khi không chắc.
+	\item Bạn gộp dự đoán từ nhiều mô hình theo trọng số tin cậy.
+\end{itemize}
+Trong cả bốn trường hợp, một mô hình quá tự tin sẽ âm thầm chuyển nhầm việc, và bạn sẽ không phát hiện ra bằng accuracy tổng thể.
+\end{deepdive}
+
+\subsection{Ngưỡng quyết định}
+\label{ssec:decision_threshold}
+
+Ngưỡng $0{,}5$ là một \emph{mặc định của thư viện}, không phải một lựa chọn thiết kế. Hầu như không bài toán thực tế nào có ngưỡng tối ưu đúng bằng $0{,}5$.
+
+\begin{itemize}
+	\item \textbf{Chi phí của hai loại lỗi hiếm khi bằng nhau.} Bỏ sót một bình luận độc hại khác hẳn với chặn nhầm một bình luận lành. Nếu bỏ sót tốn gấp 10 lần chặn nhầm, ngưỡng tối ưu sẽ thấp hơn $0{,}5$ rất nhiều.
+	\item \textbf{Chọn ngưỡng trên tập validation, báo cáo trên tập test.} Chọn ngưỡng trên chính tập bạn báo cáo là một dạng rò rỉ -- bạn đang tối ưu một siêu tham số trên tập kiểm thử.
+	\item \textbf{Báo cáo đường cong, không chỉ một điểm.} Một bảng precision/recall ở vài ngưỡng khác nhau cho người đọc biết hệ thống linh hoạt tới đâu. Nếu precision sụp đổ khi recall nhích lên vài điểm, đó là thông tin quan trọng mà một con số F1 giấu đi.
+	\item \textbf{Kiểm tra độ nhạy của kết quả theo ngưỡng.} Nếu metric của bạn thay đổi mạnh khi ngưỡng xê dịch $\pm 0{,}02$, kết luận của bạn rất mong manh.
+\end{itemize}
+
+\subsection{Hiệu năng theo nhóm con}
+\label{ssec:subgroup_performance}
+
+Một con số tổng thể là một phép trung bình, và phép trung bình che mất sự khác biệt giữa các nhóm con.
+
+Một mô hình đạt 92\% tổng thể hoàn toàn có thể chỉ đạt 60\% trên một nhóm chiếm 5\% dữ liệu. Nếu nhóm đó cũng được kéo lên 92\%, con số tổng thể chỉ tăng $0{,}05 \times 32 = 1{,}6$ điểm: đó là toàn bộ dấu vết mà khoảng cách 32 điểm kia để lại trên số tổng thể -- đủ nhỏ để không ai để ý, đủ lớn để sản phẩm hỏng với nhóm người dùng đó.
+
+\paragraph{Cắt theo chiều nào.}
+\begin{itemize}
+	\item \textbf{Độ dài đầu vào} -- câu rất ngắn và văn bản rất dài thường là hai chế độ hỏng riêng biệt.
+	\item \textbf{Miền hoặc nguồn dữ liệu} -- tin tức so với mạng xã hội so với văn bản pháp lý.
+	\item \textbf{Lớp nhãn} -- đặc biệt là các lớp hiếm.
+	\item \textbf{Thời gian} -- dữ liệu mới so với dữ liệu cũ, để phát hiện trôi dạt.
+	\item \textbf{Nhóm nhân khẩu học} khi có liên quan tới công bằng (chương~\ref{chap:ethics} bàn kỹ hơn).
+	\item Với tiếng Việt, thêm: \textbf{có dấu so với không dấu}, văn bản có nhiều từ mượn tiếng Anh, và các biến thể vùng miền.
+\end{itemize}
+
+\paragraph{Hai quy tắc.} Thứ nhất, hãy báo cáo hiệu năng của nhóm tệ nhất, không chỉ trung bình: đó mới là số nói lên trải nghiệm xấu nhất mà hệ thống tạo ra. Thứ hai, kiểm tra kích thước nhóm trước khi kết luận. Ở accuracy 70\%, một nhóm 30 mẫu có nửa bề rộng Wald là $1{,}96\sqrt{0{,}7 \cdot 0{,}3/30} \approx 0{,}164$, tức $\pm 16{,}4$ điểm phần trăm -- rộng hơn cả hàng $n = 100$ của bảng~\ref{tab:ci_accuracy}. Nhưng $n = 30$ nằm đúng trong vùng mà xấp xỉ Wald kém chính xác (mục~\ref{ssec:accuracy_ci}), nên con số nên báo cáo là khoảng Wilson: $[52{,}1\%;\ 83{,}3\%]$, bất đối xứng và rộng hơn 31 điểm. Đủ rộng để một “sụt giảm nghiêm trọng” thực ra chỉ là nhiễu.
+
+\subsection{Độ ổn định của tầm quan trọng đặc trưng}
+\label{ssec:feature_stability}
+
+Với các mô hình có thể diễn giải -- hồi quy logistic trên TF-IDF, cây tăng cường gradient trên đặc trưng thủ công, hoặc SHAP trên một mô hình hộp đen (mục~\ref{ssec:interpretability}) -- bảng xếp hạng đặc trưng quan trọng thường được trình bày như một phát hiện.
+
+Nhưng bảng đó cũng là một ước lượng, và nó thường \emph{kém ổn định} hơn chính metric hiệu năng. Hai đặc trưng tương quan cao có thể hoán đổi vị trí hoàn toàn chỉ vì tập huấn luyện thay đổi một chút.
+
+\textbf{Phép kiểm tối thiểu:} Chạy lại toàn bộ quy trình trên $B$ tập bootstrap (hoặc với nhiều hạt giống), ghi lại thứ hạng của từng đặc trưng mỗi lần, rồi xem phân bố thứ hạng đó. Chỉ kể một đặc trưng là “quan trọng” nếu nó ổn định qua các lần lấy mẫu lại. Một đặc trưng đứng hạng nhất ở lần chạy này và hạng hai mươi ở lần chạy khác không phải một phát hiện mà là một dao động.
+
+\begin{assess}{Bảng báo cáo tối thiểu}
+Khi báo cáo kết quả của một mô hình NLP có giám sát, hãy kèm theo:
+\begin{enumerate}
+	\item Kích thước tập kiểm thử, và \textbf{đơn vị độc lập} là gì.
+	\item Metric chính \textbf{kèm khoảng tin cậy} (bootstrap nếu không có công thức đóng).
+	\item \textbf{Trung bình và độ lệch chuẩn qua $\ge 3$ hạt giống}, không phải lần chạy tốt nhất.
+	\item Khi so với một đường cơ sở: một \textbf{kiểm định cặp}, kèm số cấu hình bạn đã thử.
+	\item Hiệu năng của \textbf{nhóm tệ nhất}, kèm kích thước nhóm đó.
+	\item \textbf{Ngưỡng} bạn dùng, và nó được chọn trên tập nào.
+	\item Nếu xác suất được dùng để ra quyết định: một chỉ số \textbf{hiệu chuẩn}.
+\end{enumerate}
+Bảy dòng này tốn khoảng nửa ngày. Chúng là khác biệt giữa một kết quả lặp lại được và một con số may mắn.
+\end{assess}

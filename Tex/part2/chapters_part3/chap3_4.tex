@@ -1,19 +1,17 @@
 % !TEX root = ../../main.tex
 % File: part2/chapters3/chap3_4.tex
 
-\section{Các Framework Phục vụ Chuyên dụng cho Production}
+\section{Các framework phục vụ chuyên dụng cho production}
 \label{sec:specialized_serving_frameworks}
-FastAPI và Docker là rất tốt, nhưng khi phục vụ các LLM quy mô lớn với yêu cầu về thông lượng (throughput) cao và độ trễ (latency) thấp, chúng ta cần các công cụ chuyên dụng hơn.
+FastAPI và Docker chưa đủ khi phục vụ các LLM quy mô lớn với yêu cầu thông lượng (throughput) cao và độ trễ (latency) thấp; lúc đó cần các công cụ chuyên dụng hơn.
 
-\paragraph{Vấn đề của việc Phục vụ LLM}
-Một trong những thách thức lớn nhất là quản lý bộ nhớ của \textbf{KV Cache}. Trong quá trình sinh văn bản tự hồi quy, các giá trị Key và Value của các token đã được sinh ra sẽ được lưu lại (cache) để không phải tính toán lại ở các bước sau. KV Cache này chiếm một lượng VRAM khổng lồ và việc quản lý nó cho các yêu cầu theo batch một cách hiệu quả là rất khó.
+\paragraph{Vấn đề của việc phục vụ LLM}
+Thách thức lớn nhất là quản lý bộ nhớ của \textbf{KV Cache}. Trong quá trình sinh văn bản tự hồi quy, các giá trị Key và Value của các token đã sinh được lưu lại (cache) để không phải tính lại ở các bước sau. KV Cache chiếm rất nhiều VRAM, và quản lý nó hiệu quả cho các yêu cầu theo batch là việc khó.
 
-\subsubsection{vLLM: Tối ưu hóa cho Thông lượng}
-\begin{itemize}
-    \item \textbf{Mục đích chính:} Một thư viện phục vụ LLM cực kỳ nhanh, được tối ưu hóa cho thông lượng cao.
-    \item \textbf{Phát kiến cốt lõi: PagedAttention} (xem phân tích ở mục~\ref{ssec:pagedattention}). Lấy cảm hứng từ cơ chế phân trang (paging) trong các hệ điều hành, PagedAttention quản lý KV Cache trong các “trang” (pages) bộ nhớ không liền kề, giảm lãng phí bộ nhớ từ 60--80\% xuống dưới 4\% và nhờ đó tăng thông lượng \textbf{2--4 lần} so với các hệ thống phục vụ trước đó ở cùng mức độ trễ.
-    \item \textbf{Các tính năng quan trọng khác:} batching liên tục (mục~\ref{ssec:continuous_batching}), \textbf{prefix caching} (tái dùng KV cache của tiền tố chung -- rất hiệu quả cho RAG và tác tử), song song tensor/pipeline, hỗ trợ mô hình đã lượng tử hóa (AWQ, GPTQ, FP8), giải mã suy đoán, và API tương thích OpenAI.
-\end{itemize}
+\subsubsection{vLLM: tối ưu hóa cho thông lượng}
+vLLM là một thư viện phục vụ LLM được tối ưu cho thông lượng cao. Phát kiến cốt lõi của nó là \textbf{PagedAttention} (xem phân tích ở mục~\ref{ssec:pagedattention}): lấy cảm hứng từ cơ chế phân trang (paging) trong các hệ điều hành, PagedAttention quản lý KV Cache trong các “trang” (pages) bộ nhớ không liền kề, giảm lãng phí bộ nhớ từ 60--80\% xuống dưới 4\% và nhờ đó tăng thông lượng 2--4 lần so với các hệ thống phục vụ trước đó ở cùng mức độ trễ.
+
+Các tính năng khác: batching liên tục (mục~\ref{ssec:continuous_batching}), \textbf{prefix caching} (tái dùng KV cache của tiền tố chung, rất hiệu quả cho RAG và tác tử), song song tensor/pipeline, hỗ trợ mô hình đã lượng tử hóa (AWQ, GPTQ, FP8), giải mã suy đoán, và API tương thích OpenAI.
 
 \begin{example}{Khởi chạy một máy chủ vLLM và gọi bằng client OpenAI}{ex:vllm_serve}
 \begin{minted}{bash}
@@ -100,41 +98,28 @@ Gọi \texttt{/v1/models} sẽ thấy mỗi adapter được liệt kê như m�
 \begin{itemize}
 	\item \texttt{--max-lora-rank} nên đặt \emph{bằng đúng hạng của adapter lớn nhất bạn có}. Đặt dư ra cho “chắc” là lãng phí bộ nhớ đã giữ chỗ, vì bể bộ nhớ được cấp theo hạng lớn nhất.
 	\item \texttt{max\_loras} giới hạn số adapter \emph{đồng thời trong một batch}, còn \texttt{max\_cpu\_loras} giới hạn số adapter giữ ở RAM chủ. Hai con số này mới là thứ quyết định bạn phục vụ được bao nhiêu khách cùng lúc.
-	\item \textbf{Nạp và gỡ adapter lúc đang chạy} được hỗ trợ qua \texttt{POST /v1/load\_lora\_adapter} và \texttt{/v1/unload\_lora\_adapter}, nhưng phải bật biến môi trường \texttt{VLLM\_ALLOW\_RUNTIME\_LORA\_UPDATING}. Tài liệu vLLM cảnh báo thẳng rằng việc này \emph{có rủi ro bảo mật} -- nó cho phép nạp trọng số tùy ý từ một đường dẫn do request chỉ định -- và không nên bật trong môi trường production trừ khi môi trường đó đã được cô lập và hoàn toàn tin cậy. Nếu cần nạp động, hãy dùng cơ chế \texttt{LoRAResolver} với danh sách repo cho sẵn thay vì mở endpoint nhận đường dẫn tự do.
+	\item \textbf{Nạp và gỡ adapter lúc đang chạy} được hỗ trợ qua \texttt{POST /v1/load\_lora\_adapter} và \texttt{/\allowbreak v1/\allowbreak unload\_\allowbreak lora\_\allowbreak adapter}, nhưng phải bật biến môi trường \texttt{VLLM\_\allowbreak ALLOW\_\allowbreak RUNTIME\_\allowbreak LORA\_\allowbreak UPDATING}. Tài liệu vLLM cảnh báo thẳng rằng việc này \emph{có rủi ro bảo mật} -- nó cho phép nạp trọng số tùy ý từ một đường dẫn do request chỉ định -- và không nên bật trong môi trường production trừ khi môi trường đó đã được cô lập và hoàn toàn tin cậy. Nếu cần nạp động, hãy dùng cơ chế \texttt{LoRAResolver} với danh sách repo cho sẵn thay vì mở endpoint nhận đường dẫn tự do.
 \end{itemize}
 
-\begin{tcolorbox}[title={Ghi chú thời điểm: tinh chỉnh dạng dịch vụ, 2026}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+\begin{keyidea}{Ghi chú thời điểm: tinh chỉnh dạng dịch vụ, 2026}
 Kiến trúc này từng là thứ khiến các API tinh chỉnh thương mại có giá hợp lý. Tính đến năm 2026, OpenAI đã thông báo \textbf{ngừng dần API tinh chỉnh của họ}, với lý do công bố là các mô hình nền mới đã bám định dạng và chỉ dẫn tốt hơn nhiều, khiến hướng tiếp cận dựa trên prompt rẻ và nhanh hơn. Hệ quả cho người đọc quyển sách này rất cụ thể: nếu bạn cần phục vụ nhiều phiên bản chuyên biệt của một mô hình, con đường mặc định bây giờ là \emph{tự dựng} -- trọng số mở, LoRA, và đúng cơ chế phục vụ đa adapter mô tả ở trên.
-\end{tcolorbox}
+\end{keyidea}
 
-\subsubsection{SGLang: Tối ưu cho các chương trình LLM có cấu trúc}
+\subsubsection{SGLang: tối ưu cho các chương trình LLM có cấu trúc}
 \begin{itemize}
 	\item \textbf{RadixAttention:} Tự động lưu và tái dùng KV cache của mọi tiền tố đã gặp bằng cây radix \cite{zheng2024sglang} -- đặc biệt hiệu quả cho tác tử nhiều lượt, RAG với tài liệu lặp lại, và các vòng lặp tự sửa.
 	\item \textbf{Ngôn ngữ điều khiển sinh:} Cung cấp cú pháp để mô tả luồng sinh phức tạp (rẽ nhánh, gọi song song, ràng buộc theo ngữ pháp/JSON) và biên dịch chúng thành lịch chạy hiệu quả.
 	\item Cũng cung cấp máy chủ tương thích OpenAI, nên có thể thay thế vLLM mà gần như không đổi mã phía client.
 \end{itemize}
 
-\subsubsection{BentoML: Chuẩn hóa Vòng đời Phục vụ}
+\subsubsection{BentoML: chuẩn hóa vòng đời phục vụ}
+BentoML là một framework để \textbf{đóng gói, quản lý và triển khai} các dịch vụ AI theo một quy trình tiêu chuẩn, tái sử dụng được. Nguyên tắc thiết kế của nó là tách logic nghiệp vụ (business logic) khỏi logic phục vụ mô hình (model serving logic). Ba thành phần chính:
 \begin{itemize}
-    \item \textbf{Mục đích chính:} Cung cấp một framework toàn diện để \textbf{đóng gói, quản lý, và triển khai} các dịch vụ AI một cách tiêu chuẩn hóa và có thể tái sử dụng.
-    \item \textbf{Triết lý:} Tách biệt logic nghiệp vụ (business logic) khỏi logic phục vụ mô hình (model serving logic).
-    \item \textbf{Các thành phần:}
-        \begin{itemize}
-            \item \textbf{Bentos:} Một định dạng đóng gói tiêu chuẩn (“build target”) chứa mã nguồn, các mô hình, các file phụ thuộc, và cấu hình. Một “Bento” có thể được build thành một container Docker hoặc triển khai lên các nền tảng serverless.
-            \item \textbf{Runners:} Một lớp trừu tượng để chạy các mô hình, có khả năng tối ưu hóa cho các loại phần cứng khác nhau.
-            \item \textbf{Adapters:} Xử lý việc chuyển đổi giữa dữ liệu thô (HTTP requests) và các định dạng mà mô hình có thể hiểu (tensor, DataFrame).
-        \end{itemize}
-    \item \textbf{Khi nào dùng?} Khi bạn cần xây dựng các dịch vụ AI phức tạp, có thể bao gồm nhiều mô hình, và muốn có một quy trình tiêu chuẩn để quản lý và triển khai chúng.
+    \item \textbf{Bentos:} Một định dạng đóng gói tiêu chuẩn (“build target”) chứa mã nguồn, các mô hình, các file phụ thuộc, và cấu hình. Một “Bento” có thể được build thành một container Docker hoặc triển khai lên các nền tảng serverless.
+    \item \textbf{Runners:} Một lớp trừu tượng để chạy các mô hình, tối ưu hóa được cho các loại phần cứng khác nhau.
+    \item \textbf{Adapters:} Xử lý việc chuyển đổi giữa dữ liệu thô (HTTP requests) và các định dạng mà mô hình có thể hiểu (tensor, DataFrame).
 \end{itemize}
+Dùng BentoML khi cần xây dựng các dịch vụ AI phức tạp, có thể gồm nhiều mô hình, và muốn một quy trình tiêu chuẩn để quản lý và triển khai chúng.
 
 \subsubsection{NVIDIA Triton Inference Server}
-\begin{itemize}
-    \item \textbf{Mục đích chính:} Cung cấp một máy chủ suy luận (inference server) hiệu năng cao, được tối ưu hóa cho phần cứng NVIDIA.
-    \item \textbf{Điểm mạnh:}
-        \begin{itemize}
-            \item \textbf{Đa framework:} Hỗ trợ phục vụ các mô hình từ nhiều framework khác nhau (TensorFlow, PyTorch, ONNX, TensorRT) trong cùng một máy chủ.
-            \item \textbf{Dynamic Batching:} Tự động gộp các yêu cầu riêng lẻ đến theo thời gian thực thành các batch để tối đa hóa hiệu suất của GPU.
-            \item \textbf{Tối ưu hóa cho GPU:} Tận dụng tối đa các tính năng của GPU NVIDIA.
-        \end{itemize}
-    \item \textbf{Khi nào dùng?} Trong các môi trường production có yêu cầu rất cao về hiệu năng và độ trễ, và sử dụng chủ yếu là GPU NVIDIA.
-\end{itemize}
+Triton là một máy chủ suy luận (inference server) hiệu năng cao, tối ưu cho phần cứng NVIDIA và tận dụng tối đa các tính năng của GPU NVIDIA. Nó phục vụ các mô hình từ nhiều framework khác nhau (TensorFlow, PyTorch, ONNX, TensorRT) trong cùng một máy chủ, và tự động gộp các yêu cầu riêng lẻ đến theo thời gian thực thành các batch (\textbf{dynamic batching}) để tối đa hóa hiệu suất của GPU. Dùng Triton trong các môi trường production có yêu cầu rất cao về hiệu năng và độ trễ, và chủ yếu dùng GPU NVIDIA.

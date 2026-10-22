@@ -1,10 +1,10 @@
 % !TEX root = ../main.tex
 % File: part1/chapters_efficiency/sec6_disaggregated_serving.tex
 
-\section{Phục vụ Tách rời Prefill và Decode ở Quy mô Cụm máy}
+\section{Phục vụ tách rời prefill và decode ở quy mô cụm máy}
 \label{sec:disaggregated_serving}
 
-\subsection{Vì sao phải tách hai pha?}
+\subsection{Lý do tách hai pha}
 \label{ssec:why_disaggregate}
 Prefill và decode có đặc tính gần như đối lập:
 \begin{center}
@@ -19,20 +19,20 @@ Chiến lược song song ưa thích & Tensor parallelism (giảm độ trễ) &
 \bottomrule
 \end{tabular}
 \end{center}
-Khi chạy chung trên cùng GPU, một yêu cầu với prompt rất dài (hàng chục nghìn token, rất phổ biến với RAG và tác tử) sẽ chiếm GPU cho prefill và làm \emph{giật} mọi yêu cầu đang decode -- hai pha \textbf{can nhiễu} lẫn nhau. Hơn nữa, không thể chọn một cấu hình phần cứng và song song hóa tối ưu cho cả hai. Ý tưởng \textbf{tách rời (disaggregation)}: chạy prefill và decode trên \emph{các nhóm GPU khác nhau}, prefill xong thì chuyển KV cache sang nhóm decode.
+Khi chạy chung trên cùng GPU, một yêu cầu với prompt rất dài (hàng chục nghìn token, rất phổ biến với RAG và tác tử) sẽ chiếm GPU cho prefill và làm \emph{giật} mọi yêu cầu đang decode: hai pha \textbf{can nhiễu} lẫn nhau. Cũng không thể chọn một cấu hình phần cứng và cách song song hóa tối ưu cho cả hai pha. Ý tưởng \textbf{tách rời (disaggregation)}: chạy prefill và decode trên \emph{các nhóm GPU khác nhau}, prefill xong thì chuyển KV cache sang nhóm decode.
 
-\paragraph{DistServe \cite{zhong2024distserve}} hình thức hóa ý tưởng này với mục tiêu tối ưu \emph{goodput}: tách hai pha, rồi chọn riêng cách phân bổ tài nguyên và song song hóa cho từng pha dựa trên SLO về TTFT và TPOT cùng băng thông mạng giữa các máy. Cái giá phải trả là \textbf{chi phí truyền KV cache} giữa các nhóm GPU -- vì vậy các hệ thống thực tế đều đầu tư mạnh vào mạng tốc độ cao (RDMA) và cách tổ chức KV cache.
+\paragraph{DistServe \cite{zhong2024distserve}} hình thức hóa ý tưởng này với mục tiêu tối ưu \emph{goodput}: tách hai pha, rồi chọn riêng cách phân bổ tài nguyên và song song hóa cho từng pha dựa trên SLO về TTFT và TPOT cùng băng thông mạng giữa các máy. Cái giá phải trả là chi phí truyền KV cache giữa các nhóm GPU; vì vậy các hệ thống thực tế đều đầu tư nhiều vào mạng tốc độ cao (RDMA) và cách tổ chức KV cache.
 
 \subsection{Mooncake: Kiến trúc lấy KV cache làm trung tâm}
 \label{ssec:mooncake}
-\textbf{Mooncake} \cite{qin2024mooncake} là nền tảng phục vụ của Kimi (Moonshot AI) -- một dịch vụ nổi tiếng với ngữ cảnh rất dài. Triết lý của Mooncake: \emph{“đánh đổi dung lượng lưu trữ lấy tính toán”} -- KV cache là tài nguyên trung tâm cần được quản lý như dữ liệu, không phải sản phẩm phụ tạm thời.
+\textbf{Mooncake} \cite{qin2024mooncake} là nền tảng phục vụ của Kimi (Moonshot AI), một dịch vụ với ngữ cảnh rất dài. Triết lý của Mooncake, \emph{“đánh đổi dung lượng lưu trữ lấy tính toán”}, coi KV cache là tài nguyên trung tâm cần được quản lý như dữ liệu, không phải sản phẩm phụ tạm thời.
 \begin{itemize}
 	\item \textbf{Tách rời prefill và decode} thành hai cụm riêng.
-	\item \textbf{Kho KV cache phân tán:} Tận dụng CPU, bộ nhớ DRAM và ổ SSD vốn đang nhàn rỗi trong các máy GPU để tạo một kho lưu trữ KV cache dùng chung cho cả cụm. KV cache của các tiền tố đã tính được giữ lại và tái sử dụng giữa các yêu cầu, giữa các máy -- một dạng prefix caching ở quy mô cụm.
+	\item \textbf{Kho KV cache phân tán:} Tận dụng CPU, bộ nhớ DRAM và ổ SSD vốn đang nhàn rỗi trong các máy GPU để tạo một kho lưu trữ KV cache dùng chung cho cả cụm. KV cache của các tiền tố đã tính được giữ lại và tái sử dụng giữa các yêu cầu, giữa các máy, tức một dạng prefix caching ở quy mô cụm.
 	\item \textbf{Bộ lập lịch lấy KV cache làm trung tâm (Conductor):} Khi một yêu cầu đến, chọn cặp máy prefill/decode dựa trên độ dài tiền tố đã có trong cache, tải hiện tại và SLO, cân bằng giữa việc tối đa thông lượng và đảm bảo độ trễ.
-	\item \textbf{Từ chối sớm dựa trên dự đoán:} Trong tình huống quá tải (rất thường gặp với dịch vụ miễn phí có lượng truy cập đột biến), dự đoán tải tương lai của cụm decode để từ chối yêu cầu \emph{ngay từ đầu} thay vì prefill xong rồi mới phát hiện không đủ chỗ decode -- tránh lãng phí tính toán.
+	\item \textbf{Từ chối sớm dựa trên dự đoán:} Trong tình huống quá tải (rất thường gặp với dịch vụ miễn phí có lượng truy cập đột biến), dự đoán tải tương lai của cụm decode để từ chối yêu cầu \emph{ngay từ đầu} thay vì prefill xong rồi mới phát hiện không đủ chỗ decode, nhờ đó tránh lãng phí tính toán.
 \end{itemize}
-Kết quả: trong các kịch bản mô phỏng ngữ cảnh dài, thông lượng tăng tới \textbf{525\%} trong khi vẫn đáp ứng SLO; trong vận hành thực tế, Kimi xử lý được thêm \textbf{75\%} số yêu cầu.
+Kết quả: trong các kịch bản mô phỏng ngữ cảnh dài, thông lượng tăng tới 525\% trong khi vẫn đáp ứng SLO; trong vận hành thực tế, Kimi xử lý được thêm 75\% số yêu cầu.
 
 \begin{center}
 \bookimage[0.95\textwidth]{mooncake_architecture}{Sơ đồ cơ chế KV cache của Mooncake: chuỗi token được chia thành các khối, mỗi khối được băm theo kiểu móc xích (hash của khối trước cộng khối hiện tại); các khối khớp với cache sẵn có được tái sử dụng, các khối không khớp được tính mới; KV cache sau đó được các tiến trình “messenger” chuyển từ máy prefill sang máy decode.}
@@ -42,24 +42,24 @@ Kết quả: trong các kịch bản mô phỏng ngữ cảnh dài, thông lư�
 
 \subsection{P/D-Serve: Tách rời ở quy mô hàng chục nghìn thiết bị}
 \label{ssec:pdserve}
-\textbf{P/D-Serve} \cite{jin2024pdserve} (Huawei) mô tả kinh nghiệm vận hành phục vụ tách rời trên \textbf{hàng chục nghìn NPU Ascend} trong hơn tám tháng thương mại, và chỉ ra ba vấn đề chỉ xuất hiện ở quy mô này:
+\textbf{P/D-Serve} \cite{jin2024pdserve} (Huawei) mô tả kinh nghiệm vận hành phục vụ tách rời trên hàng chục nghìn NPU Ascend trong hơn tám tháng thương mại, và chỉ ra ba vấn đề chỉ xuất hiện ở quy mô này:
 \begin{enumerate}
-	\item \textbf{Kịch bản đa dạng:} Các dịch vụ khác nhau có phân phối độ dài prompt và đầu ra rất khác nhau, nên tỷ lệ tối ưu giữa số máy prefill và decode cũng khác nhau. P/D-Serve \textbf{tổ chức chi tiết theo từng kịch bản} và điều chỉnh động tỷ lệ P/D.
+	\item \textbf{Kịch bản đa dạng:} Các dịch vụ khác nhau có phân phối độ dài prompt và đầu ra rất khác nhau, nên tỷ lệ tối ưu giữa số máy prefill và decode cũng khác nhau. P/D-Serve tổ chức chi tiết theo từng kịch bản và điều chỉnh động tỷ lệ P/D.
 	\item \textbf{Lập lịch dựa trên thông tin hàng đợi không đáng tin:} Báo cáo trạng thái hàng đợi của máy prefill thường bị trễ, dẫn tới dồn yêu cầu và timeout. P/D-Serve dùng \textbf{chuyển tiếp theo nhu cầu (on-demand forwarding)}: khi máy prefill từ chối, yêu cầu được chuyển sang máy khác thay vì dựa vào ước lượng hàng đợi.
 	\item \textbf{Truyền KV cache:} Tối ưu đường truyền thiết bị--thiết bị qua RDMA để giảm thời gian chuyển KV cache.
 \end{enumerate}
 Theo báo cáo của nhóm tác giả, các cải tiến này giúp thông lượng đầu-cuối cải thiện 60\%, tỷ lệ đáp ứng SLO về TTFT cải thiện 42\% và thời gian truyền giữa thiết bị giảm 46\%; so với triển khai không tách rời, thông lượng cao hơn 6.7 lần.
 
-\begin{tcolorbox}[title={Tổng kết: Bản đồ tối ưu hiệu quả LLM}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
+\begin{assess}{Tổng kết: các tầng tối ưu hiệu quả LLM}
 \begin{itemize}
-	\item \textbf{Mức mô hình:} chưng cất (nhỏ hơn), lượng tử hóa (rẻ hơn mỗi tham số), GQA/MLA/MoE (kiến trúc hiệu quả -- chương~\ref{chap:transformer_llms}).
+	\item \textbf{Mức mô hình:} Chưng cất (nhỏ hơn), lượng tử hóa (rẻ hơn mỗi tham số), GQA/MLA/MoE (kiến trúc hiệu quả, chương~\ref{chap:transformer_llms}).
 	\item \textbf{Mức nhân tính toán:} FlashAttention, PagedAttention, FP8.
-	\item \textbf{Mức thuật toán giải mã:} giải mã suy đoán (Leviathan, SpecInfer, Medusa, EAGLE, MTP).
-	\item \textbf{Mức engine một máy:} continuous batching, prefix caching (vLLM, SGLang), offloading cho tác vụ lô (FlexGen).
-	\item \textbf{Mức cụm máy:} tách rời prefill/decode, kho KV cache dùng chung (DistServe, Mooncake, P/D-Serve).
+	\item \textbf{Mức thuật toán giải mã:} Giải mã suy đoán (Leviathan, SpecInfer, Medusa, EAGLE, MTP).
+	\item \textbf{Mức engine một máy:} Continuous batching, prefix caching (vLLM, SGLang), offloading cho tác vụ lô (FlexGen).
+	\item \textbf{Mức cụm máy:} Tách rời prefill/decode, kho KV cache dùng chung (DistServe, Mooncake, P/D-Serve).
 \end{itemize}
 Các tầng này bổ trợ nhau: một hệ thống phục vụ hiện đại thường áp dụng đồng thời gần như tất cả.
-\end{tcolorbox}
+\end{assess}
 
 \bigskip
 \hrule
@@ -69,4 +69,4 @@ Các tầng này bổ trợ nhau: một hệ thống phục vụ hiện đại t
     \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
 \end{center}
 
-\textit{Chương này đã đi từ các nguyên lý chưng cất, lượng tử hóa và cắt tỉa, đến các kỹ thuật dành riêng cho LLM: chưng cất on-policy và chưng cất trong học tăng cường, lượng tử hóa sau huấn luyện, PagedAttention, giải mã suy đoán và phục vụ tách rời ở quy mô cụm máy. Với một mô hình vừa mạnh vừa rẻ để vận hành, chúng ta đã sẵn sàng mở rộng năng lực của nó ra ngoài văn bản: nhìn, hành động và mô phỏng thế giới -- chủ đề của chương tiếp theo.}
+\textit{Chương này đã đi từ các nguyên lý chưng cất, lượng tử hóa và cắt tỉa, đến các kỹ thuật dành riêng cho LLM: chưng cất on-policy và chưng cất trong học tăng cường, lượng tử hóa sau huấn luyện, PagedAttention, giải mã suy đoán và phục vụ tách rời ở quy mô cụm máy. Với một mô hình vừa mạnh vừa rẻ để vận hành, bước tiếp theo là mở rộng năng lực của nó ra ngoài văn bản: nhìn, hành động và mô phỏng thế giới, chủ đề của chương sau.}

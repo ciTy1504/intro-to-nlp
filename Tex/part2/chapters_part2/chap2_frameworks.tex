@@ -2,20 +2,20 @@
 % File: part2/chapters_part2/chap2_frameworks.tex
 % Tầng framework phía trên TRL
 
-\section{Tầng Framework phía trên TRL}
+\section{Tầng framework phía trên TRL}
 \label{sec:ft_frameworks}
 
 TRL cho bạn các \emph{trainer}. Nhưng một lần tinh chỉnh thật còn cần nhiều thứ khác: nạp và trộn nhiều bộ dữ liệu với định dạng khác nhau, chọn đúng mẫu hội thoại cho họ mô hình đang dùng, khởi chạy trên nhiều GPU, đóng gói chuỗi, hợp nhất adapter, export sang định dạng mà runtime đích đọc được, và một lược đồ cấu hình để bạn không gõ sai tên tham số rồi phát hiện sau ba tiếng.
 
-Đó là phần việc của \textbf{tầng framework}. Các công cụ trong mục này không huấn luyện thay bạn -- bên dưới phần lớn chúng vẫn gọi TRL và \texttt{transformers}. Chúng viết phần \emph{ống nước} thay bạn, và đổi lại bạn chấp nhận quy ước của chúng.
+Đó là phần việc của \textbf{tầng framework}. Các công cụ trong mục này không huấn luyện thay bạn -- bên dưới phần lớn chúng vẫn gọi TRL và \texttt{transformers}. Chúng viết phần mã kết nối thay bạn, và đổi lại bạn chấp nhận quy ước của chúng.
 
-\begin{tcolorbox}[title={Đọc mục này trước khi bạn tra Google}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{pitfall}{Trước khi tra cứu hướng dẫn trên mạng}
 Hai thông tin sẽ khiến phần lớn hướng dẫn trên mạng dẫn bạn đi sai đường:
 \begin{itemize}
 	\item \textbf{torchtune đã ngừng phát triển.} README của nó mở đầu bằng đúng câu đó, và commit cuối cùng trên nhánh chính chính là commit thêm dòng thông báo ấy. Repo \emph{không} bị đánh dấu archive, nên nhìn lướt vẫn tưởng còn sống. Nặng hơn: \textbf{dự án kế nhiệm cũng đã tạm dừng}, và dòng huấn luyện PyTorch-native được gộp vào \texttt{torchtitan} -- vốn là nền tảng \emph{tiền huấn luyện} phân tán, không phải framework tinh chỉnh (không có đăng ký dataset, không có luồng LoRA, không có CLI kiểu “recipe”).
 	\item \textbf{LLaMA-Factory đã đổi tên thành LlamaFactory.} Repo cũ chuyển hướng, gói PyPI là \texttt{llamafactory}, và tiêu đề bài báo cũng đã đổi theo.
 \end{itemize}
-\end{tcolorbox}
+\end{pitfall}
 
 \subsection{LlamaFactory: cấu hình phẳng, ma trận tác vụ rộng nhất}
 \label{ssec:llamafactory}
@@ -106,7 +106,7 @@ special_tokens:
 \subsection{Unsloth: nhanh nhất trên một GPU}
 \label{ssec:unsloth}
 
-Unsloth đi một đường khác hẳn: không có YAML, không có CLI huấn luyện. Nó là một tập \emph{nhân Triton viết tay} cộng với các lớp mô hình đã được vá, bọc quanh TRL chứ không thay thế TRL. Bạn vẫn dùng \texttt{SFTTrainer}, chỉ là mô hình đưa vào đã được thay ruột.
+Unsloth đi một đường khác hẳn: không có YAML, không có CLI huấn luyện. Nó là một tập \emph{nhân Triton viết tay} cộng với các lớp mô hình đã được vá, bọc quanh TRL chứ không thay thế TRL. Bạn vẫn dùng \texttt{SFTTrainer}, chỉ là mô hình đưa vào đã được vá lại bên trong.
 
 \begin{minted}{python}
 from unsloth import FastLanguageModel   # phải import TRƯỚC transformers
@@ -125,16 +125,16 @@ model = FastLanguageModel.get_peft_model(
 # từ đây trở đi là TRL bình thường: SFTTrainer(model=model, ...)
 \end{minted}
 
-\noindent Lưu ý thứ tự import: Unsloth vá vào nội bộ \texttt{transformers}, nên nó phải được nạp trước. Đây cũng chính là nguồn gốc của “thuế Unsloth” nói ở dưới.
+\noindent Lưu ý thứ tự import: Unsloth vá vào nội bộ \texttt{transformers}, nên nó phải được nạp trước. Đây cũng chính là nguồn gốc của ràng buộc phiên bản nói ở mục cuối.
 
-\paragraph{Nó không còn chỉ là một thư viện.} Tính đến 2026, Unsloth có ba hình thái: \emph{Desktop} (ứng dụng, được chính dự án khuyến nghị), \emph{Studio} (giao diện web) và \emph{Core} (thư viện như trên). Một chương viết theo khung “import \texttt{FastLanguageModel}” chỉ mô tả một phần ba sản phẩm.
+\paragraph{Ba hình thái của Unsloth.} Tính đến 2026, Unsloth có ba hình thái: \emph{Desktop} (ứng dụng, được chính dự án khuyến nghị), \emph{Studio} (giao diện web) và \emph{Core} (thư viện như trên). Một chương viết theo khung “import \texttt{FastLanguageModel}” chỉ mô tả một phần ba sản phẩm.
 
 \paragraph{Đây là lựa chọn Windows duy nhất.} Trong năm công cụ của mục này, Unsloth là cái duy nhất có đường cài \textbf{native Windows} được hỗ trợ (các công cụ khác yêu cầu WSL hoặc Docker). Với độc giả Việt Nam dùng máy Windows có GPU rời, đây thường là điểm quyết định. Kèm một cái bẫy mà chính tài liệu của họ cảnh báo: trên Windows phải cài \texttt{torchao} \emph{trước}, vì nếu không trình giải quyết phụ thuộc sẽ âm thầm chọn một bản Unsloth cũ.
 
 \paragraph{Đọc các con số quảng cáo cho đúng.} Khẩu hiệu là “nhanh gấp 2, ít hơn 70\% VRAM, không mất độ chính xác”. Điều kiện đo, theo đúng trang benchmark của họ: GPU H100/Blackwell, bộ dữ liệu Alpaca, batch 2, tích lũy gradient 4 bước, hạng 32, QLoRA trên mọi lớp tuyến tính. Vài điểm cần tỉnh táo:
 \begin{itemize}
 	\item \textbf{Đường cơ sở là “Hugging Face + FlashAttention-2”, và kết quả chỉ được công bố dưới dạng tỷ lệ} -- không có con số thông lượng tuyệt đối nào để đối chiếu.
-	\item \textbf{Phép đo ngữ cảnh dài là trường hợp tốt nhất theo thiết kế:} họ đệm mọi chuỗi tới độ dài tối đa, mà đó chính là kiểu lãng phí mà Unsloth tối ưu. Dữ liệu thật có độ dài biến thiên -- nhất là khi đường cơ sở cũng bật đóng gói chuỗi -- sẽ không cho tỷ lệ đó.
+	\item \textbf{Phép đo ngữ cảnh dài là trường hợp tốt nhất theo thiết kế:} Họ đệm mọi chuỗi tới độ dài tối đa, mà đó chính là kiểu lãng phí mà Unsloth tối ưu. Dữ liệu thật có độ dài biến thiên -- nhất là khi đường cơ sở cũng bật đóng gói chuỗi -- sẽ không cho tỷ lệ đó.
 	\item \textbf{Mức tiết kiệm VRAM dao động rất rộng theo mô hình.} Trong bộ benchmark chi tiết nhất từng công bố, con số trải từ khoảng $-12\%$ tới $-66\%$ tùy mô hình. “70\%” là đầu trên của một dải rộng.
 	\item Một phần lợi thế bộ nhớ đến từ \emph{cut cross-entropy}, một kỹ thuật đã công bố mà các thư viện khác cũng đang áp dụng (xem mục~\ref{ssec:liger}).
 \end{itemize}
@@ -174,7 +174,7 @@ torchtune & \multicolumn{4}{l}{\textit{đã ngừng phát triển -- không dùn
 
 \noindent Quy tắc chọn gọn trong một câu: \textbf{một GPU và muốn nhanh} $\rightarrow$ Unsloth; \textbf{cần giao diện hoặc ma trận tác vụ rộng mà không cần RL} $\rightarrow$ LlamaFactory; \textbf{chạy production nhiều GPU, cần tái lập và cần GRPO} $\rightarrow$ Axolotl; \textbf{đa phương thức hoặc RL ngoại lai} $\rightarrow$ ms-swift.
 
-\begin{tcolorbox}[title={Nghịch lý ghim phiên bản -- và quy tắc rút ra}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+\begin{pitfall}{Nghịch lý ghim phiên bản -- và quy tắc rút ra}
 Ba framework, ba chiến lược ghim phiên bản hoàn toàn khác nhau, cùng dẫn tới một kết luận:
 \begin{itemize}
 	\item \textbf{LlamaFactory} ghim theo khoảng với trần lạc hậu $\Rightarrow$ cài vào thì \emph{hạ cấp} stack hiện có của bạn.
@@ -182,4 +182,4 @@ Ba framework, ba chiến lược ghim phiên bản hoàn toàn khác nhau, cùng
 	\item \textbf{Unsloth} vá vào nội bộ \texttt{transformers} $\Rightarrow$ buộc phải bám sau các bản phát hành của \texttt{transformers}, và notebook chính thức của nó ghim những phiên bản đã khá cũ.
 \end{itemize}
 \textbf{Quy tắc: mỗi framework một môi trường ảo riêng, ghim theo tag phát hành, và ghi phiên bản vào cùng chỗ với checkpoint.} Đây không phải sự cầu toàn -- nó là điều kiện để bạn tái lập được kết quả của chính mình sáu tháng sau.
-\end{tcolorbox}
+\end{pitfall}

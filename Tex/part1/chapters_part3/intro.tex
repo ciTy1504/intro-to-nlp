@@ -1,6 +1,6 @@
 \chapter{CÁC KIẾN TRÚC MẠNG NƠ-RON KINH ĐIỂN}
 \label{chap:deep_learning_architectures}
 
-Chào mừng bạn đến với kỷ nguyên học sâu của NLP. Trong chương 2, chúng ta đã thấy các mô hình thống kê như N-gram có thể nắm bắt các phụ thuộc cục bộ, nhưng lại bất lực trước các mối quan hệ tầm xa. Cuộc cách mạng word embedding đã cho chúng ta các vector từ mang đầy ngữ nghĩa, nhưng làm thế nào để kết hợp chúng lại nhằm hiểu được ý nghĩa của cả một câu hay một đoạn văn?
+Chương 2 cho thấy các mô hình thống kê như N-gram nắm bắt được các phụ thuộc cục bộ nhưng bất lực trước các mối quan hệ tầm xa. Word embedding cho ta các vector từ mang thông tin ngữ nghĩa, song vẫn còn câu hỏi làm thế nào kết hợp chúng lại để biểu diễn ý nghĩa của cả một câu hay một đoạn văn.
 
-Chương này sẽ giới thiệu các kiến trúc mạng nơ-ron nền tảng được thiết kế đặc biệt để xử lý dữ liệu dạng chuỗi như ngôn ngữ tự nhiên. Những kiến trúc này không chỉ đơn thuần “nhìn” vào các từ một cách riêng lẻ, mà còn có khả năng “ghi nhớ” và “lý luận” dựa trên thông tin đã xử lý trước đó, cho phép chúng nắm bắt được ngữ cảnh và các phụ thuộc phức tạp trong câu.
+Chương này giới thiệu các kiến trúc mạng nơ-ron nền tảng dành cho dữ liệu dạng chuỗi như ngôn ngữ tự nhiên. Các kiến trúc này không xét từng từ một cách riêng lẻ: chúng giữ lại và sử dụng thông tin đã xử lý ở các bước trước, nhờ vậy nắm bắt được ngữ cảnh và các phụ thuộc phức tạp trong câu.

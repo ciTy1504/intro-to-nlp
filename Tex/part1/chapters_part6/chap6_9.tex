@@ -1,0 +1,112 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_part6/chap6_9.tex
+% RAG trong vận hành
+
+\section{RAG trong vận hành: tốc độ, chi phí và dữ liệu tươi}
+\label{sec:rag_operations}
+
+Một hệ thống RAG chạy tốt trong notebook và một hệ thống RAG chạy tốt với người dùng thật là hai thứ khác nhau. Mục này nói về những gì thay đổi khi người dùng thật xuất hiện.
+
+\subsection{Ba hóa đơn}
+\label{ssec:rag_cost}
+
+RAG không có một chi phí, nó có ba -- và chúng hành xử rất khác nhau:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Hóa đơn} & \textbf{Trả khi nào} & \textbf{Cắt bằng cách nào} \\
+\midrule
+1. Dựng chỉ mục & Một lần, cộng một ít cho mỗi lần cập nhật & Chunk thưa hơn, bộ nhúng rẻ hơn \\
+2. Lưu trữ vector & \emph{Hằng tháng}, mãi mãi & Giảm số chiều, lượng tử hóa vector \\
+3. Trả lời câu hỏi & Mỗi truy vấn, theo token & \textbf{Ít chunk hơn nhưng tốt hơn} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Hóa đơn thứ ba thường là lớn nhất}, và đây là chỗ trực giác hay sai. Mỗi chunk bạn nhét thêm vào prompt là tiền trả cho \emph{mọi} truy vấn, mãi mãi. Tăng top-$k$ từ 5 lên 20 không chỉ làm câu trả lời nhiễu hơn (mục~\ref{ssec:context_rot}) -- nó nhân chi phí vận hành lên bốn lần.
+
+Đây cũng là lý do bộ xếp hạng lại thường \emph{tiết kiệm} tiền chứ không phải tốn thêm: nó cho phép bạn lấy về 50 ứng viên rẻ tiền rồi chỉ đưa 5 chunk tốt nhất vào prompt đắt tiền.
+
+\subsection{Tốc độ}
+\label{ssec:rag_latency}
+
+Mỗi bước trong pipeline đều cộng vào độ trễ: viết lại truy vấn, tìm kiếm, xếp hạng lại, rồi mới sinh. Người dùng cảm nhận được tổng, không cảm nhận được từng phần.
+
+Bốn cách rút ngắn, theo thứ tự dễ làm trước:
+\begin{enumerate}
+	\item \textbf{Chạy các tìm kiếm song song} thay vì nối tiếp. Tìm kiếm lai và đa truy vấn vốn độc lập với nhau -- không có lý do gì để xếp hàng.
+	\item \textbf{Phát câu trả lời theo luồng} (streaming). Việc này không làm hệ thống nhanh hơn một mili-giây nào, nhưng \emph{cảm giác} chờ đợi ngắn hơn hẳn, vì người dùng thấy chữ xuất hiện ngay.
+	\item \textbf{Dùng một LLM nhỏ và nhanh cho các bước phụ} -- viết lại truy vấn, phân loại định tuyến. Những bước này không cần mô hình mạnh nhất.
+	\item \textbf{Lưu đệm câu trả lời cho các câu hỏi phổ biến.} Trong hầu hết hệ thống thực tế, phân phối câu hỏi có đuôi rất dài nhưng phần đầu rất tập trung.
+\end{enumerate}
+
+\subsection{Dữ liệu tươi}
+\label{ssec:rag_freshness}
+
+Tài liệu thay đổi. Nếu chỉ mục không đổi theo, ứng dụng sẽ đưa ra câu trả lời cũ \emph{với giọng điệu rất tự tin} -- đây là chế độ hỏng khó phát hiện nhất, vì không có gì trông bất thường cả.
+
+\begin{itemize}
+	\item Cập nhật chỉ mục khi tệp thay đổi; \textbf{xóa chunk khi tệp bị xóa}. Vế thứ hai hay bị quên, và nó là cách tài liệu đã bị thu hồi vẫn tiếp tục được trích dẫn.
+	\item Lưu \textbf{ngày tháng vào siêu dữ liệu}, và \emph{hiển thị cho người dùng} nguồn đó cũ hay mới. Một câu trả lời đúng theo tài liệu năm 2019 vẫn có thể là câu trả lời sai hôm nay.
+\end{itemize}
+
+\subsection{Ai được xem gì}
+\label{ssec:rag_access_control}
+
+\begin{pitfall}{Quy tắc không được phép vi phạm}
+\textbf{Áp luật phân quyền \emph{bên trong} bước tìm kiếm, bằng siêu dữ liệu. Loại bỏ những chunk mà người dùng không được xem \emph{trước khi} bất cứ thứ gì đi tới LLM.}
+
+\textbf{Đừng bao giờ trông cậy vào việc LLM sẽ giữ bí mật.} Nếu một chunk bí mật đã lọt vào prompt, hãy coi như nó đã bị lộ -- bất kể bạn đã dặn mô hình kỹ đến đâu. Một câu lệnh trong prompt không phải là một cơ chế kiểm soát truy cập; nó là một lời đề nghị.
+\end{pitfall}
+
+\subsection{Danh sách kiểm trước khi ra mắt}
+\label{ssec:rag_launch_checklist}
+
+\begin{checklist}{Mười điều cần có trước khi cho người dùng thật vào}
+\begin{enumerate}
+	\item Bạn đã \textbf{tự mắt đọc} phần văn bản sau khi phân tích cú pháp tài liệu. (Đây là bước số một vì nó là bước bị bỏ qua nhiều nhất, và vì một bộ phân tích PDF hỏng sẽ làm hỏng mọi thứ phía sau mà không báo lỗi.)
+	\item Bạn có một golden set và một điểm số chạy lại được.
+	\item Ứng dụng \textbf{có thể nói “tôi không biết”}.
+	\item Câu trả lời \textbf{hiển thị nguồn}.
+	\item Phân quyền chạy \textbf{bên trong} bước tìm kiếm.
+	\item Chỉ mục tự cập nhật khi tài liệu thay đổi.
+	\item \textbf{Truy vết (tracing) đã bật} -- bạn phát lại được bất kỳ câu trả lời tệ nào.
+	\item Có rào chắn kiểm tra câu trả lời ở những vùng rủi ro.
+	\item Người dùng \textbf{báo lỗi được bằng một cú nhấp}.
+	\item Bạn \textbf{biết chi phí và độ trễ cho mỗi câu hỏi}.
+\end{enumerate}
+\end{checklist}
+
+\subsection{Những con số từ các đội ngũ thực tế}
+\label{ssec:rag_industry_numbers}
+
+\begin{keyidea}{Đọc các con số dưới đây như thế nào}
+Tất cả con số trong mục này đều do \textbf{chính công ty tự công bố} trên blog kỹ thuật của họ. Chúng không phải kết quả đo độc lập, không có nhóm đối chứng, và được công bố bởi bên có lợi ích trong việc báo tin tốt. Hãy dùng chúng để biết \emph{hạng của đại lượng} và để biết \emph{hướng nào đáng thử}, đừng dùng chúng làm mục tiêu cam kết.
+\end{keyidea}
+
+\begin{itemize}
+	\item \textbf{Tinh chỉnh bộ nhúng cho lĩnh vực riêng} là khoản đầu tư muộn nhưng có thưởng lớn: Intercom báo cáo tỷ lệ kết quả tốt của trợ lý hỗ trợ của họ đi từ khoảng 45\% lên khoảng 74\%; GitHub báo cáo chất lượng tìm kiếm mã trong Copilot tăng 37{,}6\%; Harvey (lĩnh vực pháp lý) báo cáo giảm khoảng 25\% lượng văn bản lạc đề trong kết quả đầu.
+	\item \textbf{Chuyển sang RAG dạng tác tử} cho câu hỏi khó: Uber báo cáo trợ lý nội bộ của họ tăng 27\% tỷ lệ câu trả lời tốt và giảm 60\% lời khuyên sai -- đổi lại là độ trễ và chi phí cao hơn.
+	\item \textbf{Rào chắn kiểm tra tính bám nguồn}: DoorDash báo cáo ảo giác giảm 90\% và vi phạm nghiêm trọng giảm 99\% sau khi thêm một bước kiểm tra mọi câu trả lời trước khi gửi đi.
+	\item \textbf{Đồ thị tri thức cho hỗ trợ kỹ thuật}: LinkedIn báo cáo thời gian xử lý một sự vụ giảm 28{,}6\% sau khi dựng đồ thị từ các ticket cũ.
+	\item \textbf{Mô tả bảng dữ liệu bằng chữ trước khi nhúng}: Pinterest báo cáo tỷ lệ tìm đúng bảng cho truy vấn text-to-SQL đi từ 40\% lên 90\% -- một thay đổi rất nhỏ về kỹ thuật cho một thay đổi rất lớn về kết quả.
+	\item \textbf{Chi phí có thể giảm khi quy mô tăng}: Notion báo cáo tăng 10 lần quy mô tìm kiếm vector mà vẫn giảm 90\% chi phí; Intercom báo cáo giảm 80\% chi phí xếp hạng lại sau khi tự huấn luyện bộ xếp hạng riêng.
+	\item \textbf{Mục tiêu độ trễ thực tế}: Dropbox đặt mục tiêu trả lời hơn 95\% truy vấn trong dưới 2 giây -- một con số hữu ích để hiệu chỉnh kỳ vọng.
+	\item \textbf{Kiểm thử hằng ngày ở quy mô lớn}: Morgan Stanley xây trợ lý trên khoảng 100\,000 tài liệu và chạy lại bộ câu hỏi kiểm thử \emph{mỗi ngày}.
+\end{itemize}
+
+\noindent Điểm chung đáng rút ra từ danh sách này: \textbf{những cải thiện lớn nhất không đến từ việc đổi sang mô hình ngôn ngữ mạnh hơn.} Chúng đến từ việc tinh chỉnh bộ nhúng, thêm mô tả cho dữ liệu, dựng cấu trúc phù hợp, và thêm một bước kiểm tra. Đó đều là công việc ở tầng \emph{truy hồi} và tầng \emph{dữ liệu} -- đúng như nguyên tắc ở mục~\ref{ssec:rag_debug_routine}.
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+	\textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Chương này đã đi từ pipeline RAG “ngây thơ” nhất đến cách tối ưu hóa từng giai đoạn: phân mảnh thông minh, retriever đa tầng, và điều khiển LLM để câu trả lời luôn có bằng chứng. Tiếp đó là các kiến trúc thế hệ sau, RAG đa phương thức, câu hỏi liệu ngữ cảnh dài có khai tử RAG, các lỗ hổng an toàn của chính đường ống truy hồi, quy trình chẩn đoán khi hệ thống trả lời sai, và những gì phát sinh khi đưa nó vào vận hành. Đó là những gì làm một LLM bị cô lập về tri thức trở nên đáng tin cậy và hữu ích trong thực tế: nó suy luận và tương tác được với kiến thức bên ngoài.}
+
+\textit{Tuy nhiên, một hệ thống RAG chạy trên LLM cỡ lớn -- nhất là mô hình suy luận sinh ra hàng nghìn token -- rất đắt và chậm khi phục vụ hàng triệu người dùng. Trước khi trao cho LLM “mắt” để nhìn và “tay” để hành động, chương tiếp theo sẽ giải quyết một bài toán thực tế hơn: làm thế nào để mô hình nhỏ hơn, nhanh hơn và rẻ hơn thông qua chưng cất, lượng tử hóa và các kỹ thuật phục vụ hiệu quả.}

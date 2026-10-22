@@ -2,14 +2,14 @@
 % File: part2/chapters_part2/chap2_boundary.tex
 % Ranh giới huấn luyện - phục vụ
 
-\section{Ranh giới Huấn luyện--Phục vụ: nơi phần lớn lỗi thực tế xảy ra}
+\section{Ranh giới huấn luyện--phục vụ: nơi phần lớn lỗi thực tế xảy ra}
 \label{sec:train_serve_boundary}
 
 Mọi thứ cho tới đây đều giả định một điều kiện ngầm: chuỗi byte mà mô hình nhìn thấy lúc huấn luyện \emph{giống hệt} chuỗi byte nó nhìn thấy lúc phục vụ. Điều kiện đó bị vi phạm thường xuyên hơn bạn nghĩ, và đây là lớp lỗi tốn thời gian nhất trong thực tế vì nó có một đặc điểm chung:
 
-\begin{tcolorbox}[title={Đặc điểm chung của mọi lỗi trong mục này}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{pitfall}{Đặc điểm chung của mọi lỗi trong mục này}
 \textbf{Chúng không báo lỗi.} Không exception, không stack trace, không cảnh báo. Mô hình vẫn nạp được, vẫn chạy, vẫn sinh ra chữ tiếng Việt đúng ngữ pháp. Chỉ là chữ tệ hơn đáng lẽ phải có. Bạn sẽ đi tìm nguyên nhân ở dữ liệu, ở siêu tham số, ở kiến trúc -- trong khi nguyên nhân nằm ở một token.
-\end{tcolorbox}
+\end{pitfall}
 
 \noindent Hamel Husain, người dạy khóa tinh chỉnh của Parlance Labs, ước lượng rằng phần lớn thời gian tinh chỉnh thực tế là để chắc chắn mình hiểu đúng mẫu hội thoại, và “99\% lỗi trong thực tế” nằm ở đó. Con số ấy là ước lượng của một người hành nghề chứ không phải kết quả đo đạc, nhưng hướng của nó thì khớp với mọi tài liệu khắc phục sự cố của các thư viện tinh chỉnh.
 
@@ -22,7 +22,7 @@ Dùng một mẫu khác lúc suy luận vì thế không phải lỗi định d�
 
 \paragraph{Triệu chứng.} Các thư viện tinh chỉnh liệt kê gần như cùng một danh sách: sinh văn bản \textbf{không dừng}, \textbf{lặp lại} một đoạn, \textbf{token điều khiển rò ra} đầu ra (người dùng nhìn thấy \texttt{<|im\_end|>} trong câu trả lời), hoặc chất lượng tụt rõ rệt mà không có dấu hiệu nào khác. Tình huống kinh điển: mô hình chạy tốt trong notebook huấn luyện, export sang Ollama hay llama.cpp thì hỏng.
 
-\paragraph{Vì sao rất dễ sai.} Bởi vì gần như không ai tự viết mẫu hội thoại. Nó được sinh ra bởi một lớp trừu tượng -- \texttt{tokenizer.apply\_chat\_template()}, một hàm tiện ích của framework, hay một tệp cấu hình của runtime đích -- và mỗi họ mô hình một quy ước. Chính lớp trừu tượng đó là chỗ sai lệch chui vào.
+\paragraph{Vì sao rất dễ sai.} Bởi vì gần như không ai tự viết mẫu hội thoại. Nó được sinh ra bởi một lớp trừu tượng -- \texttt{tokenizer.\allowbreak apply\_\allowbreak chat\_\allowbreak template(\allowbreak )}, một hàm tiện ích của framework, hay một tệp cấu hình của runtime đích -- và mỗi họ mô hình một quy ước. Chính lớp trừu tượng đó là chỗ sai lệch chui vào.
 
 \paragraph{Cách kiểm tra duy nhất đáng tin: so ở mức token ID.} So hai chuỗi ký tự bằng mắt sẽ không phát hiện được một khoảng trắng thừa hay một BOS lặp. Hãy so dãy số.
 
@@ -52,7 +52,7 @@ Hãy in cả \texttt{repr()} chứ không chỉ \texttt{decode()}: \texttt{repr}
 
 \paragraph{Lối thoát: tự sở hữu mẫu.} Nếu bạn không muốn phụ thuộc vào lớp trừu tượng, có thể đi đường \emph{không dùng template}: tự ghép các đoạn văn bản đúng như mong muốn và tự chèn token đặc biệt. Axolotl hỗ trợ cách này qua định dạng \texttt{input\_output}. Đổi lại sự tiện lợi, bạn nhận lấy quyền kiểm soát và trách nhiệm.
 
-\paragraph{Một chỗ cần kiểm, nhưng đừng thổi phồng.} Cờ \texttt{add\_generation\_prompt=True} thêm phần mở đầu lượt của trợ lý; thiếu nó, mô hình không biết đã đến lượt mình nói. Về cơ chế thì đây là một chỗ sai được, nhưng tôi không tìm được báo cáo thực tế nào của một đội ngũ mất thời gian vì nó. Hãy xem đây là một mục trong danh sách kiểm tra, không phải một tai họa phổ biến.
+\paragraph{Một chỗ cần kiểm, nhưng đừng thổi phồng.} Cờ \texttt{add\_\allowbreak generation\_\allowbreak prompt=True} thêm phần mở đầu lượt của trợ lý; thiếu nó, mô hình không biết đã đến lượt mình nói. Về cơ chế thì đây là một chỗ sai được, nhưng tôi không tìm được báo cáo thực tế nào của một đội ngũ mất thời gian vì nó. Hãy xem đây là một mục trong danh sách kiểm tra, không phải một tai họa phổ biến.
 
 \subsection{Token đặc biệt: BOS, EOS và những token chưa từng được huấn luyện}
 \label{ssec:special_tokens}
@@ -109,11 +109,11 @@ Nói cách khác: hãy kiểm tra nhãn của bạn, nhưng đừng coi việc c
 
 Quy ước thông thường: \textbf{đệm bên trái khi sinh, đệm bên phải khi huấn luyện}. Lý do của vế đầu rất cụ thể: khi sinh tự hồi quy, token mới được nối vào \emph{cuối} chuỗi. Nếu đệm nằm bên phải, token mới sẽ nằm sau một dãy token đệm, và vị trí của nó không còn là thứ mô hình trông đợi.
 
-Cái bẫy thật không nằm ở quy ước mà ở chỗ \textbf{các thư viện âm thầm ghi đè lựa chọn của bạn}. Đã có trường hợp một bản phát hành ép phía đệm sang phải lúc suy luận trong khi huấn luyện dùng trái. Có cả một lớp lỗi riêng ở chỗ dựng mặt nạ chú ý: mã đọc \texttt{tokenizer.padding\_side} để dựng mặt nạ, nên một tokenizer đệm phải đi với một batch đệm trái sẽ che nhầm vào token thật, làm hỏng đầu ra của đúng những prompt ngắn.
+Cái bẫy thật không nằm ở quy ước mà ở chỗ \textbf{các thư viện âm thầm ghi đè lựa chọn của bạn}. Đã có trường hợp một bản phát hành ép phía đệm sang phải lúc suy luận trong khi huấn luyện dùng trái. Có cả một lớp lỗi riêng ở chỗ dựng mặt nạ chú ý: mã đọc \texttt{tokenizer.\allowbreak padding\_\allowbreak side} để dựng mặt nạ, nên một tokenizer đệm phải đi với một batch đệm trái sẽ che nhầm vào token thật, làm hỏng đầu ra của đúng những prompt ngắn.
 
-\begin{tcolorbox}[title={Quy tắc thực hành}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
-Đừng tin giá trị bạn đặt lúc nạp tokenizer. Hãy \textbf{đọc \texttt{tokenizer.padding\_side} ngay trước mỗi lần dùng}, và khẳng định nó bằng \texttt{assert}. Đây là một dòng code đổi lấy một lớp lỗi không có thông báo.
-\end{tcolorbox}
+\begin{pitfall}{Quy tắc thực hành}
+Đừng tin giá trị bạn đặt lúc nạp tokenizer. Hãy \textbf{đọc \texttt{tokenizer.\allowbreak padding\_\allowbreak side} ngay trước mỗi lần dùng}, và khẳng định nó bằng \texttt{assert}. Đây là một dòng code đổi lấy một lớp lỗi không có thông báo.
+\end{pitfall}
 
 \subsection{Hợp nhất adapter: chỗ mất mát mà không ai đo}
 \label{ssec:merge_adapter}
@@ -125,10 +125,10 @@ Trong lúc huấn luyện QLoRA, trọng số nền 4-bit được \emph{giải 
 Hệ quả thực tế rất khó chịu: \emph{đường loss bạn theo dõi suốt quá trình huấn luyện là của đường 16-bit}, nên mô hình sau khi hợp nhất có thể kém hơn con số bạn đo được lúc kết thúc huấn luyện. Bạn không hề làm gì sai, và cũng không có gì báo cho bạn biết.
 
 \begin{itemize}
-	\item \textbf{Cách làm an toàn:} hợp nhất ở độ chính xác 16-bit, rồi mới lượng tử hóa lại nếu cần -- và \textbf{đo lại mô hình đã hợp nhất} trên tập validation, so với adapter chưa hợp nhất. Nếu mức tụt không chấp nhận được, hãy phục vụ adapter riêng.
-	\item \textbf{Nguyên tắc tổng quát:} huấn luyện ở đúng độ chính xác bạn định phục vụ. 4-bit thì phục vụ 4-bit, 16-bit thì phục vụ 16-bit.
-	\item \textbf{Về độ lớn của mức tụt:} các nguồn không thống nhất, từ dưới một phần trăm tới mức đáng kể tùy tác vụ và hạng adapter. Cơ chế thì chắc chắn, con số thì chưa có kết luận -- nên hãy tự đo trên dữ liệu của bạn thay vì tin một con số trên mạng.
-	\item \textbf{Và nếu bạn phục vụ nhiều adapter thì vấn đề này biến mất:} đừng hợp nhất gì cả, dùng cơ chế đa adapter ở mục~\ref{ssec:vllm_multilora}.
+	\item \textbf{Cách làm an toàn:} Hợp nhất ở độ chính xác 16-bit, rồi mới lượng tử hóa lại nếu cần -- và \textbf{đo lại mô hình đã hợp nhất} trên tập validation, so với adapter chưa hợp nhất. Nếu mức tụt không chấp nhận được, hãy phục vụ adapter riêng.
+	\item \textbf{Nguyên tắc tổng quát:} Huấn luyện ở đúng độ chính xác bạn định phục vụ. 4-bit thì phục vụ 4-bit, 16-bit thì phục vụ 16-bit.
+	\item \textbf{Về độ lớn của mức tụt:} Các nguồn không thống nhất, từ dưới một phần trăm tới mức đáng kể tùy tác vụ và hạng adapter. Cơ chế thì chắc chắn, con số thì chưa có kết luận -- nên hãy tự đo trên dữ liệu của bạn thay vì tin một con số trên mạng.
+	\item \textbf{Và nếu bạn phục vụ nhiều adapter thì vấn đề này biến mất:} Đừng hợp nhất gì cả, dùng cơ chế đa adapter ở mục~\ref{ssec:vllm_multilora}.
 \end{itemize}
 
 \subsection{Một lớp lỗi nữa: bug của chính framework}
@@ -136,20 +136,20 @@ Hệ quả thực tế rất khó chịu: \emph{đường loss bạn theo dõi s
 
 Lớp lỗi cuối cùng không có trong bất kỳ giáo trình học máy cổ điển nào, vì nó không tồn tại ở quy mô đó: \textbf{con số trên màn hình có thể sai vì bug của bộ huấn luyện, không phải vì dữ liệu hay mô hình của bạn}.
 
-Ví dụ cụ thể nhất là lỗi tích lũy gradient được phát hiện năm 2026: với một số cấu hình, loss nhảy vọt lên 300--400 thay vì nằm ở mức 10--15 đáng lẽ phải có. Điều đáng chú ý là nhóm phát hiện ra nói rõ lỗi \emph{không} bắt nguồn từ thư viện của họ mà \textbf{ảnh hưởng tới mọi thư viện huấn luyện} dùng chung cách cài đặt đó.
+Ví dụ cụ thể nhất là lỗi tích lũy gradient được công bố tháng 10 năm 2024. Tích lũy gradient lẽ ra phải tương đương về mặt toán học với việc huấn luyện bằng một batch lớn, nhưng trên thực tế loss của hai cách lại không khớp nhau, và sai lệch càng lớn khi số bước tích lũy càng nhiều: hàm mất mát được lấy trung bình của các trung bình theo từng micro-batch, thay vì chia cho đúng tổng số token. Điều đáng chú ý là nhóm phát hiện ra nói rõ lỗi \emph{không} bắt nguồn từ thư viện của họ mà \textbf{ảnh hưởng tới mọi thư viện huấn luyện} dùng chung cách cài đặt đó.
 
-\begin{tcolorbox}[title={Thực hành tối thiểu}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{checklist}{Thực hành tối thiểu}
 \begin{enumerate}
 	\item \textbf{Ghim phiên bản} của mọi thư viện huấn luyện, và ghi phiên bản đó cùng với checkpoint.
 	\item \textbf{Đọc changelog} của thư viện bạn đang dùng -- không phải để biết tính năng mới, mà để biết lỗi nào vừa được sửa và nó có ảnh hưởng tới lần chạy trước của bạn không.
 	\item \textbf{Giữ một baseline đã biết kết quả} và chạy lại nó sau mỗi lần nâng cấp. Nếu con số đổi mà bạn không đổi gì, bạn vừa phát hiện ra điều gì đó.
 \end{enumerate}
-\end{tcolorbox}
+\end{checklist}
 
 \subsection{Danh sách kiểm tra}
 \label{ssec:boundary_checklist}
 
-\begin{tcolorbox}[title={Bảy phép kiểm trước và sau khi huấn luyện}, colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries, breakable]
+\begin{checklist}{Bảy phép kiểm trước và sau khi huấn luyện}
 \textbf{Trước khi huấn luyện}
 \begin{enumerate}
 	\item In token ID của một mẫu huấn luyện và của một request suy luận, rồi \textbf{diff chúng}. Không so chuỗi ký tự.
@@ -166,4 +166,4 @@ Ví dụ cụ thể nhất là lỗi tích lũy gradient được phát hiện n
 	\item Đo adapter \emph{chưa} hợp nhất và \emph{đã} hợp nhất trên cùng một tập validation.
 	\item Sinh thử 20 mẫu trong \textbf{runtime đích} (vLLM, Ollama, llama.cpp\dots) và so với runtime huấn luyện. Đây là phép kiểm bắt được nhiều lỗi nhất, và là phép kiểm hay bị bỏ qua nhất.
 \end{enumerate}
-\end{tcolorbox}
+\end{checklist}

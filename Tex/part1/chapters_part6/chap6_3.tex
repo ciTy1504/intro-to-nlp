@@ -3,145 +3,148 @@
 % Nội dung cho Phần 6.3: Các Kỹ thuật Biểu diễn Nâng cao cho Truy xuất
 
 
-\section{Từ Truy xuất đến Suy luận: Các Kỹ thuật RAG Nâng cao}
+\section{Từ truy xuất đến suy luận: các kỹ thuật RAG nâng cao}
 \label{sec:reasoning_rag}
 
-Khi các bài toán vượt qua giới hạn của việc hỏi-đáp đơn giản, pipeline RAG cơ bản cần được nâng cấp để có khả năng suy luận, tương tác và tự động hóa. Phần này sẽ khám phá các kỹ thuật tiên tiến để biến RAG thành một hệ thống thông minh thực sự.
-\subsection{Tối ưu hóa Truy vấn: Hiểu Ý định Người dùng}
+Khi bài toán vượt quá hỏi-đáp đơn giản, pipeline RAG cơ bản cần được nâng cấp để suy luận, tương tác và tự động hóa. Mục này trình bày các kỹ thuật phục vụ việc đó.
+
+\subsection{Tối ưu hóa truy vấn: hiểu ý định người dùng}
 \label{ssec:advanced_query_understanding}
-Chất lượng của câu trả lời phụ thuộc rất nhiều vào chất lượng của câu hỏi. Các kỹ thuật sau đây tập trung vào việc hiểu và biến đổi truy vấn của người dùng để đạt được kết quả tìm kiếm tốt nhất.
+Chất lượng câu trả lời phụ thuộc rất nhiều vào chất lượng câu hỏi. Các kỹ thuật sau đây hiểu và biến đổi truy vấn của người dùng để có kết quả tìm kiếm tốt hơn.
 
-\subsubsection{Viết lại và Mở rộng Truy vấn (Query Rewriting \& Expansion)}
+\subsubsection{Viết lại và mở rộng truy vấn (Query Rewriting \& Expansion)}
 \label{sssec:query_rewriting}
-Đây là nhóm kỹ thuật tập trung vào việc sửa đổi, mở rộng, hoặc diễn đạt lại văn bản câu hỏi gốc mà không làm thay đổi ý định tìm kiếm cốt lõi. Mục tiêu là cải thiện sự tương thích giữa từ vựng của người dùng và từ vựng trong kho tài liệu, qua đó tăng cả \textit{recall} và \textit{precision}. Các phương pháp này được chia thành ba hướng tiếp cận chính:
+Nhóm kỹ thuật này sửa đổi, mở rộng hoặc diễn đạt lại câu hỏi gốc mà không thay đổi ý định tìm kiếm. Mục tiêu là khớp từ vựng của người dùng với từ vựng trong kho tài liệu, nhờ đó tăng cả \textit{recall} và \textit{precision}. Có ba hướng tiếp cận:
 
-\paragraph{Viết lại dựa trên Từ vựng (Lexical Rewriting)}
+\paragraph{Viết lại dựa trên từ vựng (Lexical Rewriting)}
 Các phương pháp này hoạt động ở cấp độ từ hoặc ký tự, dựa trên các quy tắc, từ điển, hoặc các chuẩn hóa ngôn ngữ cơ bản.
 \begin{itemize}
-	\item \textbf{Mở rộng Từ đồng nghĩa (Synonym/Thesaurus Expansion):} Bổ sung các từ hoặc cụm từ đồng nghĩa (ví dụ: \texttt{luật pháp} $\rightarrow$ \texttt{pháp luật}, \texttt{quy định}) để tăng khả năng khớp, giúp bắt được các tài liệu sử dụng cách diễn đạt khác nhau.
-	\item \textbf{Chuẩn hóa Hình thái học (Morphological Normalization):} Đưa các biến thể của một từ về dạng gốc (stemming hoặc lemmatization). Ví dụ: các từ \texttt{xử lý}, \texttt{được xử lý}, \texttt{sự xử lý} đều được đưa về gốc \texttt{xử lý}.
-	\item \textbf{Sửa lỗi Chính tả/Gõ nhầm (Spelling/Typo Correction):} Tự động phát hiện và sửa các lỗi sai trong truy vấn (\texttt{luật lao đông} $\rightarrow$ \texttt{luật lao động}) để tránh tìm kiếm thất bại.
-	\item \textbf{Mở rộng Từ viết tắt (Abbreviation Expansion):} Chuyển các từ viết tắt thành dạng đầy đủ của chúng (ví dụ: \texttt{TP.HCM} $\rightarrow$ \texttt{Thành phố Hồ Chí Minh}, \texttt{LHQ} $\rightarrow$ \texttt{Liên Hợp Quốc}).
+	\item \textbf{Mở rộng từ đồng nghĩa (Synonym/Thesaurus Expansion):} Bổ sung các từ hoặc cụm từ đồng nghĩa (ví dụ: \texttt{luật pháp} $\rightarrow$ \texttt{pháp luật}, \texttt{quy định}) để tăng khả năng khớp, giúp bắt được các tài liệu sử dụng cách diễn đạt khác nhau.
+	\item \textbf{Chuẩn hóa hình thái học (Morphological Normalization):} Đưa các biến thể của một từ về dạng gốc (stemming hoặc lemmatization). Ví dụ: các từ \texttt{xử lý}, \texttt{được xử lý}, \texttt{sự xử lý} đều được đưa về gốc \texttt{xử lý}.
+	\item \textbf{Sửa lỗi chính tả/gõ nhầm (Spelling/Typo Correction):} Tự động phát hiện và sửa các lỗi sai trong truy vấn (\texttt{luật lao đông} $\rightarrow$ \texttt{luật lao động}) để tránh tìm kiếm thất bại.
+	\item \textbf{Mở rộng từ viết tắt (Abbreviation Expansion):} Chuyển các từ viết tắt thành dạng đầy đủ của chúng (ví dụ: \texttt{TP.HCM} $\rightarrow$ \texttt{Thành phố Hồ Chí Minh}, \texttt{LHQ} $\rightarrow$ \texttt{Liên Hợp Quốc}).
 	\item \textbf{Xử lý Stopword (Stopword Handling):} Loại bỏ các từ phổ biến, ít mang nghĩa (như \texttt{là}, \texttt{của}, \texttt{và}) để tập trung vào từ khóa chính, hoặc ngược lại, giữ lại chúng khi cần thiết cho các truy vấn yêu cầu sự chính xác về ngữ pháp (phrase queries).
 \end{itemize}
 
-\paragraph{Viết lại dựa trên Thống kê (Statistical Rewriting)} 
+\paragraph{Viết lại dựa trên thống kê (Statistical Rewriting)}
 Các kỹ thuật này tận dụng thông tin thống kê từ kho tài liệu hoặc kết quả tìm kiếm ban đầu để mở rộng truy vấn một cách tự động.
 \begin{itemize}
-	\item \textbf{Phản hồi Giả liên quan (Pseudo-Relevance Feedback - PRF):} Giả định rằng các tài liệu top-k trong kết quả tìm kiếm ban đầu là liên quan. Hệ thống sẽ trích xuất các thuật ngữ quan trọng từ các tài liệu này để bổ sung vào truy vấn gốc và thực hiện tìm kiếm lại. (Các thuật toán tiêu biểu: Rocchio, RM3).
-	\item \textbf{Mở rộng dựa trên Tần suất Cùng xuất hiện (Term Co-occurrence Expansion):} Tìm và thêm vào truy vấn các thuật ngữ thường xuyên xuất hiện cùng với các thuật ngữ gốc trong toàn bộ kho tài liệu (Dựa trên các độ đo như Pointwise Mutual Information - PMI).
-	\item \textbf{Mở rộng dựa trên Mô hình Chủ đề (Topic-Model-Based Expansion):} Sử dụng các mô hình như LDA (Latent Dirichlet Allocation) để xác định các chủ đề chính của truy vấn, sau đó bổ sung các từ khóa đặc trưng của những chủ đề đó.
-	\item \textbf{Mô hình Liên quan (Relevance Models):} Ước tính một mô hình xác suất của các thuật ngữ sẽ xuất hiện trong một tài liệu liên quan, sau đó lấy mẫu từ mô hình này để tạo ra truy vấn mới.
+	\item \textbf{Phản hồi giả liên quan (Pseudo-Relevance Feedback - PRF):} Giả định rằng các tài liệu top-k trong kết quả tìm kiếm ban đầu là liên quan. Hệ thống sẽ trích xuất các thuật ngữ quan trọng từ các tài liệu này để bổ sung vào truy vấn gốc và thực hiện tìm kiếm lại. (Các thuật toán tiêu biểu: Rocchio, RM3).
+	\item \textbf{Mở rộng dựa trên tần suất cùng xuất hiện (Term Co-occurrence Expansion):} Tìm và thêm vào truy vấn các thuật ngữ thường xuyên xuất hiện cùng với các thuật ngữ gốc trong toàn bộ kho tài liệu (Dựa trên các độ đo như Pointwise Mutual Information - PMI).
+	\item \textbf{Mở rộng dựa trên mô hình chủ đề (Topic-Model-Based Expansion):} Sử dụng các mô hình như LDA (Latent Dirichlet Allocation) để xác định các chủ đề chính của truy vấn, sau đó bổ sung các từ khóa đặc trưng của những chủ đề đó.
+	\item \textbf{Mô hình liên quan (Relevance Models):} \cite{lavrenko2001relevance} Ước tính một phân phối xác suất $P(w \mid R)$ của các thuật ngữ trong lớp tài liệu liên quan, suy ra từ chính truy vấn và các tài liệu xếp đầu, rồi dùng phân phối đó để \textbf{tái gán trọng số} cho các thuật ngữ truy vấn theo xác suất kỳ vọng của chúng. Biến thể thông dụng nhất là RM3: nội suy phân phối này với mô hình truy vấn gốc rồi giữ lại các thuật ngữ có trọng số cao nhất. Đây là một phép đổi trọng số, không phải một phép lấy mẫu để sinh truy vấn mới.
 \end{itemize}
 
-\paragraph{Viết lại dựa trên Ngữ nghĩa (Semantic Rewriting)} 
-Các phương pháp hiện đại này tập trung vào việc nắm bắt và mở rộng ý nghĩa, ngữ cảnh của truy vấn thay vì chỉ dựa trên từ vựng bề mặt.
+\paragraph{Viết lại dựa trên ngữ nghĩa (Semantic Rewriting)}
+Các phương pháp hiện đại này nắm bắt và mở rộng ý nghĩa, ngữ cảnh của truy vấn thay vì chỉ dựa trên từ vựng bề mặt.
 \begin{itemize}
-	\item \textbf{Dựa trên Vector Embedding (Embedding-based Nearest Neighbors):} Biểu diễn truy vấn dưới dạng vector và tìm các từ/cụm từ có vector gần nhất trong không gian embedding để mở rộng (Ví dụ: sử dụng Word2Vec, GloVe, fastText).
+	\item \textbf{Dựa trên vector embedding (Embedding-based Nearest Neighbors):} Biểu diễn truy vấn dưới dạng vector và tìm các từ/cụm từ có vector gần nhất trong không gian embedding để mở rộng (Ví dụ: sử dụng Word2Vec, GloVe, fastText).
 	\item \textbf{Diễn đạt lại bằng LLM (LLM-based Paraphrasing):} Sử dụng các mô hình ngôn ngữ lớn (LLM) như GPT-4 hay T5 để tạo ra một phiên bản câu hỏi hoàn toàn mới nhưng giữ nguyên ý nghĩa, giúp vượt qua rào cản từ vựng.
-	\item \textbf{Tạo nhiều Truy vấn song song (Multi-Query Rewriting):} Yêu cầu LLM sinh ra nhiều biến thể khác nhau của câu hỏi gốc. Hệ thống sẽ thực hiện tìm kiếm với tất cả các biến thể này và tổng hợp kết quả.
-	\item \textbf{Mở rộng bằng Đồ thị Tri thức (Knowledge-Graph Expansion):} Liên kết các thực thể trong truy vấn (tên người, địa điểm, tổ chức) với một đồ thị tri thức. Sau đó, mở rộng truy vấn bằng cách thêm vào các thông tin, thuộc tính, hoặc các thực thể liên quan được lấy từ đồ thị.
-	\item \textbf{Mở rộng theo Ngữ cảnh Hội thoại (Contextual Expansion):} Tận dụng lịch sử của cuộc trò chuyện để làm rõ và bổ sung thông tin cho truy vấn hiện tại. Ví dụ, câu hỏi “còn anh ấy thì sao?” sẽ được mở rộng với thông tin về “anh ấy” đã được đề cập trước đó.
+	\item \textbf{Tạo nhiều truy vấn song song (Multi-Query Rewriting):} Yêu cầu LLM sinh ra nhiều biến thể khác nhau của câu hỏi gốc. Hệ thống sẽ thực hiện tìm kiếm với tất cả các biến thể này và tổng hợp kết quả.
+	\item \textbf{Mở rộng bằng đồ thị tri thức (Knowledge-Graph Expansion):} Liên kết các thực thể trong truy vấn (tên người, địa điểm, tổ chức) với một đồ thị tri thức. Sau đó, mở rộng truy vấn bằng cách thêm vào các thông tin, thuộc tính, hoặc các thực thể liên quan được lấy từ đồ thị.
+	\item \textbf{Mở rộng theo ngữ cảnh hội thoại (Contextual Expansion):} Tận dụng lịch sử của cuộc trò chuyện để làm rõ và bổ sung thông tin cho truy vấn hiện tại. Ví dụ, câu hỏi “còn anh ấy thì sao?” sẽ được mở rộng với thông tin về “anh ấy” đã được đề cập trước đó.
 \end{itemize}
 
 
-\subsubsection{Biến đổi Biểu diễn Truy vấn (Query Representation Transformation)}
+\subsubsection{Biến đổi biểu diễn truy vấn (Query Representation Transformation)}
 \label{sssec:query_representation_transform}
 Khác với việc viết lại văn bản, nhóm kỹ thuật này giữ nguyên câu hỏi gốc nhưng biến đổi cách nó được \textit{biểu diễn} (thường là dưới dạng vector) để tối ưu hóa việc so khớp trong không gian embedding.
 
 \begin{itemize}
-	\item \textbf{HyDE (Hypothetical Document Embeddings):} 
-	Một kỹ thuật đột phá, yêu cầu LLM tự sinh một tài liệu trả lời \textit{giả định} cho câu hỏi. Thay vì nhúng vector của câu hỏi ngắn gọn và thiếu ngữ cảnh, hệ thống sẽ nhúng vector của tài liệu giả định này. Vector này thường giàu thông tin và nằm gần các tài liệu liên quan thực tế trong không gian embedding, do đó cải thiện đáng kể chất lượng tìm kiếm.
+	\item \textbf{Câu hỏi lùi một bước (Step-Back Prompting)} \cite{zheng2024stepback}: Trước khi truy hồi, hãy yêu cầu LLM \emph{trừu tượng hóa} câu hỏi cụ thể thành một câu hỏi về nguyên lý chung, rồi truy hồi cho \emph{cả hai}. Ví dụ, “Áp suất của khí lý tưởng thay đổi thế nào nếu nhiệt độ tăng gấp đôi và thể tích tăng tám lần?” được lùi về “Những nguyên lý vật lý nào chi phối bài toán này?”. Lý do nó hiệu quả: câu hỏi cụ thể thường chứa những con số và chi tiết \emph{làm nhiễu} phép so khớp ngữ nghĩa, trong khi câu hỏi nguyên lý khớp đúng với những đoạn tài liệu trình bày lý thuyết. Trên PaLM-2L, phương pháp này cải thiện 7\% và 11\% ở MMLU Vật lý và Hóa học, và 27\% trên TimeQA -- và nó đặc biệt hợp với câu hỏi đa bước.
+	\item Khi kỹ thuật đa truy vấn được ghép với RRF để hợp nhất kết quả, tổ hợp này có tên riêng: \textbf{RAG-Fusion}. Trực giác bổ sung: một chunk xuất hiện trong kết quả của \emph{nhiều} biến thể truy vấn khác nhau là một tín hiệu mạnh cho thấy nó thực sự liên quan.
+	\item \textbf{HyDE (Hypothetical Document Embeddings):} \cite{gao2022hyde}
+	Yêu cầu LLM tự sinh một tài liệu trả lời \textit{giả định} cho câu hỏi. Thay vì nhúng vector của câu hỏi ngắn gọn và thiếu ngữ cảnh, hệ thống nhúng vector của tài liệu giả định này. Vector đó thường giàu thông tin và nằm gần các tài liệu liên quan thực tế trong không gian embedding, nên cải thiện đáng kể chất lượng tìm kiếm.
 	
-	\item \textbf{Query2Doc (Q2D):} 
-	Một phương pháp tiền thân của HyDE, cũng biến đổi truy vấn thành một dạng trông giống tài liệu hơn, nhưng thường sử dụng các phương pháp heuristic hoặc các mô hình sinh văn bản gọn nhẹ (như T5) thay vì các LLM lớn.
+	\item \textbf{Query2Doc (Q2D):} \cite{wang2023query2doc} 
+	Query2doc được công bố \emph{sau} HyDE (HyDE tháng 12/2022, Query2doc tháng 3/2023) và cũng dựa trên ý tưởng sinh một tài liệu giả định, nhưng tài liệu đó được sinh bằng cách prompt \textbf{few-shot một LLM lớn} (bài gốc dùng \texttt{text-davinci-003}), không phải bằng heuristic hay mô hình sinh gọn nhẹ. Khác biệt thực sự so với HyDE nằm ở cách dùng kết quả sinh ra: HyDE nhúng riêng tài liệu giả định và bỏ truy vấn gốc, còn Query2doc \emph{ghép} tài liệu giả định với truy vấn gốc thành một truy vấn mở rộng, nhờ vậy dùng được cho cả sparse retrieval lẫn dense retrieval. Với BM25, truy vấn gốc được lặp lại $n$ lần trong chuỗi ghép ($n = 5$ trong bài gốc) để trọng số của nó không bị đoạn sinh ra, vốn dài hơn nhiều, lấn át.
 	
-	\item \textbf{Tăng cường Embedding Truy vấn (Query Embedding Augmentation):} 
+	\item \textbf{Tăng cường embedding truy vấn (Query Embedding Augmentation):}
 	Cải thiện vector truy vấn gốc bằng cách kết hợp nó với các thông tin bổ sung, ví dụ như:
 	\begin{itemize}
-		\item \textbf{Pooling với các Mở rộng (Average Pooling with Expansions):} 
-		Tạo embedding cho truy vấn gốc và các phiên bản mở rộng (ví dụ: từ đồng nghĩa), sau đó kết hợp chúng lại (ví dụ: lấy trung bình) để tạo ra một vector đại diện toàn diện hơn.
-		\item \textbf{Hợp nhất Embedding (Embedding Fusion):} 
+		\item \textbf{Pooling với các mở rộng (Average Pooling with Expansions):}
+		Tạo embedding cho truy vấn gốc và các phiên bản mở rộng (ví dụ: từ đồng nghĩa), sau đó kết hợp chúng lại (ví dụ: lấy trung bình) thành một vector đại diện rộng hơn.
+		\item \textbf{Hợp nhất embedding (Embedding Fusion):}
 		Thực hiện tìm kiếm song song với nhiều hệ thống retriever (ví dụ: một sparse retriever như BM25 và một dense retriever). Sau đó, vector truy vấn cuối cùng được điều chỉnh hoặc kết hợp dựa trên thông tin từ các kết quả tìm kiếm này.
 	\end{itemize}
 	
-	\item \textbf{Biểu diễn Truy vấn Tương phản (Contrastive Query Representation):} 
+	\item \textbf{Biểu diễn truy vấn tương phản (Contrastive Query Representation):}
 	Tinh chỉnh (fine-tune) mô hình encoder để nó học được cách tạo ra các embedding tốt hơn. Cụ thể, mô hình được huấn luyện để vector của truy vấn gần với vector của tài liệu trả lời đúng (positive sample) và xa các tài liệu không liên quan (negative samples).
 	
-	\item \textbf{Biến đổi Ngầm định qua Kiến trúc (Implicit Transformation via Architecture):} 
+	\item \textbf{Biến đổi ngầm định qua kiến trúc (Implicit Transformation via Architecture):}
 	Một số kiến trúc retriever không tạo ra một vector duy nhất cho truy vấn. Thay vào đó, chúng thực hiện một sự biến đổi ngầm thông qua tương tác sâu hơn giữa truy vấn và tài liệu.
 	\begin{itemize}
-		\item \textbf{ColBERT (Late Interaction):} 
+		\item \textbf{ColBERT (Late Interaction):} \cite{khattab2020colbert} 
 		Mô hình này tạo ra embedding cho mỗi token trong cả truy vấn và tài liệu. Quá trình so khớp tính toán điểm tương đồng giữa mỗi token của truy vấn với tất cả các token của tài liệu, cho phép một sự tương tác chi tiết và linh hoạt hơn là so khớp hai vector đơn lẻ.
 	\end{itemize}
 \end{itemize}
 
-\subsubsection{Phân tích và Cấu trúc hóa Truy vấn (Query Structuring)}
+\subsubsection{Phân tích và cấu trúc hóa truy vấn (Query Structuring)}
 \label{sssec:query_structuring}
-Nhóm kỹ thuật này không chỉ “hiểu” ý định của truy vấn mà còn “dịch” nó thành một định dạng có cấu trúc, cho phép tìm kiếm chính xác trên các nguồn dữ liệu có schema rõ ràng (structured/semi-structured data) như cơ sở dữ liệu hoặc kho tri thức.
+Nhóm kỹ thuật này “dịch” ý định của truy vấn thành một định dạng có cấu trúc, cho phép tìm kiếm chính xác trên các nguồn dữ liệu có schema rõ ràng (structured/semi-structured data) như cơ sở dữ liệu hoặc kho tri thức.
 
 \begin{itemize}
 	\item \textbf{Tự truy vấn (Self-Querying):} 
 	LLM được cung cấp thông tin về siêu dữ liệu (metadata) của kho tài liệu (ví dụ: \texttt{năm xuất bản}, \texttt{tác giả}, \texttt{thể loại}). Khi nhận câu hỏi, LLM tự động phân tích và trích xuất các bộ lọc tương ứng. Ví dụ, câu hỏi “các bài báo của Hinton về mạng nơ-ron sau 2015” sẽ được dịch thành một truy vấn tìm kiếm nội dung “mạng nơ-ron” kèm theo hai bộ lọc: \texttt{tác giả = "Hinton"} và \texttt{năm > 2015}.
 	
-	\item \textbf{Phân tích Ngữ nghĩa (Semantic Parsing):} 
-	Chuyển đổi hoàn toàn câu hỏi ngôn ngữ tự nhiên thành một truy vấn trong một ngôn ngữ truy vấn chính thức như SQL (cho cơ sở dữ liệu quan hệ), SPARQL (cho đồ thị tri thức), hoặc GraphQL.
+	\item \textbf{Phân tích ngữ nghĩa (Semantic Parsing):}
+	Chuyển đổi hoàn toàn câu hỏi ngôn ngữ tự nhiên thành một truy vấn trong một ngôn ngữ truy vấn chính thức như SQL (cho cơ sở dữ liệu quan hệ), SPARQL (cho đồ thị tri thức), hoặc GraphQL. Bài toán này thường được gọi là \textbf{text-to-SQL}, và nó là cách đúng để trả lời những câu hỏi mang tính thống kê (“tổng doanh thu quý 3 là bao nhiêu?”) mà truy hồi theo độ tương đồng không bao giờ trả lời chính xác được.
 	
-	\item \textbf{Phân rã Truy vấn (Query Decomposition / Multi-Hop):} 
+	\item \textbf{Phân rã truy vấn (Query Decomposition / Multi-Hop):}
 	Đối với các câu hỏi phức tạp đòi hỏi phải kết hợp thông tin từ nhiều nguồn, kỹ thuật này chia câu hỏi lớn thành một chuỗi các câu hỏi con đơn giản hơn. Kết quả của câu hỏi con trước được dùng làm đầu vào cho câu hỏi con tiếp theo.
 	
-	\item \textbf{Phân định Nghĩa (Query Disambiguation):} 
+	\item \textbf{Phân định nghĩa (Query Disambiguation):}
 	Xác định ý nghĩa chính xác của các từ đa nghĩa dựa trên ngữ cảnh. Ví dụ, hệ thống cần phân biệt “Apple” là công ty công nghệ hay là một loại trái cây để có thể tìm kiếm đúng hướng.
 	
-	\item \textbf{Phân loại Ý định và Trích xuất Thực thể (Intent Classification \& Slot Filling):} 
+	\item \textbf{Phân loại ý định và trích xuất thực thể (Intent Classification \& Slot Filling):}
 	Một cách tiếp cận phổ biến trong các hệ thống chatbot, trong đó hệ thống xác định mục đích chung của người dùng (intent) và trích xuất các thông tin chi tiết (entities/slots). Ví dụ, trong câu “đặt vé máy bay đến Hà Nội vào ngày mai”, intent là “đặt vé”, và các slot là \texttt{đích đến = "Hà Nội"} và \texttt{thời gian = "ngày mai"}.
 	
-	\item \textbf{Phân loại theo Khía cạnh (Query Faceting):} 
+	\item \textbf{Phân loại theo khía cạnh (Query Faceting):}
 	Tự động nhận diện và tách câu hỏi thành nhiều khía cạnh hoặc thuộc tính khác nhau, thường được dùng trong các hệ thống tìm kiếm thương mại điện tử. Ví dụ, truy vấn “điện thoại Samsung dưới 10 triệu pin trâu” có thể được tách thành các facet: \texttt{thương hiệu = "Samsung"}, \texttt{giá < 10,000,000 VNĐ}, \texttt{tính năng = "pin dung lượng cao"}.
 \end{itemize}
 
-\subsubsection{Viết lại Truy vấn dựa trên Học máy (Learning-based Rewriting)}
+\subsubsection{Viết lại truy vấn dựa trên học máy (Learning-based Rewriting)}
 \label{sssec:learning_based_rewriting}
 Nhóm kỹ thuật này coi việc tạo ra truy vấn tối ưu là một bài toán cần học từ dữ liệu, thay vì dựa trên các quy tắc hoặc heuristic cố định. Các mô hình được huấn luyện để tự động tạo ra các phiên bản truy vấn hiệu quả nhất.
 
 \begin{itemize}
-	\item \textbf{Viết lại dựa trên Học tăng cường (Reinforcement Learning - RL):} 
-	Xây dựng một “tác nhân” (agent) thông minh có khả năng ra quyết định viết lại truy vấn thông qua thử và sai. Agent học một “chính sách” (policy) để tạo ra các truy vấn tốt nhất dựa trên “phần thưởng” (reward) nhận được từ môi trường.
+	\item \textbf{Viết lại dựa trên học tăng cường (Reinforcement Learning - RL):}
+	Xây dựng một “tác nhân” (agent) ra quyết định viết lại truy vấn thông qua thử và sai. Agent học một “chính sách” (policy) để tạo ra các truy vấn tốt nhất dựa trên “phần thưởng” (reward) nhận được từ môi trường.
 	\begin{itemize}
-		\item \textbf{Học để Truy xuất (Learning to Retrieve with RL):} 
+		\item \textbf{Học để truy xuất (Learning to Retrieve with RL):}
 		Phần thưởng được tính trực tiếp dựa trên chất lượng của tập tài liệu truy xuất được (ví dụ: recall, precision, MRR). Agent được khuyến khích tạo ra các truy vấn tìm thấy nhiều tài liệu liên quan hơn.
 		
-		\item \textbf{RL dựa trên Chất lượng Câu trả lời (Answer-based RL):} 
-		Một cách tiếp cận sâu hơn, trong đó phần thưởng không chỉ dựa trên kết quả truy xuất mà còn dựa trên chất lượng của câu trả lời cuối cùng do mô hình sinh tạo ra. Điều này giúp tối ưu toàn bộ pipeline RAG một cách end-to-end.
-		
-		\item \textbf{Viết lại Chủ động (Active Query Rewriting):} 
+		\item \textbf{RL dựa trên chất lượng câu trả lời (Answer-based RL):}
+		Phần thưởng dựa trên cả kết quả truy xuất và chất lượng của câu trả lời cuối cùng do mô hình sinh tạo ra, nhờ đó tối ưu được toàn bộ pipeline RAG một cách end-to-end.
+
+		\item \textbf{Viết lại chủ động (Active Query Rewriting):}
 		Agent có khả năng tự quyết định xem có cần thực hiện thêm một bước viết lại nữa hay không. Nếu kết quả tìm kiếm ban đầu đã tốt, agent có thể dừng lại để tiết kiệm tài nguyên tính toán.
 		
-		\item \textbf{Học theo Lộ trình (Curriculum RL):} 
-		Agent được huấn luyện theo một lộ trình có cấu trúc, bắt đầu từ những câu hỏi đơn giản và dần dần tăng độ khó. Cách tiếp cận này giúp agent học các chiến lược viết lại một cách ổn định và hiệu quả hơn.
-		
-		\item \textbf{Học Tương tác (Interactive RL):} 
+		\item \textbf{Học theo lộ trình (Curriculum RL):}
+		Agent được huấn luyện theo một lộ trình có cấu trúc, bắt đầu từ những câu hỏi đơn giản và dần dần tăng độ khó. Nhờ đó agent học các chiến lược viết lại ổn định và hiệu quả hơn.
+
+		\item \textbf{Học tương tác (Interactive RL):}
 		Tận dụng phản hồi trực tiếp từ người dùng (ví dụ: nhấn “thích” hoặc báo cáo kết quả không chính xác) như một nguồn tín hiệu phần thưởng bổ sung, giúp agent cá nhân hóa và thích ứng nhanh chóng.
 		
-		\item \textbf{Học Phân cấp (Hierarchical RL):} 
+		\item \textbf{Học phân cấp (Hierarchical RL):}
 		Sử dụng một kiến trúc RL đa tầng. Một “meta-agent” cấp cao sẽ quyết định \textit{loại} chiến lược viết lại cần dùng (ví dụ: mở rộng từ đồng nghĩa, thêm bộ lọc, hay phân rã câu hỏi), trong khi một agent cấp thấp sẽ thực thi chi tiết chiến lược đó.
 	\end{itemize}
 	
-	\item \textbf{Truy xuất Khả vi End-to-End (End-to-End Differentiable Retrieval):} 
+	\item \textbf{Truy xuất khả vi end-to-end (End-to-End Differentiable Retrieval):}
 	Các phương pháp này tích hợp bộ phận retriever vào trong quá trình huấn luyện của mô hình ngôn ngữ lớn, cho phép tối ưu hóa việc biểu diễn truy vấn một cách trực tiếp.
 	\begin{itemize}
-		\item \textbf{Học Biểu diễn Truy vấn (DPR, ColBERT, Retro):} 
+		\item \textbf{Học biểu diễn truy vấn (DPR, ColBERT, Retro):}
 		Encoder của truy vấn được huấn luyện trực tiếp từ tín hiệu lỗi (loss) của tác vụ cuối cùng (ví dụ: trả lời câu hỏi). Quá trình này “ép” mô hình phải học cách tạo ra các embedding truy vấn hiệu quả nhất cho tác vụ đó.
-		\item \textbf{Huấn luyện Tăng cường Truy xuất (Retrieval-Augmented Training):} 
+		\item \textbf{Huấn luyện tăng cường truy xuất (Retrieval-Augmented Training):}
 		Các mô hình như RAG hay Atlas tối ưu đồng thời cả retriever và generator. Retriever học cách tìm kiếm tài liệu hữu ích, và generator học cách tận dụng các tài liệu đó để sinh ra câu trả lời tốt hơn, tạo thành một vòng lặp tối ưu hóa lẫn nhau.
 	\end{itemize}
 \end{itemize}
 
-\subsection{Biểu diễn Chuyên biệt cho Truy xuất}
+\subsection{Biểu diễn chuyên biệt cho truy xuất}
 \label{ssec:retriever_specific_embeddings}
-Thay vì sử dụng các embedding đa dụng, chúng ta có thể huấn luyện các biểu diễn được thiết kế riêng cho tác vụ truy xuất, kết hợp ưu điểm của cả hai thế giới sparse và dense.
+Thay vì dùng các embedding đa dụng, ta có thể huấn luyện những biểu diễn thiết kế riêng cho tác vụ truy xuất, kết hợp ưu điểm của sparse và dense.
 
-\subsubsection{Biểu diễn Thưa Học được (Learned Sparse Representations)}
+\subsubsection{Biểu diễn thưa học được (Learned Sparse Representations)}
 \label{sssec:splade}
 Phương pháp này nhằm “dạy” cho các mô hình Transformer “suy nghĩ” theo cách của các hệ thống truy xuất từ khóa như BM25.
 \paragraph{Bối cảnh.}
@@ -159,42 +162,39 @@ Dense embeddings tuy mạnh về ngữ nghĩa nhưng:
 \end{enumerate}
 
 \paragraph{Mục tiêu.}
-Tạo ra các \textbf{retriever-specific embeddings} kết hợp được:
-\begin{itemize}
-	\item Sức mạnh khớp từ khóa của sparse retrieval.
-	\item Hiểu ngữ nghĩa sâu của dense retrieval.
-\end{itemize}
-\paragraph{SPLADE (SPARse Lexical AnD Expansion model)}
+Tạo ra các \textbf{retriever-specific embeddings} kết hợp được sức mạnh khớp từ khóa của sparse retrieval với khả năng hiểu ngữ nghĩa sâu của dense retrieval.
+
+\paragraph{SPLADE (SPARse Lexical AnD Expansion model)} \cite{formal2021splade}
 \begin{itemize}
 	\item \textbf{Cơ chế:} Huấn luyện một mô hình ngôn ngữ (thường là BERT) để ánh xạ một đoạn văn bản vào một \textbf{vector thưa} có số chiều bằng kích thước từ vựng. Thay vì chứa các giá trị dày đặc, vector này chỉ có một số ít chiều khác không. Mỗi chiều tương ứng với một token trong từ vựng và giá trị của nó (được tính bằng hàm $\log(1 + \text{ReLU}(\cdot))$) đại diện cho mức độ quan trọng (\textit{term weight}) của token đó đối với tài liệu.
-	\item \textbf{Hỗ trợ Mở rộng Thuật ngữ (Term Expansion):} Điểm mạnh của SPLADE là nó có thể gán trọng số dương cho cả những từ không xuất hiện trực tiếp trong văn bản gốc nhưng có liên quan về mặt ngữ nghĩa, do đó tự động thực hiện việc mở rộng truy vấn.
+	\item \textbf{Hỗ trợ mở rộng thuật ngữ (Term Expansion):} SPLADE có thể gán trọng số dương cho cả những từ không xuất hiện trực tiếp trong văn bản gốc nhưng có liên quan về mặt ngữ nghĩa, do đó tự động thực hiện việc mở rộng truy vấn.
 	\item \textbf{Ưu điểm:} 
 	\begin{itemize}
 		\item \textbf{Hiệu quả:} Vì đầu ra là vector thưa, nó hoàn toàn tương thích với cấu trúc \textbf{inverted index} truyền thống, cho phép truy xuất cực kỳ nhanh chóng trên quy mô lớn, gần bằng tốc độ của BM25.
 		\item \textbf{Chất lượng:} Nó giàu ngữ nghĩa hơn BM25/TF-IDF rất nhiều nhờ vào kiến thức nền của mô hình Transformer.
 	\end{itemize}
-	\item \textbf{Hàm mất mát:} Thường sử dụng các hàm loss được thiết kế cho tác vụ truy xuất như \textit{margin ranking loss} trên các cặp (truy vấn, tài liệu tích cực, tài liệu tiêu cực).
+	\item \textbf{Hàm mất mát:} Gồm hai thành phần. Thành phần thứ nhất là một hàm loss xếp hạng trên các bộ (truy vấn, tài liệu tích cực, tài liệu tiêu cực) -- bài gốc dùng softmax cross-entropy với các tài liệu tiêu cực lấy trong cùng batch, các biến thể sau dùng margin ranking loss hoặc MarginMSE khi chưng cất. Thành phần thứ hai là một \textbf{regularizer độ thưa} cộng thêm vào loss, với hai trọng số riêng cho truy vấn và cho tài liệu; bài gốc dùng regularizer FLOPS và so sánh nó với $\ell_1$. Thành phần này mới chính là thứ tạo ra tính thưa của SPLADE: không có nó, mô hình không có lý do gì để đẩy phần lớn các chiều về không. Trọng số của nó cũng là núm điều chỉnh sự đánh đổi giữa chất lượng xếp hạng và chi phí truy xuất.
 \end{itemize}
 
-\subsubsection{Biểu diễn Tương tác muộn (Late Interaction Representations)}
+\subsubsection{Biểu diễn tương tác muộn (Late Interaction Representations)}
 \label{sssec:colbert}
 Các phương pháp bi-encoder (như SBERT) thực hiện “tương tác sớm” (early interaction), nén toàn bộ ngữ nghĩa của câu hỏi và tài liệu vào một vector duy nhất \textit{trước khi} so sánh. Cách tiếp cận này nhanh nhưng có thể làm mất các chi tiết ngữ nghĩa quan trọng. Ngược lại, cross-encoder thực hiện “tương tác đầy đủ” (full interaction) bằng cách xử lý cặp (câu hỏi, tài liệu) cùng lúc, cho độ chính xác cao nhưng cực kỳ chậm.
 
-ColBERT đề xuất một hướng đi trung gian thanh lịch: \textbf{tương tác muộn (late interaction)}, cân bằng giữa tốc độ và độ chính xác.
+ColBERT đề xuất một hướng trung gian: \textbf{tương tác muộn (late interaction)}, cân bằng giữa tốc độ và độ chính xác.
 
 \paragraph{ColBERT (Contextualized Late Interaction over BERT)}
 Ý tưởng cốt lõi của ColBERT là trì hoãn việc so sánh đến phút cuối cùng, giữ lại các biểu diễn ở cấp độ token để có được sự so khớp chi tiết hơn.
 
 \begin{itemize}
-	\item \textbf{Cơ chế Mã hóa (Encoding):}
+	\item \textbf{Cơ chế mã hóa (Encoding):}
 	\begin{enumerate}
 		\item Cả câu hỏi (Query) và tài liệu (Document) được xử lý \textbf{độc lập} qua một mô hình Transformer (thường là BERT).
 		\item Thay vì lấy một vector duy nhất (như [CLS]), ColBERT giữ lại \textbf{toàn bộ chuỗi các vector biểu diễn đầu ra} cho mỗi token trong câu hỏi và tài liệu.
 		\item Các vector này sau đó có thể được chiếu qua một lớp tuyến tính nhỏ để giảm chiều và được chuẩn hóa. Kết quả là ta có một tập hợp các embedding cho câu hỏi ($E_Q$) và một tập hợp các embedding cho tài liệu ($E_D$).
 	\end{enumerate}
 	
-	\item \textbf{Cơ chế So khớp (Matching - “Late Interaction”):}
-	Đây là bước đột phá của ColBERT. Thay vì tính một tích vô hướng duy nhất, quá trình so khớp diễn ra theo hai bước:
+	\item \textbf{Cơ chế so khớp (Matching - “Late Interaction”):}
+	Thay vì tính một tích vô hướng duy nhất, quá trình so khớp diễn ra theo hai bước:
 	\begin{enumerate}
 		\item \textbf{For each query token:} Với mỗi embedding token $q_i$ trong câu hỏi ($E_Q$), tìm embedding token $d_j$ trong tài liệu ($E_D$) có \textbf{độ tương đồng cosine cao nhất} với nó.
 		\[
@@ -206,125 +206,123 @@ ColBERT đề xuất một hướng đi trung gian thanh lịch: \textbf{tương
 		\]
 	\end{enumerate}
 	
-	\item \textbf{Trực giác:} ColBERT đang trả lời câu hỏi: “Với mỗi từ trong câu hỏi của tôi, liệu có từ nào trong tài liệu khớp tốt về mặt ngữ nghĩa với nó không?”. Bằng cách tính tổng các điểm khớp tốt nhất này, nó tạo ra một điểm số tổng thể mạnh mẽ, có khả năng bỏ qua các từ không khớp và tập trung vào các bằng chứng quan trọng.
+	\item \textbf{Trực giác:} ColBERT đang trả lời câu hỏi: “Với mỗi từ trong câu hỏi của tôi, liệu có từ nào trong tài liệu khớp tốt về mặt ngữ nghĩa với nó không?”. Bằng cách tính tổng các điểm khớp tốt nhất này, nó bỏ qua được các từ không khớp và tập trung vào những bằng chứng quan trọng.
 	
 	\item \textbf{Ưu điểm:}
 	\begin{itemize}
 		\item \textbf{Độ chính xác cao:} Bằng cách giữ lại chi tiết ở cấp độ token, ColBERT có khả năng thực hiện so khớp ngữ nghĩa tinh vi hơn nhiều so với các bi-encoder, gần đạt đến chất lượng của cross-encoder.
-		\item \textbf{Hiệu quả cho Reranking:} Vì việc mã hóa tài liệu có thể được thực hiện trước (offline) và lưu trữ, ColBERT cực kỳ hiệu quả khi dùng làm một reranker. Giai đoạn so khớp (tương tác muộn) nhanh hơn nhiều so với việc phải chạy toàn bộ cross-encoder.
+		\item \textbf{Hiệu quả cho reranking:} Vì việc mã hóa tài liệu có thể được thực hiện trước (offline) và lưu trữ, ColBERT cực kỳ hiệu quả khi dùng làm một reranker. Giai đoạn so khớp (tương tác muộn) nhanh hơn nhiều so với việc phải chạy toàn bộ cross-encoder.
 	\end{itemize}
-	
-	\item \textbf{Nhược điểm:}
-	\begin{itemize}
-		\item \textbf{Yêu cầu bộ nhớ lớn:} Phải lưu trữ một embedding cho mỗi token của mỗi tài liệu, dẫn đến không gian lưu trữ lớn hơn đáng kể so với việc chỉ lưu một vector cho mỗi tài liệu.
-	\end{itemize}
+
+	\item \textbf{Nhược điểm:} Phải lưu một embedding cho mỗi token của mỗi tài liệu, nên không gian lưu trữ lớn hơn đáng kể so với việc chỉ lưu một vector cho mỗi tài liệu.
 \end{itemize}
 
-\subsubsection{Biểu diễn Dựa trên LLM (LLM-based Representations)}
+\subsubsection{Biểu diễn dựa trên LLM (LLM-based Representations)}
 \label{sssec:llm_based_embeddings}
-Các mô hình bi-encoder truyền thống (như SBERT) thường dựa trên kiến trúc chỉ Encoder (BERT-style). Mặc dù hiệu quả, chúng bị giới hạn bởi quy mô và lượng kiến thức đã được học trong giai đoạn pre-training. Một hướng đi mới đầy hứa hẹn là tận dụng kiến thức thế giới sâu rộng và khả năng suy luận của các Mô hình Ngôn ngữ Lớn (LLM) thuộc họ Decoder-Only (như Llama) để tạo ra các vector biểu diễn chất lượng vượt trội.
+Các mô hình bi-encoder truyền thống (như SBERT) thường dựa trên kiến trúc chỉ Encoder (BERT-style). Chúng hiệu quả, nhưng bị giới hạn bởi quy mô và lượng kiến thức đã học trong giai đoạn pre-training. Một hướng khác là tận dụng kiến thức và khả năng suy luận của các mô hình ngôn ngữ lớn (LLM) thuộc họ Decoder-Only (như Llama) để tạo ra các vector biểu diễn chất lượng cao hơn.
 
-\paragraph{Vấn đề: Tại sao không thể dùng LLM (Decoder-Only) trực tiếp?}
+\paragraph{Vì sao không dùng trực tiếp LLM Decoder-Only}
 Các mô hình Decoder-Only như Llama hay GPT được huấn luyện cho tác vụ \textbf{Causal Language Modeling} (dự đoán từ tiếp theo). Kiến trúc của chúng vốn dĩ là \textbf{một chiều (unidirectional)}.
 \begin{itemize}
-	\item \textbf{Không có biểu diễn toàn cục [CLS]:} Chúng không có token `[CLS]` để tổng hợp thông tin toàn bộ chuỗi như BERT. Biểu diễn của mỗi token chỉ chứa thông tin từ chính nó và các token đứng trước.
+	\item \textbf{Không có biểu diễn toàn cục [CLS]:} Chúng không có token \texttt{[CLS]} để tổng hợp thông tin toàn bộ chuỗi như BERT. Biểu diễn của mỗi token chỉ chứa thông tin từ chính nó và các token đứng trước.
 	\item \textbf{Biểu diễn của token cuối cùng (Last Token Pooling) không tối ưu:} Lấy vector biểu diễn của token cuối cùng làm đại diện cho cả câu thường không hiệu quả, vì vector này được tối ưu hóa để dự đoán từ tiếp theo, chứ không phải để tóm tắt ngữ nghĩa của toàn bộ câu.
 	\item \textbf{Mean Pooling bị ảnh hưởng bởi tính một chiều:} Lấy trung bình các vector token cũng không lý tưởng, vì mỗi vector token không có cái nhìn “toàn cảnh” về cả câu.
 \end{itemize}
 Do đó, cần có các kỹ thuật fine-tuning đặc biệt để “dạy” cho các LLM này cách tạo ra các embedding câu chất lượng cao.
 
-\paragraph{RepLLaMa: Tái mục đích hóa LLM thành Bi-Encoder}
-RepLLaMa (Representations from Large Language Models) là một kỹ thuật tiêu biểu để fine-tune một LLM Decoder-Only cho tác vụ truy xuất.
+\paragraph{RepLLaMA: tái mục đích hóa LLM thành bi-encoder}
+RepLLaMA \cite{ma2023repllama} (đặt theo lối ghép “Rep” với “LLaMA”, song song với biến thể xếp hạng lại RankLLaMA trong cùng bài báo) là một kỹ thuật tiêu biểu để fine-tune một LLM Decoder-Only cho tác vụ truy xuất.
 \begin{itemize}
 	\item \textbf{Cơ chế:}
 	\begin{enumerate}
-		\item \textbf{Thêm một lớp chiếu (Projection Layer):} Một lớp tuyến tính nhỏ được thêm vào phía trên mô hình Llama gốc.
-		\item \textbf{Mục tiêu Huấn luyện:} Mô hình được fine-tune với hàm mất mát tương phản (contrastive loss) trên một tập dữ liệu lớn gồm các cặp (câu hỏi, tài liệu liên quan).
-		\item \textbf{Lấy biểu diễn từ token cuối cùng:} Trong quá trình fine-tune, mô hình học cách “chưng cất” toàn bộ thông tin ngữ nghĩa của chuỗi đầu vào và nén nó vào vector biểu diễn của \textbf{token cuối cùng} (thường là token EOS).
-		\item \textbf{Đầu ra:} Sau khi đi qua lớp chiếu, vector của token cuối cùng này trở thành embedding đại diện cho toàn bộ câu/tài liệu.
+		\item \textbf{Nối một token kết thúc chuỗi:} Nối token \texttt{</s>} vào cuối truy vấn hoặc tài liệu trước khi đưa vào Llama. Token này giữ vai trò tương tự \texttt{[CLS]} của BERT, nhưng phải đặt ở \textit{cuối} chuỗi, vì Llama là mô hình một chiều nên chỉ token cuối cùng mới nhìn được toàn bộ chuỗi.
+		\item \textbf{Mục tiêu huấn luyện:} Mô hình được fine-tune với hàm mất mát tương phản (contrastive loss) trên một tập dữ liệu lớn gồm các cặp (câu hỏi, tài liệu liên quan).
+		\item \textbf{Lấy biểu diễn từ token cuối cùng:} Trong quá trình fine-tune, mô hình học cách “chưng cất” toàn bộ thông tin ngữ nghĩa của chuỗi đầu vào và nén nó vào vector biểu diễn của \textbf{token cuối cùng}, chính là token \texttt{</s>} vừa nối vào.
+		\item \textbf{Đầu ra:} Biểu diễn ở \textit{tầng cuối} của token \texttt{</s>} được dùng \textbf{trực tiếp} làm embedding của cả câu/tài liệu (4096 chiều với Llama-2-7B), không qua lớp chiếu nào; điểm liên quan giữa truy vấn và tài liệu là tích vô hướng của hai vector. Lớp chiếu tuyến tính chỉ xuất hiện ở biến thể xếp hạng lại RankLLaMA, nơi nó chiếu biểu diễn của \texttt{</s>} thành một số thực làm điểm liên quan.
 	\end{enumerate}
 	\item \textbf{Trực giác:} Quá trình fine-tune đã “tái mục đích hóa” (repurpose) nhiệm vụ của token cuối cùng. Thay vì chỉ cố gắng dự đoán từ tiếp theo, nó giờ đây được huấn luyện để tạo ra một bản tóm tắt vector hữu ích cho việc so sánh sự tương đồng.
 \end{itemize}
 
-\paragraph{NVIDIA NV-Embed: Sức mạnh của Dữ liệu và Quy mô}
-NV-Embed là một ví dụ về một mô hình embedding SOTA thương mại, thể hiện tầm quan trọng của dữ liệu và quy mô huấn luyện.
+\paragraph{NVIDIA NV-Embed: kiến trúc pooling và công thức huấn luyện hai giai đoạn}
+NV-Embed \cite{lee2024nvembed} là mô hình embedding do NVIDIA công bố kèm bài báo và mở trọng số, không phải một sản phẩm thương mại đóng. Đóng góp của nó nằm ở hai chỗ: cách lấy biểu diễn từ một LLM decoder-only, và công thức huấn luyện tương phản theo chỉ dẫn chia làm hai giai đoạn.
 \begin{itemize}
-	\item \textbf{Kiến trúc:} Dựa trên một mô hình Transformer được tối ưu hóa (thường là họ Encoder-Decoder hoặc Encoder-Only đã được tùy chỉnh).
-	\item \textbf{Yếu tố quyết định thành công:}
+	\item \textbf{Kiến trúc:} Dựa trên một \textbf{LLM decoder-only} (Mistral-7B), với hai thay đổi so với cách dùng LLM thông thường. Thứ nhất, \textbf{bỏ mặt nạ attention nhân quả} trong giai đoạn huấn luyện tương phản, để mỗi token nhìn được toàn bộ chuỗi thay vì chỉ các token đứng trước. Thứ hai, thêm một \textbf{lớp latent attention}: biểu diễn tầng cuối của decoder làm vai trò query, một mảng vector tiềm ẩn học được làm key và value, rồi qua một MLP và mean pooling để cho ra embedding của cả chuỗi. Lớp này thay cho mean pooling trực tiếp hoặc lấy vector của token \texttt{<EOS>}, và theo bài gốc cho kết quả tốt hơn cả hai cách đó.
+	\item \textbf{Công thức huấn luyện:}
 	\begin{itemize}
-		\item \textbf{Dữ liệu Huấn luyện Cực lớn:} Được huấn luyện trên hàng tỷ cặp (truy vấn, tài liệu) chất lượng cao, được thu thập và lọc cẩn thận từ nhiều nguồn và nhiều miền khác nhau.
-		\item \textbf{Khai thác các Negative Khó (Hard Negatives):} Quá trình huấn luyện không chỉ phân biệt tài liệu liên quan với các tài liệu ngẫu nhiên, mà còn với các tài liệu “gây nhiễu” — những tài liệu có vẻ liên quan về mặt từ khóa nhưng không thực sự trả lời câu hỏi.
+		\item \textbf{Hai giai đoạn tương phản theo chỉ dẫn:} Giai đoạn đầu huấn luyện tương phản trên dữ liệu truy xuất kèm negative khó; giai đoạn sau trộn thêm các tác vụ không phải truy xuất (phân loại, phân cụm, đo tương đồng) và bỏ phần negative trong batch, để một mô hình phục vụ được nhiều loại tác vụ nhúng. Dữ liệu là các tập công khai đã tuyển chọn, không phải một kho cặp truy vấn--tài liệu quy mô tùy ý.
+		\item \textbf{Khai thác các negative khó (Hard Negatives):} Quá trình huấn luyện phân biệt tài liệu liên quan với cả tài liệu ngẫu nhiên và các tài liệu “gây nhiễu” — những tài liệu có vẻ liên quan về mặt từ khóa nhưng không thực sự trả lời câu hỏi.
 	\end{itemize}
 	\item \textbf{Kết quả:} Tạo ra một mô hình embedding có khả năng tổng quát hóa cực kỳ tốt, đạt hiệu năng hàng đầu trên các benchmark retrieval như MTEB (Massive Text Embedding Benchmark).
 \end{itemize}
 
 %====================================================================
-\subsection{Các Mô hình Suy luận RAG (Reasoning RAG Patterns)}
+\subsection{Các khuôn mẫu suy luận RAG (Reasoning RAG Patterns)}
 \label{ssec:reasoning_rag_patterns}
-Các kỹ thuật này biến RAG từ một pipeline truy xuất-sinh một lần thành một quy trình suy luận động, có khả năng giải quyết các vấn đề phức tạp.
-\subsubsection{RAG Đa bước (Multi-Hop RAG)}
+Các kỹ thuật này biến RAG từ một pipeline truy xuất-sinh một lần thành một quy trình suy luận động, giải quyết được các vấn đề phức tạp.
+
+\subsubsection{RAG đa bước (Multi-Hop RAG)}
 \label{sssec:multi_hop_rag}
 Được thiết kế để giải quyết các câu hỏi phức tạp đòi hỏi phải suy luận theo chuỗi (reasoning chain) và tổng hợp bằng chứng từ nhiều tài liệu hoặc nguồn thông tin khác nhau. Thay vì một lần truy xuất duy nhất, hệ thống thực hiện nhiều “bước nhảy” (hops) để thu thập đủ thông tin cần thiết.
 
 Ví dụ, với câu hỏi: \textit{“Thủ tướng Anh hiện tại có quan điểm gì về chính sách của tổng thống Pháp?”}, một hệ thống multi-hop sẽ không tìm kiếm trực tiếp mà sẽ phân rã và thực hiện theo các bước. Các phương pháp để thực hiện điều này rất đa dạng:
 
 \begin{itemize}
-	\item \textbf{Dựa trên Phân rã (Decomposition-based):} 
+	\item \textbf{Dựa trên phân rã (Decomposition-based):}
 	Đây là hướng tiếp cận trực tiếp nhất, trong đó câu hỏi phức tạp được chia thành các câu hỏi con đơn giản hơn.
 	\begin{itemize}
-		\item \textbf{Phân rã Truy vấn (Query Decomposition):} 
+		\item \textbf{Phân rã truy vấn (Query Decomposition):}
 		Sử dụng LLM để tự động phân rã câu hỏi gốc. Ví dụ trên sẽ được chia thành: (1) “Thủ tướng Anh hiện tại là ai?”, (2) “Tổng thống Pháp hiện tại là ai?”, và (3) “Quan điểm của [kết quả 1] về chính sách của [kết quả 2] là gì?”.
-		\item \textbf{Truy xuất Lặp (Iterative Retrieval):} 
+		\item \textbf{Truy xuất lặp (Iterative Retrieval):}
 		Hệ thống thực hiện truy xuất tuần tự. Kết quả của bước truy xuất trước được sử dụng để tạo ra câu hỏi cho bước tiếp theo. Đây chính là cơ chế hoạt động cốt lõi của ví dụ về thủ tướng Anh - tổng thống Pháp.
 	\end{itemize}
 	
-	\item \textbf{Dựa trên Đồ thị (Graph-based):} 
+	\item \textbf{Dựa trên đồ thị (Graph-based):}
 	Phương pháp này biến đổi toàn bộ kho tài liệu thành một Đồ thị Tri thức (Knowledge Graph), trong đó các thực thể là các nút (nodes) và mối quan hệ là các cạnh (edges).
 	\begin{itemize}
-		\item \textbf{Tìm kiếm Đường đi (Path Finding):} 
-		Câu hỏi của người dùng được chuyển thành một bài toán tìm đường đi trên đồ thị. Ví dụ: “Ai đã đạo diễn bộ phim mà Tom Hanks đóng vai chính?” sẽ trở thành việc tìm một đường đi từ nút \texttt{Tom Hanks} đến một nút \texttt{Đạo diễn} thông qua một nút \texttt{Bộ phim}. (Phương pháp này rất phổ biến trong các bộ dữ liệu QA phức tạp như HotpotQA).
+		\item \textbf{Tìm kiếm đường đi (Path Finding):}
+		Câu hỏi của người dùng được chuyển thành một bài toán tìm đường đi trên đồ thị. Ví dụ: “Ai đã đạo diễn bộ phim mà Tom Hanks đóng vai chính?” sẽ trở thành việc tìm một đường đi từ nút \texttt{Tom Hanks} đến một nút \texttt{Đạo diễn} thông qua một nút \texttt{Bộ phim}. Phương pháp này gắn với các bộ dữ liệu hỏi đáp \textit{trên đồ thị tri thức}, như MetaQA \cite{zhang2017metaqa} (lĩnh vực phim, chia theo số bước 1--2--3 hop trên đồ thị WikiMovies), WebQuestionsSP \cite{yih2016webqsp} hay ComplexWebQuestions \cite{talmor2018complexwebq} (trên Freebase). Cần phân biệt với HotpotQA \cite{yang2018hotpotqa}: tuy cũng là hỏi đáp đa bước, HotpotQA đặt câu hỏi trên \textit{văn bản} Wikipedia và chủ ý không gắn với một cơ sở hay lược đồ tri thức nào, nên nó thuộc nhóm phân rã và truy xuất lặp ở trên, không phải nhóm tìm đường đi.
 	\end{itemize}
 	
-	\item \textbf{Tăng cường bằng Suy luận (Reasoning-augmented):} 
-	Các phương pháp này tích hợp chặt chẽ quá trình suy luận của LLM vào vòng lặp truy xuất, làm cho quá trình tìm kiếm trở nên linh hoạt và thông minh hơn.
+	\item \textbf{Tăng cường bằng suy luận (Reasoning-augmented):}
+	Các phương pháp này tích hợp chặt chẽ quá trình suy luận của LLM vào vòng lặp truy xuất, nhờ đó quá trình tìm kiếm linh hoạt hơn.
 	\begin{itemize}
 		\item \textbf{Chain-of-Thought (CoT) RAG:} 
 		LLM thực hiện suy luận từng bước một (“think out loud”). Tại mỗi bước, nếu thấy thiếu thông tin, nó sẽ chủ động tạo ra một truy vấn con để gửi đến retriever, sau đó sử dụng kết quả để tiếp tục chuỗi suy luận.
 		\item \textbf{Tree-of-Thoughts / Graph-of-Thoughts RAG:} 
-		Thay vì một chuỗi suy luận tuyến tính duy nhất, hệ thống tạo ra và khám phá nhiều nhánh suy luận song song. Nếu một nhánh đi vào ngõ cụt, hệ thống có thể quay lại và thử một hướng khác, giúp tăng cường sự mạnh mẽ và khả năng tìm ra lời giải cho các câu hỏi cực kỳ phức tạp.
+		Thay vì một chuỗi suy luận tuyến tính duy nhất, hệ thống tạo ra và khám phá nhiều nhánh suy luận song song. Nếu một nhánh đi vào ngõ cụt, hệ thống có thể quay lại và thử một hướng khác, nhờ đó bền hơn và có cơ hội tìm ra lời giải cho những câu hỏi rất phức tạp.
 	\end{itemize}
 	
-	\item \textbf{Tăng cường bằng Bộ nhớ (Memory-augmented):} 
-	Được thiết kế để giải quyết các chuỗi suy luận dài, nơi việc duy trì ngữ cảnh là tối quan trọng.
+	\item \textbf{Tăng cường bằng bộ nhớ (Memory-augmented):}
+	Được thiết kế cho các chuỗi suy luận dài, nơi việc duy trì ngữ cảnh là điều kiện bắt buộc.
 	\begin{itemize}
-		\item \textbf{Bộ nhớ Làm việc (Working Memory):} 
+		\item \textbf{Bộ nhớ làm việc (Working Memory):}
 		Mỗi kết quả trung gian, bằng chứng, hoặc suy luận được sinh ra trong quá trình multi-hop sẽ được lưu vào một “bộ nhớ đệm” hoặc “bảng nháp” (scratchpad). Tại các bước sau, LLM có thể tham chiếu lại thông tin trong bộ nhớ này, giúp tránh truy xuất lại thông tin đã có, giữ ngữ cảnh xuyên suốt, và cho phép thực hiện các chuỗi suy luận dài và phức tạp hơn.
 	\end{itemize}
 	
-	\item \textbf{Định tuyến và Biến đổi Meta (Query Routing \& Meta-Transformation):}
-	Trong các hệ thống RAG phức tạp sử dụng nhiều công cụ hoặc nhiều nguồn dữ liệu, nhóm kỹ thuật này đóng vai trò như một “bộ điều phối” thông minh, quyết định cách xử lý truy vấn một cách hiệu quả nhất.
+	\item \textbf{Định tuyến và biến đổi meta (Query Routing \& Meta-Transformation):}
+	Trong các hệ thống RAG phức tạp dùng nhiều công cụ hoặc nhiều nguồn dữ liệu, nhóm kỹ thuật này là lớp điều phối: nó quyết định cách xử lý mỗi truy vấn.
 	\begin{itemize}
-		\item \textbf{Định tuyến Truy vấn (Query Routing):} 
+		\item \textbf{Định tuyến truy vấn (Query Routing):}
 		Dựa trên nội dung của câu hỏi, hệ thống sẽ quyết định gửi nó đến retriever phù hợp nhất. Ví dụ, các câu hỏi chứa từ khóa rõ ràng có thể được gửi đến BM25 (sparse), trong khi các câu hỏi trừu tượng hơn sẽ được gửi đến dense retriever. Tương tự, hệ thống có thể định tuyến truy vấn đến các kho tri thức chuyên ngành khác nhau (ví dụ: y tế, pháp luật).
 		
-		\item \textbf{Tái định dạng Truy vấn cho Công cụ (Query Reformulation for Tools):} 
-		Trong các hệ thống RAG dựa trên agent, LLM đóng vai trò trung tâm, có khả năng tự biến đổi câu hỏi của người dùng thành các lời gọi hàm hoặc các truy vấn API hợp lệ để tương tác với các công cụ bên ngoài (ví dụ: công cụ tìm kiếm web, máy tính, API thời tiết).
-		
-		\item \textbf{Hợp nhất Truy vấn (Query Fusion):} 
-		Thay vì chọn một retriever duy nhất, hệ thống gửi truy vấn đến nhiều retriever song song và sau đó thông minh hợp nhất các kết quả lại. Các phương pháp phổ biến bao gồm bỏ phiếu (voting), hợp nhất có trọng số (weighted fusion), hoặc Reciprocal Rank Fusion (RRF).
-		
-		\item \textbf{Chiến lược Truy vấn Thích ứng (Adaptive Query Strategy):} 
+		\item \textbf{Tái định dạng truy vấn cho công cụ (Query Reformulation for Tools):}
+		Trong các hệ thống RAG dựa trên agent, LLM ở vị trí trung tâm và tự biến đổi câu hỏi của người dùng thành các lời gọi hàm hoặc truy vấn API hợp lệ để tương tác với các công cụ bên ngoài (ví dụ: công cụ tìm kiếm web, máy tính, API thời tiết).
+
+		\item \textbf{Hợp nhất truy vấn (Query Fusion):}
+		Thay vì chọn một retriever duy nhất, hệ thống gửi truy vấn đến nhiều retriever song song rồi hợp nhất các kết quả. Các phương pháp phổ biến bao gồm bỏ phiếu (voting), hợp nhất có trọng số (weighted fusion), hoặc Reciprocal Rank Fusion (RRF).
+
+		\item \textbf{Chiến lược truy vấn thích ứng (Adaptive Query Strategy):}
 		Đây là một phương pháp động, trong đó hệ thống tự quyết định chiến lược biến đổi nào là tốt nhất cho một truy vấn cụ thể tại một thời điểm nhất định. Ví dụ, hệ thống có thể thử một truy vấn mở rộng đơn giản trước, nếu kết quả không tốt, nó sẽ tự động chuyển sang một chiến lược phức tạp hơn như HyDE hoặc phân rã câu hỏi (multi-hop).
 	\end{itemize}
 \end{itemize}
 
-\subsubsection{RAG dạng Tác tử (Agentic RAG)}
+\subsubsection{RAG dạng tác tử (Agentic RAG)}
 \label{sssec:agentic_rag}
- Đây là một bước tiến hóa của RAG, nơi LLM không còn là một thành phần thụ động trong một pipeline cố định mà trở thành một “tác tử” (agent) tự chủ, có khả năng lập kế hoạch, ra quyết định và thực thi một chiến lược truy xuất linh hoạt. Thay vì chỉ trả lời dựa trên những gì được cung cấp, agent sẽ chủ động điều khiển toàn bộ quá trình thu thập thông tin.
+Ở đây LLM không còn là một thành phần thụ động trong một pipeline cố định mà trở thành một “tác tử” (agent) tự chủ: nó lập kế hoạch, ra quyết định và thực thi một chiến lược truy xuất linh hoạt. Thay vì chỉ trả lời dựa trên những gì được cung cấp, agent điều khiển toàn bộ quá trình thu thập thông tin.
 
 \begin{itemize}
-	\item \textbf{RAG Tăng cường bằng Công cụ (Tool-augmented RAG):} 
-	LLM được trao quyền truy cập vào một bộ công cụ đa dạng, không chỉ giới hạn ở một retriever duy nhất. Dựa vào bản chất của câu hỏi, agent có thể tự quyết định:
+	\item \textbf{RAG tăng cường bằng công cụ (Tool-augmented RAG):}
+	LLM được trao quyền truy cập một bộ công cụ, không chỉ một retriever duy nhất. Tùy vào bản chất của câu hỏi, agent tự quyết định:
 	\begin{itemize}
 		\item Khi nào cần gọi đến retriever nội bộ (để tìm trong kho tri thức).
 		\item Khi nào cần sử dụng công cụ tìm kiếm bên ngoài (như Google Search) để lấy thông tin mới nhất.
@@ -332,40 +330,40 @@ Ví dụ, với câu hỏi: \textit{“Thủ tướng Anh hiện tại có quan 
 		\item Khi nào cần sử dụng một công cụ tính toán (calculator) cho các câu hỏi số học.
 	\end{itemize}
 	
-	\item \textbf{Truy xuất Thích ứng (Adaptive Retrieval):} 
-	Agent có khả năng điều chỉnh chiến lược truy xuất một cách linh hoạt ngay trong quá trình xử lý một câu hỏi, thay vì tuân theo một quy trình cứng nhắc.
+	\item \textbf{Truy xuất thích ứng (Adaptive Retrieval):}
+	Agent điều chỉnh chiến lược truy xuất ngay trong quá trình xử lý một câu hỏi, thay vì tuân theo một quy trình cứng nhắc.
 	\begin{itemize}
-		\item \textbf{Độ sâu Truy xuất Động (Dynamic Retrieval Depth):} 
+		\item \textbf{Độ sâu truy xuất động (Dynamic Retrieval Depth):}
 		Sau khi truy xuất một vài tài liệu ban đầu, agent tự đánh giá xem thông tin đã đủ để trả lời hay chưa. Nếu chưa, nó sẽ quyết định truy xuất thêm; nếu đủ, nó sẽ dừng lại để tiết kiệm tài nguyên.
-		\item \textbf{Lựa chọn/Định tuyến Retriever (Retriever Selection/Routing):} 
+		\item \textbf{Lựa chọn/định tuyến retriever (Retriever Selection/Routing):}
 		Agent phân tích câu hỏi và chọn công cụ retriever phù hợp nhất từ nhiều lựa chọn có sẵn: dùng BM25 cho các truy vấn dựa trên từ khóa, dùng dense retriever cho các câu hỏi ngữ nghĩa, hoặc dùng retriever trên đồ thị tri thức cho các câu hỏi về mối quan hệ.
 	\end{itemize}
 	
-	\item \textbf{Kiến trúc Lập kế hoạch - Thực thi (Planner-Executor Framework):} 
+	\item \textbf{Kiến trúc lập kế hoạch -- thực thi (Planner-Executor Framework):}
 	Tách biệt quá trình tư duy và hành động.
 	\begin{itemize}
-		\item \textbf{Planner (Người lập kế hoạch):} 
+		\item \textbf{Planner (người lập kế hoạch):}
 		LLM phân tích câu hỏi phức tạp và tạo ra một kế hoạch hành động từng bước. Ví dụ: “Đầu tiên, tìm thông tin về A. Sau đó, dùng kết quả đó để tìm thông tin về B. Cuối cùng, tổng hợp cả hai để trả lời.”
-		\item \textbf{Executor (Người thực thi):} 
+		\item \textbf{Executor (người thực thi):}
 		Một thành phần khác (hoặc chính LLM trong một vai trò khác) sẽ thực hiện từng bước trong kế hoạch (gọi tool, truy vấn retriever) và trả kết quả về cho Planner. Planner sẽ cập nhật kế hoạch dựa trên kết quả mới nhận được.
 	\end{itemize}
 	
-	\item \textbf{RAG Tác tử Tương tác (Interactive Agentic RAG):} 
-	Agent có khả năng tương tác với người dùng để cải thiện quá trình tìm kiếm, tạo ra một vòng lặp phản hồi (human-in-the-loop).
+	\item \textbf{RAG tác tử tương tác (Interactive Agentic RAG):}
+	Agent tương tác với người dùng để cải thiện quá trình tìm kiếm, tạo ra một vòng lặp phản hồi (human-in-the-loop).
 	\begin{itemize}
-		\item \textbf{Làm rõ Truy vấn (Query Clarification):} 
+		\item \textbf{Làm rõ truy vấn (Query Clarification):}
 		Nếu câu hỏi của người dùng mơ hồ hoặc không đủ chi tiết, thay vì đoán mò, agent sẽ chủ động đặt câu hỏi ngược lại để làm rõ. Ví dụ: “Khi bạn nói về 'Apple', bạn đang muốn hỏi về công ty công nghệ hay về một loại trái cây?”
 	\end{itemize}
 	
-	\item \textbf{RAG Tác tử Tăng cường bằng Học máy (Learning-enhanced Agentic RAG):} 
-	Chiến lược ra quyết định của agent không phải là cố định mà có thể được cải thiện thông qua học máy, đặc biệt là Học tăng cường (RL).
+	\item \textbf{RAG tác tử tăng cường bằng học máy (Learning-enhanced Agentic RAG):}
+	Chiến lược ra quyết định của agent không cố định mà có thể được cải thiện thông qua học máy, đặc biệt là học tăng cường (RL).
 	\begin{itemize}
-		\item \textbf{Học Chính sách Truy xuất (Learning Retrieval Policies):} 
+		\item \textbf{Học chính sách truy xuất (Learning Retrieval Policies):}
 		Agent học được một “chính sách” (policy) tối ưu qua thời gian. Ví dụ, nó có thể học được rằng: “Với các câu hỏi so sánh, chiến lược multi-hop thường hiệu quả hơn”, hoặc “Khi người dùng hỏi về tin tức, hãy ưu tiên sử dụng công cụ tìm kiếm web”.
 	\end{itemize}
 \end{itemize}
 
-\subsection{Biểu diễn Đa ngôn ngữ (Cross-lingual Embeddings)}
+\subsection{Biểu diễn đa ngôn ngữ (Cross-lingual Embeddings)}
 \label{ssec:cross_lingual_embeddings}
 
 \subsubsection*{Vấn đề}
@@ -380,38 +378,29 @@ Ví dụ: vector của từ \textit{“máy tính”} (tiếng Việt) và \text
 	\item Dịch máy hoặc gợi ý từ/câu dựa trên ngữ nghĩa thay vì chỉ dựa vào từ vựng.
 \end{itemize}
 
-\begin{tcolorbox}[
-	title={Một “Ngôn ngữ chung” của các Vector},
-	colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries
-	]
-	Hãy tưởng tượng một không gian nơi vector của \textit{“mèo”} (vi), \textit{“cat”} (en), \textit{“neko”} (ja) và \textit{“gato”} (es) đều hội tụ về cùng một vùng lân cận. Đây là sức mạnh của biểu diễn đa ngôn ngữ — tạo ra một “cầu nối” toán học giữa các ngôn ngữ tự nhiên.
-\end{tcolorbox}
+\begin{keyidea}{Một “ngôn ngữ chung” của các vector}
+	Hãy tưởng tượng một không gian nơi vector của \textit{“mèo”} (vi), \textit{“cat”} (en), \textit{“neko”} (ja) và \textit{“gato”} (es) đều hội tụ về cùng một vùng lân cận. Đó là điều biểu diễn đa ngôn ngữ nhắm tới: một “cầu nối” toán học giữa các ngôn ngữ tự nhiên.
+\end{keyidea}
 
 \subsubsection*{Các hướng tiếp cận chính}
 \begin{enumerate}
-	\item \textbf{Mapping-based (Học ma trận ánh xạ)}  
-	Huấn luyện một ma trận $W$ sao cho khi nhân với embedding của ngôn ngữ nguồn, ta nhận được embedding “khớp” với ngôn ngữ đích:  
+	\item \textbf{Mapping-based (học ma trận ánh xạ).}
+	Huấn luyện một ma trận $W$ sao cho khi nhân với embedding của ngôn ngữ nguồn, ta nhận được embedding “khớp” với ngôn ngữ đích:
 	\[
 	W \cdot E_{\text{src}} \approx E_{\text{tgt}}
 	\]
-	- \textbf{MUSE} (Lample et al.): Tìm $W$ bằng cách tối ưu khoảng cách giữa các cặp từ song ngữ. Có thể:
-	- \textit{Giám sát}: Dùng từ điển song ngữ nhỏ.
-	- \textit{Phi giám sát}: Sử dụng huấn luyện đối nghịch (adversarial training) để khớp phân phối embedding.
-	
-	\item \textbf{Joint training (Huấn luyện chung nhiều ngôn ngữ)}  
-	Huấn luyện một encoder duy nhất trên dữ liệu song song nhiều ngôn ngữ để ép embedding về chung một không gian.
-	- \textbf{LASER}: Sử dụng BiLSTM encoder + max-pooling, huấn luyện trên hơn 90 ngôn ngữ.
-	- \textbf{LaBSE}: Thay BiLSTM bằng Transformer (BERT), tối ưu độ tương đồng cosine giữa cặp câu dịch chuẩn và giảm độ tương đồng với cặp câu ngẫu nhiên.
-	
-	\item \textbf{Multilingual Language Models}  
-	Huấn luyện mô hình ngôn ngữ đa ngôn ngữ trực tiếp:
-	- \textbf{mBERT}, \textbf{XLM-R}: Học embedding từ pretraining masked language modeling trên nhiều ngôn ngữ.
-	- \textbf{mT5}, \textbf{BLOOMZ}: Mô hình sinh đa ngôn ngữ, có thể dùng embedding tầng encoder.
+	\textbf{MUSE} (Lample et al.) tìm $W$ bằng cách tối ưu khoảng cách giữa các cặp từ song ngữ, theo hai chế độ: \textit{giám sát}, dùng một từ điển song ngữ nhỏ; và \textit{phi giám sát}, dùng huấn luyện đối nghịch (adversarial training) để khớp phân phối embedding.
+
+	\item \textbf{Joint training (huấn luyện chung nhiều ngôn ngữ).}
+	Huấn luyện một encoder duy nhất trên dữ liệu song song nhiều ngôn ngữ để ép embedding về chung một không gian. \textbf{LASER} dùng BiLSTM encoder + max-pooling, huấn luyện trên hơn 90 ngôn ngữ. \textbf{LaBSE} thay BiLSTM bằng Transformer (BERT), tối ưu độ tương đồng cosine giữa cặp câu dịch chuẩn và giảm độ tương đồng với cặp câu ngẫu nhiên.
+
+	\item \textbf{Multilingual language models.}
+	Huấn luyện mô hình ngôn ngữ đa ngôn ngữ trực tiếp. \textbf{mBERT} và \textbf{XLM-R} học embedding từ pretraining masked language modeling trên nhiều ngôn ngữ. \textbf{mT5} và \textbf{BLOOMZ} là mô hình sinh đa ngôn ngữ, có thể dùng embedding ở tầng encoder.
 \end{enumerate}
 
 \subsubsection*{Thách thức}
 \begin{itemize}
-	\item \textbf{Polysemy}: Từ đa nhĩa có thể gây nhầm lẫn nếu không có ngữ cảnh.
+	\item \textbf{Polysemy}: Từ đa nghĩa có thể gây nhầm lẫn nếu không có ngữ cảnh.
 	\item \textbf{Resource imbalance}: Một số ngôn ngữ có ít dữ liệu song song → khó huấn luyện tốt.
 	\item \textbf{Domain shift}: Khác biệt miền dữ liệu (ví dụ: tin tức vs hội thoại) làm giảm chất lượng ánh xạ.
 \end{itemize}
@@ -424,39 +413,27 @@ Ví dụ: vector của từ \textit{“máy tính”} (tiếng Việt) và \text
 \end{itemize}
 
 
-\subsection{Đánh giá và Triển khai Hệ thống RAG}
+\subsection{Đánh giá và triển khai hệ thống RAG}
 \label{ssec:rag_evaluation_production}
-Làm thế nào để biết hệ thống RAG của bạn hoạt động tốt?
 
-\subsubsection{Các chỉ số Đánh giá}
+\subsubsection{Các chỉ số đánh giá}
 Việc đánh giá được chia làm hai cấp độ:
 \begin{itemize}
-	\item \textbf{Đánh giá Retriever (Component-level):} Đánh giá riêng thành phần tìm kiếm. Các chỉ số phổ biến là \textbf{Hit Rate} (tỷ lệ câu hỏi có chunk chứa câu trả lời nằm trong top K) và \textbf{Mean Reciprocal Rank (MRR)}.
-	\item \textbf{Đánh giá End-to-End (System-level):} Đánh giá chất lượng câu trả lời cuối cùng. Các framework như \textbf{RAGAS} cung cấp các chỉ số quan trọng:
+	\item \textbf{Đánh giá retriever (Component-level):} Đánh giá riêng thành phần tìm kiếm. Các chỉ số phổ biến là \textbf{Hit Rate} (tỷ lệ câu hỏi có chunk chứa câu trả lời nằm trong top K) và \textbf{Mean Reciprocal Rank (MRR)}. Ngoài ra, \textbf{nDCG} (normalized Discounted Cumulative Gain) là chỉ số chuẩn khi các tài liệu có \emph{nhiều mức} liên quan chứ không chỉ đúng/sai: nó thưởng cho việc xếp tài liệu liên quan nhất lên \emph{trên cùng}, với mức thưởng giảm dần theo logarit của vị trí -- đúng với trực giác rằng người dùng (và cửa sổ ngữ cảnh) chỉ đọc được vài kết quả đầu.
+	\item \textbf{Đánh giá end-to-end (System-level):} Đánh giá chất lượng câu trả lời cuối cùng. Các framework như \textbf{RAGAS} cung cấp các chỉ số sau:
 	\begin{itemize}
 		\item \textbf{Faithfulness (Tính trung thực):} Câu trả lời có bám sát và được hỗ trợ bởi ngữ cảnh đã cung cấp không?
-		\item \textbf{Answer Relevancy (Độ liên quan):} Câu trả lời có đi thẳng vào vấn đề của câu hỏi không?
+		\item \textbf{Answer Relevancy / Answer Relevance (Độ liên quan):} Câu trả lời có đi thẳng vào vấn đề của câu hỏi không?
 		\item \textbf{Context Precision \& Recall:} Các chunk được tìm thấy có thực sự cần thiết và đầy đủ để trả lời câu hỏi không?
 	\end{itemize}
 \end{itemize}
 
-\subsubsection{Checklist khi đưa vào Vận hành (Production Checklist)}
-Xây dựng một hệ thống RAG cho sản phẩm không chỉ dừng lại ở mô hình. Dưới đây là một vài yếu tố cần cân nhắc:
+\subsubsection{Checklist khi đưa vào vận hành (Production Checklist)}
+Xây dựng một hệ thống RAG cho sản phẩm không dừng lại ở mô hình. Dưới đây là một vài yếu tố cần cân nhắc:
 \begin{itemize}
 	\item \textbf{Tốc độ (Latency):} Toàn bộ quá trình từ lúc nhận câu hỏi đến lúc trả về câu trả lời phải đủ nhanh để người dùng không phải chờ đợi.
 	\item \textbf{Chi phí (Cost):} Theo dõi chi phí cho mỗi lượt gọi API embedding và LLM.
 	\item \textbf{Giám sát (Monitoring):} Xây dựng dashboard để theo dõi các chỉ số đánh giá, latency, chi phí, và các câu hỏi mà hệ thống trả lời sai.
-	\item \textbf{Vòng lặp Phản hồi (Feedback Loop):} Thu thập phản hồi từ người dùng (ví dụ: nút “thích”/“không thích”) để tìm ra các trường hợp lỗi và liên tục cải thiện hệ thống.
+	\item \textbf{Vòng lặp phản hồi (Feedback Loop):} Thu thập phản hồi từ người dùng (ví dụ: nút “thích”/“không thích”) để tìm ra các trường hợp lỗi và liên tục cải thiện hệ thống.
 \end{itemize}
 
-\bigskip
-\hrule
-\bigskip
-
-\begin{center}
-	\textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
-\end{center}
-
-\textit{Chúng ta vừa hoàn thành một hành trình sâu sắc vào thế giới của Tìm kiếm và Sinh Tăng cường (RAG) — kiến trúc nền tảng giúp LLM trở nên đáng tin cậy và hữu ích trong thế giới thực. Bắt đầu từ pipeline “ngây thơ” nhất, chúng ta đã học cách tối ưu hóa từng giai đoạn, từ việc phân mảnh thông minh, xây dựng các retriever đa tầng, cho đến việc điều khiển LLM sinh ra các câu trả lời có bằng chứng. Chúng ta đã biến LLM từ một “nhà hiền triết” bị cô lập thành một “nhà nghiên cứu” có khả năng suy luận và tương tác với kiến thức bên ngoài.}
-
-\textit{Tuy nhiên, một hệ thống RAG chạy trên LLM cỡ lớn -- nhất là mô hình suy luận sinh ra hàng nghìn token -- rất đắt và chậm khi phục vụ hàng triệu người dùng. Trước khi trao cho LLM “mắt” để nhìn và “tay” để hành động, chương tiếp theo sẽ giải quyết một bài toán thực tế hơn: làm thế nào để mô hình nhỏ hơn, nhanh hơn và rẻ hơn thông qua chưng cất, lượng tử hóa và các kỹ thuật phục vụ hiệu quả.}

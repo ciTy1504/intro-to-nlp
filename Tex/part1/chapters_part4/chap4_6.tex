@@ -2,7 +2,7 @@
 % File: chapters_part1/chap4_6.tex
 % Nội dung cho Chương 4, Phần 6 -- Cập nhật 2026 theo LLM Research Reading List (trục Architecture)
 
-\section{Khối Decoder Hiện đại: Từ Multi-Head đến Grouped-Query và Latent Attention}
+\section{Khối decoder hiện đại: từ Multi-Head đến Grouped-Query và Latent Attention}
 \label{sec:modern_decoder_attention}
 
 Nếu đặt sơ đồ Transformer năm 2017 cạnh kiến trúc của Llama 3, Qwen3 hay DeepSeek-V3, bạn sẽ thấy “bộ xương” vẫn giống nhau: embedding, $L$ khối lặp lại gồm attention và FFN, rồi lớp chiếu ra từ vựng. Nhưng gần như \emph{mọi chi tiết} bên trong khối đã được thay thế. Mục này đi qua những thay đổi đó theo đúng thứ tự mà áp lực thực tế đã tạo ra chúng: trước hết là \textbf{ổn định huấn luyện} ở độ sâu lớn, sau đó là \textbf{chi phí bộ nhớ khi suy luận} -- thứ mà ở kỷ nguyên LLM đã trở thành nút thắt số một.
@@ -47,15 +47,15 @@ với $g$ là vector hệ số học được. Lợi ích rất cụ thể: bớ
 \]
 Nhánh $W_3 x$ đóng vai trò “cổng” điều tiết từng chiều của nhánh kích hoạt. Vì có ba ma trận thay vì hai, kích thước ẩn thường được giảm từ $4d$ xuống khoảng $\tfrac{8}{3}d$ để giữ nguyên số tham số.
 
-\begin{tcolorbox}[title={Công thức “chuẩn” của một khối decoder năm 2026}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{deepdive}{Công thức “chuẩn” của một khối decoder năm 2026}
 \begin{align*}
 h &= x + \text{Attention}\big(\text{RMSNorm}(x)\big) \qquad \text{(RoPE, causal mask, GQA hoặc MLA)}\\
 x' &= h + \text{FFN}\big(\text{RMSNorm}(h)\big) \qquad\;\;\; \text{(SwiGLU, hoặc MoE gồm nhiều FFN SwiGLU)}
 \end{align*}
 Không bias trong các phép chiếu tuyến tính, embedding đầu vào và đầu ra có thể dùng chung (weight tying) ở mô hình nhỏ. Đây là cấu hình của Llama 3, Qwen2.5/Qwen3, Mistral và (với MLA + MoE) DeepSeek-V3.
-\end{tcolorbox}
+\end{deepdive}
 
-\subsection{KV Cache: Nút thắt bộ nhớ khi suy luận}
+\subsection{KV cache: nút thắt bộ nhớ khi suy luận}
 \label{ssec:kv_cache}
 
 Khi sinh văn bản tự hồi quy, tại bước $t$ mô hình chỉ cần tính Query cho \emph{token mới}, nhưng phải so khớp nó với Key và Value của \emph{tất cả} các token trước đó. Tính lại $K, V$ cho toàn bộ tiền tố ở mỗi bước là lãng phí, nên ta lưu chúng lại -- gọi là \textbf{KV cache}. Kích thước KV cache cho mỗi token là
@@ -144,7 +144,7 @@ KV cache của MLA chỉ tương đương GQA với khoảng 2.25 nhóm, nhưng 
 \label{fig:mla_comparison}
 \end{center}
 
-\subsection{Dự đoán Đa Token (Multi-Token Prediction)}
+\subsection{Dự đoán đa token (Multi-Token Prediction)}
 \label{ssec:mtp}
 
 Mục tiêu dự đoán token kế tiếp chỉ cung cấp một tín hiệu học cho mỗi vị trí. \textbf{Multi-Token Prediction (MTP)} \cite{gloeckle2024mtp} bổ sung các “đầu” phụ dự đoán các token xa hơn ($t+2, t+3, \dots$), buộc biểu diễn ẩn phải “lập kế hoạch” trước vài bước. Gloeckle et al. cho thấy lợi ích rõ nhất ở mô hình lớn và ở các tác vụ sinh mã.
@@ -155,14 +155,14 @@ h_i'^{\,k} = M_k\Big[\text{RMSNorm}\big(h_i^{k-1}\big);\ \text{RMSNorm}\big(\tex
 \]
 cho qua một khối Transformer riêng rồi dự đoán $t_{i+k+1}$ bằng lớp đầu ra dùng chung. Tổng loss là $\mathcal{L} = \mathcal{L}_{\text{main}} + \frac{\lambda}{D}\sum_{k=1}^{D}\mathcal{L}^{k}_{\text{MTP}}$ (DeepSeek-V3 dùng $D = 1$). Khi suy luận, có thể bỏ module MTP đi, hoặc dùng nó làm \textbf{bộ nháp cho giải mã suy đoán}: báo cáo cho thấy token thứ hai được chấp nhận 85--90\% số lần, tăng tốc độ sinh khoảng 1.8 lần (xem giải mã suy đoán ở chương~\ref{chap:efficiency}).
 
-\begin{tcolorbox}[title={Tổng kết: áp dụng bốn câu hỏi của danh sách đọc}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
+\begin{assess}{Tổng kết: áp dụng bốn câu hỏi của danh sách đọc}
 \begin{itemize}
 	\item \textbf{Thay đổi giả định nào?} GQA/MLA bác bỏ giả định “mỗi đầu attention cần Key/Value độc lập đầy đủ”. MTP bác bỏ giả định “mỗi vị trí chỉ cần một mục tiêu dự đoán”.
 	\item \textbf{Giải quyết nút thắt nào?} Băng thông bộ nhớ và dung lượng KV cache khi decode.
 	\item \textbf{Đánh đổi gì?} GQA đổi một ít năng lực biểu diễn; MLA đổi độ phức tạp cài đặt (RoPE tách rời, thêm phép chiếu); MTP đổi thêm compute huấn luyện.
 	\item \textbf{Bằng chứng?} GQA có ablation số nhóm và so sánh cùng compute uptraining; MLA có so sánh trực tiếp với MHA/GQA/MQA trong phụ lục của DeepSeek-V2.
 \end{itemize}
-\end{tcolorbox}
+\end{assess}
 
 \bigskip
 \hrule
@@ -172,4 +172,4 @@ cho qua một khối Transformer riêng rồi dự đoán $t_{i+k+1}$ bằng l�
     \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
 \end{center}
 
-\textit{Chương này đã là một chuyến đi sâu vào trái tim của NLP hiện đại. Chúng ta đã mổ xẻ kiến trúc Transformer, hiểu được sức mạnh của cơ chế Tự chú ý, và phân loại ba họ mô hình chính -- Encoder-Only, Decoder-Only, và Encoder-Decoder. Chúng ta cũng đã khám phá các kỹ thuật cho phép các mô hình này xử lý ngữ cảnh dài (FlashAttention, YaRN, Ring Attention), mở rộng quy mô thưa thớt (MoE) và tiết kiệm bộ nhớ khi suy luận (GQA, MLA). Nhưng một kiến trúc tốt mới chỉ là bản thiết kế. Câu hỏi tiếp theo là: với một ngân sách tính toán cho trước, nên làm mô hình lớn đến đâu, cho nó học bao nhiêu dữ liệu, dữ liệu nào, và tối ưu bằng thuật toán gì? Đó là chủ đề của chương tiếp theo: tiền huấn luyện LLM.}
+\textit{Chương này đã mổ xẻ kiến trúc Transformer, cơ chế tự chú ý, và ba họ mô hình chính -- Encoder-Only, Decoder-Only và Encoder-Decoder. Tiếp đó là các kỹ thuật cho phép những mô hình này xử lý ngữ cảnh dài (FlashAttention, YaRN, Ring Attention), mở rộng quy mô thưa thớt (MoE) và tiết kiệm bộ nhớ khi suy luận (GQA, MLA). Nhưng một kiến trúc tốt mới chỉ là bản thiết kế. Với một ngân sách tính toán cho trước, nên làm mô hình lớn đến đâu, cho nó học bao nhiêu dữ liệu, dữ liệu nào, và tối ưu bằng thuật toán gì? Đó là chủ đề của chương tiếp theo: tiền huấn luyện LLM.}

@@ -1,0 +1,90 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_part6/chap6_6.tex
+% RAG trong thế giới ngữ cảnh dài
+
+\section{Ngữ cảnh dài có khai tử RAG không?}
+\label{sec:rag_vs_long_context}
+
+Mỗi lần cửa sổ ngữ cảnh tăng một bậc độ lớn, câu hỏi này lại quay lại: nếu mô hình đọc được một triệu token trong một lượt, tại sao còn phải xây cả một hệ thống truy hồi? Cứ nhét toàn bộ cơ sở tri thức vào prompt là xong.
+
+Lập luận đó nghiêm túc hơn vẻ ngoài của nó, và nó đã được hình thức hóa thành một phương pháp có tên.
+
+\subsection{CAG: sinh tăng cường bằng bộ nhớ đệm}
+\label{ssec:cag}
+
+\textbf{Cache-Augmented Generation} \cite{chan2024cag} lập luận rằng với một cơ sở tri thức \emph{đủ nhỏ và đủ ổn định}, cách đúng là nạp sẵn toàn bộ tài liệu vào ngữ cảnh mở rộng của mô hình và lưu đệm trạng thái tính toán của nó, rồi trả lời mọi câu hỏi mà \textbf{không có bước truy hồi nào cả}.
+
+Lợi ích được nêu rất cụ thể và rất khó bác bỏ trong phạm vi áp dụng của nó:
+\begin{itemize}
+	\item \textbf{Không có độ trễ truy hồi} -- bỏ hẳn một chặng trong đường đi của mỗi truy vấn.
+	\item \textbf{Không có lỗi truy hồi.} Đây mới là điểm mạnh thật sự: mọi lỗi của RAG bắt nguồn từ việc lấy nhầm hoặc lấy thiếu. Nếu không truy hồi thì cả lớp lỗi đó biến mất.
+	\item \textbf{Hệ thống đơn giản hơn nhiều:} Không cơ sở dữ liệu vector, không bộ xếp hạng lại, không chiến lược chunk.
+\end{itemize}
+
+\paragraph{Một ngưỡng cụ thể để quyết định.} Anthropic đưa ra một quy tắc ngón tay cái: \textbf{nếu toàn bộ văn bản của bạn dưới khoảng 200\,000 token -- cỡ 500 trang -- thì cứ đưa hết vào prompt, không cần RAG}. Bộ nhớ đệm prompt làm cho lựa chọn này rẻ: phần đã đệm có thể giảm tới 90\% chi phí và hơn hai lần tốc độ phản hồi. Vượt ngưỡng đó thì bạn quay lại với RAG.
+
+Giới hạn cũng rõ: cách này chỉ hợp với cơ sở tri thức \emph{có kích thước giới hạn và quản lý được}. Nó không áp dụng cho một kho tài liệu doanh nghiệp hàng triệu trang, và nó phải nạp lại mỗi khi tri thức thay đổi.
+
+\subsection{Nhưng ngữ cảnh dài không miễn phí: context rot}
+\label{ssec:context_rot}
+
+Lập luận “cứ nhét hết vào” giả định ngầm rằng mô hình dùng mọi phần của ngữ cảnh \emph{đồng đều tốt}. Giả định đó sai, và nay đã có phép đo.
+
+Báo cáo \textbf{Context Rot} của Chroma \cite{hong2025contextrot} đánh giá \textbf{18 mô hình} -- gồm các dòng GPT, Claude, Gemini và Qwen -- trên ba loại tác vụ: một biến thể mở rộng của phép thử “tìm kim trong đống rơm”, một benchmark hỏi đáp hội thoại dài, và một tác vụ đơn giản đến mức gần như tầm thường là lặp lại một dãy từ lặp có chèn một từ lạ.
+
+Kết luận trung tâm, nói nguyên văn: \emph{các mô hình không sử dụng ngữ cảnh của chúng một cách đồng đều; hiệu năng trở nên ngày càng kém tin cậy khi độ dài đầu vào tăng lên}. Và điều đáng chú ý nhất là nó đúng \textbf{ngay cả với những tác vụ rất đơn giản} -- tức là đây không phải vấn đề về độ khó của suy luận, mà là vấn đề về độ dài.
+
+\begin{keyidea}{Kết luận: ngữ cảnh dài không xóa bỏ RAG, nó đổi vai trò của RAG}
+Trước đây, RAG là \textbf{cách duy nhất} để đưa tri thức ngoài vào mô hình -- vì ngữ cảnh quá nhỏ, không còn lựa chọn nào khác.
+
+Bây giờ, RAG là \textbf{cách chọn ra phần đáng đưa vào}. Mục tiêu không còn là lấp đầy cửa sổ ngữ cảnh, mà là nhét vào đó \emph{đúng} thứ cần thiết và không nhét gì thêm. Nói cách khác, RAG chuyển từ một ràng buộc kỹ thuật thành một quyết định chất lượng.
+
+Hệ quả thực hành: khi bạn đo thấy RAG của mình kém, phản xạ “tăng top-$k$ lên cho chắc” thường làm mọi thứ tệ hơn chứ không tốt hơn. Ngoại lệ là khi chẩn đoán chỉ ra đoạn đúng đã được tìm thấy nhưng bị cắt khỏi prompt -- điểm hỏng FP3 ở mục~\ref{ssec:seven_failure_points}; ngoài trường hợp đó, hãy nâng chất lượng xếp hạng chứ không nâng số lượng.
+\end{keyidea}
+
+\subsection{Context engineering: tên gọi mới cho toàn bộ bài toán}
+\label{ssec:context_engineering}
+
+Từ 2025--2026, cộng đồng chuyển dần từ cụm “kỹ thuật prompt” sang \textbf{kỹ thuật ngữ cảnh} (context engineering). Đây không phải đổi tên cho sang: nó phản ánh một sự dịch chuyển thật trong câu hỏi trung tâm.
+
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Kỹ thuật prompt hỏi} & \textbf{Kỹ thuật ngữ cảnh hỏi} \\
+\midrule
+Viết câu lệnh thế nào cho mô hình hiểu? & Cấu hình ngữ cảnh nào \emph{dễ tạo ra} hành vi mong muốn nhất? \\
+Một lần, lúc thiết kế prompt. & Mỗi lượt, như một quyết định cấp phát tài nguyên. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Cách nghĩ hữu ích là coi ngữ cảnh như một \textbf{ngân sách chú ý} hữu hạn, và mục tiêu là \emph{tập token nhỏ nhất có tín hiệu cao nhất}. Trong khung đó, RAG chỉ là \emph{một} trong các công cụ -- bên cạnh việc nén và tóm tắt khi gần chạm giới hạn, ghi chú ra ngoài cửa sổ ngữ cảnh, dùng tác tử con trả về bản chắt lọc, và truy hồi đúng lúc cần thay vì nạp trước.
+
+\subsection{Chọn gì, khi nào}
+\label{ssec:rag_decision}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+\textbf{Cách} & \textbf{Dùng khi} & \textbf{Không dùng khi} \\
+\midrule
+\textbf{Chỉ prompt} & Tri thức đã nằm trong mô hình; tác vụ về định dạng hoặc văn phong. & Cần sự kiện cập nhật hoặc riêng tư. \\
+\textbf{CAG} & Cơ sở tri thức nhỏ, ổn định, ai cũng được xem toàn bộ. & Kho lớn, thay đổi liên tục, hoặc cần phân quyền. \\
+\textbf{RAG} & Kho lớn, thay đổi thường xuyên, cần trích dẫn nguồn, cần phân quyền theo người dùng. & Câu hỏi cần tổng hợp toàn corpus (dùng GraphRAG), hoặc cần thay đổi \emph{hành vi} chứ không phải \emph{tri thức}. \\
+\textbf{Tinh chỉnh} & Cần đổi hành vi, định dạng, văn phong ổn định; cần giảm chi phí hoặc độ trễ. & Cần sự kiện hay thay đổi -- tinh chỉnh lại tốn kém hơn cập nhật một chỉ mục rất nhiều. \\
+\bottomrule
+\end{tabularx}
+\caption{RAG là một lựa chọn trong bốn, không phải mặc định.}
+\label{tab:rag_decision}
+\end{table}
+
+\begin{deepdive}{Lý do ít được nhắc nhưng thường là lý do quyết định}
+Trong các cuộc tranh luận “RAG hay ngữ cảnh dài”, gần như không ai nhắc tới lập luận thường thắng trong môi trường doanh nghiệp: \textbf{kiểm soát truy cập}.
+
+RAG cho phép lọc theo quyền của từng người dùng \emph{ngay tại bước truy hồi} -- nhân sự không truy được tài liệu tài chính, chi nhánh A không truy được dữ liệu chi nhánh B. Nhét toàn bộ cơ sở tri thức vào ngữ cảnh thì mọi người dùng thấy mọi thứ. Nhúng tri thức vào trọng số bằng tinh chỉnh thì còn tệ hơn: không có cách nào gỡ một tài liệu ra khỏi mô hình sau khi đã huấn luyện, và cũng không có cách nào phân quyền.
+
+Cùng lý do đó khiến RAG thắng ở một khía cạnh khác: \textbf{quyền được xóa}. Khi một tài liệu phải bị gỡ bỏ -- vì sai, vì hết hạn, hay vì yêu cầu pháp lý -- với RAG đó là một thao tác xóa khỏi chỉ mục.
+\end{deepdive}

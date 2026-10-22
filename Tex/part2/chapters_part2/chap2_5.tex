@@ -2,16 +2,16 @@
 % File: part2/chapters_part2/chap2_5.tex
 % Cập nhật 2026: thực hành hậu huấn luyện với TRL
 
-\section{Huấn luyện Hậu kỳ với TRL: SFT, DPO và GRPO}
+\section{Huấn luyện hậu kỳ với TRL: SFT, DPO và GRPO}
 \label{sec:posttraining_trl}
 
 Phần 1 đã trình bày lý thuyết của tinh chỉnh có giám sát (chương~\ref{chap:finetuning_alignment}), căn chỉnh theo sở thích (mục~\ref{sec:alignment_methods}) và học tăng cường cho suy luận (chương~\ref{chap:reasoning}). Trong thực tế, cả ba giai đoạn này đều có thể được thực hiện với thư viện \textbf{TRL} (Transformer Reinforcement Learning) của Hugging Face -- được xây dựng trên \texttt{transformers}, \texttt{accelerate} và \texttt{peft}, và tích hợp vLLM để sinh văn bản nhanh trong quá trình RL.
 
-\begin{tcolorbox}[title={Quy trình hậu huấn luyện điển hình}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{checklist}{Quy trình hậu huấn luyện điển hình}
 \textbf{Mô hình nền} $\xrightarrow{\text{SFT}}$ \textbf{mô hình tuân theo chỉ dẫn} $\xrightarrow{\text{DPO/ORPO/KTO}}$ \textbf{mô hình được căn chỉnh} $\xrightarrow{\text{GRPO + phần thưởng kiểm chứng được}}$ \textbf{mô hình suy luận tốt hơn trên toán/mã}.
 
 Không phải dự án nào cũng cần đủ ba bước: nhiều bài toán doanh nghiệp chỉ cần SFT (thường với LoRA/QLoRA); GRPO chỉ đáng giá khi bạn có \emph{hàm thưởng tự động đáng tin cậy}.
-\end{tcolorbox}
+\end{checklist}
 
 \subsection{Định dạng dữ liệu}
 \label{ssec:trl_data_formats}
@@ -205,12 +205,12 @@ Chạy trên nhiều GPU bằng \texttt{accelerate launch train\_grpo.py}. Các 
 	\item \texttt{scale\_rewards}: có chia cho độ lệch chuẩn của nhóm hay không (Dr.~GRPO khuyến nghị không).
 \end{itemize}
 
-\begin{tcolorbox}[title={Kinh nghiệm thực chiến khi chạy GRPO}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{pitfall}{Kinh nghiệm thực chiến khi chạy GRPO}
 \begin{itemize}
 	\item \textbf{Kiểm tra hàm thưởng trước khi huấn luyện:} Chạy mô hình gốc trên vài chục prompt, in ra câu trả lời và phần thưởng. Hàm thưởng lỗi (ví dụ regex quá chặt) khiến mọi phần thưởng bằng 0 và mô hình không học gì.
 	\item \textbf{Chọn độ khó phù hợp:} Nếu mô hình gốc giải đúng gần 0\% hoặc gần 100\% số bài, hầu hết các nhóm có advantage bằng 0. Lọc dữ liệu về vùng mô hình giải đúng một phần.
-	\item \textbf{Theo dõi:} phần thưởng trung bình (nên tăng), độ dài câu trả lời, tỷ lệ bị cắt ngưỡng (clip ratio), entropy (giảm quá nhanh là dấu hiệu sụp đổ khám phá).
+	\item \textbf{Theo dõi:} Phần thưởng trung bình (nên tăng), độ dài câu trả lời, tỷ lệ bị cắt ngưỡng (clip ratio), entropy (giảm quá nhanh là dấu hiệu sụp đổ khám phá).
 	\item \textbf{Cảnh giác reward hacking:} Đọc mẫu đầu ra định kỳ -- mô hình rất giỏi tìm kẽ hở của hàm thưởng (ví dụ in nhiều \texttt{\textbackslash boxed\{\}} để “trúng” đáp án).
 	\item \textbf{Đánh giá độc lập:} Đo trên tập kiểm tra riêng bằng framework đánh giá chuẩn (mục~\ref{sec:lm_eval_practice}), không dùng phần thưởng huấn luyện làm thước đo.
 \end{itemize}
-\end{tcolorbox}
+\end{pitfall}

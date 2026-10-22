@@ -1,16 +1,14 @@
 % !TEX root = ../../main.tex
 % File: part2/chapters3/chap3_2.tex
 
-\section{Tối ưu hóa Mô hình với các Thư viện Sẵn có}
+\section{Tối ưu hóa mô hình với các thư viện sẵn có}
 \label{sec:model_optimization_libraries}
-Như đã thảo luận trong Phần 1 (mục \ref{sec:model_optimization}), các kỹ thuật như Lượng tử hóa và PEFT là rất quan trọng. Trong phần này, chúng ta sẽ xem xét các thư viện cụ thể giúp bạn áp dụng các kỹ thuật này một cách dễ dàng.
+Phần 1 (mục \ref{sec:model_optimization}) đã trình bày lý thuyết của lượng tử hóa và PEFT. Mục này điểm qua các thư viện cụ thể để áp dụng chúng.
 
 \paragraph{bitsandbytes}
-\begin{itemize}
-    \item \textbf{Mục đích chính:} \textbf{Lượng tử hóa (Quantization)}.
-    \item \textbf{Tính năng nổi bật:} Cung cấp các kernel CUDA được tối ưu hóa cao để thực hiện các phép toán trên các định dạng số có độ chính xác thấp. Nó là thư viện đứng sau thành công của \textbf{QLoRA}, cho phép lượng tử hóa 8-bit và 4-bit (bao gồm cả định dạng NF4) một cách hiệu quả.
-    \item \textbf{Cách sử dụng (với `transformers`):} Việc lượng tử hóa một mô hình khi tải về trở nên cực kỳ đơn giản.
-    \begin{example}{Tải mô hình với lượng tử hóa 4-bit (NF4)}{ex:load_llama_4bit}
+Thư viện này phụ trách việc \textbf{lượng tử hóa (quantization)}. Nó cung cấp các kernel CUDA được tối ưu để thực hiện các phép toán trên các định dạng số có độ chính xác thấp, và là thư viện đứng sau \textbf{QLoRA}: lượng tử hóa 8-bit và 4-bit, bao gồm cả định dạng NF4. Với \texttt{transformers}, việc lượng tử hóa một mô hình ngay khi tải về chỉ cần thêm một đối tượng cấu hình.
+
+\begin{example}{Tải mô hình với lượng tử hóa 4-bit (NF4)}{ex:load_llama_4bit}
     \begin{minted}{python}
     import torch
     from transformers import AutoModelForCausalLM, BitsAndBytesConfig
@@ -32,16 +30,14 @@ Như đã thảo luận trong Phần 1 (mục \ref{sec:model_optimization}), cá
         device_map="auto",  # Tự động phân bổ các lớp lên GPU/CPU
     )
     \end{minted}
-    \end{example}
-    `bitsandbytes` giúp giảm đáng kể yêu cầu VRAM, là một công cụ không thể thiếu để làm việc với các LLM lớn trên phần cứng hạn chế.
-\end{itemize}
+\end{example}
+
+\texttt{bitsandbytes} giảm đáng kể yêu cầu VRAM, nên rất cần khi làm việc với các LLM lớn trên phần cứng hạn chế.
 
 \paragraph{PEFT (Parameter-Efficient Fine-Tuning)}
-\begin{itemize}
-    \item \textbf{Mục đích chính:} Triển khai các kỹ thuật \textbf{PEFT}.
-    \item \textbf{Tính năng nổi bật:} Là một thư viện của Hugging Face, cung cấp các cách triển khai tiêu chuẩn cho nhiều phương pháp PEFT, nổi bật nhất là \textbf{LoRA} (và do đó là QLoRA), Prompt-Tuning, Prefix-Tuning, và Adapter-tuning.
-    \item \textbf{Cách sử dụng (LoRA với `transformers`):}
-    \begin{example}{Sử dụng LoRA với PEFT}{ex:lora_peft}
+Thư viện \texttt{peft} của Hugging Face cung cấp các cách triển khai tiêu chuẩn cho nhiều phương pháp PEFT, phổ biến nhất là \textbf{LoRA} (và do đó là QLoRA), ngoài ra có Prompt-Tuning, Prefix-Tuning và Adapter-tuning. Cách dùng LoRA cùng với \texttt{transformers}:
+
+\begin{example}{Sử dụng LoRA với PEFT}{ex:lora_peft}
     \begin{minted}{python}
     from peft import LoraConfig, get_peft_model
     from transformers import AutoModelForCausalLM
@@ -67,9 +63,9 @@ Như đã thảo luận trong Phần 1 (mục \ref{sec:model_optimization}), cá
     peft_model.print_trainable_parameters()
     # Output dạng: trainable params: ... || all params: ... || trainable%: <1%
     \end{minted}
-    \end{example}
-    Kết hợp ví dụ này với lượng tử hóa 4-bit ở trên chính là \textbf{QLoRA}. Trong thực tế, thay vì tự ghép \texttt{transformers} + \texttt{peft} + \texttt{bitsandbytes}, hãy dùng \texttt{SFTTrainer} của TRL (mục~\ref{sec:posttraining_trl}) -- nó nhận thẳng \texttt{peft\_config} và \texttt{quantization\_config}.
-\end{itemize}
+\end{example}
+
+Kết hợp ví dụ này với lượng tử hóa 4-bit ở trên chính là \textbf{QLoRA}. Trong thực tế, thay vì tự ghép \texttt{transformers} + \texttt{peft} + \texttt{bitsandbytes}, hãy dùng \texttt{SFTTrainer} của TRL (mục~\ref{sec:posttraining_trl}): nó nhận thẳng \texttt{peft\_config} và \texttt{quantization\_config}.
 
 \paragraph{Lượng tử hóa cho phục vụ: AWQ, GPTQ và FP8}
 \begin{itemize}
@@ -80,12 +76,6 @@ Như đã thảo luận trong Phần 1 (mục \ref{sec:model_optimization}), cá
 \end{itemize}
 
 \paragraph{ONNX (Open Neural Network Exchange)}
-\begin{itemize}
-    \item \textbf{Mục đích chính:} \textbf{Khả chuyển (Portability)} và \textbf{Tăng tốc Suy luận (Inference Acceleration)}.
-    \item \textbf{Bản chất:} ONNX không phải là một thư viện tối ưu hóa trực tiếp, mà là một \textbf{định dạng file trung gian, tiêu chuẩn mở}. Bạn có thể “export” một mô hình từ một framework (như PyTorch) sang định dạng ONNX.
-    \item \textbf{Lợi ích:}
-        \begin{itemize}
-            \item \textbf{Khả chuyển:} Một mô hình ONNX có thể được chạy trên nhiều nền tảng phần cứng và phần mềm khác nhau (web, mobile, server) bằng cách sử dụng một \textbf{ONNX Runtime}.
-            \item \textbf{Tăng tốc:} Các ONNX Runtime (ví dụ: ONNX Runtime của Microsoft) thường được tối ưu hóa cao độ. Chúng có thể áp dụng các kỹ thuật như “graph fusion” (gộp nhiều phép toán nhỏ thành một phép toán lớn) và lượng tử hóa để chạy mô hình nhanh hơn đáng kể so với môi trường PyTorch gốc.
-        \end{itemize}
-\end{itemize}
+ONNX không phải là một thư viện tối ưu hóa, mà là một \textbf{định dạng file trung gian theo tiêu chuẩn mở}: ta “export” một mô hình từ một framework (như PyTorch) sang định dạng này. Mục đích là khả chuyển (portability) và tăng tốc suy luận (inference acceleration).
+
+Về khả chuyển, một mô hình ONNX chạy được trên nhiều nền tảng phần cứng và phần mềm khác nhau (web, mobile, server) thông qua một \textbf{ONNX Runtime}. Về tốc độ, các ONNX Runtime (ví dụ: ONNX Runtime của Microsoft) áp dụng các kỹ thuật như “graph fusion” (gộp nhiều phép toán nhỏ thành một phép toán lớn) và lượng tử hóa, nhờ đó chạy mô hình nhanh hơn đáng kể so với môi trường PyTorch gốc.

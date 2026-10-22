@@ -2,20 +2,20 @@
 % File: part2/chapters_part1/chap1_6_llm_data.tex
 % Pipeline dữ liệu quy mô LLM
 
-\section{Pipeline Dữ liệu Quy mô LLM: Bảy bước}
+\section{Pipeline dữ liệu quy mô LLM: bảy bước}
 \label{sec:llm_data_pipeline}
 
 Mọi thứ từ đầu chương tới đây giả định một quy mô nhất định: vài nghìn tới vài trăm nghìn mẫu, một người hoặc một nhóm nhỏ nhìn được bằng mắt, gán nhãn được bằng tay. Ở quy mô đó, Scrapy, pandas và Label Studio là công cụ đúng.
 
 Tiền huấn luyện LLM là một bài toán khác về bản chất, không chỉ khác về lượng. Đầu vào là hàng petabyte HTML thô; đầu ra là vài nghìn tỷ token đã tokenize. Không ai nhìn được dữ liệu đó bằng mắt, không ai gán nhãn được nó, và \emph{không một dòng pandas nào chạy nổi}. Mục này trình bày bảy bước mà mọi pipeline hiện đại đều có, theo đúng thứ tự -- vì thứ tự ở đây là một quyết định thiết kế, không phải chuyện tùy tiện.
 
-\begin{tcolorbox}[title={Nguyên tắc xuyên suốt cả bảy bước}, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
+\begin{deepdive}{Nguyên tắc xuyên suốt cả bảy bước}
 \textbf{Làm cái rẻ trước, cái đắt sau.} Mỗi bước đều thu nhỏ đầu vào cho bước kế tiếp. Lọc URL tốn gần như không gì mà cắt được rất nhiều; chạy một bộ phân loại trên GPU tốn bằng cả một lần huấn luyện. Đảo thứ tự hai bước đó là đốt tiền để xử lý dữ liệu mà bạn sắp vứt đi.
 
 \textbf{Và luôn giữ lại thứ bạn vứt đi.} Mọi bộ lọc trong các pipeline nghiêm túc đều ghi phần bị loại ra một thư mục riêng, đánh số theo bước. Bạn không thể gỡ lỗi một chồng bộ lọc mà bạn không nhìn được.
-\end{tcolorbox}
+\end{deepdive}
 
-\subsection{Bước 0: Thu thập và trích xuất văn bản}
+\subsection{Bước 0: thu thập và trích xuất văn bản}
 \label{ssec:acquisition}
 
 Nguồn gần như luôn là \textbf{Common Crawl}. Quyết định đầu tiên -- và là quyết định đắt nhất cả pipeline -- là lấy định dạng nào:
@@ -26,16 +26,16 @@ Nguồn gần như luôn là \textbf{Common Crawl}. Quyết định đầu tiên
 
 RefinedWeb và FineWeb đều chọn WARC, và nêu lý do rõ ràng: \textbf{chất lượng trích xuất chi phối mọi thứ phía sau}, còn văn bản WET thì đo được là kém hơn. Nhưng đây là một quyết định nhân 10 đến 100 lần khối lượng tính toán -- xử lý hàng petabyte HTML thay vì hàng terabyte văn bản -- và nó được đưa ra ở \emph{bước số không}, trước khi bạn kịp biết gì về dữ liệu.
 
-Về bộ trích xuất: FineWeb dùng \textbf{Trafilatura} với chế độ ưu tiên độ chính xác; DCLM và Dolma 3 dùng \textbf{Resiliparse}. Hai phòng thí nghiệm hàng đầu, hai lựa chọn khác nhau, cùng công bố -- nên đừng coi đây là câu hỏi đã có đáp án. Đáng chú ý hơn: chuyển từ chế độ ưu tiên độ chính xác sang ưu tiên độ phủ của \emph{cùng một} bộ trích xuất thay đổi corpus của bạn nhiều hơn phần lớn các bộ lọc ở những bước sau.
+Về bộ trích xuất: FineWeb dùng \textbf{Trafilatura} với chế độ ưu tiên độ chính xác; DCLM và Dolma 3 dùng \textbf{Resiliparse}. Hai phòng thí nghiệm hàng đầu, hai lựa chọn khác nhau, cùng công bố -- nên đừng coi đây là câu hỏi đã có đáp án. Và chuyển từ chế độ ưu tiên độ chính xác sang ưu tiên độ phủ của \emph{cùng một} bộ trích xuất thay đổi corpus của bạn nhiều hơn phần lớn các bộ lọc ở những bước sau.
 
-\subsection{Bước 1: Lọc theo URL}
+\subsection{Bước 1: lọc theo URL}
 \label{ssec:url_filter}
 
 Lọc trước khi trích xuất, vì đây là bộ lọc rẻ nhất tính trên mỗi token tiết kiệm được: chỉ cần so chuỗi URL với danh sách chặn, không cần mở tài liệu.
 
 \paragraph{Và đây là chỗ đầu tiên một quyển sách tiếng Việt phải dừng lại.} Các danh sách chặn phổ biến được xây cho web tiếng Anh. Chúng nổi tiếng là chặn nhầm nội dung y khoa, giáo dục giới tính và nội dung LGBTQ+ hợp pháp. Nghiêm trọng hơn với chúng ta: một danh sách dựng cho tiếng Anh có thể \emph{âm thầm xóa sổ cả một ngôn ngữ} nếu các tên miền của ngôn ngữ đó tình cờ khớp mẫu. Với corpus tiếng Việt, một danh sách chặn lấy nguyên từ mạng về gần như vô dụng; nó cần được soạn lại tại chỗ.
 
-\subsection{Bước 2: Nhận dạng ngôn ngữ}
+\subsection{Bước 2: nhận dạng ngôn ngữ}
 \label{ssec:lid}
 
 Công cụ mặc định là \textbf{fastText} với mô hình \texttt{lid.176} (176 ngôn ngữ). FineWeb giữ tài liệu có điểm tiếng Anh $\ge 0{,}65$. Với ngôn ngữ ít tài nguyên, \textbf{GlotLID} (hơn 2000 ngôn ngữ) là lựa chọn tốt hơn hẳn.
@@ -48,7 +48,7 @@ Bốn điều cần biết:
 	\item \textbf{Ngôn ngữ không đồng nghĩa với chữ viết.} FineWeb2 nhóm theo cặp (ngôn ngữ, chữ viết) theo chuẩn ISO 639-3 vì cùng một ngôn ngữ có thể xuất hiện ở nhiều hệ chữ.
 \end{enumerate}
 
-\subsection{Bước 3: Lọc chất lượng}
+\subsection{Bước 3: lọc chất lượng}
 \label{ssec:quality_filter}
 
 Hai họ khác hẳn nhau, và một pipeline hiện đại dùng \emph{cả hai, theo đúng thứ tự này}.
@@ -69,7 +69,7 @@ Cộng lại khoảng \textbf{22\% token}. Ba bộ lọc này sống sót qua m�
 
 \paragraph{Cách chọn ngưỡng -- đây mới là thứ đáng học.} FineWeb không đoán. Quy trình của họ: tính hơn 50 chỉ số trên tập được giữ và tập bị loại $\rightarrow$ xếp hạng theo \textbf{khoảng cách Wasserstein} giữa hai phân phối $\rightarrow$ đọc ngưỡng từ biểu đồ phân bố $\rightarrow$ \textbf{kiểm chứng bằng các lần huấn luyện nhỏ} (28 tỷ token trên một crawl) $\rightarrow$ chỉ giữ bộ lọc nào cải thiện điểm tổng hợp. \textbf{Ba trong mười bảy ứng viên sống sót.}
 
-\begin{tcolorbox}[title={Mọi bộ lọc heuristic đều được tinh chỉnh ngầm cho tiếng Anh}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{pitfall}{Mọi bộ lọc heuristic đều được tinh chỉnh ngầm cho tiếng Anh}
 Đây là điểm mà một quyển sách tiếng Anh không cần viết, còn quyển này thì bắt buộc.
 
 Hãy đọc lại danh sách trên và hỏi từng quy tắc có nghĩa gì với tiếng Việt:
@@ -80,7 +80,7 @@ Hãy đọc lại danh sách trên và hỏi từng quy tắc có nghĩa gì v�
 	\item Bộ lọc $n$-gram lặp đếm theo đơn vị nào? Âm tiết hay từ? Hai lựa chọn cho hai kết quả khác nhau.
 \end{itemize}
 \textbf{Kết luận thực hành: với corpus tiếng Việt, hãy coi mọi ngưỡng trong các công thức công bố là giá trị khởi đầu cần đo lại, không phải hằng số.} Và hãy đo bằng đúng phương pháp của FineWeb -- so phân phối giữa tập giữ và tập loại, rồi kiểm chứng bằng một lần huấn luyện nhỏ -- chứ đừng chỉnh bằng cảm giác.
-\end{tcolorbox}
+\end{pitfall}
 
 \subsubsection{3b. Bộ phân loại chất lượng}
 
@@ -99,7 +99,7 @@ Ba điều phải nói với người đọc:
 
 \paragraph{Bạn đang nhập khẩu định kiến của người chấm làm định nghĩa chất lượng.} “Giá trị giáo dục ở mức tiểu học đến trung học cơ sở” là một quan niệm rất cụ thể và hoàn toàn có thể tranh luận. Nó là lý do FineWeb-Edu thắng trên MMLU và ARC, và cũng là lý do nó \emph{không} tốt hơn một cách đồng đều ở mọi mặt.
 
-\subsection{Bước 4: Khử trùng lặp}
+\subsection{Bước 4: khử trùng lặp}
 \label{ssec:dedup}
 
 Đây là bước giảm dữ liệu lớn nhất, và là bước có nhiều cạm bẫy nhất.
@@ -145,7 +145,7 @@ Mọi cài đặt MinHash nghiêm túc đều hội tụ về cùng bốn pha: \
 
 \noindent Về khử trùng lặp chuỗi con: nó đắt và khắc nghiệt nhất về vận hành. Mảng hậu tố ở quy mô corpus cỡ C4 cần khoảng 600 GB RAM và hơn 1 TB đĩa; bản cài đặt tham chiếu của Google đã bị lưu trữ đóng băng từ 2025 nhưng vẫn là phụ thuộc của các công cụ khác; và chính tác giả khuyên \textbf{chạy hai lượt, vì lượt đầu tạo ra trùng lặp mới}. Nó cũng để lại những tài liệu bị đục lỗ ở giữa -- và bạn phải tự quyết định một tài liệu như vậy còn là tài liệu hay không.
 
-\subsection{Bước 5: Gỡ thông tin cá nhân}
+\subsection{Bước 5: gỡ thông tin cá nhân}
 \label{ssec:pii}
 
 Thang công cụ, theo chi phí tăng dần: \textbf{regex} cho email và địa chỉ IP $\rightarrow$ \textbf{Presidio} (nhận dạng thực thể cộng các bộ nhận mẫu) $\rightarrow$ \textbf{quét bí mật} cho mã nguồn $\rightarrow$ \textbf{dùng LLM làm giám khảo}, hướng mà Dolma 3 đã đi vào 2026.
@@ -156,10 +156,10 @@ Thang công cụ, theo chi phí tăng dần: \textbf{regex} cho email và địa
 
 \paragraph{Đừng nhầm bước này với tuân thủ pháp lý.} Chính tài liệu của Presidio ghi rõ không có gì bảo đảm nó tìm được hết. Mọi corpus lớn, kể cả FineWeb, đều kèm theo một biểu mẫu để người ngoài yêu cầu gỡ thông tin của họ -- đó là sự thừa nhận rằng bước này chỉ là nỗ lực tốt nhất có thể. \textbf{Tuân thủ pháp lý không đạt được bằng một biểu thức chính quy.}
 
-\subsection{Bước 6: Khử nhiễm benchmark}
+\subsection{Bước 6: khử nhiễm benchmark}
 \label{ssec:decontamination}
 
-Mục tiêu: đảm bảo tập kiểm thử không nằm trong tập huấn luyện. Kỹ thuật kinh điển là \textbf{so khớp $n$-gram} -- phụ lục của bài GPT-3 dùng $n$ từ 8 đến 13 tùy dataset; thư viện \texttt{lm-evaluation-harness} chốt luôn $n=13$ “cho đơn giản”.
+Mục tiêu: đảm bảo tập kiểm thử không nằm trong tập huấn luyện. Kỹ thuật kinh điển là \textbf{so khớp $n$-gram} -- phụ lục của bài GPT-3 dùng $n$ từ 8 đến 13 tùy dataset; thư viện \texttt{lm-\allowbreak evaluation-\allowbreak harness} chốt luôn $n=13$ “cho đơn giản”.
 
 Ba điều cần nói thẳng:
 \begin{enumerate}
@@ -168,11 +168,11 @@ Ba điều cần nói thẳng:
 	\item \textbf{Và cách khắc phục hiển nhiên cũng đã được chứng minh là thất bại.} Các thí nghiệm có kiểm soát cho thấy quy trình “phát hiện rồi lọc” sụp đổ ở mức nhiễm vừa phải, vì sai số của chính bộ phát hiện lấn át tín hiệu.
 \end{enumerate}
 
-\begin{tcolorbox}[title={Hệ quả cho người đọc quyển sách này}, colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries]
+\begin{keyidea}{Hệ quả cho người đọc quyển sách này}
 Nếu khử nhiễm không đáng tin, thì cách duy nhất để biết mô hình của bạn thật sự tốt là \textbf{tự dựng tập kiểm thử của riêng mình}, từ dữ liệu của chính bạn, tốt nhất là dữ liệu có \emph{sau} thời điểm cắt huấn luyện của mô hình. Đây là lập luận mạnh nhất chống lại thói quen báo cáo điểm benchmark công khai -- và nó sẽ quay lại ở chương đánh giá.
-\end{tcolorbox}
+\end{keyidea}
 
-\subsection{Bước 7: Tokenize, xáo trộn và đóng gói}
+\subsection{Bước 7: tokenize, xáo trộn và đóng gói}
 \label{ssec:tokenize_pack}
 
 Bước cuối biến văn bản thành các mảnh nhị phân ánh xạ được vào bộ nhớ. Bốn điều dễ làm sai:
@@ -184,7 +184,7 @@ Bước cuối biến văn bản thành các mảnh nhị phân ánh xạ đư�
 	\item \textbf{Tokenize là điểm không quay lại.} Nó đóng cứng bộ tokenizer, quy ước token kết thúc và độ dài chuỗi. Đổi bất kỳ thứ nào trong ba thứ đó đồng nghĩa với tokenize lại từ đầu -- nên \textbf{hãy giữ lại corpus văn bản đã lọc, đừng chỉ giữ token}.
 \end{enumerate}
 
-\begin{tcolorbox}[title={Độ phì tokenizer: cái thuế mà người đọc tiếng Việt phải trả}, colback=red!5!white, colframe=red!75!black, fonttitle=\bfseries]
+\begin{pitfall}{Độ phì tokenizer: chi phí thêm mà tiếng Việt phải trả}
 Cùng một đoạn văn, dưới một bộ tokenizer BPE huấn luyện chủ yếu trên tiếng Anh, có thể tốn \textbf{gấp rưỡi tới gấp đôi} số token so với tiếng Anh. Hệ quả dây chuyền:
 \begin{itemize}
 	\item Ngân sách token huấn luyện của bạn thực chất nhỏ hơn con số danh nghĩa.
@@ -192,6 +192,6 @@ Cùng một đoạn văn, dưới một bộ tokenizer BPE huấn luyện chủ 
 	\item Chi phí gọi API tính theo token, nên bạn trả nhiều tiền hơn cho cùng một nội dung.
 \end{itemize}
 Đây là đại lượng đáng để bạn \textbf{tự đo} trên dữ liệu của mình -- chỉ vài dòng code -- trước khi lập kế hoạch ngân sách hay chọn mô hình. Và nó cũng nhắc một điều khi đọc báo cáo: \textbf{số lượng token chỉ có nghĩa kèm theo tên tokenizer}. Con số “15 nghìn tỷ token” của FineWeb là token GPT-2; so nó với một con số đo bằng tokenizer khác là vô nghĩa.
-\end{tcolorbox}
+\end{pitfall}
 
-\paragraph{Và một thói quen nhỏ có giá trị lớn.} Hãy \textbf{đếm token trước và sau mỗi bước}. Tỷ lệ hao hụt từng bước là chẩn đoán thật sự duy nhất bạn có về một pipeline mà bạn không thể đọc bằng mắt. Nếu một bộ lọc đáng lẽ cắt 10\% mà thực tế cắt 60\%, bạn muốn biết điều đó ngay, chứ không phải sau khi đã huấn luyện xong.
+\paragraph{Một thói quen nên có.} Hãy \textbf{đếm token trước và sau mỗi bước}. Tỷ lệ hao hụt từng bước là chẩn đoán thật sự duy nhất bạn có về một pipeline mà bạn không thể đọc bằng mắt. Nếu một bộ lọc đáng lẽ cắt 10\% mà thực tế cắt 60\%, bạn muốn biết điều đó ngay, chứ không phải sau khi đã huấn luyện xong.

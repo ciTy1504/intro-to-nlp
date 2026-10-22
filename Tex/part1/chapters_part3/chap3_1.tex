@@ -2,74 +2,63 @@
 % File: chapters_part1/chap3_1.tex
 % Nội dung cho Phần 3.1: Word Embeddings
 
-\section{Word Embeddings: Cuộc cách mạng Biểu diễn Đầu tiên}
+\section{Word embeddings: biểu diễn từ bằng vector dày đặc}
 \label{sec:word_embeddings}
 
-Các phương pháp biểu diễn dựa trên tần suất như BoW hay TF-IDF, mặc dù hữu ích, lại mắc phải hai nhược điểm chí mạng:
+Các phương pháp biểu diễn dựa trên tần suất như BoW hay TF-IDF, mặc dù hữu ích, vẫn có hai nhược điểm lớn:
 \begin{enumerate}
     \item \textbf{Độ thưa thớt (Sparsity):} Chúng tạo ra các vector có số chiều khổng lồ và hầu hết là số 0.
     \item \textbf{Thiếu vắng ngữ nghĩa (Lack of Semantics):} Các vector này không hề nắm bắt được mối quan hệ ngữ nghĩa giữa các từ. Đối với BoW, hai từ “tốt” và “tuyệt vời” là hoàn toàn khác biệt, không có mối liên hệ nào.
 \end{enumerate}
 
-\textbf{Word Embeddings} (Nhúng từ) ra đời để giải quyết triệt để hai vấn đề trên. Đây là một tập hợp các kỹ thuật học máy có mục tiêu biểu diễn mỗi từ trong từ vựng bằng một \textbf{vector dày đặc (dense vector)} có số chiều tương đối thấp (thường từ 50 đến 300 chiều). Quan trọng hơn, các vector này được học sao cho chúng có thể nắm bắt được các mối quan hệ ngữ nghĩa và cú pháp giữa các từ.
+\textbf{Word embeddings} (nhúng từ) ra đời để giải quyết hai vấn đề trên. Đây là một tập hợp các kỹ thuật học máy nhằm biểu diễn mỗi từ trong từ vựng bằng một \textbf{vector dày đặc (dense vector)} có số chiều tương đối thấp (thường từ 50 đến 300 chiều). Các vector này được học sao cho chúng nắm bắt được các mối quan hệ ngữ nghĩa và cú pháp giữa các từ.
 
-Ý tưởng nền tảng của Word Embeddings dựa trên \textbf{Giả thuyết Phân bố (Distributional Hypothesis)} của Firth (1957), được tóm gọn trong câu nói nổi tiếng:
-\begin{tcolorbox}[
-    title=Giả thuyết Phân bố,
-    colback=yellow!10!white, colframe=yellow!50!black, fonttitle=\bfseries
-]
+Ý tưởng nền tảng của word embeddings là \textbf{giả thuyết phân bố (distributional hypothesis)} của Firth (1957):
+\begin{keyidea}{Giả thuyết phân bố}
 “You shall know a word by the company it keeps.” (Bạn có thể hiểu một từ qua những từ thường đi cùng với nó.)
-\end{tcolorbox}
-Nói cách khác, những từ xuất hiện trong các ngữ cảnh tương tự nhau thì có khả năng mang ý nghĩa tương tự nhau. Word Embeddings là hiện thực hóa của giả thuyết này bằng các mô hình mạng nơ-ron.
+\end{keyidea}
+Nói cách khác, những từ xuất hiện trong các ngữ cảnh tương tự nhau thì có khả năng mang ý nghĩa tương tự nhau. Word embeddings hiện thực hóa giả thuyết này bằng các mô hình mạng nơ-ron.
 
 \subsection{Lý thuyết Word2Vec: CBOW \& Skip-gram}
 \label{ssec:word2vec}
-Được giới thiệu bởi Tomas Mikolov và các cộng sự tại Google vào năm 2013 \cite{mikolov2013efficient, mikolov2013distributed}, Word2Vec không phải là một thuật toán duy nhất mà là một bộ công cụ bao gồm hai kiến trúc mô hình chính: \textbf{CBOW (Continuous Bag-of-Words)} và \textbf{Skip-gram}. Word2Vec đã tạo ra một cuộc cách mạng trong lĩnh vực Xử lý Ngôn ngữ Tự nhiên (NLP), dân chủ hóa việc sử dụng \textit{word embeddings} nhờ vào hiệu quả tính toán và chất lượng của vector biểu diễn mà nó tạo ra.
+Được giới thiệu bởi Tomas Mikolov và các cộng sự tại Google vào năm 2013 \cite{mikolov2013efficient, mikolov2013distributed}, Word2Vec không phải là một thuật toán duy nhất mà là một bộ công cụ bao gồm hai kiến trúc mô hình chính: \textbf{CBOW (Continuous Bag-of-Words)} và \textbf{Skip-gram}. Nhờ chi phí tính toán thấp và chất lượng của vector thu được, Word2Vec khiến \textit{word embeddings} trở nên phổ dụng trong xử lý ngôn ngữ tự nhiên (NLP).
 
-\subsubsection{Kiến trúc chung: Mạng Nơ-ron Nông}
+\subsubsection{Kiến trúc chung: mạng nơ-ron nông}
 \label{sssec:w2v_architecture}
-Cốt lõi của Word2Vec là một ý tưởng đơn giản đến bất ngờ: thay vì xây dựng một mô hình ngôn ngữ phức tạp, chúng ta thiết kế một nhiệm vụ “giả” (fake task) và trong quá trình huấn luyện mô hình để giải quyết nhiệm vụ đó, chúng ta sẽ học được các vector từ chất lượng cao.
+Cốt lõi của Word2Vec là một ý tưởng đơn giản: thay vì xây dựng một mô hình ngôn ngữ phức tạp, chúng ta thiết kế một nhiệm vụ “giả” (fake task), và trong quá trình huấn luyện mô hình để giải quyết nhiệm vụ đó, chúng ta học được các vector từ chất lượng cao.
 
-\paragraph{Nhiệm vụ “giả” so với Mô hình Ngôn ngữ “thật”}
+\paragraph{Nhiệm vụ “giả” so với mô hình ngôn ngữ “thật”}
 Gọi là “giả” vì mục tiêu cuối cùng của chúng ta không phải là giải quyết tốt nhiệm vụ dự đoán từ, mà là học được ma trận trọng số \textbf{W}. Một mô hình ngôn ngữ “thật” (true language model), chẳng hạn như các mô hình dựa trên RNN, sẽ có mục tiêu phức tạp hơn nhiều: dự đoán từ tiếp theo dựa trên toàn bộ lịch sử các từ trước đó ($P(w_t | w_1, ..., w_{t-1})$). Việc này đòi hỏi kiến trúc sâu và phức tạp hơn.
 
-Ngược lại, Word2Vec đơn giản hóa triệt để vấn đề: nó chỉ dự đoán từ dựa trên một cửa sổ ngữ cảnh cục bộ nhỏ. Sự đơn giản hóa này chính là chìa khóa thành công: nó cho phép mô hình xử lý hiệu quả một lượng dữ liệu văn bản khổng lồ. Gradient từ nhiệm vụ đơn giản này, tuy không hoàn hảo cho việc dự đoán ngôn ngữ, lại cực kỳ hiệu quả trong việc định hình một không gian vector mà ở đó các từ có ngữ cảnh tương tự được đặt gần nhau.
+Ngược lại, Word2Vec chỉ dự đoán từ dựa trên một cửa sổ ngữ cảnh cục bộ nhỏ. Nhờ đơn giản hóa như vậy, mô hình xử lý được một lượng dữ liệu văn bản khổng lồ. Gradient từ nhiệm vụ đơn giản này, tuy không hoàn hảo cho việc dự đoán ngôn ngữ, lại rất hiệu quả trong việc định hình một không gian vector mà ở đó các từ có ngữ cảnh tương tự được đặt gần nhau.
 
 Cả CBOW và Skip-gram đều sử dụng kiến trúc mạng nơ-ron “nông” (shallow) chỉ với một lớp ẩn duy nhất. Giả sử từ vựng của chúng ta có \textbf{V} từ độc nhất và chúng ta muốn học các vector biểu diễn có \textbf{N} chiều (embedding dimension).
 
 \begin{itemize}
-    \item \textbf{Lớp vào (Input Layer):} Đầu vào là một vector \textit{one-hot} có kích thước $1 \times V$, đại diện cho một từ.
-    \item \textbf{Lớp ẩn (Hidden Layer):} Không có hàm kích hoạt. Điểm mấu chốt nằm ở ma trận trọng số \textbf{W} kết nối lớp vào và lớp ẩn. Ma trận này có kích thước $V \times N$.
-    \item \textbf{Lớp ra (Output Layer):} Ma trận trọng số \textbf{W'} kết nối lớp ẩn và lớp ra, có kích thước $N \times V$.
+    \item \textbf{Lớp vào (input layer):} Đầu vào là một vector \textit{one-hot} có kích thước $1 \times V$, đại diện cho một từ.
+    \item \textbf{Lớp ẩn (hidden layer):} Không có hàm kích hoạt. Ma trận trọng số \textbf{W} kết nối lớp vào và lớp ẩn có kích thước $V \times N$.
+    \item \textbf{Lớp ra (output layer):} Ma trận trọng số \textbf{W'} kết nối lớp ẩn và lớp ra, có kích thước $N \times V$.
 \end{itemize}
 
-\begin{tcolorbox}[
-    title=Ghi chú về Thiết kế Kiến trúc,
-    colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries
-]
+\begin{deepdive}{Vì sao lớp ẩn không có hàm kích hoạt, và vì sao cần hai ma trận trọng số}
 \textbf{1. Tại sao không có hàm kích hoạt ở lớp ẩn?} \\
-Lớp ẩn của Word2Vec thực chất là một lớp tuyến tính (linear projection). Việc loại bỏ hàm phi tuyến (như ReLU hay Tanh) là một lựa chọn có chủ ý. Mục đích là để các mối quan hệ ngữ nghĩa (ví dụ: các phép loại suy -- analogies) có thể được biểu diễn dưới dạng các phép toán vector tuyến tính đơn giản (ví dụ: $\vec{v}_{\text{king}} - \vec{v}_{\text{man}} + \vec{v}_{\text{woman}} \approx \vec{v}_{\text{queen}}$). Nếu thêm hàm phi tuyến, cấu trúc tuyến tính này sẽ bị phá vỡ, làm cho các vector học được khó diễn giải và sử dụng hơn theo cách này. Lớp ẩn chỉ đóng vai trò như một bảng tra cứu (lookup table) để lấy ra vector embedding.
+Lớp ẩn của Word2Vec thực chất là một lớp tuyến tính (linear projection). Việc loại bỏ hàm phi tuyến (như ReLU hay Tanh) là một lựa chọn có chủ ý. Mục đích là để các mối quan hệ ngữ nghĩa (ví dụ: các phép loại suy -- analogies) có thể được biểu diễn dưới dạng các phép toán vector tuyến tính đơn giản (ví dụ: $\vec{v}_{\text{king}} - \vec{v}_{\text{man}} + \vec{v}_{\text{woman}} \approx \vec{v}_{\text{queen}}$). Nếu thêm hàm phi tuyến, cấu trúc tuyến tính này sẽ bị phá vỡ, làm cho các vector học được khó diễn giải và sử dụng hơn theo cách này. Lớp ẩn chỉ là một bảng tra cứu (lookup table) để lấy ra vector embedding.
 
 \textbf{2. Tại sao có hai ma trận trọng số W và W'?} \\
-Mô hình có hai bộ vector cho mỗi từ:
-\begin{itemize}
-    \item \textbf{Input vectors (trong W):} Khi từ được dùng làm đầu vào (từ trung tâm trong Skip-gram, từ ngữ cảnh trong CBOW).
-    \item \textbf{Output vectors (trong W'):} Khi từ được dùng làm mục tiêu dự đoán (từ ngữ cảnh trong Skip-gram, từ trung tâm trong CBOW).
-\end{itemize}
-Về mặt lý thuyết, việc có hai vai trò riêng biệt cho phép mô hình linh hoạt hơn. Sau khi huấn luyện xong, chúng ta thường chỉ sử dụng ma trận đầu vào \textbf{W} làm embedding cuối cùng. Đây là một quy ước phổ biến và cho kết quả tốt trong thực tế. Một số nghiên cứu cũng đề xuất các cách kết hợp khác (ví dụ, lấy trung bình cộng của hai vector tương ứng từ \textbf{W} và \textbf{W'}), nhưng chỉ dùng \textbf{W} vẫn là phương pháp tiêu chuẩn.
-\end{tcolorbox}
+Mô hình có hai bộ vector cho mỗi từ: vector đầu vào (trong \textbf{W}) dùng khi từ đóng vai trò đầu vào, tức từ trung tâm trong Skip-gram và từ ngữ cảnh trong CBOW; vector đầu ra (trong \textbf{W'}) dùng khi từ là mục tiêu dự đoán, tức từ ngữ cảnh trong Skip-gram và từ trung tâm trong CBOW. Hai vai trò riêng biệt cho phép mô hình linh hoạt hơn. Sau khi huấn luyện xong, chúng ta thường chỉ sử dụng ma trận đầu vào \textbf{W} làm embedding cuối cùng. Đây là một quy ước phổ biến và cho kết quả tốt trong thực tế. Một số nghiên cứu cũng đề xuất các cách kết hợp khác (ví dụ, lấy trung bình cộng của hai vector tương ứng từ \textbf{W} và \textbf{W'}), nhưng chỉ dùng \textbf{W} vẫn là phương pháp tiêu chuẩn.
+\end{deepdive}
 
-Điều quan trọng là, chúng ta không thực sự quan tâm đến kết quả dự đoán của mạng. Mục tiêu cuối cùng của chúng ta là học được ma trận trọng số \textbf{W}. Sau khi huấn luyện, mỗi hàng của ma trận \textbf{W} chính là vector embedding N-chiều cho một từ tương ứng trong từ vựng. Do đó, \textbf{W} còn được gọi là \textbf{ma trận embedding (embedding matrix)}.
+Chúng ta không thực sự quan tâm đến kết quả dự đoán của mạng; mục tiêu cuối cùng là học được ma trận trọng số \textbf{W}. Sau khi huấn luyện, mỗi hàng của ma trận \textbf{W} chính là vector embedding N-chiều cho một từ tương ứng trong từ vựng. Do đó, \textbf{W} còn được gọi là \textbf{ma trận embedding (embedding matrix)}.
 
 \begin{center}
-    \includegraphics[width=0.8\textwidth]{word2vec_architecture.png}
+    \bookimage[0.8\textwidth]{word2vec_architecture}{Sơ đồ ba lớp: lớp vào là vector one-hot kích thước $1 \times V$, nối với lớp ẩn $N$ chiều qua ma trận $W$ kích thước $V \times N$, rồi nối với lớp ra kích thước $V$ qua ma trận $W'$ kích thước $N \times V$. Một mũi tên làm nổi bật hàng của $W$ được vector one-hot chọn ra, chính là vector embedding của từ.}
     \captionof{figure}{Kiến trúc chung của Word2Vec. Khi nhân vector one-hot của một từ với ma trận $W$, thực chất chúng ta đang “chọn” ra hàng tương ứng với từ đó, chính là vector embedding của nó. Ma trận $W$ là mục tiêu chúng ta cần học.}
     \label{fig:word2vec_architecture}
 \end{center}
 
 \subsubsection{Mô hình CBOW (Continuous Bag-of-Words)}
 \paragraph{Tư duy cốt lõi}
-Mô hình CBOW hoạt động dựa trên giả định: “Một từ có thể được dự đoán bởi các từ xung quanh nó”. Do đó, CBOW cố gắng \textbf{dự đoán một từ trung tâm (center word) dựa vào các từ ngữ cảnh (context words)}.
+Mô hình CBOW hoạt động dựa trên giả định: “Một từ có thể được dự đoán bởi các từ xung quanh nó”. Do đó, CBOW dự đoán một từ trung tâm (center word) dựa vào các từ ngữ cảnh (context words).
 
 Ví dụ, trong câu “chú mèo [ngồi] trên chiếc chiếu” và cửa sổ ngữ cảnh là 2, CBOW sẽ lấy các từ ngữ cảnh \texttt{\{"chú", "mèo", "trên", "chiếc"\}} để dự đoán từ trung tâm là \texttt{\{"ngồi"\}}.
 
@@ -84,16 +73,13 @@ Ví dụ, trong câu “chú mèo [ngồi] trên chiếc chiếu” và cửa s�
 \end{enumerate}
 
 \paragraph{Phân tích lựa chọn thiết kế của CBOW}
-Việc lấy trung bình các vector ngữ cảnh là một lựa chọn thiết kế vì sự đơn giản và hiệu quả tính toán. Nó không cần tham số nào để học và có thể được tính rất nhanh. Tuy nhiên, lựa chọn này có hai hệ quả quan trọng:
-\begin{itemize}
-    \item \textbf{Mất thông tin thứ tự:} CBOW không phân biệt được hai câu có cùng các từ ngữ cảnh nhưng khác trật tự. Trong nhiều tác vụ, việc mất thông tin cú pháp này là một hạn chế đáng kể.
-    \item \textbf{“Lu mờ” từ hiếm:} Khi lấy trung bình, đóng góp của một vector từ hiếm có thể bị “lấn át” bởi các vector của các từ ngữ cảnh phổ biến hơn. Đây là lý do CBOW thường hoạt động kém hơn Skip-gram đối với các từ hiếm.
-\end{itemize}
-Các phương pháp phức tạp hơn như lấy trung bình có trọng số (dựa trên khoảng cách tới từ trung tâm) hoặc thậm chí dùng một cơ chế attention đơn giản có thể được xem xét, nhưng chúng sẽ làm tăng độ phức tạp và đi ngược lại triết lý “đơn giản, nhanh” của Word2Vec.
+Việc lấy trung bình các vector ngữ cảnh được chọn vì sự đơn giản và hiệu quả tính toán: nó không cần tham số nào để học và tính rất nhanh. Bù lại, cách làm này có hai hệ quả. Thứ nhất, CBOW mất thông tin thứ tự nên không phân biệt được hai câu có cùng các từ ngữ cảnh nhưng khác trật tự; trong nhiều tác vụ, mất thông tin cú pháp là một hạn chế đáng kể. Thứ hai, khi lấy trung bình, đóng góp của một vector từ hiếm có thể bị lấn át bởi các vector của các từ ngữ cảnh phổ biến hơn, và đó là lý do CBOW thường hoạt động kém hơn Skip-gram đối với các từ hiếm.
+
+Có thể xem xét các phương pháp phức tạp hơn như lấy trung bình có trọng số (dựa trên khoảng cách tới từ trung tâm) hoặc một cơ chế attention đơn giản, nhưng chúng làm tăng độ phức tạp và đi ngược lại chủ trương “đơn giản, nhanh” của Word2Vec.
 
 \subsubsection{Mô hình Skip-gram}
 \paragraph{Tư duy cốt lõi}
-Skip-gram đảo ngược lại nhiệm vụ của CBOW. Nó hoạt động dựa trên giả định: “Một từ có thể cho biết những từ nào sẽ xuất hiện xung quanh nó”. Do đó, Skip-gram cố gắng \textbf{dự đoán các từ ngữ cảnh dựa vào một từ trung tâm}.
+Skip-gram đảo ngược lại nhiệm vụ của CBOW. Nó hoạt động dựa trên giả định: “Một từ có thể cho biết những từ nào sẽ xuất hiện xung quanh nó”. Do đó, Skip-gram dự đoán các từ ngữ cảnh dựa vào một từ trung tâm.
 
 Ví dụ, với cùng câu trên, Skip-gram sẽ lấy từ trung tâm \texttt{\{"ngồi"\}} để cố gắng dự đoán từng từ trong tập ngữ cảnh \texttt{\{"chú", "mèo", "trên", "chiếc"\}}.
 
@@ -103,11 +89,11 @@ Khác với CBOW, Skip-gram không gộp ngữ cảnh lại. Thay vào đó, nó
     \item \textbf{Đầu vào:} Lấy vector one-hot của từ trung tâm (ví dụ: \texttt{ngồi}).
     \item \textbf{Lấy vector embedding:} Lấy ra vector embedding $\mathbf{v}_{\text{center}}$ của từ trung tâm từ ma trận \textbf{W}.
     \item \textbf{Dự đoán:} Vector $\mathbf{v}_{\text{center}}$ được đưa thẳng đến lớp ra (nhân với \textbf{W'} và qua hàm softmax) để tạo ra một vector xác suất $\hat{\mathbf{y}}$.
-    \item \textbf{Huấn luyện:} Quá trình này được lặp lại cho \textbf{từng từ trong ngữ cảnh}. Với mỗi cặp (\texttt{từ trung tâm}, \texttt{từ ngữ cảnh}), một hàm mất mát \textbf{Cross-Entropy} được tính toán giữa dự đoán $\hat{\mathbf{y}}$ và vector one-hot của từ ngữ cảnh thực tế. Tổng các lỗi từ tất cả các cặp được sử dụng để cập nhật trọng số qua backpropagation. Điều này giúp Skip-gram học được các biểu diễn tinh vi hơn, đặc biệt cho các từ hiếm, nhưng cũng tốn nhiều thời gian huấn luyện hơn.
+    \item \textbf{Huấn luyện:} Quá trình này được lặp lại cho từng từ trong ngữ cảnh. Với mỗi cặp (\texttt{từ trung tâm}, \texttt{từ ngữ cảnh}), một hàm mất mát \textbf{Cross-Entropy} được tính toán giữa dự đoán $\hat{\mathbf{y}}$ và vector one-hot của từ ngữ cảnh thực tế. Tổng các lỗi từ tất cả các cặp được sử dụng để cập nhật trọng số qua backpropagation. Nhờ vậy Skip-gram học được các biểu diễn tinh vi hơn, đặc biệt cho các từ hiếm, nhưng cũng tốn nhiều thời gian huấn luyện hơn.
 \end{enumerate}
 
 \begin{center}
-    \includegraphics[width=0.9\textwidth]{cbow_skipgram_diagram.png}
+    \bookimage[0.9\textwidth]{cbow_skipgram_diagram}{Hai sơ đồ đặt cạnh nhau. Bên CBOW: nhiều từ ngữ cảnh cùng đi vào một lớp tổng hợp (lấy trung bình) rồi chỉ ra một từ trung tâm. Bên Skip-gram: một từ trung tâm ở giữa, các mũi tên tỏa ra tới từng từ ngữ cảnh, mỗi mũi tên là một cặp huấn luyện riêng.}
     \captionof{figure}{So sánh trực quan giữa CBOW (tổng hợp ngữ cảnh để dự đoán 1 từ) và Skip-gram (dùng 1 từ để dự đoán nhiều từ trong ngữ cảnh, tạo thành các cặp huấn luyện riêng biệt).}
     \label{fig:cbow_skipgram_diagram}
 \end{center}
@@ -148,42 +134,42 @@ Trong thực tế, độ dài có thể dao động, nhưng \emph{hướng} mớ
 
 \paragraph{Gần nghĩa, khác nghĩa, và trái nghĩa.}
 \begin{itemize}
-    \item \textbf{Gần nghĩa $\Rightarrow$ gần nhau:} nếu hai từ thường xuất hiện với \emph{cùng loại ngữ cảnh}, các cập nhật kéo chúng về \emph{đồng hướng} $\Rightarrow$ cosine cao.
-    \item \textbf{Khác nghĩa $\Rightarrow$ xa nhau:} nếu hầu như không chia sẻ ngữ cảnh, vector bị các cập nhật khác hướng $\Rightarrow$ cosine thấp.
-    \item \textbf{Trái nghĩa vẫn có thể gần nhau:} các cặp như \textit{nóng}--\textit{lạnh} xuất hiện trong \emph{ngữ cảnh hình thức} tương tự (``thời tiết \underline{nóng}/\underline{lạnh}'') nên vẫn bị kéo về gần nhau; Word2Vec không mô hình hoá \emph{độ phân cực nghĩa}. Muốn phân biệt polarity thường cần thêm tín hiệu (sentiment, lexicon, hoặc mô hình ngôn ngữ ngữ cảnh hoá).
+    \item \textbf{Gần nghĩa $\Rightarrow$ gần nhau:} Nếu hai từ thường xuất hiện với \emph{cùng loại ngữ cảnh}, các cập nhật kéo chúng về \emph{đồng hướng} $\Rightarrow$ cosine cao.
+    \item \textbf{Khác nghĩa $\Rightarrow$ xa nhau:} Nếu hầu như không chia sẻ ngữ cảnh, vector bị các cập nhật khác hướng $\Rightarrow$ cosine thấp.
+    \item \textbf{Trái nghĩa vẫn có thể gần nhau:} Các cặp như \textit{nóng}--\textit{lạnh} xuất hiện trong \emph{ngữ cảnh hình thức} tương tự (``thời tiết \underline{nóng}/\underline{lạnh}'') nên vẫn bị kéo về gần nhau; Word2Vec không mô hình hoá \emph{độ phân cực nghĩa}. Muốn phân biệt polarity thường cần thêm tín hiệu (sentiment, lexicon, hoặc mô hình ngôn ngữ ngữ cảnh hoá).
 \end{itemize}
 
-\paragraph{Liên hệ lý thuyết: SGNS và Phân rã Ma trận PMI}
-Một khám phá lý thuyết quan trọng của Levy và Goldberg \cite{levy2014neural} đã chỉ ra rằng mục tiêu tối ưu của Skip-gram với Negative Sampling (SGNS) thực chất tương đương với việc \textbf{phân rã ngầm định (implicit factorization)} một ma trận đặc biệt.  Cụ thể, hàm mục tiêu của SGNS hội tụ về việc tối ưu hóa sao cho:
+\paragraph{Liên hệ lý thuyết: SGNS và phân rã ma trận PMI}
+Levy và Goldberg \cite{levy2014neural} chỉ ra rằng mục tiêu tối ưu của Skip-gram với Negative Sampling (SGNS) thực chất tương đương với việc \textbf{phân rã ngầm định (implicit factorization)} một ma trận đặc biệt.  Cụ thể, hàm mục tiêu của SGNS hội tụ về việc tối ưu hóa sao cho:
 \[ \mathbf{w}_i^\top \mathbf{c}_j \approx \text{PMI}(w_i, c_j) - \log k \]
 trong đó $\mathbf{w}_i$ và $\mathbf{c}_j$ là các vector đầu vào và đầu ra, $k$ là số mẫu âm, và PMI (Pointwise Mutual Information) là một thước đo mức độ liên quan giữa hai từ:
 \[ \text{PMI}(w, c) = \log \frac{P(w, c)}{P(w)P(c)} \]
-Phát hiện này kết nối Word2Vec (một mô hình dự đoán, dựa trên mạng nơ-ron) với các phương pháp dựa trên đếm truyền thống (như LSA, GloVe) vốn trực tiếp phân rã ma trận đồng xuất hiện hoặc PMI. Nó cho thấy trực giác “kéo--đẩy” của SGNS không chỉ là một heuristic, mà là một cách hiệu quả để xấp xỉ một cấu trúc thống kê toàn cục của ngôn ngữ, làm sáng tỏ lý do tại sao các mối quan hệ ngữ nghĩa lại có thể được học một cách hiệu quả như vậy.
+Phát hiện này kết nối Word2Vec (một mô hình dự đoán, dựa trên mạng nơ-ron) với các phương pháp dựa trên đếm truyền thống (như LSA, GloVe) vốn trực tiếp phân rã ma trận đồng xuất hiện hoặc PMI. Nó cho thấy trực giác “kéo--đẩy” của SGNS không phải chỉ là một heuristic: đó là một cách xấp xỉ cấu trúc thống kê toàn cục của ngôn ngữ, và điều đó giải thích vì sao các mối quan hệ ngữ nghĩa được học hiệu quả như vậy.
 
 \paragraph{Hệ quả và giới hạn.}
 \begin{itemize}
     \item \textbf{Tổng quát hoá theo ngữ cảnh:} ``nghĩa'' trong Word2Vec chủ yếu là \emph{tương đồng ngữ cảnh} (contextual co-occurrence).
-    \item \textbf{Đa nghĩa:} một vector cho nhiều nghĩa sẽ trộn các ngữ cảnh (polysemy). Các mô hình \emph{ngữ cảnh hoá} (ELMo, BERT) khắc phục bằng vector phụ thuộc câu.
-    \item \textbf{Cosine là thước đo mặc định:} vì hướng là tín hiệu chính của ``ngữ nghĩa'' đã học qua $u^\top v$.
+    \item \textbf{Đa nghĩa:} Một vector cho nhiều nghĩa sẽ trộn các ngữ cảnh (polysemy). Các mô hình \emph{ngữ cảnh hoá} (ELMo, BERT) khắc phục bằng vector phụ thuộc câu.
+    \item \textbf{Cosine là thước đo mặc định:} Vì hướng là tín hiệu chính của ``ngữ nghĩa'' đã học qua $u^\top v$.
 \end{itemize}
 
-\begin{tcolorbox}[title=Trực giác ``kéo--đẩy'' trong SGNS, colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries]
-\textbf{Kéo:} cặp dương $(w,c)$ làm tăng $u_c^\top v_w$ $\Rightarrow$ $v_w$ tiến về hướng $u_c$. 
+\begin{keyidea}{Trực giác ``kéo--đẩy'' trong SGNS}
+\textbf{Kéo:} Cặp dương $(w,c)$ làm tăng $u_c^\top v_w$ $\Rightarrow$ $v_w$ tiến về hướng $u_c$. 
 \quad
-\textbf{Đẩy:} cặp âm $(w,n)$ làm giảm $u_n^\top v_w$ $\Rightarrow$ $v_w$ rời xa hướng $u_n$.
+\textbf{Đẩy:} Cặp âm $(w,n)$ làm giảm $u_n^\top v_w$ $\Rightarrow$ $v_w$ rời xa hướng $u_n$.
 \\[3pt]
 Lặp lại trên toàn corpora tạo ra cấu trúc không gian nơi \emph{các trường ngữ cảnh} được biểu diễn bằng \emph{hướng vector}; cosine đo độ tương đồng các trường ngữ cảnh đó.
-\end{tcolorbox}
+\end{keyidea}
 
 \subsubsection{Thách thức tính toán và các kỹ thuật tối ưu hóa}
-Cả hai mô hình đều đối mặt với một nút thắt cổ chai lớn: hàm \textbf{softmax} ở lớp ra. Việc tính toán mẫu số của hàm softmax đòi hỏi phải duyệt qua toàn bộ \textbf{V} từ trong từ vựng, cực kỳ tốn kém khi V có thể lên tới hàng triệu. Để giải quyết vấn đề này, hai kỹ thuật chính được đề xuất:
+Cả hai mô hình đều gặp một nút thắt cổ chai: hàm \textbf{softmax} ở lớp ra. Việc tính toán mẫu số của hàm softmax đòi hỏi phải duyệt qua toàn bộ \textbf{V} từ trong từ vựng, rất tốn kém khi V có thể lên tới hàng triệu. Để giải quyết vấn đề này, hai kỹ thuật chính được đề xuất:
 
-\paragraph{Subsampling và Cửa sổ ngữ cảnh động}
-Trước khi đi vào các kỹ thuật tối ưu hóa chính, có hai thủ thuật quan trọng khác giúp cải thiện chất lượng embedding và tăng tốc độ huấn luyện:
+\paragraph{Subsampling và cửa sổ ngữ cảnh động}
+Hai thủ thuật sau cải thiện chất lượng embedding và tăng tốc độ huấn luyện:
 \begin{itemize}
-    \item \textbf{Subsampling các từ thường xuyên:} Các từ xuất hiện rất thường xuyên (như “là”, “và”, “trong” trong tiếng Việt, hay “the”, “a” trong tiếng Anh) mang ít thông tin ngữ nghĩa đặc trưng. Chúng xuất hiện trong gần như mọi ngữ cảnh, do đó các cặp huấn luyện tạo ra từ chúng không giúp ích nhiều mà còn làm chậm quá trình huấn luyện. Subsampling là một kỹ thuật loại bỏ ngẫu nhiên các từ này trong quá trình tạo mẫu, với xác suất loại bỏ càng cao khi tần suất của từ càng lớn. Điều này giúp mô hình tập trung hơn vào các từ hiếm và quan trọng hơn.
-    
-    \item \textbf{Cửa sổ ngữ cảnh động (Dynamic Window):} Thay vì sử dụng một cửa sổ ngữ cảnh có kích thước cố định (ví dụ, luôn là 5), nhiều triển khai của Word2Vec sử dụng một kích thước cửa sổ động. Với mỗi từ trung tâm, một kích thước cửa sổ $C$ sẽ được chọn ngẫu nhiên trong khoảng từ 1 đến kích thước tối đa cho phép. Kỹ thuật này có tác dụng ngầm định là gán trọng số cao hơn cho các từ ngữ cảnh ở gần từ trung tâm, vì chúng có xác suất được lấy mẫu cao hơn các từ ở xa.
+    \item \textbf{Subsampling các từ thường xuyên:} Các từ xuất hiện rất thường xuyên (như “là”, “và”, “trong” trong tiếng Việt, hay “the”, “a” trong tiếng Anh) mang ít thông tin ngữ nghĩa đặc trưng. Chúng xuất hiện trong gần như mọi ngữ cảnh, do đó các cặp huấn luyện tạo ra từ chúng không giúp ích nhiều mà còn làm chậm quá trình huấn luyện. Subsampling loại bỏ ngẫu nhiên các từ này trong quá trình tạo mẫu, với xác suất loại bỏ càng cao khi tần suất của từ càng lớn, nhờ đó mô hình tập trung hơn vào các từ hiếm.
+
+    \item \textbf{Cửa sổ ngữ cảnh động (dynamic window):} Thay vì sử dụng một cửa sổ ngữ cảnh có kích thước cố định (ví dụ, luôn là 5), nhiều triển khai của Word2Vec sử dụng một kích thước cửa sổ động. Với mỗi từ trung tâm, một kích thước cửa sổ $C$ sẽ được chọn ngẫu nhiên trong khoảng từ 1 đến kích thước tối đa cho phép. Kỹ thuật này có tác dụng ngầm định là gán trọng số cao hơn cho các từ ngữ cảnh ở gần từ trung tâm, vì chúng có xác suất được lấy mẫu cao hơn các từ ở xa.
 \end{itemize}
 
 \paragraph{Negative Sampling}
@@ -191,40 +177,34 @@ Trước khi đi vào các kỹ thuật tối ưu hóa chính, có hai thủ thu
 \begin{enumerate}
     \item Chúng ta coi cặp này là một mẫu \textbf{dương tính (positive sample)}.
     \item Chúng ta lấy ngẫu nhiên \textbf{k} từ khác từ từ vựng (dựa trên một phân phối xác suất nhất định) và tạo ra \textbf{k} mẫu \textbf{âm tính (negative samples)}.
-    \item Mô hình sẽ được huấn luyện để dự đoán đúng “nhãn” (1 cho mẫu dương tính, 0 cho các mẫu âm tính).
+    \item Mô hình được huấn luyện để dự đoán đúng “nhãn” (1 cho mẫu dương tính, 0 cho các mẫu âm tính).
 \end{enumerate}
-Bằng cách này, trong mỗi bước cập nhật, chúng ta chỉ cần tính toán và cập nhật trọng số cho $k+1$ từ thay vì toàn bộ V từ, giúp tăng tốc độ huấn luyện lên rất nhiều.
+Bằng cách này, trong mỗi bước cập nhật, chúng ta chỉ cần tính toán và cập nhật trọng số cho $k+1$ từ thay vì toàn bộ V từ, nhờ đó huấn luyện nhanh hơn rất nhiều.
 
-\begin{tcolorbox}[
-    title=Lựa chọn Thiết kế trong Negative Sampling,
-    colback=orange!5!white, colframe=orange!60!black, fonttitle=\bfseries
-]
-\textbf{1. Phân phối lấy mẫu âm (The Sampling Distribution):} \\
+\begin{deepdive}{Phân phối lấy mẫu âm và cách chọn số mẫu âm $k$}
+\textbf{1. Phân phối lấy mẫu âm (the sampling distribution):} \\
 Việc lấy mẫu các từ “âm tính” không phải là ngẫu nhiên đồng nhất trên toàn bộ từ vựng. Thay vào đó, Mikolov đề xuất sử dụng một phân phối Unigram đã được điều chỉnh, trong đó xác suất chọn một từ $w$ làm mẫu âm là:
 \[ P(w) = \frac{f(w)^{3/4}}{\sum_{j=1}^{V} f(w_j)^{3/4}} \]
 trong đó $f(w)$ là tần suất của từ $w$. Lũy thừa $3/4$ là một heuristic được chọn qua thực nghiệm.
 \begin{itemize}
     \item Nếu dùng lũy thừa $1$ (theo tần suất thô), các từ rất phổ biến sẽ được chọn làm mẫu âm quá thường xuyên.
     \item Nếu dùng lũy thừa $0$ (phân phối đều), các từ hiếm sẽ được chọn thường xuyên một cách phi thực tế.
-    \item Lũy thừa $3/4$ là một sự cân bằng hợp lý: nó làm giảm nhẹ tần suất của các từ phổ biến và tăng nhẹ tần suất của các từ hiếm, tạo ra các mẫu âm đa dạng và thách thức hơn cho mô hình.
+    \item Lũy thừa $3/4$ là một sự cân bằng hợp lý: nó làm giảm nhẹ tần suất của các từ phổ biến và tăng nhẹ tần suất của các từ hiếm, tạo ra các mẫu âm đa dạng và khó hơn cho mô hình.
 \end{itemize}
 
-\textbf{2. Số lượng mẫu âm (k):} \\
+\textbf{2. Số lượng mẫu âm $k$:} \\
 Tham số $k$ (số mẫu âm cho mỗi mẫu dương) thể hiện sự đánh đổi giữa chất lượng và tốc độ.
 \begin{itemize}
     \item Với các tập dữ liệu nhỏ, $k$ lớn hơn (ví dụ: 5-20) thường cho kết quả tốt hơn vì mỗi mẫu dương cần nhiều ví dụ âm để mô hình học được ranh giới quyết định.
     \item Với các tập dữ liệu cực lớn, $k$ có thể nhỏ hơn (ví dụ: 2-5), vì mô hình đã thấy đủ đa dạng mẫu trong dữ liệu.
 \end{itemize}
 Giá trị của $k$ càng lớn, gradient càng ổn định nhưng chi phí tính toán cho mỗi bước cập nhật càng cao.
-\end{tcolorbox}
+\end{deepdive}
 
 \paragraph{Hierarchical Softmax}
 Kỹ thuật này sử dụng một cây nhị phân (cụ thể là cây Huffman) để biểu diễn tất cả các từ trong từ vựng. Các từ thường xuyên xuất hiện sẽ có đường đi ngắn hơn trên cây. Thay vì dự đoán một từ, mô hình sẽ dự đoán một chuỗi các lựa chọn trái/phải để đi từ gốc đến lá của từ đó. Điều này giảm độ phức tạp tính toán từ $O(V)$ xuống còn $O(\log_2V)$.
 
-\begin{tcolorbox}[
-    title=So sánh CBOW và Skip-gram,
-    colback=blue!5!white, colframe=blue!60!black, fonttitle=\bfseries
-]
+\begin{assess}{So sánh CBOW và Skip-gram}
 \begin{tabular}{p{0.45\linewidth} | p{0.45\linewidth}}
     \textbf{CBOW} & \textbf{Skip-gram} \\
     \hline
@@ -238,36 +218,30 @@ Kỹ thuật này sử dụng một cây nhị phân (cụ thể là cây Huffma
     \hline
     \textbf{Khi nào dùng?} Khi tốc độ là ưu tiên và dữ liệu rất lớn. & \textbf{Khi nào dùng?} Thường được ưa chuộng trong nghiên cứu vì chất lượng biểu diễn cao. \\
 \end{tabular}
-\end{tcolorbox}
-Nhìn chung, Skip-gram thường được ưa chuộng hơn trong nghiên cứu.
+\end{assess}
 
-\subsection{Lý thuyết GloVe: Ma trận Đồng xuất hiện}
+\subsection{Lý thuyết GloVe: ma trận đồng xuất hiện}
 \label{ssec:glove}
 
 GloVe \cite{pennington2014glove} (\textit{Global Vectors for Word Representation}) được giới thiệu năm 2014 bởi các nhà nghiên cứu tại Stanford như một phương pháp học \textbf{word embeddings} dựa trên thống kê toàn cục của ngôn ngữ. 
 Khác với Word2Vec (mô hình \textit{predictive}, học từ các ngữ cảnh cục bộ), GloVe là một mô hình \textit{count-based} được huấn luyện bằng tư duy tối ưu giống mô hình dự đoán, nhằm tận dụng cả thông tin toàn cục và cục bộ.
 
 \paragraph{Tư duy cốt lõi}
-Tần suất đồng xuất hiện giữa các từ mang ý nghĩa ngữ nghĩa quan trọng. Ví dụ: từ \textit{ice} và \textit{steam} đều đồng xuất hiện với \textit{water}, nhưng:
+Tần suất đồng xuất hiện giữa các từ mang thông tin ngữ nghĩa. Ví dụ: từ \textit{ice} và \textit{steam} đều đồng xuất hiện với \textit{water}, nhưng:
 \begin{itemize}
     \item \textit{ice} đồng xuất hiện nhiều hơn với \textit{solid}, ít với \textit{gas}.
     \item \textit{steam} đồng xuất hiện nhiều hơn với \textit{gas}, ít với \textit{solid}.
 \end{itemize}
 So sánh tỉ lệ xác suất đồng xuất hiện giúp phân biệt nghĩa của các từ.
 
-\begin{tcolorbox}[
-    title=GloVe: Sự giao thoa giữa Count-based và Predictive,
-    colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries
-]
-Một câu hỏi thường gặp là: Nếu GloVe xây dựng trên ma trận đếm toàn cục, tại sao nó không đơn giản là phân rã ma trận đó (như LSA)? Và nếu hàm mất mát của nó trông giống một bài toán dự đoán, tại sao nó không phải là mô hình predictive như Word2Vec?
-
-Câu trả lời nằm ở chỗ GloVe kết hợp những điểm mạnh của cả hai phương pháp:
+\begin{assess}{GloVe nằm giữa hai dòng phương pháp count-based và predictive}
+GloVe xây dựng trên ma trận đếm toàn cục nhưng không phân rã trực tiếp ma trận đó như LSA; hàm mất mát của nó giống một bài toán dự đoán nhưng nó cũng không phải mô hình predictive như Word2Vec. Lý do là GloVe kết hợp điểm mạnh của cả hai phương pháp:
 \begin{itemize}
-    \item \textbf{Tận dụng thống kê toàn cục (Count-based):} Bằng cách tiền tính toán ma trận đồng xuất hiện $X$, GloVe có cái nhìn bao quát về toàn bộ kho văn bản ngay từ đầu. Mọi thông tin về tần suất và sự đồng xuất hiện đều được mã hóa trong ma trận này.
-    \item \textbf Tối ưu hóa hiệu quả (Predictive-style): Thay vì thực hiện các phép phân rã ma trận phức tạp và tốn kém (như SVD trong LSA), GloVe định nghĩa một hàm mất mát dạng “hồi quy có trọng số”. Mô hình sau đó học các vector bằng cách tối ưu hàm mất mát này trên từng cặp $(i, j)$ không rỗng trong ma trận $X$. Cách học lặp đi lặp lại trên các mẫu riêng lẻ này rất giống với tinh thần của các mô hình dự đoán, giúp việc huấn luyện trở nên hiệu quả và có thể song song hóa.
+    \item \textbf{Tận dụng thống kê toàn cục (count-based):} Bằng cách tiền tính toán ma trận đồng xuất hiện $X$, GloVe có cái nhìn bao quát về toàn bộ kho văn bản ngay từ đầu. Mọi thông tin về tần suất và sự đồng xuất hiện đều được mã hóa trong ma trận này.
+    \item \textbf{Tối ưu hóa hiệu quả (predictive-style):} Thay vì thực hiện các phép phân rã ma trận phức tạp và tốn kém (như SVD trong LSA), GloVe định nghĩa một hàm mất mát dạng “hồi quy có trọng số”. Mô hình sau đó học các vector bằng cách tối ưu hàm mất mát này trên từng cặp $(i, j)$ không rỗng trong ma trận $X$. Cách học lặp đi lặp lại trên các mẫu riêng lẻ này gần với các mô hình dự đoán, giúp việc huấn luyện hiệu quả và có thể song song hóa.
 \end{itemize}
-Do đó, GloVe có thể được xem là một mô hình “lai”: nó trực tiếp tối ưu hóa để học các vector sao cho chúng có thể tái tạo lại được các thống kê toàn cục của ngôn ngữ.
-\end{tcolorbox}
+GloVe vì thế là một mô hình “lai”: nó tối ưu hóa trực tiếp để các vector tái tạo lại được các thống kê toàn cục của ngôn ngữ.
+\end{assess}
 
 \paragraph{Tỉ lệ xác suất}
 Cho từ $i$, $j$ và từ ngữ cảnh $k$, xác suất đồng xuất hiện được định nghĩa:
@@ -276,8 +250,8 @@ P_{ik} = \frac{\text{số lần từ $k$ xuất hiện gần $i$}}{\text{tổng 
 \]
 GloVe chỉ ra rằng \textbf{tỉ lệ} $\frac{P_{ik}}{P_{jk}}$ chứa thông tin ngữ nghĩa: nếu $k$ liên quan nhiều đến $i$ hơn $j$, tỉ lệ này sẽ lớn.
 
-\paragraph{Từ Tỉ lệ đến Tích vô hướng: Cầu nối Toán học}
-Đây là bước nhảy vọt tinh tế nhất của GloVe. Các tác giả đã lập luận như sau:
+\paragraph{Từ tỉ lệ đến tích vô hướng}
+Các tác giả lập luận như sau:
 \begin{enumerate}
     \item Mối quan hệ giữa ba từ $i, j, k$ được thể hiện qua tỉ lệ $P_{ik}/P_{jk}$. Mối quan hệ này nên được mô hình hóa bởi các vector của chúng: $w_i, w_j, w_k$. Ta có thể bắt đầu với một hàm tổng quát $F$:
     \[ F(w_i, w_j, w_k) = \frac{P_{ik}}{P_{jk}} \]
@@ -289,7 +263,7 @@ GloVe chỉ ra rằng \textbf{tỉ lệ} $\frac{P_{ik}}{P_{jk}}$ chứa thông t
     Trong đó $X_{ik}$ là số lần $k$ xuất hiện trong ngữ cảnh của $i$, và $X_i$ là tổng số lần các từ xuất hiện trong ngữ cảnh của $i$.
     \item Hạng tử $\log(X_i)$ không phụ thuộc vào $k$. Nó có thể được gộp vào một số hạng bias $b_i$. Tương tự, để giữ tính đối xứng, một bias $b_k$ cũng được thêm vào cho từ ngữ cảnh. Điều này dẫn đến công thức mục tiêu cuối cùng, chính là nền tảng cho hàm mất mát của GloVe.
 \end{enumerate}
-Quá trình này cho thấy công thức mục tiêu không phải là ngẫu nhiên, mà là kết quả của một chuỗi lập luận chặt chẽ nhằm mã hóa các tỉ lệ thống kê vào một cấu trúc vector tuyến tính.
+Công thức mục tiêu như vậy là kết quả của một chuỗi lập luận nhằm mã hóa các tỉ lệ thống kê vào một cấu trúc vector tuyến tính.
 
 \paragraph{Cơ chế hoạt động}
 \begin{enumerate}
@@ -326,23 +300,19 @@ Quá trình này cho thấy công thức mục tiêu không phải là ngẫu nh
     Sau khi tối ưu, tích vô hướng $w_i^\top w_j$ xấp xỉ log xác suất đồng xuất hiện, nghĩa là khoảng cách giữa các vector phản ánh mối quan hệ thống kê toàn cục của ngôn ngữ.
 \end{enumerate}
 
-\begin{tcolorbox}[
-    title=Giải mã Hàm mất mát của GloVe,
-    colback=orange!5!white, colframe=orange!60!black, fonttitle=\bfseries
-]
-Mỗi thành phần trong hàm mất mát của GloVe đều có một vai trò quan trọng và được lựa chọn cẩn thận:
+\begin{deepdive}{Vai trò của logarit, bias và hàm trọng số trong hàm mất mát GloVe}
 \begin{itemize}
-    \item \textbf{Vai trò của Logarit ($\log X_{ij}$):} Tần suất đồng xuất hiện $X_{ij}$ có phân bố trải dài trên nhiều bậc độ lớn (từ 1 đến hàng triệu). Việc lấy logarit giúp “nén” khoảng giá trị này lại. Điều này ngăn các cặp từ có tần suất cực lớn (ví dụ: “the” và “is”) tạo ra một giá trị lỗi quá lớn và lấn át hoàn toàn đóng góp của các cặp từ hiếm nhưng mang nhiều ý nghĩa.
+    \item \textbf{Logarit ($\log X_{ij}$):} Tần suất đồng xuất hiện $X_{ij}$ có phân bố trải dài trên nhiều bậc độ lớn (từ 1 đến hàng triệu). Việc lấy logarit “nén” khoảng giá trị này lại, nhờ đó các cặp từ có tần suất rất lớn (ví dụ: “the” và “is”) không tạo ra giá trị lỗi quá lớn và lấn át đóng góp của các cặp từ hiếm nhưng mang nhiều ý nghĩa.
 
-    \item \textbf{Ý nghĩa của các Bias ($b_i, b_j$):} Các số hạng bias này không chỉ là một kỹ thuật thông thường. Chúng giúp hấp thụ các hiệu ứng chính (main effects) liên quan đến tần suất. Cụ thể, $b_i$ có thể học để mã hóa sự “nổi tiếng” chung của từ $i$ (một từ rất phổ biến sẽ có $X_{ij}$ lớn với nhiều từ $j$). Bằng cách để các bias xử lý phần thông tin này, vector chính $w_i$ và $w_j$ có thể tập trung hơn vào việc mã hóa mối quan hệ tương tác ngữ nghĩa giữa hai từ, làm cho các vector trở nên “trong sáng” hơn.
-    
-    \item \textbf{Tại sao cần hàm trọng số $f(X_{ij})$?}: Đây là thành phần quan trọng nhất, giải quyết hai vấn đề lớn:
+    \item \textbf{Các bias ($b_i, b_j$):} Chúng hấp thụ các hiệu ứng chính (main effects) liên quan đến tần suất. Cụ thể, $b_i$ có thể học để mã hóa mức phổ biến chung của từ $i$ (một từ rất phổ biến sẽ có $X_{ij}$ lớn với nhiều từ $j$). Khi bias đã xử lý phần thông tin này, vector $w_i$ và $w_j$ tập trung được vào mối quan hệ ngữ nghĩa giữa hai từ.
+
+    \item \textbf{Hàm trọng số $f(X_{ij})$:} Thành phần này giải quyết hai vấn đề:
     \begin{enumerate}
-        \item \textbf{Các cặp có $X_{ij} = 0$:} Có vô số cặp từ không bao giờ đồng xuất hiện. Nếu không có $f(X_{ij})$, chúng ta sẽ phải tính tổng trên tất cả $V \times V$ cặp, và $\log(0)$ là không xác định. Hàm trọng số được thiết kế sao cho $f(0) = 0$, giúp loại bỏ hoàn toàn các cặp này khỏi hàm mất mát một cách tự nhiên.
-        \item \textbf{Giảm trọng số các cặp quá phổ biến:} Các cặp từ đồng xuất hiện rất thường xuyên (ví dụ: “it is”, “of the”) thường mang ít thông tin ngữ nghĩa đặc biệt. Dù đã có logarit, chúng vẫn có thể thống trị quá trình huấn luyện. Hàm $f(x)$ với $\alpha < 1$ (thường là 0.75) và ngưỡng $x_{\text{max}}$ đảm bảo rằng các cặp này không có trọng số quá lớn, cho phép mô hình quan tâm hơn đến các cặp từ hiếm hơn nhưng thú vị hơn về mặt ngữ nghĩa.
+        \item \textbf{Các cặp có $X_{ij} = 0$:} Có vô số cặp từ không bao giờ đồng xuất hiện. Nếu không có $f(X_{ij})$, chúng ta sẽ phải tính tổng trên tất cả $V \times V$ cặp, và $\log(0)$ là không xác định. Hàm trọng số được thiết kế sao cho $f(0) = 0$, loại các cặp này khỏi hàm mất mát.
+        \item \textbf{Giảm trọng số các cặp quá phổ biến:} Các cặp từ đồng xuất hiện rất thường xuyên (ví dụ: “it is”, “of the”) thường mang ít thông tin ngữ nghĩa đặc biệt. Dù đã có logarit, chúng vẫn có thể chi phối quá trình huấn luyện. Hàm $f(x)$ với $\alpha < 1$ (thường là 0.75) và ngưỡng $x_{\text{max}}$ giữ cho trọng số của các cặp này không quá lớn, để mô hình quan tâm hơn đến các cặp từ hiếm mà giàu thông tin ngữ nghĩa.
     \end{enumerate}
 \end{itemize}
-\end{tcolorbox}
+\end{deepdive}
 
 \paragraph{Điểm mạnh và hạn chế}
 \begin{itemize}
@@ -359,10 +329,10 @@ Mỗi thành phần trong hàm mất mát của GloVe đều có một vai trò 
     \end{itemize}
 \end{itemize}
 
-\subsection{Lý thuyết FastText: Biểu diễn Subword}
+\subsection{Lý thuyết FastText: biểu diễn subword}
 \label{ssec:fasttext}
 
-FastText được phát triển bởi nhóm Facebook AI Research (FAIR) năm 2017 \cite{bojanowski2017enriching}, nhằm khắc phục một hạn chế quan trọng của các mô hình như Word2Vec và GloVe: \textbf{không xử lý được các từ ngoài từ vựng} (Out-of-Vocabulary - OOV).  
+FastText được phát triển bởi nhóm Facebook AI Research (FAIR) năm 2017 \cite{bojanowski2017enriching}, nhằm khắc phục một hạn chế của các mô hình như Word2Vec và GloVe: không xử lý được các từ ngoài từ vựng (Out-of-Vocabulary - OOV).
 Trong Word2Vec/GloVe, mỗi từ được coi như một “đơn vị nguyên tử” (atomic unit), và nếu từ đó không xuất hiện trong quá trình huấn luyện thì mô hình hoàn toàn không có vector cho nó.  
 
 \paragraph{Tư duy cốt lõi}
@@ -377,7 +347,7 @@ Thay vì gán mỗi từ một vector duy nhất, FastText biểu diễn từ nh
     \item \textbf{Phân rã từ thành n-gram ký tự:}  
     Với kích thước $n=3$ (3-gram), từ \textit{sách} sẽ được bao quanh ký hiệu biên giới từ và phân rã thành:
     \[
-    \langle s, \quad sa, \quad sác, \quad ách, \quad ch\rangle
+    \langle \texttt{s}, \quad \texttt{sa}, \quad \texttt{sác}, \quad \texttt{ách}, \quad \texttt{ch}\rangle
     \]
     Ngoài ra, chính từ hoàn chỉnh \textit{sách} cũng được coi là một n-gram.  
     Ký hiệu \verb|<| và \verb|>| đánh dấu bắt đầu và kết thúc từ để phân biệt tiền tố/hậu tố.
@@ -400,25 +370,22 @@ Thay vì gán mỗi từ một vector duy nhất, FastText biểu diễn từ nh
     Về kiến trúc, FastText vẫn sử dụng Skip-gram (hoặc CBOW) như Word2Vec, nhưng thay vì ánh xạ từ $\rightarrow$ vector, nó ánh xạ tập hợp subword $\rightarrow$ vector.
 \end{enumerate}
 
-\begin{tcolorbox}[
-    title=Ghi chú sâu về Biểu diễn Subword,
-    colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries
-]
+\begin{deepdive}{Vector của từ hoàn chỉnh, phép lấy trung bình và hashing trick}
 \textbf{1. Tại sao vẫn giữ vector cho từ hoàn chỉnh?} \\
-Việc giữ lại vector cho cả từ gốc (ví dụ, embedding cho `<s>sách</s>`) bên cạnh các n-gram của nó là một lựa chọn thiết kế quan trọng. Vector của từ hoàn chỉnh đóng vai trò như một “mỏ neo”, mang ý nghĩa tổng thể và giúp phân biệt các từ có chung nhiều n-gram nhưng nghĩa lại khác nhau. Nếu không có nó, các từ ngắn và có cấu trúc tương tự (ví dụ: `sun` và `sin`) có thể trở nên quá gần nhau trong không gian vector. Vector của từ hoàn chỉnh đảm bảo mỗi từ có một “danh tính” riêng biệt.
+Vector của từ gốc (ví dụ, embedding cho \texttt{<s>sách</s>}) được giữ lại bên cạnh các n-gram của nó vì nó mang ý nghĩa tổng thể và giúp phân biệt các từ có chung nhiều n-gram nhưng nghĩa khác nhau. Nếu không có nó, các từ ngắn và có cấu trúc tương tự (ví dụ: \texttt{sun} và \texttt{sin}) có thể trở nên quá gần nhau trong không gian vector.
 
 \textbf{2. Tại sao lấy trung bình thay vì các phép toán khác?} \\
 Lấy trung bình là một cách đơn giản và hiệu quả để kết hợp các vector subword.
 \begin{itemize}
-    \item \textbf{So với Tổng (Sum):} Việc lấy trung bình giúp chuẩn hóa độ dài của vector từ. Nếu dùng tổng, các từ dài (có nhiều n-gram hơn) sẽ có xu hướng tạo ra các vector có độ lớn (norm) cao hơn, điều này có thể không mong muốn.
-    \item \textbf{So với các cơ chế phức tạp hơn (Attention):} Mặc dù attention có thể học cách gán trọng số khác nhau cho các subword (ví dụ, gốc từ quan trọng hơn hậu tố), nó sẽ làm tăng đáng kể độ phức tạp tính toán, đi ngược lại triết lý “nhanh” (fast) của FastText.
+    \item \textbf{So với tổng (sum):} Việc lấy trung bình giúp chuẩn hóa độ dài của vector từ. Nếu dùng tổng, các từ dài (có nhiều n-gram hơn) sẽ có xu hướng tạo ra các vector có độ lớn (norm) cao hơn, điều này có thể không mong muốn.
+    \item \textbf{So với các cơ chế phức tạp hơn (attention):} Attention có thể học cách gán trọng số khác nhau cho các subword (ví dụ, gốc từ quan trọng hơn hậu tố), nhưng nó làm tăng đáng kể độ phức tạp tính toán, đi ngược lại chủ trương “nhanh” (fast) của FastText.
 \end{itemize}
 
-\textbf{3. Quản lý bộ nhớ với Hashing Trick} \\
-Số lượng n-gram ký tự có thể là cực lớn. Để giữ cho mô hình có kích thước hợp lý, FastText không lưu một vector cho mỗi n-gram duy nhất. Thay vào đó, nó sử dụng một hàm băm (hashing function) để ánh xạ mỗi n-gram vào một trong số $B$ “bucket” (thường $B$ khoảng 2 triệu). Tất cả các n-gram rơi vào cùng một bucket sẽ chia sẻ cùng một vector embedding. Kỹ thuật này giúp kiểm soát chặt chẽ bộ nhớ, dù có thể xảy ra xung đột (hai n-gram khác nhau cùng được ánh xạ vào một bucket), nhưng trong thực tế với một không gian băm đủ lớn, ảnh hưởng tiêu cực là không đáng kể.
-\end{tcolorbox}
+\textbf{3. Quản lý bộ nhớ với hashing trick} \\
+Số lượng n-gram ký tự có thể rất lớn. Để giữ cho mô hình có kích thước hợp lý, FastText không lưu một vector cho mỗi n-gram duy nhất. Thay vào đó, nó sử dụng một hàm băm (hashing function) để ánh xạ mỗi n-gram vào một trong số $B$ “bucket” (thường $B$ khoảng 2 triệu). Tất cả các n-gram rơi vào cùng một bucket sẽ chia sẻ cùng một vector embedding. Kỹ thuật này kiểm soát được bộ nhớ; xung đột vẫn có thể xảy ra (hai n-gram khác nhau cùng được ánh xạ vào một bucket), nhưng trong thực tế, với một không gian băm đủ lớn, ảnh hưởng tiêu cực là không đáng kể.
+\end{deepdive}
 
-\paragraph{Ưu điểm nổi bật}
+\paragraph{Ưu điểm}
 \begin{itemize}
     \item \textbf{Xử lý OOV:} Với từ mới chưa từng thấy, mô hình vẫn sinh được vector bằng cách cộng/trung bình embedding của các subword đã biết.
     \item \textbf{Hiểu hình thái:} Các từ cùng gốc hoặc chia sẻ tiền tố/hậu tố sẽ có embedding gần nhau.  
@@ -429,7 +396,7 @@ Số lượng n-gram ký tự có thể là cực lớn. Để giữ cho mô hì
 \begin{itemize}
     \item Kích thước mô hình lớn hơn do phải lưu embedding cho nhiều n-gram.
     \item Không xử lý được ý nghĩa phụ thuộc ngữ cảnh (mỗi từ vẫn một vector tĩnh).
-    \item \textbf{Vấn đề từ đồng âm và sự trùng hợp ngẫu nhiên:} FastText không giải quyết được vấn đề đa nghĩa. Tệ hơn, nó có thể tạo ra các mối liên hệ sai lệch. Hai từ hoàn toàn không liên quan về nghĩa nhưng tình cờ có chung các n-gram ký tự (ví dụ, `pain` và `Spain` đều chứa `ain`) có thể bị đẩy lại gần nhau một cách không mong muốn trong không gian embedding.
+    \item \textbf{Trùng hợp ngẫu nhiên giữa các n-gram:} FastText không giải quyết được vấn đề đa nghĩa, và nó còn có thể tạo ra các mối liên hệ sai lệch: hai từ không liên quan về nghĩa nhưng tình cờ có chung các n-gram ký tự (ví dụ, \texttt{pain} và \texttt{Spain} đều chứa \texttt{ain}) có thể bị đặt gần nhau trong không gian embedding.
 
     \item \textbf{Hiệu quả phụ thuộc vào đặc tính ngôn ngữ:} Phương pháp dựa trên n-gram ký tự hoạt động đặc biệt hiệu quả với các ngôn ngữ có hình thái học phong phú (như tiếng Đức, Thổ Nhĩ Kỳ, Phần Lan), nơi cấu trúc subword thực sự mã hóa thông tin ngữ pháp. Tuy nhiên, với các ngôn ngữ đơn lập như tiếng Việt hoặc các ngôn ngữ dùng hệ chữ tượng hình như tiếng Trung, lợi ích từ việc phân rã ký tự có thể ít rõ rệt hơn so với việc phân tích ở cấp độ từ hoặc âm tiết.
 \end{itemize}

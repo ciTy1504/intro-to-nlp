@@ -1,26 +1,26 @@
 % !TEX root = ../../main.tex
 % File: part2/chapters4/chap4_6.tex
 
-\section{Recipe 6: Trích xuất Thông tin có Cấu trúc từ Văn bản}
+\section{Recipe 6: trích xuất thông tin có cấu trúc từ văn bản}
 \label{sec:recipe_structured_extraction}
 
 \textbf{Mục tiêu:} Trích xuất thông tin từ một đoạn văn bản tự do và trả về dưới dạng một đối tượng JSON có cấu trúc được định nghĩa trước.
 
 \textbf{Thành phần chính:}
 \begin{itemize}
-    \item \textbf{LLM hỗ trợ Function Calling:} Các mô hình của OpenAI (GPT-3.5/4) hoặc các mô hình mã nguồn mở hỗ trợ chế độ này.
-    \item \textbf{Định nghĩa Cấu trúc (Schema):} Một định nghĩa rõ ràng về cấu trúc JSON mong muốn, bao gồm tên các trường, kiểu dữ liệu, và mô tả.
+    \item \textbf{LLM hỗ trợ Function Calling:} Các mô hình của OpenAI hoặc các mô hình mã nguồn mở hỗ trợ chế độ này.
+    \item \textbf{Định nghĩa cấu trúc (Schema):} Một định nghĩa rõ ràng về cấu trúc JSON mong muốn, bao gồm tên các trường, kiểu dữ liệu, và mô tả.
 \end{itemize}
 
 \textbf{Các bước thực hiện:}
 \begin{enumerate}
-    \item \textbf{Định nghĩa “Công cụ”:} Mô tả cấu trúc dữ liệu bạn muốn trích xuất dưới dạng một “function signature”.
+    \item \textbf{Định nghĩa “công cụ”:} Mô tả cấu trúc dữ liệu bạn muốn trích xuất dưới dạng một “function signature”.
     \item \textbf{Gọi LLM:} Gửi văn bản đầu vào và định nghĩa công cụ đến API của LLM.
-    \item \textbf{Phân tích Kết quả:} LLM sẽ trả về một đối tượng JSON tuân thủ theo schema bạn đã định nghĩa.
+    \item \textbf{Phân tích kết quả:} LLM trả về một đối tượng JSON tuân thủ schema bạn đã định nghĩa.
 \end{enumerate}
 
 \textbf{Mã nguồn:}
-\begin{example}{Trích xuất Thông tin với OpenAI Function Calling}{ex:function_calling}
+\begin{example}{Trích xuất thông tin với OpenAI Function Calling}{ex:function_calling}
     \begin{minted}{python}
     # Bước 1: Cài đặt
     # pip install openai
@@ -30,6 +30,9 @@
     
     # os.environ["OPENAI_API_KEY"] = "sk-..."
     client = OpenAI()
+
+    # Điền model id hiện hành của nhà cung cấp; mô hình phải hỗ trợ function calling
+    MODEL = "<model-id>"
     
     # Bước 2: Định nghĩa "Công cụ" (cấu trúc JSON mong muốn)
     extraction_tool = {
@@ -66,7 +69,7 @@
     
     # Bước 3: Gọi LLM với công cụ đã định nghĩa
     response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model=MODEL,
         messages=[
             {"role": "system", "content": "You are a helpful assistant that extracts structured information."},
             {"role": "user", "content": text_input}
@@ -94,7 +97,7 @@ Thông tin đã được trích xuất:
 }
 \end{minted}
 
-\textbf{Lưu ý:} Với các mô hình không hỗ trợ Function Calling, có thể đạt được kết quả tương tự bằng cách sử dụng các thư viện như `Instructor` kết hợp với `Pydantic` để định nghĩa schema và thêm các hướng dẫn chi tiết vào prompt.
+\textbf{Lưu ý:} Với các mô hình không hỗ trợ Function Calling, có thể đạt kết quả tương tự bằng các thư viện như \texttt{Instructor} kết hợp với \texttt{Pydantic} để định nghĩa schema, và thêm hướng dẫn chi tiết vào prompt.
 
 \bigskip
 \hrule
@@ -104,4 +107,4 @@ Thông tin đã được trích xuất:
     \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
 \end{center}
 
-\textit{Chương 4 đã là một chuyến du hành thực tiễn qua các ứng dụng phổ biến nhất của NLP hiện đại. Bằng cách làm theo các “công thức” chi tiết, bạn đã học được cách kết hợp các thư viện, kiến trúc và kỹ thuật khác nhau để xây dựng các hệ thống hoàn chỉnh. Đây là bước cuối cùng trong việc chuyển hóa kiến thức lý thuyết thành năng lực thực hành. Giờ đây, bạn không chỉ hiểu về NLP, mà còn có đủ công cụ và sự tự tin để bắt đầu xây dựng các giải pháp của riêng mình.}
+\textit{Chương 4 đã đi qua các ứng dụng phổ biến nhất của NLP hiện đại. Mỗi “công thức” cho thấy cách kết hợp các thư viện, kiến trúc và kỹ thuật khác nhau thành một hệ thống hoàn chỉnh, và đó là bước chuyển từ kiến thức lý thuyết sang năng lực thực hành.}

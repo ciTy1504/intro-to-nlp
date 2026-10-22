@@ -1,14 +1,14 @@
 % !TEX root = ../../main.tex
 % File: part2/chapters4/chap4_4.tex
 
-\section{Recipe 4: Fine-tuning cho Tác vụ Nhận dạng Thực thể (NER)}
+\section{Recipe 4: fine-tuning cho tác vụ nhận dạng thực thể (NER)}
 \label{sec:recipe_ner_finetuning}
 
-\textbf{Mục tiêu:} Fine-tune một mô hình Encoder-Only (ví dụ: RoBERTa) cho tác vụ NER. Recipe này nhấn mạnh vào việc tiền xử lý dữ liệu phức tạp hơn cho các tác vụ gán nhãn chuỗi.
+\textbf{Mục tiêu:} Fine-tune một mô hình Encoder-Only (ví dụ: RoBERTa) cho tác vụ NER. Recipe này tập trung vào bước tiền xử lý dữ liệu, phức tạp hơn so với các tác vụ khác vì phải gán nhãn theo chuỗi.
 
 \textbf{Thành phần chính:}
 \begin{itemize}
-    \item \textbf{\texttt{transformers}:} Sử dụng \texttt{AutoModelForTokenClassification} và \texttt{Trainer}.
+    \item \textbf{\texttt{transformers}:} Sử dụng \texttt{Auto\allowbreak Model\allowbreak For\allowbreak Token\allowbreak Classification} và \texttt{Trainer}.
     \item \textbf{\texttt{datasets}:} Tải bộ dữ liệu NER.
     \item \textbf{\texttt{evaluate} (với \texttt{seqeval}):} Để tính toán F1-score ở cấp độ thực thể.
 \end{itemize}
@@ -16,8 +16,8 @@
 \textbf{Các bước thực hiện:}
 \begin{enumerate}
     \item \textbf{Tải dữ liệu và tokenizer:} Tải bộ dữ liệu CoNLL-2003.
-    \item \textbf{Tiền xử lý và Căn chỉnh Nhãn:} Đây là bước phức tạp. Khi một từ bị tách thành nhiều subword bởi tokenizer, chúng ta cần đảm bảo các nhãn được căn chỉnh một cách chính xác.
-    \item \textbf{Tải mô hình:} Tải một mô hình \texttt{AutoModelForTokenClassification}.
+    \item \textbf{Tiền xử lý và căn chỉnh nhãn:} Đây là bước phức tạp. Khi tokenizer tách một từ thành nhiều subword, các nhãn phải được căn chỉnh lại cho khớp.
+    \item \textbf{Tải mô hình:} Tải một mô hình \texttt{Auto\allowbreak Model\allowbreak For\allowbreak Token\allowbreak Classification}.
     \item \textbf{Thiết lập \texttt{Trainer}:} Sử dụng hàm \texttt{compute\_metrics} với \texttt{seqeval}.
     \item \textbf{Huấn luyện:} Bắt đầu quá trình fine-tuning.
 \end{enumerate}
@@ -38,7 +38,9 @@
     label_names = raw_datasets["train"].features["ner_tags"].feature.names
     
     model_checkpoint = "roberta-base"
-    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+    # Tokenizer BPE của RoBERTa BẮT BUỘC có add_prefix_space=True khi dùng
+    # is_split_into_words=True, nếu không sẽ báo lỗi.
+    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, add_prefix_space=True)
     
     # Bước 2: Hàm tiền xử lý và căn chỉnh nhãn
     def tokenize_and_align_labels(examples):

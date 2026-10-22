@@ -1,10 +1,10 @@
 % !TEX root = ../main.tex
 % File: part1/chapters_reasoning/sec2_test_time_compute.tex
 
-\section{Mở rộng Tính toán lúc Suy luận (Test-time Compute Scaling)}
+\section{Mở rộng tính toán lúc suy luận (Test-time Compute Scaling)}
 \label{sec:test_time_compute}
 
-Giả sử bạn có một ngân sách tính toán cố định. Nên dùng nó để \textbf{tiền huấn luyện một mô hình lớn hơn}, hay dùng mô hình nhỏ hơn nhưng \textbf{cho nó “nghĩ” lâu hơn} khi trả lời? Snell et al. \cite{snell2024scaling} là nghiên cứu hệ thống đầu tiên đặt câu hỏi này, với mô hình PaLM 2-S* trên tập MATH.
+Với một ngân sách tính toán cố định, có hai cách tiêu: \textbf{tiền huấn luyện một mô hình lớn hơn}, hoặc dùng mô hình nhỏ hơn và \textbf{cho nó “nghĩ” lâu hơn} khi trả lời. Snell et al. \cite{snell2024scaling} là nghiên cứu hệ thống đầu tiên so sánh hai cách này, với mô hình PaLM 2-S* trên tập MATH.
 
 \subsection{Hai cơ chế tiêu tốn tính toán lúc suy luận}
 \label{ssec:ttc_mechanisms}
@@ -26,7 +26,7 @@ Giả sử bạn có một ngân sách tính toán cố định. Nên dùng nó 
 \label{fig:ttc_search}
 \end{center}
 
-\subsection{Phát hiện then chốt: Chiến lược tối ưu phụ thuộc độ khó}
+\subsection{Chiến lược tối ưu phụ thuộc độ khó của câu hỏi}
 \label{ssec:ttc_difficulty}
 Các tác giả chia câu hỏi thành 5 mức độ khó dựa trên tỷ lệ giải đúng của chính mô hình gốc, và phát hiện:
 \begin{itemize}
@@ -50,9 +50,9 @@ Từ đó, một chiến lược \textbf{tối ưu tính toán (compute-optimal)
 \label{fig:ttc_vs_pretrain}
 \end{center}
 
-\begin{tcolorbox}[title={Ý nghĩa}, colback=green!5!white, colframe=green!60!black, fonttitle=\bfseries]
-Tính toán lúc suy luận và tính toán lúc tiền huấn luyện \textbf{không hoàn toàn thay thế được cho nhau}, nhưng chúng có thể bù trừ trong một vùng rộng. Điều này mở ra hướng: \emph{huấn luyện mô hình để biết cách tận dụng tính toán lúc suy luận} -- tức là để nó tự sinh ra chuỗi suy nghĩ dài, tự kiểm tra và tự sửa sai mà không cần verifier bên ngoài. Đó chính là bản chất của các mô hình suy luận hiện đại (mục~\ref{sec:rl_reasoning}), nơi “tìm kiếm” được nội hóa vào trong một chuỗi suy nghĩ duy nhất.
-\end{tcolorbox}
+\begin{assess}{Hai trục tính toán bù trừ cho nhau trong một vùng rộng}
+Tính toán lúc suy luận và tính toán lúc tiền huấn luyện \textbf{không hoàn toàn thay thế được cho nhau}, nhưng chúng có thể bù trừ trong một vùng rộng. Hướng đi kế tiếp là \emph{huấn luyện mô hình để biết cách tận dụng tính toán lúc suy luận}: để nó tự sinh ra chuỗi suy nghĩ dài, tự kiểm tra và tự sửa sai mà không cần verifier bên ngoài. Đó chính là bản chất của các mô hình suy luận hiện đại (mục~\ref{sec:rl_reasoning}), nơi “tìm kiếm” được nội hóa vào trong một chuỗi suy nghĩ duy nhất.
+\end{assess}
 
 \subsection{Đo lường: pass@$k$, maj@$k$ và các cạm bẫy}
 \label{ssec:passk}

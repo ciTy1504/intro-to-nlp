@@ -1,7 +1,7 @@
 % !TEX root = ../main.tex
 % File: part1/chapters_reasoning/sec4_rl_reasoning.tex
 
-\section{Học Tăng cường với Phần thưởng Kiểm chứng được: Từ GRPO đến DeepSeek-R1}
+\section{Học tăng cường với phần thưởng kiểm chứng được: Từ GRPO đến DeepSeek-R1}
 \label{sec:rl_reasoning}
 
 \subsection{RLVR: Khi phần thưởng không thể bị “hack”}
@@ -10,7 +10,7 @@ RLHF (mục~\ref{ssec:rlhf}) tối ưu theo một reward model học từ sở t
 
 \subsection{DeepSeek-R1-Zero: Suy luận “nảy sinh” từ học tăng cường thuần túy}
 \label{ssec:r1_zero}
-DeepSeek-R1 \cite{deepseekai2025r1} bắt đầu bằng một thí nghiệm táo bạo: áp dụng GRPO \textbf{trực tiếp lên mô hình nền} DeepSeek-V3-Base, \emph{không có bất kỳ bước SFT nào}.
+DeepSeek-R1 \cite{deepseekai2025r1} bắt đầu bằng một thí nghiệm: áp dụng GRPO \textbf{trực tiếp lên mô hình nền} DeepSeek-V3-Base, \emph{không có bất kỳ bước SFT nào}.
 
 \paragraph{Thiết lập tối giản.}
 \begin{itemize}
@@ -22,7 +22,7 @@ DeepSeek-R1 \cite{deepseekai2025r1} bắt đầu bằng một thí nghiệm táo
 
 \paragraph{Kết quả.} Sau hàng nghìn bước RL, pass@1 trên AIME 2024 tăng từ \textbf{15.6\%} lên \textbf{71.0\%}; với bỏ phiếu đa số trên 64 mẫu đạt \textbf{86.7\%}, ngang mô hình o1 bản đầu của OpenAI.
 
-\paragraph{Sự tự tiến hóa và “khoảnh khắc aha”.} Hai hiện tượng đáng chú ý xuất hiện mà không hề được lập trình sẵn:
+\paragraph{Sự tự tiến hóa và “khoảnh khắc aha”.} Hai hiện tượng xuất hiện mà không hề được lập trình sẵn:
 \begin{itemize}
 	\item \textbf{Độ dài suy nghĩ tăng dần:} Độ dài trung bình của câu trả lời tăng đều đặn theo quá trình huấn luyện, từ vài trăm lên hàng nghìn token. Mô hình tự học được rằng \emph{suy nghĩ lâu hơn} giúp giải đúng nhiều hơn -- tức là tự học cách tận dụng tính toán lúc suy luận.
 	\item \textbf{Hành vi phản tư:} Mô hình bắt đầu tự kiểm tra lại, quay lại xem xét các bước trước và thử cách tiếp cận khác. Nhóm tác giả ghi lại một “khoảnh khắc aha” khi một phiên bản trung gian của mô hình tự viết giữa chừng lời giải: \emph{“Wait, wait. Wait. That's an aha moment I can flag here.”} rồi đánh giá lại toàn bộ cách giải.
@@ -64,11 +64,11 @@ Thí nghiệm quan trọng nhất của phần này: áp dụng RL quy mô lớn
 \end{itemize}
 Mối liên hệ giữa chưng cất và RL được phân tích tiếp ở chương~\ref{chap:efficiency}.
 
-\paragraph{Những thử nghiệm không thành công.} Nhóm DeepSeek cũng chia sẻ thất bại: (1) \textbf{PRM} gặp các vấn đề đã nêu ở mục~\ref{sec:verifiers}; (2) \textbf{Monte Carlo Tree Search} kiểu AlphaGo khó mở rộng vì không gian sinh token lớn hơn nhiều so với cờ vây và mô hình giá trị chi tiết rất khó huấn luyện. Đây là ví dụ quý giá về việc báo cáo cả kết quả âm.
+\paragraph{Những thử nghiệm không thành công.} Nhóm DeepSeek cũng chia sẻ thất bại: (1) \textbf{PRM} gặp các vấn đề đã nêu ở mục~\ref{sec:verifiers}; (2) \textbf{Monte Carlo Tree Search} kiểu AlphaGo khó mở rộng vì không gian sinh token lớn hơn nhiều so với cờ vây và mô hình giá trị chi tiết rất khó huấn luyện.
 
 \subsection{Sau R1: Các cải tiến thuật toán RL cho suy luận}
 \label{ssec:grpo_variants}
-Sự thành công của R1 kéo theo một làn sóng nghiên cứu mổ xẻ và cải tiến GRPO:
+Sau R1, nhiều nghiên cứu mổ xẻ và cải tiến GRPO:
 
 \paragraph{DAPO \cite{yu2025dapo}.} Hệ thống RL mã nguồn mở đầy đủ, đạt 50 điểm trên AIME 2024 với Qwen2.5-32B-Base (cao hơn kết quả RL trực tiếp của DeepSeek với ít bước hơn). Bốn kỹ thuật:
 \begin{enumerate}
@@ -103,4 +103,4 @@ và thực hiện cắt ngưỡng ở mức chuỗi. GSPO ổn định hơn và 
     \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
 \end{center}
 
-\textit{Chương này đã theo dấu hành trình từ các verifier kiểm chứng lời giải (ORM, PRM), qua các quy luật mở rộng tính toán lúc suy luận, các phương pháp tự học suy luận (STaR, ReST$^{EM}$, Quiet-STaR), đến học tăng cường với phần thưởng kiểm chứng được -- nền tảng của DeepSeek-R1 và các mô hình suy luận hiện đại. Thông điệp cốt lõi: trí thông minh của LLM không chỉ đến từ số tham số mà còn từ cách chúng ta cho phép và dạy mô hình sử dụng tính toán khi trả lời. Nhưng mô hình suy luận vẫn cần tri thức cập nhật từ bên ngoài -- chủ đề của chương tiếp theo về Tìm kiếm và Sinh Tăng cường.}
+\textit{Chương này đi từ các verifier kiểm chứng lời giải (ORM, PRM), qua các quy luật mở rộng tính toán lúc suy luận và các phương pháp tự học suy luận (STaR, ReST$^{EM}$, Quiet-STaR), đến học tăng cường với phần thưởng kiểm chứng được -- nền tảng của DeepSeek-R1 và các mô hình suy luận hiện đại. Năng lực của một LLM vì vậy đến từ cả số tham số lẫn cách chúng ta cho phép và dạy nó sử dụng tính toán khi trả lời. Nhưng mô hình suy luận vẫn cần tri thức cập nhật từ bên ngoài, chủ đề của chương tiếp theo về tìm kiếm và sinh tăng cường.}
