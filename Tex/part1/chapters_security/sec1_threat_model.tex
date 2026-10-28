@@ -1,0 +1,111 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_security/sec1_threat_model.tex
+
+\section{Mô hình mối đe dọa và phân loại tấn công}
+\label{sec:security_threat_model}
+
+Một mô hình mối đe dọa (threat model) trả lời ba câu hỏi trước khi bàn tới biện pháp phòng thủ: kẻ tấn công kiểm soát được những gì, họ nhắm tới kết quả nào, và hệ thống đặt ranh giới tin cậy ở đâu. Với hệ thống LLM, câu hỏi thứ ba là câu khó nhất, vì kiến trúc của mô hình làm cho ranh giới đó khó vẽ hơn so với phần mềm thông thường.
+
+\subsection{Vì sao bảo mật LLM khác bảo mật phần mềm truyền thống}
+\label{ssec:security_why_different}
+
+Các lớp lỗ hổng tiêm (injection) kinh điển của phần mềm -- tiêm SQL, tiêm lệnh shell, chèn mã vào trang web -- đều có chung một nguyên nhân: dữ liệu do người dùng cung cấp bị trình thông dịch đọc như một phần của chương trình. Điểm quan trọng là lớp lỗ hổng này có một cách sửa dứt điểm. Câu lệnh tham số hóa (prepared statement) tách truy vấn thành hai kênh riêng: phần cấu trúc câu lệnh được biên dịch trước, phần dữ liệu được truyền vào như một giá trị và không bao giờ được phân tích cú pháp lại. Sau khi tách, không còn chuỗi đầu vào nào có thể biến thành câu lệnh, bất kể nội dung của nó là gì. Ranh giới ở đây là một ranh giới cú pháp, do trình thông dịch bảo đảm.
+
+Mô hình ngôn ngữ không có cơ chế tương đương. Chỉ thị hệ thống, câu hỏi của người dùng, tài liệu được truy hồi và kết quả trả về từ công cụ đều được đưa vào cùng một chuỗi token, rồi mô hình sinh tiếp dựa trên toàn bộ chuỗi đó. Việc một đoạn văn bản được coi là chỉ thị cần thi hành hay dữ liệu cần xử lý không được quyết định bởi vị trí hay định dạng của nó, mà bởi phân phối mà mô hình đã học. Greshake và cộng sự~\cite{greshake2023indirect} mô tả chính xác tình trạng này khi nói rằng các ứng dụng tích hợp LLM làm mờ ranh giới giữa dữ liệu và chỉ thị, và đó là điều kiện cho phép tấn công từ xa.
+
+\begin{keyidea}{Không có ranh giới cú pháp để dựa vào}
+Trong phần mềm truyền thống, ta phòng thủ tiêm bằng cách làm cho dữ liệu \emph{không thể} trở thành mã. Trong hệ thống LLM, ta không có cơ chế đó: mọi thứ đều là token trong cùng một ngữ cảnh, và việc phân biệt chỉ thị với dữ liệu là một hành vi \emph{đã học được}, có xác suất sai.
+
+Hệ quả thực tiễn: mọi biện pháp dựa vào việc nói với mô hình rằng ``phần dưới đây là dữ liệu, không phải chỉ thị'' đều chỉ làm giảm tỷ lệ thành công của tấn công, không loại bỏ nó. Thiết kế an toàn vì vậy phải giả định rằng mô hình sẽ bị thuyết phục sai ở một tỷ lệ nào đó, và giới hạn thiệt hại khi điều đó xảy ra.
+\end{keyidea}
+
+Có thêm hai đặc điểm làm bài toán khác đi. Thứ nhất, hành vi của mô hình là ngẫu nhiên: một đầu vào bị chặn ở lần thử này có thể đi qua ở lần thử sau, nên khái niệm ``đã sửa lỗ hổng'' mất nghĩa chặt chẽ của nó. Thứ hai, không gian đầu vào là ngôn ngữ tự nhiên, vốn vô hạn và cho phép diễn đạt cùng một ý theo vô số cách, nên không tồn tại một tập quy tắc hữu hạn nào đặc tả được ``đầu vào hợp lệ''.
+
+\subsection{Phân loại theo bề mặt tấn công}
+\label{ssec:attack_surfaces}
+
+Cách phân loại hữu ích nhất khi thiết kế là theo \emph{thời điểm} và \emph{tầng} mà kẻ tấn công can thiệp, vì mỗi bề mặt đòi hỏi một loại quyền truy cập khác nhau và được phòng thủ bằng các biện pháp khác nhau.
+
+\begin{table}[H]
+	\centering
+	\small
+	\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+		\toprule
+		\textbf{Bề mặt} & \textbf{Kẻ tấn công cần gì} & \textbf{Nhắm tới điều gì} \\
+		\midrule
+		Lúc huấn luyện &
+		Một đường đưa nội dung vào dữ liệu tiền huấn luyện, dữ liệu tinh chỉnh hoặc dữ liệu nhúng; hoặc kiểm soát một thành phần trong chuỗi cung ứng (trọng số, tập dữ liệu, thư viện) &
+		Cài một hành vi lệch vào chính mô hình: cửa hậu gắn với một trigger, thiên lệch có chủ đích, hoặc làm giảm chất lượng \\
+		\addlinespace
+		Lúc suy luận &
+		Khả năng đưa văn bản vào ngữ cảnh, trực tiếp qua ô nhập hoặc gián tiếp qua một nguồn dữ liệu mà hệ thống đọc &
+		Chiếm quyền điều khiển hành vi của ứng dụng, vượt qua chính sách an toàn của mô hình, hoặc moi ra nội dung ngữ cảnh \\
+		\addlinespace
+		Tầng hệ thống và tác tử &
+		Một đường tác động tới đầu vào của tác tử, hoặc tới các dịch vụ mà tác tử gọi &
+		Khiến hệ thống \emph{thực hiện hành động}: gọi công cụ, ghi dữ liệu, gửi thông tin ra ngoài; hoặc lạm dụng tài nguyên \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Ba bề mặt tấn công của một hệ thống LLM. Khác biệt đáng chú ý nhất nằm ở cột giữa: bề mặt lúc huấn luyện đòi hỏi quyền truy cập vào quy trình xây dựng mô hình, còn hai bề mặt còn lại chỉ đòi hỏi khả năng đặt văn bản vào một nơi mà hệ thống sẽ đọc.}
+	\label{tab:llm_attack_surfaces}
+\end{table}
+
+Ranh giới giữa ba bề mặt này không tuyệt đối. Khi đầu ra của hệ thống được ghi ngược trở lại một kho dữ liệu rồi kho đó lại được dùng để tinh chỉnh hoặc để truy hồi, một tấn công lúc suy luận trở thành một tấn công lúc huấn luyện ở vòng sau. Mục~\ref{sec:training_privacy_attacks} bàn bề mặt thứ nhất, mục~\ref{sec:prompt_injection_jailbreak} bàn bề mặt thứ hai, và mục~\ref{ssec:surface_tools_memory} dưới đây giải thích vì sao bề mặt thứ ba là bề mặt quyết định mức thiệt hại.
+
+\subsection{OWASP Top 10 for LLM Applications}
+\label{ssec:owasp_llm_top10}
+
+OWASP (Open Worldwide Application Security Project) duy trì danh sách \textbf{OWASP Top 10 for LLM Applications}, một bảng xếp hạng các rủi ro bảo mật của ứng dụng LLM kèm kịch bản tấn công và biện pháp giảm thiểu cho từng mục. Danh sách này hữu ích như một bộ từ vựng chung: khi báo cáo sự cố hoặc viết yêu cầu kiểm thử, dẫn mã định danh của OWASP ngắn gọn và ít gây hiểu lầm hơn là tự mô tả lại loại rủi ro.
+
+Bản 2025 gồm mười mục sau~\cite{owasp2025llmtop10}:
+
+\begin{enumerate}
+	\item \textbf{LLM01:2025 Prompt Injection} -- tiêm chỉ thị.
+	\item \textbf{LLM02:2025 Sensitive Information Disclosure} -- tiết lộ thông tin nhạy cảm.
+	\item \textbf{LLM03:2025 Supply Chain} -- rủi ro chuỗi cung ứng.
+	\item \textbf{LLM04:2025 Data and Model Poisoning} -- đầu độc dữ liệu và mô hình.
+	\item \textbf{LLM05:2025 Improper Output Handling} -- xử lý đầu ra không an toàn.
+	\item \textbf{LLM06:2025 Excessive Agency} -- trao quyền tự quyết quá mức.
+	\item \textbf{LLM07:2025 System Prompt Leakage} -- rò rỉ chỉ thị hệ thống.
+	\item \textbf{LLM08:2025 Vector and Embedding Weaknesses} -- điểm yếu của vector và embedding.
+	\item \textbf{LLM09:2025 Misinformation} -- thông tin sai lệch.
+	\item \textbf{LLM10:2025 Unbounded Consumption} -- tiêu thụ tài nguyên không giới hạn.
+\end{enumerate}
+
+OWASP sửa đổi danh sách này theo chu kỳ: thứ tự xếp hạng thay đổi theo dữ liệu sự cố thực tế, một số mục được gộp hoặc đổi tên giữa các bản. Bản \textbf{2026} được công bố tháng 8 năm 2026 và có đánh số lại; các tài liệu của chính OWASP sau đó dẫn chiếu theo mã mới, trong đó \texttt{Excessive Agency} chuyển từ LLM06 lên \textbf{LLM03}, \texttt{Supply Chain} xuống \textbf{LLM04}, \texttt{Data and Model Poisoning} xuống \textbf{LLM05}, và \texttt{Unbounded Consumption} từ LLM10 lên \textbf{LLM06}. Riêng việc \texttt{Excessive Agency} nhảy bảy bậc lên nhóm ba rủi ro đầu phản ánh đúng điều mục~\ref{ssec:surface_tools_memory} sắp trình bày: thiệt hại của một tấn công tỷ lệ với quyền mà hệ thống trao cho mô hình, chứ không tỷ lệ với độ tinh vi của tấn công.
+
+Danh sách 2025 in ở trên vẫn dùng được như một bản đồ các loại rủi ro, vì các loại rủi ro thay đổi chậm hơn nhiều so với thứ tự xếp hạng của chúng. Nhưng \textbf{mã định danh thì không được chép lại từ sách}: trước khi trích một mã như LLM01 vào tài liệu kỹ thuật, hãy mở bản hiện hành trên trang của OWASP và đối chiếu, vì một mã gắn sai năm sẽ bị đọc thành một rủi ro khác hẳn.
+
+\begin{deepdive}{Đọc danh sách OWASP theo nguyên nhân, không theo thứ tự}
+Mười mục của danh sách không nằm trên cùng một tầng. \texttt{Prompt Injection} là một nguyên nhân gốc; \texttt{Sensitive Information Disclosure} và \texttt{Improper Output Handling} là các hệ quả mà nguyên nhân đó có thể dẫn tới; \texttt{Excessive Agency} là một điều kiện khuếch đại biến hệ quả nhẹ thành hệ quả nặng; còn \texttt{Supply Chain} và \texttt{Data and Model Poisoning} thuộc một bề mặt khác hẳn (hàng dưới cùng và hàng trên cùng của bảng~\ref{tab:llm_attack_surfaces}).
+
+Khi dùng danh sách để kiểm tra một hệ thống, nhóm các mục theo bề mặt tấn công sẽ cho một trình tự rà soát hợp lý hơn là đi tuần tự từ LLM01 tới LLM10.
+\end{deepdive}
+
+\subsection{MITRE ATLAS}
+\label{ssec:mitre_atlas}
+
+\textbf{MITRE ATLAS} (Adversarial Threat Landscape for AI Systems) là một cơ sở tri thức công khai về chiến thuật và kỹ thuật của kẻ tấn công nhắm vào hệ thống AI, do MITRE công bố~\cite{mitreatlas}. ATLAS được tổ chức theo cùng khuôn với ATT\&CK: các \emph{chiến thuật} (tactic) là mục tiêu ở mức cao của từng giai đoạn tấn công, các \emph{kỹ thuật} (technique) là cách cụ thể để đạt mục tiêu đó, kèm theo các biện pháp giảm thiểu và các nghiên cứu tình huống dựng lại từ sự cố thực tế. Mỗi đối tượng có một mã định danh riêng: chiến thuật mang mã dạng \texttt{AML.TA}, kỹ thuật mang mã dạng \texttt{AML.T}, nghiên cứu tình huống mang mã dạng \texttt{AML.CS}.
+
+Quan hệ giữa hai tài liệu có thể hiểu như sau. Danh sách của OWASP sắp xếp rủi ro theo mức độ quan trọng đối với người xây dựng ứng dụng, nên phù hợp để đặt ưu tiên và để rà soát thiết kế. ATLAS mô tả tấn công theo trình tự các bước mà kẻ tấn công đi qua, nên phù hợp cho công việc red team và cho việc xây dựng cơ chế phát hiện. Số lượng chiến thuật, kỹ thuật và tình huống trong ATLAS thay đổi theo từng phiên bản phát hành, nên khi cần con số chính xác hãy tra bản hiện hành thay vì dẫn lại một con số đã in.
+
+\subsection{Bề mặt tấn công mở rộng khi có công cụ và bộ nhớ}
+\label{ssec:surface_tools_memory}
+
+Một mô hình chỉ sinh văn bản thì thiệt hại tối đa của một tấn công tiêm chỉ thị là một câu trả lời sai hoặc một đoạn nội dung vi phạm chính sách. Hai thành phần làm thay đổi hẳn mức thiệt hại đó là công cụ và bộ nhớ, cả hai đã được giới thiệu ở mục~\ref{ssec:planning_tool_use} và mục~\ref{ssec:agent_memory}.
+
+\paragraph{Công cụ biến văn bản thành hành động.} Khi mô hình được gắn công cụ, đầu ra của nó không dừng ở văn bản mà trở thành lời gọi hàm có hiệu lực thật: truy vấn cơ sở dữ liệu, gửi thư, ghi tệp, gọi API của một dịch vụ khác. Từ góc nhìn bảo mật, mỗi công cụ là một quyền được cấp, và tập quyền thực tế của hệ thống là hợp của tất cả các quyền đó. Một đoạn văn bản thuyết phục được mô hình vì vậy thừa hưởng toàn bộ tập quyền ấy. Đây là nội dung của mục \texttt{Excessive Agency} trong danh sách OWASP, và là lý do nguyên tắc đặc quyền tối thiểu có hiệu lực cao hơn mọi bộ lọc văn bản.
+
+\paragraph{Bộ nhớ biến một lần tấn công thành trạng thái lâu dài.} Khi hệ thống ghi lại thông tin giữa các phiên -- bản ghi hội thoại, hồ sơ sở thích người dùng, ghi chú do chính tác tử viết -- thì nội dung do kẻ tấn công đưa vào có thể tồn tại qua nhiều phiên và tác động tới những phiên mà kẻ tấn công không tham gia. Bộ nhớ ở đây đóng hai vai cùng lúc: là một kho dữ liệu không đáng tin được đọc vào ngữ cảnh, và là một kênh lưu trữ mà tấn công có thể dùng để duy trì chỗ đứng.
+
+\paragraph{Nhiều bước làm nhiều cơ hội.} Một tác tử thực hiện một chuỗi bước, mỗi bước đọc kết quả của bước trước. Nội dung không đáng tin vì vậy đi vào ngữ cảnh nhiều lần, ở nhiều điểm, và một lần thuyết phục thành công là đủ. Mục~\ref{sec:agentic_systems} trình bày kiến trúc này về mặt năng lực; ở đây điều cần ghi nhận là cùng kiến trúc đó nhân số điểm tiếp xúc với dữ liệu không đáng tin lên theo số bước.
+
+\begin{pitfall}{Câu hỏi cần đặt khi thiết kế}
+Với mỗi hệ thống LLM, hãy trả lời hai câu hỏi theo đúng thứ tự này:
+
+\textbf{Thứ nhất:} Những nguồn nào có thể đưa văn bản vào ngữ cảnh của mô hình? Liệt kê hết: ô nhập của người dùng, tài liệu được truy hồi, đầu ra của từng công cụ, nội dung trong bộ nhớ, siêu dữ liệu của tệp được tải lên. Với mỗi nguồn, xác định ai có thể ghi vào đó.
+
+\textbf{Thứ hai:} Nếu một trong các nguồn đó điều khiển được hành vi của mô hình, hệ thống làm được những gì? Đây là mức thiệt hại tối đa, và nó được quyết định bởi tập quyền của công cụ, không bởi chất lượng của chỉ thị hệ thống.
+
+Nếu câu trả lời cho câu thứ hai bao gồm một hành động không thể hoàn tác, thiết kế cần thay đổi trước khi bàn tới bộ lọc.
+\end{pitfall}

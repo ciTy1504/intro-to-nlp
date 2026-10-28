@@ -1,0 +1,320 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters_part3/chap3_7_llmops.tex
+% LLMOps: vòng đời vận hành của một ứng dụng LLM
+
+\section{Vận hành ứng dụng LLM: prompt, đánh giá trực tuyến, chi phí và sự cố}
+\label{sec:llmops_app}
+
+Mục~\ref{sec:llmops_lifecycle} đã mô tả vòng đời MLOps cổ điển: giám sát, phát hiện suy giảm, thu thập dữ liệu mới, gán nhãn lại, tái huấn luyện, triển khai an toàn. Vòng đời đó giả định rằng \emph{thứ bạn phát hành là trọng số}. Với phần lớn ứng dụng LLM, điều đó không còn đúng: thứ bạn phát hành thường là một đoạn văn bản, một tên model, một ngưỡng, một danh sách công cụ. Chúng đổi nhanh hơn trọng số hàng chục lần, và chúng không đi qua bất kỳ quy trình nào trong danh sách trên.
+
+Mục này nói về vòng đời của những thứ đó.
+
+\subsection{Quản lý prompt như quản lý mã}
+\label{ssec:prompt_management}
+
+\begin{keyidea}{Prompt là một hiện vật được phát hành}
+Một prompt quyết định hành vi của hệ thống không kém gì mã nguồn. Vậy nó phải có đủ bốn thứ mà mọi đoạn mã chạy trong production đều có: \textbf{phiên bản bất biến}, \textbf{lịch sử ai sửa gì khi nào}, \textbf{đường lùi lại}, và \textbf{một liên kết từ mỗi đầu ra về đúng phiên bản đã sinh ra nó}.
+
+Thiếu thứ thứ tư, ba thứ đầu gần như vô dụng: bạn có lịch sử nhưng không biết vết tệ hôm qua thuộc phiên bản nào.
+\end{keyidea}
+
+\paragraph{Tách prompt khỏi mã, nhưng tách tới đâu.} Có hai cách đặt prompt, và chúng đánh đổi khác nhau:
+
+\begin{itemize}
+	\item \textbf{Trong kho mã}, dưới dạng tệp riêng (không phải chuỗi nhúng giữa hàm). Ưu điểm: một lần phát hành là một lần phát hành, prompt và mã luôn khớp, diff và review có sẵn. Nhược điểm: người không viết mã không sửa được, và mỗi lần đổi một chữ phải chạy lại toàn bộ đường ống CI/CD.
+	\item \textbf{Trong một hệ quản lý prompt} có phiên bản và nhãn. Ưu điểm: đổi được mà không phải phát hành lại ứng dụng, và người làm nội dung tham gia được. Nhược điểm nghiêm trọng: \emph{bạn vừa tạo ra một kênh thay đổi production không đi qua CI}.
+\end{itemize}
+
+\noindent Cách thứ hai chỉ an toàn nếu nó được đối xử như một kênh phát hành thật, với đủ bốn thứ ở hộp trên. Cơ chế mà các hệ quản lý prompt dùng để đạt điều đó là \textbf{nhãn}: phiên bản là số bất biến, còn việc ``triển khai'' là hành động \emph{di chuyển một nhãn} sang một phiên bản. Langfuse là ví dụ cụ thể và đủ điển hình:
+
+\begin{itemize}
+	\item Mỗi phiên bản prompt có một số phiên bản tự sinh; nhãn do bạn đặt, dùng cho môi trường (\texttt{staging}, \texttt{production}), cho từng khách hàng, hoặc cho từng thí nghiệm.
+	\item Nhãn \texttt{production} là nhãn triển khai: một lời gọi lấy prompt mà không nêu nhãn hay số phiên bản sẽ nhận phiên bản mang nhãn \texttt{production}.
+	\item Nhãn \texttt{latest} do hệ thống tự duy trì, luôn trỏ vào phiên bản mới tạo gần nhất. \textbf{Đây không phải nhãn để đọc trong production} -- nó có nghĩa là ``bất cứ thứ gì ai đó vừa lưu''.
+	\item \textbf{Không có lùi âm thầm.} Nếu không có phiên bản nào mang nhãn được yêu cầu, lời gọi trả về \texttt{404 Not Found}; truyền đồng thời một nhãn và một số phiên bản trả về \texttt{400}. Hành vi này đúng: một hệ thống âm thầm lùi về phiên bản khác khi không tìm thấy nhãn sẽ khiến bạn chạy prompt sai mà không biết.
+	\item \textbf{Lùi lại} là gán nhãn \texttt{production} cho một phiên bản cũ -- một hành động, không phải một lần phát hành.
+	\item \textbf{Nhãn được bảo vệ} (chỉ có ở các gói trả tiền) chặn các vai trò thấp sửa hoặc xóa một nhãn. Nếu không có cơ chế này, bất cứ ai có quyền vào giao diện đều đổi được hành vi production.
+\end{itemize}
+
+\begin{example}{Đọc prompt theo nhãn và gắn phiên bản vào vết}{ex:prompt_label}
+\begin{minted}{python}
+from langfuse import Langfuse
+
+langfuse = Langfuse()
+
+# Không nêu nhãn: nhận phiên bản mang nhãn "production".
+prompt = langfuse.get_prompt("support-answer")
+
+# Ở staging thì trỏ vào nhãn khác:
+# prompt = langfuse.get_prompt("support-answer",
+#                              label="staging")
+
+# Ghim cứng một phiên bản cho một thí nghiệm A/B:
+# prompt = langfuse.get_prompt("support-answer", version=17)
+
+# ... gọi mô hình bằng nội dung của prompt này ...
+
+# Gắn phiên bản prompt vào span của lượt gọi mô hình.
+# Đây là bước làm cho mọi thứ còn lại có ý nghĩa.
+langfuse.update_current_generation(prompt=prompt)
+\end{minted}
+Việc phát hành một phiên bản mới là gán nhãn cho nó, chứ không phải sửa phiên bản cũ:
+\begin{minted}{python}
+langfuse.create_prompt(
+    name="support-answer",
+    prompt="...",
+    labels=["staging"],      # chưa cho production thấy
+)
+
+# Khi đã đo xong và quyết định phát hành:
+langfuse.update_prompt(
+    name="support-answer",
+    version=18,
+    new_labels=["production"],
+)
+\end{minted}
+\end{example}
+
+\noindent Giá trị của bước gắn phiên bản vào vết không chỉ là truy nguyên. Khi phiên bản prompt đã nằm trên span, nền tảng quan sát gộp được chỉ số \emph{theo từng phiên bản}: độ trễ trung vị, số token vào và ra, chi phí, số lượt gọi, điểm chấm trung vị. Nói cách khác, bạn có một bảng so sánh các phiên bản prompt trên dữ liệu thật mà không phải tự dựng gì. Các cách gắn khác cho những kiến trúc khác nhau cũng có sẵn trong cùng một SDK: tham số \texttt{prompt} khi tạo generation, \texttt{propagate\_\allowbreak attributes(\allowbreak prompt=.\allowbreak .\allowbreak .\allowbreak )} khi một ngữ cảnh gồm nhiều lượt gọi, hoặc khóa \texttt{langfuse\_prompt} trong metadata khi đi qua một lớp bọc.
+
+\begin{pitfall}{Sửa prompt trực tiếp trên production}
+Đây là thói quen phổ biến nhất và tốn kém nhất trong vận hành ứng dụng LLM. Nó trông vô hại vì sửa một chữ thì có vẻ không phải một lần phát hành. Bốn hệ quả, theo thứ tự xuất hiện:
+
+\begin{enumerate}
+	\item \textbf{Không có diff.} Không ai biết đã đổi gì, kể cả người vừa đổi, sau hai ngày.
+	\item \textbf{Mọi phép đo trước đó hết hiệu lực.} Mọi điểm đánh giá, mọi phản hồi người dùng đã thu được đều thuộc về một văn bản không còn tồn tại. Nếu bạn không ghi phiên bản vào vết, bạn vừa trộn hai phân phối vào một biểu đồ.
+	\item \textbf{Không lùi lại được} -- trừ khi có người nhớ nguyên văn bản cũ.
+	\item \textbf{Hành vi lệch giữa các môi trường.} Bản sửa chỉ tồn tại trên production, nên thí nghiệm nào chạy ở nơi khác cũng không tái lập được lỗi.
+\end{enumerate}
+
+\textbf{Một chi tiết kỹ thuật dễ bị coi nhẹ:} sửa prompt hệ thống còn vô hiệu hóa bộ đệm tiền tố (mục~\ref{ssec:pagedattention}). Prompt hệ thống là tiền tố chung dài nhất của mọi yêu cầu; đổi một ký tự trong nó làm trượt toàn bộ đệm cho đến khi đệm được dựng lại. Hệ quả là một đợt tăng vọt TTFT và chi phí ngay sau khi bạn ``chỉ sửa một chữ''.
+\end{pitfall}
+
+\subsection{Đánh giá trực tuyến}
+\label{ssec:online_eval}
+
+Phần 2 đã dành hai mục cho đánh giá \emph{ngoại tuyến}: một quy trình tái lập được bằng bộ công cụ chuẩn (mục~\ref{sec:lm_eval_practice}) và một phương pháp phân tích lỗi có số lượng mẫu, có kiểm định (mục~\ref{sec:error_analysis}). Đánh giá trực tuyến không thay thế chúng; nó trả lời một câu hỏi khác.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{3.1cm}p{5.1cm}p{5.1cm}@{}}
+\toprule
+ & \textbf{Ngoại tuyến} & \textbf{Trực tuyến} \\
+\midrule
+Câu hỏi & Phiên bản này có tốt hơn phiên bản kia trên tập tôi đã chọn không? & Hệ thống đang làm gì với những câu hỏi tôi không lường trước? \\
+Đầu vào & Tập cố định, có nhãn & Traffic thật, không nhãn \\
+Khi nào chạy & Trước khi phát hành & Liên tục \\
+Điểm mạnh & Tái lập được, so sánh được & Phủ đúng phân phối thật, bắt được trôi dạt \\
+Điểm yếu & Tập đánh giá lạc hậu so với thực tế & Không có đáp án đúng để so \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Giám khảo LLM chạy trên traffic thật.} Cơ chế là áp đúng những bộ chấm đã xây ở mục~\ref{sec:error_analysis} lên các span trong production. Các nền tảng quan sát hiện nay đều có dạng ``luật'': chọn loại span cần chấm, thêm bộ lọc, đặt tỷ lệ lấy mẫu, gán một hoặc nhiều bộ chấm. Bộ lọc là phần đáng đầu tư -- Langfuse cho lọc theo loại span, tên span, metadata, cộng với các chiều của vết như \texttt{userId}, \texttt{sessionId}, \texttt{tags}, \texttt{version}. Nhờ đó bạn chấm được ``chỉ các lượt của nhóm khách hàng A, chỉ bước trả lời cuối, 10\% ngẫu nhiên''. Với dữ liệu đã có từ trước, cơ chế là chấm theo lô để bù điểm cho lịch sử, không phải chờ luật trực tuyến.
+
+\begin{pitfall}{Bốn điều phải quyết trước khi bật một giám khảo lên production}
+\begin{enumerate}
+	\item \textbf{Kiểm định giám khảo trước đã.} Toàn bộ quy trình ở mục~\ref{ssec:llm_judge_validation} là điều kiện cần, không phải tùy chọn. Một giám khảo chưa kiểm định chạy trên 100\% traffic chỉ sinh ra một biểu đồ làm bạn yên tâm.
+	\item \textbf{Giám khảo cũng là một hóa đơn.} Mỗi vết được chấm là một lời gọi LLM nữa. Chấm 100\% traffic bằng một mô hình mạnh có thể đắt hơn chính ứng dụng. Tỷ lệ lấy mẫu là một quyết định về chi phí, và mục~\ref{ssec:eval_statistics} cho bạn cách tính xem tỷ lệ đó có đủ để kết luận gì không -- bảng~\ref{tab:eval_sample_size} là phép tính cần làm trước khi chọn con số.
+	\item \textbf{Giám khảo là một thước đo, nên nó phải được ghim.} Đổi mô hình giám khảo hay đổi prompt của giám khảo là đổi cái thước. Mọi so sánh trước và sau thời điểm đó đều không còn hợp lệ. Hãy ghim phiên bản giám khảo và coi việc nâng cấp nó như một lần phát hành riêng, có đo lại trên dữ liệu cũ.
+	\item \textbf{Giám khảo chấm văn bản cuối sẽ chấm sai các tác tử.} Mục~\ref{ssec:agent_eval} đã có ví dụ cụ thể: một giám khảo đọc bản tóm tắt đánh trượt ba lượt vốn đã thành công. Với tác tử, bộ chấm phải đọc nhật ký gọi công cụ trong vết, chứ không đọc câu trả lời.
+\end{enumerate}
+\end{pitfall}
+
+\paragraph{Phản hồi người dùng.} Có hai loại, và chúng rất khác nhau về chất lượng tín hiệu:
+
+\begin{itemize}
+	\item \textbf{Tường minh:} ngón cái lên/xuống, một thang điểm, một nút ``báo lỗi''. Về cách lưu, các nền tảng đều quy về cùng một khái niệm -- một \emph{điểm} (score) gắn vào vết hoặc vào một span, có tên, có giá trị, có kiểu dữ liệu (số, phân loại, boolean, văn bản) và một ghi chú tùy chọn. Ngón cái lên/xuống là một điểm kiểu boolean hoặc phân loại; nhờ đó nó lọc được trong bảng vết và gộp được theo phiên bản prompt.
+	\item \textbf{Hàm ẩn:} người dùng sửa lại câu trả lời, hỏi lại cùng một câu bằng cách khác, bỏ dở giữa lượt, sao chép một phần đầu ra, hay yêu cầu chuyển cho người thật. Những tín hiệu này nhiều hơn tín hiệu tường minh hàng chục lần và không cần người dùng làm thêm việc gì.
+\end{itemize}
+
+\begin{pitfall}{Cái bẫy của tín hiệu phản hồi: thưa và thiên lệch}
+\textbf{Thưa.} Chỉ một phần rất nhỏ người dùng bấm vào nút phản hồi. Tôi không tìm được một con số tỷ lệ phản hồi nào được đo độc lập và công bố để dẫn ở đây, nên hãy tự đo tỷ lệ đó trên hệ thống của mình thay vì tin một con số trên mạng. Hệ quả thực hành thì không phụ thuộc vào con số: với một tỷ lệ phản hồi thấp, phép tính ở mục~\ref{ssec:eval_statistics} cho thấy bạn cần rất nhiều lưu lượng mới có đủ mẫu để kết luận bất cứ điều gì, và một biểu đồ ``tỷ lệ ngón cái lên'' theo ngày sẽ nhảy loạn vì mẫu nhỏ chứ không vì chất lượng đổi.
+
+\textbf{Thiên lệch, và đây là vấn đề nặng hơn.} Tập người bấm phản hồi không phải một mẫu ngẫu nhiên của tập người dùng. Người rất không hài lòng và người rất hài lòng bấm nhiều hơn hẳn; người thấy câu trả lời ``tạm được'' hầu như không bao giờ bấm. Đây đúng là lớp vấn đề mà tài liệu về xếp hạng gọi là \emph{thiên lệch chọn mẫu trong phản hồi hàm ẩn}: Joachims và cộng sự \cite{joachims2016unbiased} chỉ ra rằng các thiên lệch nội tại của phản hồi hàm ẩn là ``a key obstacle to its effective use'', và huấn luyện trực tiếp trên dữ liệu nhấp chuột thô cho ra kết quả dưới mức tối ưu. Khung giải pháp của họ -- suy luận phản thực với trọng số theo xu hướng xuất hiện -- được xây cho bài toán xếp hạng, không chuyển thẳng sang đây; nhưng \emph{chẩn đoán} thì chuyển nguyên vẹn.
+
+\textbf{Vì vậy:} Dùng phản hồi người dùng để \emph{tìm vết cần đọc}, đừng dùng nó làm chỉ số chất lượng. Một ngón cái xuống là một lời mời đọc vết đó -- và đó là giá trị lớn nhất của nó, vì nó trỏ đúng vào những ca mà mục~\ref{ssec:error_protocol} muốn bạn lấy mẫu. Chỉ số chất lượng thì lấy từ một mẫu \emph{ngẫu nhiên} được chấm bởi giám khảo đã kiểm định.
+\end{pitfall}
+
+\subsection{Phát hành: đổi model id hay đổi phiên bản prompt là một lần phát hành}
+\label{ssec:llm_release}
+
+Mục~\ref{ssec:retraining_pipeline} đã giới thiệu hai chiến lược an toàn cho mô hình: shadow và canary. Với ứng dụng LLM, cả hai vẫn dùng được nhưng cần đọc lại, và phải thêm hai cái nữa.
+
+\begin{keyidea}{Vì sao đây không phải một lần sửa cấu hình}
+Đổi tên model trong một biến môi trường là một thao tác một dòng. Nhưng mục~\ref{sec:train_serve_boundary} đã lập luận cho một trường hợp tương tự -- đổi mẫu hội thoại -- rằng đó không phải lỗi định dạng mà là một \emph{dịch chuyển phân phối}. Đổi model id cũng vậy, và còn mạnh hơn: toàn bộ phân phối đầu ra thay đổi, kể cả độ dài, giọng điệu, mức độ tuân thủ định dạng, xu hướng từ chối, và cách gọi công cụ. Không có gì báo lỗi. Mô hình mới ``tốt hơn'' trên benchmark công khai hoàn toàn có thể tệ hơn trên tác vụ của bạn.
+
+Hệ quả vận hành: \textbf{model id và phiên bản prompt phải nằm trong cùng một hiện vật phát hành với mã, và phải xuất hiện trên mọi span.} Nếu hai thứ đó đổi được mà không ai phê duyệt và không ai thấy trong vết, bạn không có quy trình phát hành.
+\end{keyidea}
+
+\paragraph{Shadow: rẻ cho một số thứ, vô dụng cho những thứ khác.} Chạy phiên bản mới song song, chỉ ghi lại đầu ra, không gửi cho người dùng. Nó trả lời tốt bốn câu hỏi: độ trễ ra sao, chi phí token ra sao, có vi phạm định dạng đầu ra không, tỷ lệ lỗi và tỷ lệ từ chối có nhảy không. Nó \emph{không} trả lời được câu hỏi chất lượng cảm nhận, vì không ai đọc các đầu ra đó. Và nó có một chi phí mà phiên bản MLOps cổ điển không có: \textbf{shadow nhân đôi hóa đơn token}. Hãy chạy shadow trên một mẫu lưu lượng, không trên toàn bộ.
+
+\paragraph{Canary.} Chuyển một phần nhỏ lưu lượng sang phiên bản mới. Điều kiện để canary có nghĩa là bạn phải có một chỉ số \emph{động trong cửa sổ canary}. Đây là chỗ đánh giá trực tuyến và canary gặp nhau: nếu chỉ số duy nhất của bạn là một cuộc khảo sát hàng tháng, canary chỉ là một cách chờ. Các chỉ số thường kịp động: điểm giám khảo trên mẫu được chấm, tỷ lệ từ chối, tỷ lệ truy xuất rỗng, tỷ lệ phải chuyển cho người thật, p95 độ trễ, chi phí mỗi yêu cầu. Và hãy giữ 100\% vết của nhóm canary (mục~\ref{ssec:trace_sampling_privacy}).
+
+\paragraph{Blue--green.} Hai môi trường đầy đủ, chuyển toàn bộ lưu lượng từ xanh sang lam trong một bước và lùi lại cũng trong một bước. Với ứng dụng LLM, điều làm blue--green khó hơn so với một dịch vụ không trạng thái là \emph{trạng thái hội thoại}: nếu một phiên đang diễn ra bị chuyển sang phiên bản dùng mẫu hội thoại hoặc prompt hệ thống khác, lịch sử hội thoại mà mô hình nhận được sẽ không nhất quán. Hãy ghim phiên theo phiên bản: một phiên đã bắt đầu thì đi hết với phiên bản đã bắt đầu.
+
+\paragraph{Cờ tính năng.} Phân loại của Pete Hodgson \cite{hodgson2017featuretoggles} có ích vì nó tách bốn loại cờ mà người ta hay gộp làm một, và cả bốn đều có chỗ dùng ở đây:
+
+\begin{itemize}
+	\item \textbf{Cờ phát hành} (release toggles) cho phép đưa mã chưa hoàn thiện lên production dưới dạng ``latent code'': một công cụ mới của tác tử đã nằm trong bản triển khai nhưng chưa được bật cho ai.
+	\item \textbf{Cờ thí nghiệm} (experiment toggles) ``are used to perform multivariate or A/B testing'': chia người dùng theo cohort và so hai phiên bản prompt.
+	\item \textbf{Cờ vận hành} (ops toggles) ``are used to control operational aspects of our system's behavior'': đây là công tắc ngắt. Với ứng dụng LLM, tối thiểu cần ba cái -- tắt một công cụ, hạ xuống một mô hình rẻ hơn, và tắt hẳn tính năng để trả về một đường dự phòng không dùng LLM.
+	\item \textbf{Cờ phân quyền} (permissioning toggles): bật tính năng cho một nhóm cụ thể, ví dụ chỉ nhân viên nội bộ trong tuần đầu.
+\end{itemize}
+
+\noindent Cờ vận hành là loại đáng đầu tư trước nhất, vì nó là thứ bạn sẽ cần lúc 2 giờ sáng. Và hãy nhớ nguyên tắc chung của cờ tính năng: cờ là nợ kỹ thuật có kỳ hạn -- mỗi cờ thêm một nhánh thực thi mà bạn phải kiểm thử, nên phải có ngày xóa.
+
+\subsection{Kinh tế vận hành}
+\label{ssec:llm_economics}
+
+Mục~\ref{ssec:rag_cost} đã chia chi phí của một hệ thống RAG thành ba hóa đơn -- dựng chỉ mục, lưu trữ vector, và trả lời câu hỏi -- và chỉ ra rằng hóa đơn thứ ba thường lớn nhất. Mục này nói về hóa đơn thứ ba đó: cách đo nó, và bốn cách cắt nó.
+
+\paragraph{Đo theo ba chiều, không theo một con số.} Tổng chi phí tháng là con số ít hữu ích nhất. Ba chiều cần có:
+
+\begin{itemize}
+	\item \textbf{Theo tính năng và theo phiên bản prompt.} Đây là chiều cho bạn biết nên tối ưu ở đâu. Nó có sẵn nếu bạn đã gắn phiên bản prompt vào span (mục~\ref{ssec:prompt_management}).
+	\item \textbf{Theo người dùng hoặc theo khách hàng.} Phân phối chi phí theo người dùng gần như luôn lệch nặng: một nhóm rất nhỏ tiêu một phần lớn. Chiều này cũng là chiều để phát hiện lạm dụng. Nó cần \texttt{userId} và \texttt{sessionId} có mặt trên vết.
+	\item \textbf{Theo loại token.} Hai cột vào/ra không còn đủ. Như mục~\ref{ssec:otel_genai} đã nêu, quy ước GenAI đã định nghĩa chỉ số riêng cho token \emph{đọc từ đệm}, token \emph{ghi vào đệm}, và token \emph{suy luận}. Ba loại này được tính giá khác nhau, và trong một ứng dụng dùng nhiều bộ đệm thì tỷ lệ giữa chúng là thứ quyết định hóa đơn. Hãy đọc trang giá của nhà cung cấp để biết mức hiện hành; chúng đổi.
+\end{itemize}
+
+\paragraph{Cắt bằng bộ nhớ đệm.} Có bốn tầng đệm khác nhau, hay bị gọi lẫn tên:
+
+\begin{enumerate}
+	\item \textbf{Đệm chính xác (exact cache).} Khóa là hàm băm của toàn bộ yêu cầu đã chuẩn hóa; trúng thì trả lại nguyên câu trả lời cũ. Rẻ nhất, an toàn nhất, và hiệu quả hơn trực giác: mục~\ref{ssec:rag_latency} đã nhận xét rằng phân phối câu hỏi thực tế có đuôi rất dài nhưng phần đầu rất tập trung. Hãy làm tầng này trước. Cần quyết hai việc: thời hạn sống của mục đệm, và khóa đệm có gồm danh tính người dùng hay không -- nếu câu trả lời phụ thuộc quyền xem tài liệu thì bắt buộc phải gồm, nếu không bạn vừa tạo một đường rò dữ liệu xuyên người dùng.
+	\item \textbf{Đệm ngữ nghĩa (semantic cache).} Thay vì đòi trùng khớp tuyệt đối, nhúng truy vấn thành vector rồi tìm kiếm tương tự trong một kho vector (mục~\ref{sec:vector_databases}) để tìm câu hỏi cũ \emph{gần nghĩa}. GPTCache (giấy phép MIT) là cách triển khai được biết nhiều nhất của ý này. Nhưng hãy đọc đúng cảnh báo mà chính kho mã của nó ghi: đệm ngữ nghĩa sinh ra \emph{dương tính giả và âm tính giả}. Dương tính giả ở đây nghĩa là trả lời câu hỏi A bằng câu trả lời của câu hỏi B vì hai câu có embedding gần nhau -- một chế độ hỏng im lặng và rất khó gỡ. Nếu dùng, hãy đặt ngưỡng tương đồng rất chặt, giới hạn vào các miền mà hai câu gần nghĩa thì cùng đáp án, và ghi vào vết rằng câu trả lời đến từ đệm. Về bảo trì, kho mã nói nhóm phát triển không còn thêm hỗ trợ cho các API và mô hình LLM mới, và API của thư viện có thể đổi -- hãy tính điều đó vào quyết định.
+	\item \textbf{Đệm tiền tố ở tầng phục vụ.} Nếu bạn tự host, đây là tầng cho lợi nhiều nhất mà không có rủi ro sai: prefix caching và RadixAttention tái dùng KV cache của tiền tố chung (mục~\ref{ssec:pagedattention}), nên các yêu cầu chia sẻ prompt hệ thống và tài liệu giống nhau bỏ qua được phần lớn pha prefill. Nó giảm TTFT và giảm chi phí tính toán, và nó không thể trả lời sai, vì nó chỉ tái dùng \emph{tính toán}, không tái dùng \emph{kết quả}.
+	\item \textbf{Đệm prompt phía nhà cung cấp.} Khi dùng API, cùng một cơ chế được nhà cung cấp phơi ra, và token đọc từ đệm được tính giá thấp hơn token vào thông thường. Thiết kế prompt để tận dụng nó là một việc có tính kỹ thuật cụ thể: đặt phần \emph{bất biến} (chỉ dẫn hệ thống, định nghĩa công cụ, tài liệu dùng chung) lên \emph{đầu} và phần thay đổi theo yêu cầu xuống cuối. Đây cũng là lý do thứ hai để không sửa prompt hệ thống một cách tùy tiện.
+\end{enumerate}
+
+\paragraph{Cắt bằng định tuyến theo độ khó.} Không phải yêu cầu nào cũng cần mô hình mạnh nhất. Mục~\ref{ssec:rag_latency} đã nêu nguyên tắc cho các bước phụ -- viết lại truy vấn, phân loại định tuyến -- nhưng ý tưởng mở rộng được cho chính bước trả lời. \textbf{RouteLLM} \cite{ong2024routellm} hình thức hóa nó: huấn luyện một bộ định tuyến trên dữ liệu ưu tiên của con người để, với mỗi truy vấn, chọn giữa một mô hình mạnh và một mô hình yếu hơn; phần abstract báo cáo mức giảm chi phí ``over 2 times in certain cases'' mà không giảm chất lượng phản hồi, và các bộ định tuyến chuyển được sang cặp mô hình mạnh--yếu khác ở thời điểm kiểm thử. Hãy đọc con số đó như con số của tác giả trên thiết lập của họ, không phải một cam kết. Phiên bản thực dụng nhất để bắt đầu không cần huấn luyện gì: định tuyến theo \emph{loại yêu cầu} mà bạn đã biết từ phân tích lỗi -- phân loại và trích xuất đi mô hình nhỏ, suy luận nhiều bước đi mô hình lớn -- rồi đo.
+
+\paragraph{Hạn mức và chống lạm dụng.} Một ứng dụng LLM mở ra một dạng rủi ro mà một dịch vụ CRUD không có: một yêu cầu hợp lệ về cú pháp vẫn tiêu được một lượng tài nguyên lớn gấp nghìn lần yêu cầu trung bình. OWASP xếp đây thành một hạng mục riêng trong Top 10 cho ứng dụng LLM, \textbf{Unbounded Consumption} \cite{owasp2025llmtop10} -- mã định danh \texttt{LLM10} ở bản 2025 -- mô tả rủi ro là việc ứng dụng cho phép ``excessive and uncontrolled inferences'', dẫn tới từ chối dịch vụ, thiệt hại kinh tế, đánh cắp mô hình và suy giảm chất lượng dịch vụ. Mã định danh này đã đổi giữa các bản của danh sách, nên hãy đối chiếu bản hiện hành trước khi trích nó vào tài liệu kỹ thuật; chương~\ref{chap:security} bàn kỹ chuyện đánh số và cách đọc cả danh sách. Trong danh sách biện pháp của tài liệu đó, các biện pháp thuộc tầng vận hành gồm:
+
+\begin{itemize}
+	\item \textbf{Kiểm tra đầu vào, kể cả giới hạn kích thước.} Giới hạn số token đầu vào là hàng rào rẻ nhất và hiệu quả nhất, vì chi phí một yêu cầu tỷ lệ gần như trực tiếp với nó.
+	\item \textbf{Hạn mức theo người dùng và giới hạn tần suất.} Đặt hạn mức theo \emph{token}, không chỉ theo số yêu cầu -- một yêu cầu có thể đắt gấp nghìn lần một yêu cầu khác.
+	\item \textbf{Thời gian chờ tối đa và điều tiết} cho các thao tác tốn tài nguyên; với tác tử, thêm \textbf{giới hạn số hành động trong hàng đợi và tổng số hành động}, vì một vòng lặp tác tử không có trần là một hóa đơn không có trần.
+	\item \textbf{Ghi log, giám sát và phát hiện bất thường về mức dùng tài nguyên} -- phần này chính là mục~\ref{sec:llm_observability}, nhìn từ góc an toàn.
+	\item \textbf{Suy giảm có kiểm soát} dưới tải nặng, thay vì sụp.
+	\item \textbf{Hạn chế phơi logit và log-probability}, vì chúng là nguyên liệu để sao chép mô hình.
+\end{itemize}
+
+\begin{assess}{Thứ tự nên làm khi cần cắt chi phí}
+Theo thứ tự tỷ lệ lợi ích trên công sức, và quan trọng hơn: theo thứ tự rủi ro làm sai từ thấp lên cao.
+
+\begin{enumerate}
+	\item \textbf{Đo trước.} Chi phí theo tính năng, theo phiên bản prompt, theo người dùng, theo loại token. Phần lớn đội ngũ tìm ra một chỗ tiêu tiền mà họ không biết là có.
+	\item \textbf{Giảm số token đầu vào.} Ít chunk hơn nhưng tốt hơn (mục~\ref{ssec:rag_cost}); cắt lịch sử hội thoại; bỏ các chỉ dẫn đã không còn tác dụng.
+	\item \textbf{Đệm chính xác và đệm tiền tố.} Không rủi ro trả lời sai.
+	\item \textbf{Định tuyến theo loại yêu cầu}, bắt đầu bằng luật, có đo.
+	\item \textbf{Đổi mô hình nền sang bản nhỏ hơn} -- và đây là lúc cần đủ bộ đánh giá ở mục~\ref{sec:lm_eval_practice} cộng canary, vì nó là thay đổi có rủi ro chất lượng cao nhất.
+	\item \textbf{Đệm ngữ nghĩa} làm sau cùng, hoặc không làm, vì nó là cách duy nhất trong danh sách có thể trả về câu trả lời sai.
+\end{enumerate}
+\end{assess}
+
+\subsection{Ứng phó sự cố cho ứng dụng LLM}
+\label{ssec:llm_incident}
+
+Các chế độ hỏng đáng lo nhất ở đây có một đặc điểm chung với lớp lỗi ở mục~\ref{sec:train_serve_boundary}: \textbf{chúng không làm sập dịch vụ}. Trang vẫn tải, API vẫn trả 200, bốn tín hiệu vàng vẫn xanh, và không trang cảnh báo nào kêu.
+
+\paragraph{Năm dạng hỏng im lặng.}
+
+\begin{enumerate}
+	\item \textbf{Chất lượng tụt âm thầm.} Nguyên nhân có thể ở bất cứ đâu: một bản cập nhật chỉ mục làm hỏng một phần tài liệu, một thay đổi nhỏ ở prompt, một bước phân tích cú pháp PDF mới. Dấu hiệu sớm thường không phải điểm chấm mà là các tín hiệu gián tiếp: tỷ lệ phải chuyển cho người thật tăng, tỷ lệ người dùng hỏi lại tăng, độ dài câu trả lời đổi phân phối.
+	\item \textbf{Mô hình của nhà cung cấp đổi dưới chân mình.} Có một cơ chế cụ thể: \emph{bí danh} (alias) của model không phải một mô hình mà là một con trỏ. Tài liệu của Anthropic nói rõ rằng với các thế hệ trước một mốc nhất định, bí danh là ``a convenience pointer that resolves to the dated ID''. Trỏ vào bí danh nghĩa là chấp nhận rằng mô hình bên dưới có thể đổi mà cấu hình của bạn không đổi một ký tự. \textbf{Hãy luôn ghim định danh ảnh chụp (snapshot) trong production}, và coi việc chuyển sang ảnh chụp mới là một lần phát hành đi qua canary.
+	\item \textbf{Nhà cung cấp bỏ một tham số hoặc đổi hành vi API.} Đây không phải giả thuyết. Tài liệu khấu hao của Anthropic ghi rằng ba tham số lấy mẫu \texttt{temperature}, \texttt{top\_p} và \texttt{top\_k} đã bị \emph{loại bỏ} trong một phiên bản API và nay trả về lỗi 400, với khuyến nghị thay bằng cách diễn đạt lại prompt. Một thay đổi như vậy làm toàn bộ lời gọi của bạn thất bại ngay khi bạn nâng phiên bản API -- nên hãy ghim phiên bản API như ghim phiên bản thư viện, và đọc changelog của nhà cung cấp theo lịch, không theo nhu cầu.
+	\item \textbf{Ngừng phục vụ một model id.} Cả hai nhà cung cấp lớn đều có trang tài liệu riêng cho việc này, với thuật ngữ và cam kết cụ thể. Anthropic dùng bốn trạng thái -- \emph{Active}, \emph{Legacy}, \emph{Deprecated}, \emph{Retired} -- và nói thẳng ``Requests to retired models fail''; cam kết thông báo là ``at least 60 days' notice before model retirement for publicly released models''. OpenAI phân biệt ``deprecation'' (bắt đầu quá trình rút một mô hình hoặc endpoint, kèm một ngày tắt) với ``shutdown''/``sunset'' (không còn truy cập được), và nêu thời hạn thông báo tối thiểu là sáu tháng cho các mô hình đã phát hành rộng, ba tháng cho các biến thể chuyên biệt, còn mô hình bản xem trước có thể bị rút với thời hạn ngắn hơn nhiều -- tài liệu nêu mức ``such as 2 weeks''. Hệ quả vận hành rất đơn giản: \emph{nếu bạn xây một tính năng trên một mô hình bản xem trước, bạn đã nhận một ngày hết hạn mà bạn không biết}.
+	\item \textbf{Từ chối sai hàng loạt.} Mô hình bắt đầu từ chối một lớp yêu cầu hợp lệ. Dạng này đặc biệt khó thấy vì phía kỹ thuật nó là thành công: không lỗi, không timeout, có đầu ra. Nó chỉ lộ ra ở chỗ tỷ lệ từ chối -- nên tỷ lệ từ chối phải là một chỉ số có cảnh báo, không phải một thứ bạn đi đếm sau khi có người phàn nàn.
+\end{enumerate}
+
+\begin{keyidea}{Ghim gì}
+Một ``phiên bản'' của ứng dụng LLM gồm nhiều hơn mã nguồn. Tối thiểu phải ghim, ghi vào hiện vật phát hành, và đặt lên span (mục~\ref{ssec:trace_span}):
+
+\begin{itemize}
+	\item \textbf{Định danh ảnh chụp của mô hình}, không phải bí danh -- cho mô hình chính, mô hình nháp, mô hình nhúng, mô hình xếp hạng lại, và mô hình giám khảo.
+	\item \textbf{Phiên bản API} của nhà cung cấp.
+	\item \textbf{Phiên bản prompt} cho từng prompt đang dùng, kể cả prompt của giám khảo.
+	\item \textbf{Phiên bản chỉ mục} và dấu thời gian lần dựng lại gần nhất (mục~\ref{ssec:rag_freshness}).
+	\item \textbf{Phiên bản thư viện} và phiên bản engine phục vụ, theo nguyên tắc ở mục~\ref{ssec:framework_bugs}.
+	\item \textbf{Phiên bản bộ tách token.} Chi tiết này hay bị bỏ sót: bộ tách token đổi giữa các thế hệ mô hình, nên cùng một văn bản cho ra số token khác nhau. Mọi dự toán chi phí và mọi ngưỡng ``cắt ngữ cảnh ở N token'' phải được tính lại khi đổi mô hình.
+\end{itemize}
+\end{keyidea}
+
+\paragraph{Cảnh báo gì.} Nguyên tắc chọn: cảnh báo trên những đại lượng đổi \emph{trước} khi người dùng phàn nàn, và trên những đại lượng có một ngưỡng mà bạn thực sự sẽ hành động khi vượt.
+
+\begin{itemize}
+	\item \textbf{Tỷ lệ từ chối} và \textbf{tỷ lệ vi phạm định dạng đầu ra}, tách theo tính năng.
+	\item \textbf{Tỷ lệ truy xuất rỗng} và \textbf{tỷ lệ lời gọi công cụ thất bại}. Mục~\ref{ssec:eval_tips} đã nêu nguyên tắc: hãy ghi lại cả những gì \emph{không} xuất hiện.
+	\item \textbf{Phân vị độ trễ} theo bước, và TTFT riêng (mục~\ref{ssec:latency_percentiles}).
+	\item \textbf{Chi phí mỗi yêu cầu} và \textbf{tỷ lệ trúng đệm}. Tỷ lệ trúng đệm sụt là chỉ báo sớm rất tốt cho việc có ai vừa sửa prompt hệ thống.
+	\item \textbf{Điểm giám khảo trên mẫu được chấm}, cắt theo phiên bản prompt và theo model -- nhưng đọc với đúng khoảng tin cậy của cỡ mẫu (mục~\ref{ssec:eval_statistics}), nếu không bạn sẽ bị gọi dậy vì nhiễu.
+	\item \textbf{Số lượt phải chuyển cho người thật} và \textbf{tỷ lệ phản hồi xấu}, dùng như tín hiệu điều tra chứ không như chỉ số chất lượng.
+	\item \textbf{Một phép kiểm sống (canary test) chạy theo lịch}: một tập nhỏ prompt cố định, chạy mỗi giờ, so đầu ra với lần trước. Đây là cách phát hiện ``mô hình đổi dưới chân mình'' sớm nhất, và nó rẻ.
+\end{itemize}
+
+\begin{checklist}{Sổ tay xử lý một sự cố chất lượng}
+\textbf{Phân loại (5 phút đầu)}
+\begin{enumerate}
+	\item \textbf{Xác định đây là sự cố hạ tầng hay sự cố chất lượng.} Nếu bốn tín hiệu vàng có vấn đề, xử lý theo quy trình hạ tầng thường lệ trước.
+	\item \textbf{Mở ba vết đã hỏng và đọc chúng.} Không đọc bảng tổng hợp trước khi đọc vết. Một vết nói nhiều hơn một biểu đồ, và mục~\ref{ssec:no_rubric_first} giải thích vì sao.
+\end{enumerate}
+
+\textbf{Thu hẹp (dùng chính các trường đã ghim)}
+\begin{enumerate}\setcounter{enumi}{2}
+	\item \textbf{Cắt theo thời gian.} Sự cố bắt đầu lúc nào, và có gì được phát hành trong cửa sổ đó: mã, phiên bản prompt, nhãn prompt, chỉ mục, phiên bản thư viện?
+	\item \textbf{Cắt theo chiều.} Lỗi chỉ xảy ra với một phiên bản prompt, một model, một nhóm người dùng, một loại câu hỏi, hay trên toàn bộ?
+	\item \textbf{Kiểm tra phía nhà cung cấp.} Trang trạng thái, trang khấu hao mô hình, và changelog của phiên bản API. Nếu không có gì được phát hành phía bạn mà hành vi vẫn đổi, đây là nơi phải nhìn.
+	\item \textbf{Kiểm tra từng tầng trong vết, từ dưới lên:} truy xuất có trả về gì không, công cụ có trả lỗi không, prompt gửi đi có đúng văn bản mong đợi không. Mục~\ref{ssec:rag_doctor} có quy trình chi tiết cho phần truy hồi.
+\end{enumerate}
+
+\textbf{Ngăn chảy máu}
+\begin{enumerate}\setcounter{enumi}{6}
+	\item \textbf{Lùi lại trước, hiểu sau.} Gán lại nhãn \texttt{production} cho phiên bản prompt cũ, hoặc trả model id về ảnh chụp cũ, hoặc tắt cờ vận hành của tính năng. Cả ba phải là thao tác một bước; nếu không, đó là việc cần sửa sau sự cố này.
+	\item \textbf{Nếu không lùi được, hãy hạ cấp.} Đường dự phòng không dùng LLM, hoặc một câu trả lời thừa nhận không biết, luôn tốt hơn một câu trả lời sai và tự tin.
+\end{enumerate}
+
+\textbf{Sau sự cố}
+\begin{enumerate}\setcounter{enumi}{8}
+	\item \textbf{Biến các vết đã hỏng thành ca kiểm thử} trong bộ đánh giá nội bộ. Đây là bước biến một sự cố thành một phép kiểm hồi quy, và là bước hay bị bỏ nhất.
+	\item \textbf{Hỏi vì sao không có cảnh báo nào kêu}, và thêm đúng một cảnh báo. Thêm mười cảnh báo sau một sự cố là cách chắc chắn để không ai đọc cảnh báo nữa.
+\end{enumerate}
+\end{checklist}
+
+\subsection{Danh sách kiểm trước khi đưa một ứng dụng LLM vào production}
+\label{ssec:llm_prod_checklist}
+
+Mục~\ref{ssec:rag_launch_checklist} đã có một danh sách kiểm cho tầng truy hồi: tự mắt đọc văn bản sau khi phân tích tài liệu, có golden set, ứng dụng nói được ``tôi không biết'', câu trả lời hiển thị nguồn, phân quyền chạy bên trong bước tìm kiếm. Danh sách dưới đây \emph{không} nhắc lại chúng; nó phủ tầng vận hành ứng dụng. Hãy chạy cả hai.
+
+\begin{checklist}{Mười hai điều cần có trước khi mở cho người dùng thật}
+\textbf{Quan sát được}
+\begin{enumerate}
+	\item \textbf{Truy vết bật cho 100\% yêu cầu ở mức siêu dữ liệu}, và cây lời gọi được giữ nguyên cấu trúc, không bị làm phẳng.
+	\item \textbf{Mọi span mang model id (ảnh chụp, không phải bí danh), phiên bản prompt, phiên bản bản phát hành, và số token vào/ra.}
+	\item \textbf{Chính sách lấy mẫu và hạn giữ dữ liệu đã được viết ra}, với 100\% vết lỗi, vết bị gắn cờ và vết có phản hồi xấu được giữ lại.
+	\item \textbf{Prompt của người dùng được che trước khi rời ứng dụng}, và quyền đọc vết là một quyền riêng có ghi nhận.
+\end{enumerate}
+
+\textbf{Đổi được một cách an toàn}
+\begin{enumerate}\setcounter{enumi}{4}
+	\item \textbf{Prompt nằm ngoài mã, có phiên bản bất biến, và việc triển khai là di chuyển một nhãn.} Lùi lại là một thao tác.
+	\item \textbf{Đổi model id và đổi phiên bản prompt đi qua cùng một quy trình phát hành với mã}, có người phê duyệt.
+	\item \textbf{Có ít nhất một cờ vận hành} để tắt tính năng hoặc hạ xuống đường dự phòng, và nó đã được thử ít nhất một lần.
+	\item \textbf{Phiên bản API của nhà cung cấp, định danh ảnh chụp mô hình, và phiên bản thư viện đều đã ghim}, và có người chịu trách nhiệm đọc trang khấu hao mô hình theo lịch.
+\end{enumerate}
+
+\textbf{Biết được là tốt hay tệ}
+\begin{enumerate}\setcounter{enumi}{8}
+	\item \textbf{Có một bộ đánh giá ngoại tuyến chạy lại được} (mục~\ref{sec:lm_eval_practice}) và một giám khảo \emph{đã được kiểm định} (mục~\ref{ssec:llm_judge_validation}), với phiên bản giám khảo được ghim.
+	\item \textbf{Có ít nhất một chỉ số trực tuyến động trong cửa sổ canary}, và bạn biết cỡ mẫu cần để chỉ số đó nói được điều gì (mục~\ref{ssec:eval_statistics}).
+	\item \textbf{Người dùng báo lỗi được bằng một cú nhấp}, và tín hiệu đó dẫn thẳng tới vết tương ứng -- chứ không dừng ở một biểu đồ.
+\end{enumerate}
+
+\textbf{Biết được giá}
+\begin{enumerate}\setcounter{enumi}{11}
+	\item \textbf{Bạn biết chi phí và độ trễ phân vị cho mỗi yêu cầu, cắt được theo tính năng và theo người dùng}, và có hạn mức tính theo token cùng giới hạn số hành động cho các vòng lặp tác tử.
+\end{enumerate}
+\end{checklist}
+
+\begin{pitfall}{Điều mà danh sách trên không thay thế được}
+Một danh sách kiểm chỉ đảm bảo bạn \emph{nhìn thấy} được hệ thống của mình. Nó không nói hệ thống đó tốt. Phần quyết định vẫn là công việc ở mục~\ref{sec:error_analysis}: định kỳ ngồi đọc vết thật, bằng mắt, theo một giao thức có số lượng mẫu. Toàn bộ hạ tầng quan sát ở hai mục này tồn tại để làm cho công việc đó khả thi -- không phải để thay thế nó.
+\end{pitfall}

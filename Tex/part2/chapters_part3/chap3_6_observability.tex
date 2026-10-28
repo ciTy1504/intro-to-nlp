@@ -1,0 +1,273 @@
+% !TEX root = ../../main.tex
+% File: part2/chapters_part3/chap3_6_observability.tex
+% Quan sát và truy vết ứng dụng LLM
+
+\section{Quan sát và truy vết ứng dụng LLM}
+\label{sec:llm_observability}
+
+Mục~\ref{ssec:model_monitoring} đã trình bày việc giám sát theo kiểu MLOps cổ điển: độ trễ, thông lượng, tỷ lệ lỗi, mức dùng tài nguyên, trôi dạt dữ liệu và trôi dạt khái niệm. Những thứ đó vẫn cần. Mục này nói về phần nằm ngoài danh sách ấy -- phần chỉ phát sinh khi thứ bạn vận hành là một \emph{ứng dụng} LLM, không phải một mô hình phân loại.
+
+Danh sách kiểm trước khi ra mắt ở mục~\ref{ssec:rag_launch_checklist} có một dòng ngắn: ``truy vết (tracing) đã bật -- bạn phát lại được bất kỳ câu trả lời tệ nào''. Mục này nói dòng đó gồm những gì, ghi lại cái gì, bằng công cụ nào, và phải trả giá gì.
+
+\subsection{Vì sao đây là một bài toán khác}
+\label{ssec:why_llm_obs}
+
+Bộ khung giám sát một dịch vụ web thường được mô tả bằng bốn tín hiệu mà sách \textit{Site Reliability Engineering} của Google gọi là bốn tín hiệu vàng \cite{beyer2016sre}: \emph{latency, traffic, errors, saturation} -- độ trễ, lưu lượng, lỗi và mức bão hòa. Bốn tín hiệu này đo được bằng một bộ đếm và một đồng hồ, và chúng đủ để biết dịch vụ có đang sống hay không.
+
+Chúng không đủ để biết ứng dụng LLM của bạn có đang \emph{hữu ích} hay không, vì hai lý do có tính cấu trúc.
+
+\paragraph{Một yêu cầu không còn là một lời gọi hàm.} Trong một dịch vụ CRUD, một yêu cầu HTTP tương ứng với một đường thực thi mà bạn đo được bằng một con số: thời gian từ lúc nhận tới lúc trả. Trong một ứng dụng LLM, một yêu cầu của người dùng mở ra một \emph{cây}: viết lại truy vấn, truy xuất tài liệu, xếp hạng lại, một lượt gọi mô hình để quyết định hành động, một lời gọi công cụ, lượt gọi mô hình thứ hai để tổng hợp, có thể thêm một bước rào chắn kiểm tra đầu ra. Tổng thời gian là một con số vô dụng khi bạn cần biết \emph{bước nào} làm chậm. Tệ hơn, các chế độ hỏng thường nằm ở \emph{quan hệ} giữa các bước: truy xuất trả về rỗng mà mô hình vẫn trả lời, công cụ trả lỗi mà mô hình bỏ qua, một bước chạy hai lần.
+
+\paragraph{Không có nhãn đúng/sai tức thời.} Một mô hình phân loại gian lận sẽ biết nó đúng hay sai sau vài tuần, khi khiếu nại về. Một mô hình xếp hạng biết ngay, từ cú nhấp. Một câu trả lời sinh ra bằng văn bản tự do thì không có nhãn nào cả: không có gì trong hệ thống báo rằng nó vừa bịa ra một con số. Không thể giám sát ``tỷ lệ đúng'' vì không ai tính được tỷ lệ đó trong thời gian thực. Thứ thay thế là một tổ hợp các tín hiệu gián tiếp, và chúng sẽ được bàn ở mục~\ref{ssec:online_eval}.
+
+\begin{keyidea}{Ba tầng giám sát, ba câu hỏi khác nhau}
+\begin{itemize}
+	\item \textbf{Tầng hạ tầng:} Dịch vụ có đang sống không? Bốn tín hiệu vàng, dùng đúng công cụ của hạ tầng bạn đã có.
+	\item \textbf{Tầng mô hình:} Phân phối đầu vào có còn giống lúc huấn luyện không? Trôi dạt dữ liệu và trôi dạt khái niệm (mục~\ref{ssec:model_monitoring}).
+	\item \textbf{Tầng ứng dụng:} Cây lời gọi của \emph{từng} yêu cầu đã diễn ra như thế nào, và chất lượng của nó ra sao? Đây là tầng mà truy vết sinh ra để phục vụ, và là tầng duy nhất mà hai tầng kia không nhìn thấy.
+\end{itemize}
+Ba tầng này không thay thế nhau. Một sự cố ở tầng ứng dụng hoàn toàn có thể xảy ra trong khi cả bốn tín hiệu vàng đều xanh.
+\end{keyidea}
+
+\subsection{Vết, span và cây lời gọi}
+\label{ssec:trace_span}
+
+Thuật ngữ ở đây không phải do cộng đồng LLM phát minh; nó được mượn nguyên từ truy vết phân tán, và điều đó là tin tốt -- nó đã có một chuẩn và một hệ công cụ chín.
+
+Theo tài liệu khái niệm của OpenTelemetry, \textbf{span} là ``a span represents a unit of work or operation'' -- một đơn vị công việc; \textbf{trace} (vết) là tập các span chia sẻ cùng một trace ID và nối với nhau qua ID của span cha, tạo thành một cây. Span không có cha là \emph{span gốc} (root span), đánh dấu điểm bắt đầu của cả yêu cầu. Mỗi span mang:
+
+\begin{itemize}
+	\item \textbf{Thuộc tính (attributes):} ``key-value pairs that contain metadata that you can use to annotate a Span''. Khóa là chuỗi, giá trị là chuỗi, số, boolean hoặc mảng của chúng. Thuộc tính gắn \emph{lúc tạo} span còn dùng được cho việc lấy mẫu.
+	\item \textbf{Sự kiện (span events):} ``can be thought of as a structured log message (or annotation) on a Span'' -- một thời điểm có ý nghĩa bên trong span, dùng khi cái bạn cần ghi là một \emph{mốc thời gian} chứ không phải một khoảng.
+	\item \textbf{Liên kết (span links):} nối một span với các span khác khi quan hệ nhân quả có thật nhưng không phải quan hệ cha--con, ví dụ một nhánh được kích hoạt bất đồng bộ.
+	\item \textbf{Trạng thái (status):} \texttt{Unset} (mặc định, nghĩa là xong mà không lỗi), \texttt{Error}, \texttt{Ok}.
+\end{itemize}
+
+\paragraph{Vậy một yêu cầu LLM gồm những span nào.} Tối thiểu: một span gốc cho lượt người dùng, một span cho mỗi lần truy xuất, một span cho mỗi lời gọi công cụ, một span cho mỗi lượt gọi mô hình, và -- nếu có -- một span cho mỗi bộ chấm hoặc rào chắn chạy sau. Cấu trúc cây phải được giữ nguyên: mục~\ref{ssec:agent_eval} đã cảnh báo rằng một hệ thống ghi log làm phẳng các lượt thành danh sách tuần tự sẽ xóa mất thông tin về các lời gọi chạy song song, và bạn sẽ mất nhiều ngày để hiểu vì sao tác tử phớt lờ một chỉ dẫn mà thực ra nó chưa hề nhận được.
+
+\paragraph{Những trường đáng ghi.} Bảng~\ref{tab:llm_trace_fields} liệt kê các trường cần có trên span của một lượt gọi mô hình, kèm tên thuộc tính tương ứng trong quy ước ngữ nghĩa GenAI của OpenTelemetry \cite{otel2026genaisemconv} và mức độ bắt buộc mà quy ước đó quy định.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Cần ghi} & \textbf{Thuộc tính} & \textbf{Mức} \\
+\midrule
+Loại thao tác & \texttt{gen\_\allowbreak ai.\allowbreak operation.\allowbreak name} & Required \\
+Nhà cung cấp & \texttt{gen\_\allowbreak ai.\allowbreak provider.\allowbreak name} & Required \\
+Model yêu cầu & \texttt{gen\_\allowbreak ai.\allowbreak request.\allowbreak model} & Conditionally Required \\
+Model đã trả lời & \texttt{gen\_\allowbreak ai.\allowbreak response.\allowbreak model} & Recommended \\
+Token vào & \texttt{gen\_\allowbreak ai.\allowbreak usage.\allowbreak input\_\allowbreak tokens} & Recommended \\
+Token ra & \texttt{gen\_\allowbreak ai.\allowbreak usage.\allowbreak output\_\allowbreak tokens} & Recommended \\
+ID hội thoại & \texttt{gen\_\allowbreak ai.\allowbreak conversation.\allowbreak id} & Conditionally Required \\
+Lý do dừng sinh & \texttt{gen\_\allowbreak ai.\allowbreak response.\allowbreak finish\_\allowbreak reasons} & Recommended \\
+ID phản hồi & \texttt{gen\_ai.response.id} & Recommended \\
+Nội dung vào & \texttt{gen\_\allowbreak ai.\allowbreak input.\allowbreak messages} & Opt-In \\
+Nội dung ra & \texttt{gen\_\allowbreak ai.\allowbreak output.\allowbreak messages} & Opt-In \\
+Chỉ dẫn hệ thống & \texttt{gen\_\allowbreak ai.\allowbreak system\_\allowbreak instructions} & Opt-In \\
+\midrule
+Tên công cụ & \texttt{gen\_ai.tool.name} & Required \\
+Tham số lời gọi & \texttt{gen\_\allowbreak ai.\allowbreak tool.\allowbreak call.\allowbreak arguments} & Opt-In \\
+Kết quả lời gọi & \texttt{gen\_\allowbreak ai.\allowbreak tool.\allowbreak call.\allowbreak result} & Opt-In \\
+\midrule
+Nguồn dữ liệu & \texttt{gen\_\allowbreak ai.\allowbreak data\_\allowbreak source.\allowbreak id} & Conditionally Required \\
+Số tài liệu lấy về & \texttt{gen\_\allowbreak ai.\allowbreak retrieval.\allowbreak top\_\allowbreak k} & Recommended \\
+Tài liệu đã lấy & \texttt{gen\_\allowbreak ai.\allowbreak retrieval.\allowbreak documents} & Opt-In \\
+\bottomrule
+\end{tabular}
+\caption{Các trường cần có trên span của một lượt gọi mô hình (nhóm trên), một lời gọi công cụ (nhóm giữa) và một bước truy xuất (nhóm dưới), theo quy ước ngữ nghĩa GenAI của OpenTelemetry. Hãy chú ý rằng \emph{toàn bộ nội dung} -- prompt, câu trả lời, chỉ dẫn hệ thống, tài liệu đã truy xuất, tham số và kết quả của công cụ -- đều ở mức \emph{Opt-In}, tức là phải bật thì mới được ghi. Đó là một quyết định có chủ ý về kích thước dữ liệu và về quyền riêng tư, bàn ở mục~\ref{ssec:trace_sampling_privacy}.}
+\label{tab:llm_trace_fields}
+\end{table}
+
+\noindent Hai trường \emph{không} có trong quy ước nhưng bắt buộc phải có trong hệ thống của bạn:
+
+\begin{itemize}
+	\item \textbf{Phiên bản prompt.} Không có nó, một vết tệ không cho bạn biết văn bản nào đã sinh ra nó. Đây là chỗ nối giữa truy vết và quản lý prompt ở mục~\ref{ssec:prompt_management}.
+	\item \textbf{Phiên bản mã và cấu hình đang chạy.} Cùng một prompt, cùng một model, hai phiên bản mã khác nhau vẫn cho hai hành vi khác nhau. Nguyên tắc ghim phiên bản ở mục~\ref{ssec:framework_bugs} áp dụng nguyên vẹn ở đây.
+\end{itemize}
+
+\begin{example}{Một span của lượt gọi mô hình, viết ra dưới dạng thuộc tính}{ex:span_attrs}
+Đây không phải định dạng truyền trên dây mà chỉ là cách đọc nội dung một span cho dễ hình dung. Giá trị của \texttt{gen\_\allowbreak ai.\allowbreak request.\allowbreak model} để ở dạng placeholder theo quy ước của sách: hãy đối chiếu tài liệu của nhà cung cấp để lấy định danh thật.
+\begin{minted}{json}
+{
+  "name": "chat <model-id>",
+  "trace_id": "4bf92f...", "span_id": "00f067...",
+  "parent_span_id": "a1b2c3...",
+  "start_time": "...", "end_time": "...",
+  "status": "Unset",
+  "attributes": {
+    "gen_ai.operation.name": "chat",
+    "gen_ai.provider.name": "<provider>",
+    "gen_ai.request.model": "<model-id>",
+    "gen_ai.response.model": "<model-id>",
+    "gen_ai.usage.input_tokens": 3184,
+    "gen_ai.usage.output_tokens": 212,
+    "gen_ai.response.finish_reasons": ["stop"],
+    "gen_ai.conversation.id": "sess-8812",
+    "app.prompt.name": "support-answer",
+    "app.prompt.version": 17,
+    "app.release": "2026.10.3"
+  }
+}
+\end{minted}
+Ba thuộc tính cuối nằm trong không gian tên riêng của ứng dụng, không phải của quy ước -- và đó là cách đúng để thêm trường của mình: đừng chen vào tiền tố \texttt{gen\_ai.}, vì nó thuộc về quy ước và có thể đổi.
+\end{example}
+
+\subsection{OpenTelemetry và quy ước ngữ nghĩa cho GenAI}
+\label{ssec:otel_genai}
+
+OpenTelemetry giải quyết đúng vấn đề mà hệ công cụ LLM đang có: mỗi nền tảng quan sát định nghĩa một lược đồ riêng, nên đổi nhà cung cấp nghĩa là viết lại toàn bộ lớp đo đạc. Một \emph{quy ước ngữ nghĩa} (semantic convention) là một thỏa thuận về tên thuộc tính, để cùng một dòng dữ liệu đọc được bởi nhiều hệ thống khác nhau.
+
+\paragraph{Hiện trạng tính đến tháng 10 năm 2026: chuẩn này chưa ổn định.} Đây không phải suy đoán; nó được ghi thẳng trên tài liệu. Mọi trang trong bộ quy ước GenAI đều mở đầu bằng dòng trạng thái \texttt{Status: Development} -- mức thấp nhất trong thang trạng thái tài liệu của OpenTelemetry. Thêm vào đó:
+
+\begin{itemize}
+	\item Bộ quy ước này đã được \textbf{tách khỏi kho quy ước ngữ nghĩa chính} sang một kho riêng, \texttt{semantic-\allowbreak conventions-\allowbreak genai}.
+	\item Tại thời điểm viết, phần ``Schema URL'' trong tệp README của kho đó vẫn ghi \texttt{TODO}, và kho chưa có bản phát hành nào được gắn thẻ.
+	\item Tên thuộc tính vẫn đang đổi. Một ví dụ cụ thể: tài liệu của LangSmith, khi mô tả cách nhận dữ liệu OpenTelemetry, phải ghi chú rằng \texttt{gen\_\allowbreak ai.\allowbreak usage.\allowbreak total\_\allowbreak tokens} ``not part of the current GenAI semantic conventions'' -- một trường mà nhiều thư viện vẫn gửi.
+\end{itemize}
+
+\paragraph{Các chỉ số (metrics) đã được định nghĩa.} Phần chỉ số nối trực tiếp với các khái niệm ở mục~\ref{ssec:serving_metrics}: quy ước định nghĩa hai histogram tên là \texttt{gen\_\allowbreak ai.\allowbreak server.\allowbreak time\_\allowbreak to\_\allowbreak first\_\allowbreak token} và \texttt{gen\_\allowbreak ai.\allowbreak server.\allowbreak time\_\allowbreak per\_\allowbreak output\_\allowbreak token} (đơn vị giây) -- chính là TTFT và TPOT, nay có tên chuẩn. Bên cạnh đó là \texttt{gen\_\allowbreak ai.\allowbreak client.\allowbreak operation.\allowbreak duration}, \texttt{gen\_\allowbreak ai.\allowbreak server.\allowbreak request.\allowbreak duration}, và một nhóm riêng cho token:
+
+\begin{center}
+\footnotesize
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Chỉ số} & \textbf{Loại} & \textbf{Đơn vị} \\
+\midrule
+\texttt{gen\_\allowbreak ai.\allowbreak client.\allowbreak inference.\allowbreak usage.\allowbreak input\_\allowbreak tokens} & Counter & \texttt{\{token\}} \\
+\texttt{gen\_\allowbreak ai.\allowbreak client.\allowbreak inference.\allowbreak usage.\allowbreak output\_\allowbreak tokens} & Counter & \texttt{\{token\}} \\
+\texttt{gen\_\allowbreak ai.\allowbreak client.\allowbreak inference.\allowbreak usage.\allowbreak cache\_\allowbreak read.\allowbreak input\_\allowbreak tokens} & Counter & \texttt{\{token\}} \\
+\texttt{gen\_\allowbreak ai.\allowbreak client.\allowbreak inference.\allowbreak usage.\allowbreak cache\_\allowbreak write.\allowbreak input\_\allowbreak tokens} & Counter & \texttt{\{token\}} \\
+\texttt{gen\_\allowbreak ai.\allowbreak client.\allowbreak inference.\allowbreak usage.\allowbreak reasoning.\allowbreak output\_\allowbreak tokens} & Counter & \texttt{\{token\}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Ba dòng cuối đáng chú ý vì chúng cho thấy quy ước đã thừa nhận ba thực tế của năm 2026: token đọc từ bộ đệm và token ghi vào bộ đệm được tính giá khác nhau, và token suy luận (reasoning) là một khoản chi riêng không xuất hiện trong câu trả lời. Nếu bảng chi phí của bạn chỉ có hai cột vào/ra, nó đang sai (mục~\ref{ssec:llm_economics}).
+
+Quy ước cũng có các tài liệu riêng cho span của tác tử, cho giao thức MCP và A2A, và cho từng nhà cung cấp lớn -- tất cả cùng ở trạng thái \texttt{Development}.
+
+\begin{pitfall}{Đừng gắn chặt hệ thống của bạn vào một bộ tên đang đổi}
+Hãy dùng quy ước GenAI, vì cái giá của việc tự phát minh lược đồ cao hơn. Nhưng hãy dùng nó như một \emph{định dạng truyền}, không phải như lược đồ lưu trữ cuối cùng:
+
+\begin{enumerate}
+	\item \textbf{Ánh xạ một lần, ở một chỗ.} Đặt việc đọc tên thuộc tính vào một lớp duy nhất giữa đường nạp dữ liệu và kho lưu. Khi một tên bị đổi, bạn sửa một tệp.
+	\item \textbf{Ghim phiên bản quy ước} bạn đang theo, giống như ghim phiên bản thư viện, và ghi nó vào chính dữ liệu đo.
+	\item \textbf{Đừng xây báo cáo tài chính trên tên thuộc tính của người khác.} Nếu con số chi phí của bạn phụ thuộc vào một trường ở trạng thái \texttt{Development}, một lần nâng cấp thư viện đo đạc có thể làm báo cáo về không mà không có lỗi nào được phát ra.
+\end{enumerate}
+\end{pitfall}
+
+\subsection{Công cụ: mã nguồn mở, dịch vụ, và chỗ ở giữa}
+\label{ssec:obs_tools}
+
+Lớp công cụ này đông và đang biến động. Bảng~\ref{tab:llm_obs_tools} chỉ gồm những thứ tôi mở được tài liệu hoặc kho mã để xác nhận tại thời điểm viết; nó không phải một danh sách đầy đủ.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}lllX@{}}
+\toprule
+\textbf{Công cụ} & \textbf{Giấy phép} & \textbf{Tự host} & \textbf{Nét riêng} \\
+\midrule
+Langfuse & MIT (nhân) & Có & Quản lý prompt gắn nhãn, chấm điểm, nhận dữ liệu qua OpenTelemetry \\
+LangSmith & Nguồn đóng & Chỉ bản Enterprise & Nhận OTLP, có luật tự động hóa và hàng đợi chú thích \\
+Arize Phoenix & Elastic 2.0 & Có & Dựng trên OpenTelemetry với bộ đo đạc OpenInference; chạy được bằng một lệnh \\
+Opik (Comet) & Apache 2.0 & Có & Luật đánh giá trực tuyến, rào chắn, tích hợp PyTest \\
+MLflow Tracing & Apache 2.0 & Có & Nằm trong MLflow sẵn có; theo quy ước GenAI cho cả xuất và nhận \\
+OpenLLMetry & Apache 2.0 & -- & Không phải nền tảng mà là bộ đo đạc; xuất sang nhiều backend \\
+\bottomrule
+\end{tabularx}
+\caption{So sánh các công cụ quan sát ứng dụng LLM xác nhận được tại thời điểm viết. Cột ``tự host'' nói về khả năng chạy toàn bộ hệ thống trên hạ tầng của bạn, không nói về việc có bản dùng thử hay không.}
+\label{tab:llm_obs_tools}
+\end{table}
+
+\paragraph{Langfuse.} Nhân của Langfuse theo giấy phép MIT; tài liệu nói rõ ``all core Langfuse features and APIs are available in Langfuse OSS (MIT licensed) without any limits''. Một số tính năng cần khóa giấy phép doanh nghiệp, và danh sách đó nói nhiều về việc vận hành trong tổ chức lớn hơn là về năng lực quan sát: phân quyền ở mức dự án, nhãn prompt được bảo vệ, chính sách giữ dữ liệu, sổ kiểm toán, che dữ liệu ở phía máy chủ, quản lý nhiều tổ chức. Về tính năng, Langfuse gộp bốn thứ vào một chỗ: truy vết (có phiên, dòng thời gian, đồ thị tác tử, bảng điều khiển, cảnh báo), quản lý prompt có phiên bản và nhãn, đánh giá (giám khảo LLM, bộ dữ liệu, hàng đợi chú thích, phản hồi người dùng), và báo cáo chất lượng--chi phí--độ trễ. Nó nhận dữ liệu qua OpenTelemetry. Triển khai tự host được đội ngũ Langfuse hỗ trợ cho Kubernetes (Helm), AWS, Azure, GCP; Docker Compose chỉ được mô tả là cho ``local use and testing'' trên một máy ảo không có độ sẵn sàng cao, không có mở rộng và không có sao lưu -- đừng dùng nó cho production.
+
+\paragraph{LangSmith.} Sản phẩm của LangChain, không phải mã nguồn mở. Tài liệu mô tả nó như một nền tảng quan sát cho ứng dụng LLM, với truy vết, bảng điều khiển và cảnh báo, các luật tự động hóa (webhook và đánh giá trực tuyến), chú thích qua hàng đợi hoặc tại chỗ, và một thành phần tự tìm các vấn đề lặp lại trong vết. Có ba hình thức triển khai -- đám mây, lai, và tự host -- nhưng \textbf{hai hình thức sau thuộc gói Enterprise}, cần hợp đồng và khóa giấy phép lấy từ bộ phận bán hàng, và triển khai bằng Helm chart riêng. LangSmith nhận dữ liệu OpenTelemetry tại endpoint \texttt{/otel} (bản tự host dùng \texttt{/api/v1/otel}) và có một mục tài liệu ánh xạ các thuộc tính \texttt{gen\_ai.*} sang các trường của nó.
+
+\paragraph{Arize Phoenix.} Giấy phép Elastic 2.0 -- \emph{không} phải một giấy phép nguồn mở được OSI chấp thuận, nên nếu tổ chức của bạn có quy định về giấy phép thì phải đọc trước. Về mặt kỹ thuật, đây là lựa chọn ít ma sát nhất để bắt đầu: kho mã nói Phoenix ``is built on top of OpenTelemetry'', bộ đo đạc tự động đến từ dự án OpenInference, và nó chạy được ngay bằng \texttt{pip install arize-phoenix} rồi \texttt{phoenix serve}, hoặc không cần cài qua \texttt{uvx arize-phoenix serve}. Có image Docker, Helm chart, và các nút triển khai một lần nhấp cho vài nền tảng đám mây. Tính năng gồm truy vết, đánh giá, bộ dữ liệu, thí nghiệm, sân chơi prompt, quản lý prompt, và một máy chủ MCP.
+
+\paragraph{Opik.} Của Comet, giấy phép Apache 2.0, và kho mã nói thẳng ``Apache-2.0 licensed, free to self-host the full platform'' -- đây là lựa chọn ít ràng buộc nhất về giấy phép trong bảng. Nét riêng đáng chú ý là các \emph{luật đánh giá trực tuyến}: áp bộ chấm giám khảo LLM lên vết trong production, cộng với rào chắn và một tích hợp PyTest để đưa đánh giá vào CI. Tự host bằng Docker Compose hoặc Helm.
+
+\paragraph{MLflow Tracing.} Nếu đội của bạn đã dùng MLflow (mục~\ref{ssec:mlflow}) thì đây là con đường ít việc nhất: tài liệu mô tả nó là ``a fully OpenTelemetry-compatible LLM observability solution for your agents and LLM applications'' và nói nó ``natively supports GenAI Semantic Conventions for export and ingestion'', tức là đi được cả hai chiều. Có một gói nhẹ riêng tên \texttt{mlflow-tracing} dành cho production. Ưu điểm thật sự không phải là tính năng mà là việc nó nằm cùng một chỗ với sổ thí nghiệm huấn luyện (mục~\ref{sec:experiment_tracking}).
+
+\paragraph{OpenLLMetry.} Khác loại với năm cái trên: đây không phải nền tảng mà là ``a set of extensions built on top of OpenTelemetry'' do Traceloop phát triển, giấy phép Apache 2.0, gồm các bộ đo đạc cho các nhà cung cấp LLM và cơ sở dữ liệu vector. Nó sinh ra dữ liệu OpenTelemetry tiêu chuẩn và gửi tới nơi khác -- danh sách backend được kho mã ghi là đã thử gồm hơn hai mươi tên, trong đó có cả OpenTelemetry Collector, tức là bất cứ đâu. Dùng nó khi bạn muốn tách lớp \emph{đo} khỏi lớp \emph{xem}.
+
+\begin{assess}{Chọn thế nào}
+\begin{itemize}
+	\item \textbf{Nếu dữ liệu prompt không được ra khỏi hạ tầng của bạn:} Langfuse (MIT) hoặc Opik (Apache 2.0). Phoenix cũng tự host được nhưng hãy kiểm tra Elastic 2.0 với bộ phận pháp lý trước.
+	\item \textbf{Nếu đã có MLflow:} Dùng MLflow Tracing trước khi thêm một hệ thống nữa.
+	\item \textbf{Nếu bạn muốn không bị khóa vào nhà cung cấp:} Đo bằng OpenTelemetry thuần (hoặc OpenLLMetry), rồi trỏ vào bất cứ backend nào nhận OTLP. Mọi tên trong bảng đều nhận OTLP, nên lựa chọn này giữ cho việc đổi backend là một thay đổi cấu hình.
+	\item \textbf{Điều không nên làm:} Viết lớp truy vết của riêng mình. Bạn sẽ phải tự xây giao diện xem cây lời gọi, và đó là phần tốn công nhất mà lại ít giá trị riêng nhất.
+\end{itemize}
+\textbf{Một lưu ý về tuổi thọ của mục này.} Lớp công cụ LLMOps đổi nhanh hơn phần còn lại của sách. Trong lúc tra cứu để viết mục này, tài liệu của W\&B Weave đã chuyển sang tên miền của CoreWeave, và trang chủ tài liệu không nói rõ nó có mã nguồn mở hay tự host được không -- nên tôi để ngỏ thay vì đoán. Hãy đọc bảng trên như một ảnh chụp tháng 10 năm 2026, và tự kiểm tra lại giấy phép cùng khả năng tự host trước khi cam kết.
+\end{assess}
+
+\subsection{Độ trễ phải đọc theo phân vị}
+\label{ssec:latency_percentiles}
+
+Chương về giám sát hệ thống phân tán của sách \textit{Site Reliability Engineering} \cite{beyer2016sre} nói về chuyện này rõ hơn bất cứ tài liệu LLM nào, và lời khuyên của nó áp dụng nguyên vẹn: đừng thiết kế giám sát quanh giá trị trung bình, vì ``it's tempting to design a system based upon the mean of some quantity: the mean latency'' -- và một giá trị trung bình lành mạnh hoàn toàn che được một cái đuôi rất xấu. Cách làm được khuyến nghị là đo \emph{phân phối}: ``collect request counts bucketed by latencies'', tức là dựng histogram, rồi đọc p50, p95, p99.
+
+\paragraph{Vì sao với LLM cái đuôi đặc biệt dài.} Đây không phải nhiễu đo; nó là tính chất của bài toán, và có ít nhất năm nguồn cộng dồn:
+
+\begin{enumerate}
+	\item \textbf{Số token đầu ra là một biến ngẫu nhiên có phương sai lớn.} Thời gian giải mã xấp xỉ tỷ lệ với số token sinh ra (mục~\ref{ssec:serving_metrics}). Hai câu hỏi trông giống nhau có thể cho một câu trả lời 30 token và một câu trả lời 2000 token. Không có bước nào trong một dịch vụ web thông thường có phương sai như thế.
+	\item \textbf{Token suy luận không nhìn thấy được từ phía người dùng} nhưng vẫn mất thời gian sinh. Một yêu cầu khiến mô hình suy luận dài sẽ chậm gấp nhiều lần một yêu cầu tương tự mà nó trả lời ngay.
+	\item \textbf{Xếp hàng và batching.} Thông lượng và độ trễ giằng co nhau (mục~\ref{ssec:serving_metrics}): batch lớn làm mỗi người chờ lâu hơn. Dưới tải cao, thời gian xếp hàng -- chứ không phải thời gian tính toán -- là thứ quyết định cái đuôi.
+	\item \textbf{Bộ đệm hit hay miss là hai chế độ hoàn toàn khác.} Một yêu cầu trúng prefix cache bỏ qua phần lớn pha prefill (mục~\ref{ssec:pagedattention}); một yêu cầu trượt thì không. Phân phối độ trễ vì thế thường có \emph{hai đỉnh}, và giá trị trung bình nằm ở một chỗ mà không yêu cầu nào thực sự ở đó.
+	\item \textbf{Cây lời gọi nhân cái đuôi lên.} Nếu một lượt người dùng gồm bốn bước nối tiếp, mỗi bước có đuôi riêng, thì xác suất ít nhất một bước rơi vào đuôi tăng theo số bước. Sách SRE phát biểu chính xác hiện tượng này: ``the 99th percentile of one backend can easily become the median response of your frontend''. Với tác tử vòng lặp, số bước lại không cố định -- và đó là nguồn đuôi lớn nhất.
+\end{enumerate}
+
+\paragraph{Đo cái gì, ở đâu.} Một con số duy nhất không đủ. Tối thiểu cần ba họ chỉ số:
+
+\begin{itemize}
+	\item \textbf{Trên span gốc:} độ trễ đầu--cuối của lượt người dùng, theo phân vị. Đây là con số duy nhất mà người dùng cảm nhận.
+	\item \textbf{Trên từng span gọi mô hình:} TTFT và TPOT riêng biệt (mục~\ref{ssec:serving_metrics}), vì chúng do hai pha khác nhau quyết định và được cải thiện bằng hai cách khác nhau. Quy ước GenAI đã có tên chuẩn cho cả hai.
+	\item \textbf{Trên từng loại span:} phân vị theo bước, để biết bước nào góp vào đuôi. Mục~\ref{ssec:rag_latency} đã liệt kê bốn cách rút ngắn cho đường ống RAG; không có truy vết theo bước thì bạn không biết nên áp cách nào.
+\end{itemize}
+
+\begin{pitfall}{Ba sai lầm khi đọc phân vị}
+\begin{enumerate}
+	\item \textbf{Lấy trung bình của các phân vị.} Trung bình của p95 theo từng phút \emph{không} phải p95 của cả giờ. Phân vị phải được tính lại từ histogram gộp, không cộng rồi chia.
+	\item \textbf{Gộp các cohort có bản chất khác nhau.} Yêu cầu dạng luồng và không luồng, trúng đệm và trượt đệm, có gọi công cụ và không gọi công cụ -- gộp chúng vào một histogram cho ra một con số không mô tả nhóm nào. Hãy tách chiều, ít nhất theo tên prompt và theo model.
+	\item \textbf{Chỉ đo các yêu cầu thành công.} Sách SRE nhắc tách riêng độ trễ của yêu cầu thành công và yêu cầu lỗi: một yêu cầu lỗi nhanh làm đẹp số liệu, và một yêu cầu timeout sau 60 giây thường bị loại khỏi histogram đúng lúc nó đáng được đếm nhất.
+\end{enumerate}
+\end{pitfall}
+
+\subsection{Lấy mẫu, chi phí lưu vết và quyền riêng tư}
+\label{ssec:trace_sampling_privacy}
+
+Truy vết đầy đủ một ứng dụng LLM tạo ra lượng dữ liệu lớn hơn truy vết một dịch vụ web ở cùng mức lưu lượng, vì phần nặng nhất của một span không phải siêu dữ liệu mà là \emph{văn bản}: prompt hệ thống dài, các tài liệu đã truy xuất, lịch sử hội thoại, câu trả lời. Một lượt người dùng dùng 20\,000 token ngữ cảnh sẽ sinh ra một vết nặng hàng chục kilobyte nếu bạn ghi hết nội dung. Đây chính là lý do quy ước ngữ nghĩa xếp mọi trường nội dung vào mức \emph{Opt-In} (bảng~\ref{tab:llm_trace_fields}).
+
+\paragraph{Lấy mẫu: hai chỗ để quyết định.} Tài liệu OpenTelemetry phân biệt hai cơ chế:
+
+\begin{itemize}
+	\item \textbf{Lấy mẫu đầu (head sampling)} là ``a sampling technique used to make a sampling decision as early as possible'', quyết định mà không xem toàn bộ vết. Cách phổ biến là lấy mẫu xác suất nhất quán theo trace ID -- ví dụ giữ 5\% số vết. Rẻ, nhưng mù: nó sẽ bỏ đúng những vết bạn cần.
+	\item \textbf{Lấy mẫu đuôi (tail sampling)} là ``where the decision to sample a trace takes place by considering all or most of the spans within the trace'', nên quyết định được dựa trên những gì đã xảy ra trong vết. Thực hiện bằng Tail Sampling Processor trong OpenTelemetry Collector. Đắt hơn, vì phải giữ tạm toàn bộ vết trước khi quyết.
+\end{itemize}
+
+\noindent Hai cơ chế này kết hợp được: lấy mẫu đầu để giảm khối lượng, rồi lấy mẫu đuôi để chọn tinh.
+
+\begin{keyidea}{Chính sách lấy mẫu cho ứng dụng LLM}
+Phân phối giá trị của các vết rất lệch: phần lớn vết đều giống nhau và không nói gì mới, một số rất ít lại là toàn bộ nội dung công việc của mục~\ref{sec:error_analysis}. Vì vậy đừng lấy mẫu đều. Một chính sách thực dụng:
+
+\begin{itemize}
+	\item \textbf{Giữ 100\%:} vết có lỗi hoặc timeout; vết có phản hồi xấu từ người dùng; vết bị rào chắn hoặc bộ chấm gắn cờ; vết có truy xuất rỗng; vết vượt ngưỡng chi phí hoặc độ trễ; toàn bộ traffic của một lần canary.
+	\item \textbf{Lấy mẫu phần còn lại} ở một tỷ lệ nhỏ -- nhưng \emph{giữ một phần ngẫu nhiên thuần}, vì mục~\ref{ssec:error_protocol} đã chỉ ra rằng đó là thứ duy nhất phát hiện được những lỗi bạn chưa biết để đi tìm.
+	\item \textbf{Giữ siêu dữ liệu của 100\% vết, nội dung của một phần.} Chỉ số và chi phí cần đếm đủ; văn bản thì không. Đây là sự tách đôi quan trọng nhất và cũng là thứ hay bị bỏ qua: nếu bạn lấy mẫu 5\% rồi tính tổng chi phí từ đó, con số sẽ sai.
+	\item \textbf{Đặt hạn giữ dữ liệu theo tầng:} siêu dữ liệu giữ lâu, nội dung đầy đủ giữ ngắn. Phần lớn giá trị phân tích lỗi nằm trong vài tuần đầu.
+\end{itemize}
+\end{keyidea}
+
+\paragraph{Quyền riêng tư: prompt của người dùng là dữ liệu của người dùng.} Ghi lại nội dung prompt nghĩa là tạo thêm một bản sao dữ liệu người dùng ở một hệ thống mới, thường do một nhà cung cấp khác vận hành, với một tập người có quyền xem khác. Ba điều cần quyết trước khi bật ghi nội dung:
+
+\begin{enumerate}
+	\item \textbf{Che dữ liệu trước khi nó rời ứng dụng.} Đây là cách duy nhất đúng về thứ tự: nếu dữ liệu đã đi tới nền tảng quan sát rồi mới che, bạn đã gửi nó đi rồi. Langfuse đặt móc che ở phía máy khách, chạy lúc xuất span (tài liệu khuyến nghị dùng \texttt{mask\_otel\_spans} cho thiết lập mới trong SDK Python); với OpenTelemetry thuần, việc này làm bằng một span processor riêng, hoặc bằng các processor \texttt{attributes}, \texttt{redaction}, \texttt{transform} của Collector -- nhưng hãy nhớ rằng cách sau xảy ra \emph{sau khi} dữ liệu đã rời ứng dụng. Việc nhận dạng và xử lý thông tin định danh cá nhân đã bàn ở mục~\ref{ssec:pii}, và các tấn công nhằm vào dữ liệu đã đi qua mô hình được bàn ở chương~\ref{chap:security}.
+	\item \textbf{Phân quyền xem vết.} Quy tắc ở mục~\ref{ssec:rag_access_control} -- phân quyền phải chạy bên trong bước tìm kiếm -- có một hệ quả mà người ta hay quên: \emph{vết} chứa đúng những chunk đã được lọc theo quyền của một người dùng cụ thể. Một bảng điều khiển truy vết mở cho cả đội kỹ thuật là một đường vòng quanh toàn bộ hệ phân quyền tài liệu của bạn. Hãy coi quyền đọc vết là một quyền riêng, và ghi nhận ai đã đọc.
+	\item \textbf{Tách việc giữ dữ liệu khỏi việc huấn luyện.} Vết thu được là nguồn dữ liệu tốt nhất để cải thiện hệ thống, và cũng là chỗ dễ vi phạm cam kết với người dùng nhất. Quyết định này là quyết định về chính sách, không phải về kỹ thuật, và phải được viết ra trước khi có dữ liệu -- chứ không phải sau khi đã có một kho vết hấp dẫn.
+\end{enumerate}
+
+\begin{pitfall}{Nền tảng quan sát là một bề mặt tấn công mới}
+Các lỗ hổng của đường ống truy hồi ở mục~\ref{sec:rag_security} và các dạng tấn công ở chương~\ref{chap:security} không biến mất khi dữ liệu đi vào hệ thống quan sát; chúng có thêm một chỗ để lộ. Nội dung do người ngoài kiểm soát -- trang web mà tác tử đọc, tệp mà người dùng tải lên -- sẽ được ghi nguyên văn vào vết và hiển thị trong một giao diện web. Hãy coi nội dung trong vết là dữ liệu không tin cậy ở cả chỗ xem nó, đúng như nguyên tắc đã nêu cho tác tử.
+\end{pitfall}
