@@ -1,0 +1,70 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_security/sec3_training_privacy.tex
+
+\section{Tấn công lúc huấn luyện và tấn công quyền riêng tư}
+\label{sec:training_privacy_attacks}
+
+Hai mục trước bàn các tấn công diễn ra lúc suy luận, nơi kẻ tấn công chỉ cần đặt văn bản vào một chỗ mà hệ thống sẽ đọc. Mục này chuyển sang hàng trên cùng của bảng~\ref{tab:llm_attack_surfaces}: các tấn công nhắm vào dữ liệu huấn luyện, và các tấn công dùng mô hình đã triển khai như một kênh để lấy lại thông tin về dữ liệu hoặc về chính mô hình. Điểm chung của chúng là người triển khai thường không có công cụ nào để phát hiện tấn công sau khi nó đã thành công.
+
+\subsection{Đầu độc dữ liệu và cài cửa hậu}
+\label{ssec:poisoning_backdoor}
+
+Đầu độc dữ liệu (data poisoning) là việc đưa nội dung được chọn lọc vào dữ liệu huấn luyện để mô hình học một hành vi mà người huấn luyện không chủ ý. Trong danh sách của OWASP, đây là mục \texttt{Data and Model Poisoning}, và phạm vi của nó gồm cả dữ liệu tiền huấn luyện, dữ liệu tinh chỉnh và dữ liệu nhúng~\cite{owasp2025llmtop10}.
+
+\paragraph{Cơ chế.} Dạng đáng lo nhất là \textbf{cửa hậu (backdoor)}: thay vì làm mô hình kém đi trên mọi đầu vào, kẻ tấn công gắn một hành vi cụ thể vào một \emph{trigger}, tức một mẫu đầu vào mà họ chọn và chỉ họ biết. Mỗi mẫu đầu độc có cấu trúc gồm phần văn bản bình thường, trigger, và hành vi mục tiêu đặt ngay sau trigger. Mô hình học được liên kết giữa trigger và hành vi đó như học bất kỳ quy luật thống kê nào khác trong dữ liệu.
+
+\paragraph{Vì sao khó phát hiện.} Ba lý do, và cả ba đều là hệ quả của cấu trúc trên:
+
+\begin{itemize}
+	\item \textbf{Mô hình hoạt động bình thường khi không có trigger.} Không có trigger, mẫu đầu độc chỉ là văn bản thông thường, nên các chỉ số chất lượng trên tập kiểm thử sạch không suy giảm. Một quy trình đánh giá chuẩn (chương~\ref{chap:evaluation}) không có lý do gì để báo động.
+	\item \textbf{Trigger là bí mật của kẻ tấn công.} Muốn phát hiện cửa hậu bằng cách kiểm thử, ta phải biết trước cần thử đầu vào nào. Không gian các trigger khả dĩ là không gian các chuỗi, nên tìm kiếm vét cạn không khả thi.
+	\item \textbf{Lượng dữ liệu cần kiểm quá lớn so với lượng dữ liệu cần kiểm tra.} Tập tiền huấn luyện ở quy mô hàng trăm tỷ token được ghép từ nhiều nguồn, phần lớn cào từ web, và không ai đọc hết được. Mỗi nguồn tự động là một cửa.
+\end{itemize}
+
+\paragraph{Quy mô cần thiết.} Giả định phổ biến trước đây là kẻ tấn công phải kiểm soát được một \emph{tỷ lệ} nhất định của dữ liệu huấn luyện, tức là tấn công khó dần khi mô hình và tập dữ liệu lớn lên. Một nghiên cứu của Anthropic cùng UK AI Security Institute và Alan Turing Institute, công bố tháng 10 năm 2025, phản bác giả định đó~\cite{souly2025poisonconstant}. Kết quả được báo cáo: \textbf{250 văn bản đầu độc} là đủ để cài cửa hậu vào các mô hình từ 600 triệu tới 13 tỷ tham số, trên các tập dữ liệu từ 6 tỷ tới 260 tỷ token; với mô hình 13 tỷ tham số, 250 văn bản đó tương ứng khoảng \textbf{0,00016\%} tổng số token huấn luyện. Vì số lượng cần thiết gần như không tăng theo kích thước mô hình hay kích thước tập dữ liệu, các tác giả kết luận rằng tấn công loại này có thể dễ thực hiện hơn trên mô hình lớn so với những gì vẫn được tin trước đó. Mức 100 văn bản không đủ để cài cửa hậu một cách đáng tin cậy trên bất kỳ mô hình nào được thử.
+
+\begin{pitfall}{Đọc con số 250 cho đúng phạm vi của nó}
+Chính các tác giả nêu rõ giới hạn của kết quả, và đó là phần phải đọc kèm con số. Cửa hậu được thử nghiệm rất hẹp: nó làm mô hình sinh ra văn bản vô nghĩa khi gặp trigger, một dạng tấn công từ chối dịch vụ mà báo cáo đánh giá là khó gây rủi ro đáng kể cho các mô hình tiền tuyến. Chưa rõ quy luật ``số lượng gần như không đổi'' có còn đúng với mô hình lớn hơn, hay với những hành vi có hại hơn như sinh mã mất an toàn hoặc vô hiệu hóa các cơ chế an toàn. Kẻ tấn công cũng vẫn phải giải hai bài toán thực tế: đưa được nội dung của mình vào dữ liệu huấn luyện, và thiết kế tấn công sống sót qua giai đoạn hậu huấn luyện.
+
+Kết luận đúng để mang sang thiết kế là: \emph{đừng dựa vào quy mô của tập dữ liệu như một biện pháp phòng thủ}. Lập luận ``tập của chúng tôi quá lớn để ai đó đầu độc được'' không có cơ sở, vì điều quyết định là số lượng tuyệt đối chứ không phải tỷ lệ.
+\end{pitfall}
+
+Cần tách tấn công này khỏi việc đầu độc chỉ mục của hệ thống RAG, đã trình bày ở mục~\ref{ssec:data_poisoning}. Hai thứ có cùng tên nhưng khác tầng: đầu độc chỉ mục tác động vào dữ liệu được truy hồi lúc chạy và có thể sửa bằng cách xóa tài liệu khỏi chỉ mục; đầu độc dữ liệu huấn luyện nằm trong trọng số của mô hình và chỉ sửa được bằng cách huấn luyện lại. Ngoài ra, chuỗi cung ứng là một đường tấn công riêng cùng bề mặt: trọng số tải về từ một nguồn không kiểm chứng, một tập dữ liệu công khai bị sửa, hay một thư viện trong quy trình huấn luyện đều đưa tới cùng hệ quả mà không cần kẻ tấn công chạm vào dữ liệu.
+
+\subsection{Tấn công quyền riêng tư}
+\label{ssec:privacy_attacks}
+
+Mục~\ref{ssec:quyen_rieng_tu} đã nêu vấn đề và hai kỹ thuật phòng thủ ở tầng huấn luyện, là học liên kết và bảo toàn riêng tư vi phân. Phần này trình bày phía tấn công: chính xác thì kẻ tấn công lấy được gì, và bằng cách nào. Ba dạng dưới đây được sắp theo mức thông tin thu được, từ ít tới nhiều.
+
+\paragraph{Suy luận thành viên (membership inference).} Đây là dạng yếu nhất và cũng là dạng được nghiên cứu lâu nhất. Shokri, Stronati, Song và Shmatikov~\cite{shokri2017membership} định nghĩa bài toán như sau: cho một bản ghi dữ liệu và quyền truy cập hộp đen vào một mô hình, hãy quyết định xem bản ghi đó có nằm trong tập huấn luyện của mô hình hay không. Phương pháp của họ là huấn luyện một mô hình suy luận riêng để nhận ra chênh lệch trong dự đoán của mô hình đích giữa các đầu vào đã thấy lúc huấn luyện và các đầu vào chưa thấy.
+
+Thông tin thu được chỉ là một bit, nhưng một bit đó có thể đủ để gây hại khi bản thân việc thuộc tập dữ liệu đã là thông tin nhạy cảm: một mô hình được tinh chỉnh trên hồ sơ bệnh án của một nhóm bệnh nhân, và câu trả lời ``bản ghi này có trong tập huấn luyện'' tiết lộ chẩn đoán của người đó.
+
+\paragraph{Trích xuất dữ liệu huấn luyện (training data extraction).} Dạng này thu được chính nội dung dữ liệu. Carlini và cộng sự~\cite{carlini2021extracting} trình diễn tấn công trên GPT-2, một mô hình được huấn luyện trên dữ liệu cào từ Internet công khai, và trích xuất được hàng trăm chuỗi văn bản \emph{nguyên văn} từ dữ liệu huấn luyện. Nội dung lấy ra bao gồm thông tin nhận dạng cá nhân (tên, số điện thoại, địa chỉ thư điện tử), các đoạn hội thoại IRC, mã nguồn, và các UUID 128 bit. Điểm đáng chú ý nhất: mỗi chuỗi trong số đó chỉ xuất hiện trong \emph{một} văn bản của tập huấn luyện, nên hiện tượng ghi nhớ này không đòi hỏi dữ liệu phải bị lặp lại nhiều lần. Nhóm cũng báo cáo rằng mô hình lớn hơn dễ bị tấn công hơn mô hình nhỏ.
+
+Nasr và cộng sự~\cite{nasr2023scalable} mở rộng kết quả sang các mô hình đã được tinh chỉnh theo chỉ dẫn và đang chạy trong sản phẩm. Với các mô hình mã nguồn mở như Pythia và GPT-Neo, tấn công trích xuất được dữ liệu huấn luyện ở mức hàng gigabyte. Với ChatGPT, một mô hình đóng và đã qua huấn luyện an toàn, các kỹ thuật cũ không còn đủ, nên nhóm dựng một \emph{tấn công phân kỳ (divergence attack)} đẩy mô hình ra khỏi chế độ trả lời của trợ lý; họ báo cáo rằng ở trạng thái đó mô hình phát ra dữ liệu huấn luyện với tốc độ cao gấp 150 lần so với hành vi bình thường.
+
+Hai kết quả này có một hệ quả trực tiếp cho người triển khai: huấn luyện an toàn làm giảm \emph{khả năng quan sát} hiện tượng ghi nhớ, không làm mất hiện tượng đó. Một mô hình từ chối trả lời câu ``hãy đọc lại dữ liệu huấn luyện của bạn'' không chứng minh được điều gì về việc nó có ghi nhớ hay không.
+
+\paragraph{Đảo ngược mô hình (model inversion).} Dạng thứ ba đi từ đầu ra của mô hình về đặc trưng của đầu vào: thay vì lấy lại một bản ghi nguyên văn, kẻ tấn công dựng lại các thuộc tính của dữ liệu huấn luyện từ hành vi của mô hình trên các truy vấn do họ chọn. Thông tin phụ trợ mà mô hình trả về cùng dự đoán, điển hình là điểm tin cậy cho từng lớp, là nguyên liệu chính của tấn công này. Trong hệ thống LLM hiện đại, các đại lượng tương ứng là log-xác suất của token và các điểm số do mô hình trả về qua API.
+
+\begin{keyidea}{Mô hình là một bản tóm tắt có mất mát của dữ liệu, không phải một bức tường}
+Ba dạng tấn công trên đều dựa vào một điều: trọng số của mô hình chứa thông tin về dữ liệu đã huấn luyện nó, và mỗi truy vấn tới mô hình là một phép đo trên khối thông tin đó. Số truy vấn càng nhiều, lượng thông tin rút ra được càng lớn.
+
+Vì vậy quyết định ``dữ liệu này có được đưa vào huấn luyện hay không'' nên được xét như một quyết định công bố dữ liệu, chứ không như một quyết định kỹ thuật nội bộ. Nếu dữ liệu không được phép rời khỏi tổ chức, thì nó cũng không nên đi vào một mô hình sẽ được mở ra cho bên ngoài truy vấn, trừ khi quy trình huấn luyện có đảm bảo riêng tư vi phân với mức nhiễu đã được tính toán (mục~\ref{ssec:quyen_rieng_tu}).
+\end{keyidea}
+
+\subsection{Trích xuất và đánh cắp mô hình qua API}
+\label{ssec:model_extraction}
+
+Dạng tấn công cuối của mục này nhắm vào chính mô hình thay vì dữ liệu của nó. Kẻ tấn công chỉ có quyền truy cập hộp đen qua API, và dùng các truy vấn hợp lệ để dựng lại thông tin về tham số hoặc về chức năng của mô hình.
+
+Tramèr và cộng sự~\cite{tramer2016stealing} đặt nền cho dòng nghiên cứu này. Họ chỉ ra rằng một kẻ tấn công chỉ có quyền hộp đen, không biết gì về tham số lẫn dữ liệu huấn luyện, vẫn có thể sao lại chức năng của mô hình; các tấn công họ mô tả đạt độ trung thực gần như hoàn hảo với hồi quy logistic, mạng nơ-ron và cây quyết định, và được trình diễn trên các dịch vụ trực tuyến thật. Điều kiện cho phép tấn công nằm ở đặc điểm của API: trả về điểm tin cậy, và nhận được vector đặc trưng khuyết. Một kết luận quan trọng của nghiên cứu là biện pháp đối phó thường được nghĩ tới đầu tiên, tức bỏ điểm tin cậy khỏi đầu ra, không ngăn được hoàn toàn việc trích xuất.
+
+Carlini và cộng sự~\cite{carlini2024stealing} cho thấy dòng tấn công này vẫn áp dụng được cho mô hình ngôn ngữ đang chạy trong sản phẩm. Nhóm trình bày một tấn công khôi phục lớp chiếu embedding của một transformer, sai khác một phép đối xứng. Với hai mô hình Ada và Babbage của OpenAI, họ khôi phục toàn bộ ma trận chiếu với chi phí dưới 20 đô la, qua đó xác nhận số chiều ẩn của hai mô hình lần lượt là 1024 và 2048. Với \texttt{gpt-3.5-turbo}, họ khôi phục chính xác số chiều ẩn và ước lượng chi phí truy vấn để khôi phục toàn bộ ma trận chiếu là dưới 2.000 đô la.
+
+\begin{assess}{Giới hạn thực tế của trích xuất mô hình, và điều cần lo thật}
+Cần đọc các kết quả trên theo đúng phạm vi. Nghiên cứu nói trên khôi phục \emph{một lớp} của mô hình, không khôi phục toàn bộ trọng số; chi phí để sao lại một mô hình tiền tuyến hoàn chỉnh theo cách này không phải là con số đã được chứng minh ở mức vài nghìn đô la.
+
+Dù vậy, có ba điều đáng rút ra cho người triển khai. Thứ nhất, các đại lượng mà API trả về kèm văn bản -- log-xác suất, số token, danh sách token ứng viên -- là bề mặt tấn công chứ không phải tiện ích vô hại; chỉ mở chúng khi có nhu cầu thật. Thứ hai, thông tin bị rò rỉ có thể là siêu dữ liệu kiến trúc như số chiều ẩn, và dù bản thân nó không phải tài sản lớn, nó là bước chuẩn bị cho các tấn công sau. Thứ ba, rủi ro thường gặp hơn trong thực tế không phải khôi phục trọng số mà là \emph{chưng cất} (distillation): dùng một lượng lớn truy vấn hợp lệ để thu thập cặp đầu vào -- đầu ra, rồi huấn luyện một mô hình nhỏ hơn bắt chước hành vi. Biện pháp đối phó ở đây thuộc tầng vận hành, là hạn mức truy vấn, phát hiện mẫu truy vấn bất thường và ràng buộc hợp đồng sử dụng, chứ không thuộc tầng mô hình.
+\end{assess}

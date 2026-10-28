@@ -1,0 +1,9 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_security/intro.tex
+
+\chapter{AN TOÀN VÀ BẢO MẬT HỆ THỐNG LLM}
+\label{chap:security}
+
+Chương~\ref{chap:rag} đã nối mô hình với các nguồn dữ liệu bên ngoài, và chương~\ref{chap:advanced_systems} đã trao cho nó công cụ, bộ nhớ và quyền quyết định hành động tiếp theo. Mỗi bước mở rộng năng lực như vậy cũng mở thêm một đường để người khác tác động vào hệ thống: nội dung được truy hồi, đầu ra của công cụ, lịch sử hội thoại được lưu lại. Tất cả những thứ đó đi vào cùng một ngữ cảnh với chỉ thị của nhà phát triển, và mô hình không có cơ chế bẩm sinh nào để phân biệt chúng.
+
+Chương này trình bày bảo mật của hệ thống LLM như một chủ đề riêng, ở tầng chung chứ không gắn với một kiến trúc cụ thể. Ba mục đầu dựng phần mô tả vấn đề: mô hình mối đe dọa cùng cách phân loại bề mặt tấn công, các kỹ thuật tiêm chỉ thị và vượt rào an toàn đã được công bố, và các tấn công nhắm vào dữ liệu huấn luyện cùng quyền riêng tư. Các mục sau chuyển sang phòng thủ và quy trình vận hành. Mục tiêu của chương là cung cấp một cách đặt câu hỏi có hệ thống -- ``kẻ tấn công có được những gì, và từ đó làm được những gì'' -- thay vì một danh sách mẹo phòng thủ rời rạc.

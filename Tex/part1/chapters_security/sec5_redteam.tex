@@ -1,0 +1,182 @@
+% !TEX root = ../../main.tex
+% File: part1/chapters_security/sec5_redteam.tex
+% Red teaming và đánh giá an toàn
+
+\section{Red teaming và đánh giá an toàn}
+\label{sec:redteam}
+
+Mục~\ref{sec:defense_layers} mô tả các lớp phòng thủ. Mục này trả lời câu hỏi đi liền sau đó: làm sao biết chúng có tác dụng, và biết với độ tin cậy nào.
+
+\textbf{Red teaming} trong ngữ cảnh LLM là việc chủ động tìm đầu vào khiến hệ thống hành xử theo cách người xây dựng không muốn: phát ra nội dung bị cấm, tiết lộ dữ liệu không được tiết lộ, hoặc thực hiện một hành động ngoài thẩm quyền. Thuật ngữ mượn từ an ninh thông tin, và ý nghĩa cốt lõi được giữ nguyên: một bên đóng vai kẻ tấn công, làm việc với mục tiêu phá vỡ hệ thống chứ không phải xác nhận hệ thống hoạt động.
+
+\subsection{Khác đánh giá năng lực ở chỗ nào}
+\label{ssec:redteam_vs_capability}
+
+Chương~\ref{chap:evaluation} trình bày việc đánh giá năng lực: một tập kiểm tra cố định, một metric, một con số. Red teaming khác ở bốn điểm, và cả bốn đều quan trọng về mặt phương pháp.
+
+\begin{itemize}
+	\item \textbf{Trung bình so với xấu nhất.} Đánh giá năng lực đo hiệu năng \emph{trung bình} trên một phân phối đầu vào được coi là đại diện. Red teaming đo hiệu năng ở \emph{trường hợp xấu nhất} trên một phân phối do kẻ tấn công chọn. Một mô hình đạt điểm cao trên benchmark năng lực vẫn có thể bị phá bằng một đầu vào duy nhất, và điều đó không mâu thuẫn: hai phép đo nói về hai đại lượng khác nhau.
+	\item \textbf{Tĩnh so với thích ứng.} Tập kiểm tra năng lực không phản ứng với mô hình. Kẻ tấn công thì có: họ nhìn phản hồi, điều chỉnh, thử lại. Vì vậy một kết quả red teaming luôn gắn với một \emph{ngân sách tấn công} -- số lần thử cho mỗi mục tiêu -- và con số không có nghĩa nếu ngân sách không được báo cáo.
+	\item \textbf{Đối tượng đo là hệ thống, không phải mô hình.} Benchmark năng lực thường đo một mô hình. Red teaming phải đo toàn bộ đường ống: mô hình, system prompt, guardrail, bộ công cụ, phạm vi quyền. Cùng một mô hình đặt trong hai hệ thống khác nhau có hai mức rủi ro khác nhau.
+	\item \textbf{Hướng của sai số.} Trong đánh giá năng lực, bỏ sót một lỗi làm điểm cao hơn thực tế một chút. Trong red teaming, bỏ sót một lớp tấn công có nghĩa là lớp đó vẫn còn nguyên trong sản phẩm. Hai loại bỏ sót không có cùng hệ quả.
+\end{itemize}
+
+Quy luật Goodhart ở mục~\ref{ssec:goodharts_law} áp dụng cho red teaming mạnh hơn cho đánh giá năng lực: ngay khi một tập tấn công trở thành thước đo để tối ưu, nó bắt đầu mất giá trị như một phép đo.
+
+\subsection{Red teaming thủ công và tự động}
+\label{ssec:manual_auto_redteam}
+
+\paragraph{Thủ công.} Con người soạn tấn công. Giá trị của cách này là nó tìm ra những \emph{lớp} tấn công mới -- những góc tiếp cận mà không quy trình tự động nào đang bao phủ, vì chúng chưa tồn tại trong dữ liệu. Giới hạn của nó cũng rõ: không mở rộng được theo quy mô, chất lượng phụ thuộc vào người thực hiện, và kết quả khó tái lập nếu tấn công không được ghi lại chính xác từng ký tự.
+
+\paragraph{Sinh tấn công bằng chính LLM.} Công trình của Perez và cộng sự \cite{perez2022redteaming} đặt nền cho hướng tự động: dùng một mô hình ngôn ngữ để sinh ra các trường hợp kiểm tra cho một mô hình ngôn ngữ khác, thay cho các trường hợp do con người viết với chi phí cao. Các tác giả sinh câu hỏi kiểm tra rồi dùng một bộ phân loại nội dung xúc phạm để chấm phản hồi của một chatbot 280B tham số, và bộ phân loại đánh dấu hàng chục nghìn phản hồi xúc phạm. Họ cũng dùng kỹ thuật prompt để hướng việc sinh sang các dạng nguy hại khác: bàn luận xúc phạm về các nhóm người, rò rỉ dữ liệu huấn luyện, và những nguy hại chỉ xuất hiện dần qua một cuộc hội thoại. Các phương pháp sinh trải từ zero-shot tới học tăng cường.
+
+\paragraph{Tấn công dựa trên gradient.} Zou và cộng sự \cite{zou2023universal} tìm một \emph{hậu tố đối kháng} để thêm vào truy vấn, nhằm tối đa hóa xác suất mô hình bắt đầu bằng một phản hồi thuận theo thay vì một lời từ chối. Hậu tố được sinh tự động bằng cách kết hợp tìm kiếm tham lam với tìm kiếm dựa trên gradient. Kết quả quan trọng không phải bản thân hậu tố mà là \emph{tính chuyển giao}: hậu tố huấn luyện trên các mô hình mở vẫn gây ra nội dung phản cảm trên các giao diện công khai của những hệ thống khác. Hệ quả phương pháp luận: quyền truy cập trọng số của \emph{một} mô hình mở là đủ để sinh tấn công nhắm vào một mô hình đóng.
+
+\paragraph{Tấn công lặp hộp đen.} PAIR \cite{chao2023pair} không cần gradient. Một LLM đóng vai kẻ tấn công sinh prompt jailbreak cho một LLM mục tiêu, truy vấn mục tiêu, rồi tinh chỉnh prompt dựa trên phản hồi nhận được, không có can thiệp của con người. Các tác giả báo cáo rằng quy trình này thường cần ít hơn hai mươi truy vấn để tìm ra một jailbreak. Đây là dạng tấn công đáng lo nhất về mặt vận hành, vì nó chỉ cần đúng những gì một người dùng bình thường có: một giao diện gọi API.
+
+\begin{deepdive}{Tự động rẻ, nhưng không thay được thủ công}
+Tấn công sinh tự động có hai thuộc tính đối nghịch nhau.
+
+Nó \emph{rẻ và lặp lại được}, nên nó phù hợp cho hồi quy: chạy lại cùng một bộ sinh sau mỗi lần đổi mô hình hoặc đổi system prompt, và so sánh. Đây là thứ duy nhất trong hai cách làm có thể đưa vào quy trình tích hợp liên tục.
+
+Nhưng nó bị chặn trên bởi \emph{không gian tấn công mà mô hình sinh nghĩ ra được}. Một bộ sinh được huấn luyện hoặc được prompt trên các mẫu tấn công đã biết sẽ sinh ra biến thể của những mẫu đó. Nó không phát hiện ra một kênh tấn công thuộc loại chưa ai mô tả -- chẳng hạn một đường ghi vào chỉ mục mà không ai nghĩ là đường ghi, như ca được mô tả ở mục~\ref{ssec:indirect_prompt_injection}.
+
+Kết luận thực hành: dùng thủ công để tìm \emph{lớp} tấn công, dùng tự động để đo \emph{mức độ} và để canh hồi quy.
+\end{deepdive}
+
+\subsection{Benchmark an toàn}
+\label{ssec:safety_benchmarks}
+
+Bên cạnh các benchmark năng lực ở mục~\ref{sec:benchmarks}, đã hình thành một nhóm benchmark riêng cho an toàn và bền vững đối kháng. Chúng đo những đại lượng khác nhau, nên việc chọn đúng cái cần dùng phụ thuộc vào việc bạn đang bảo vệ cái gì.
+
+\paragraph{AdvBench.} Tập hành vi gây hại đi kèm công trình về hậu tố đối kháng nói trên \cite{zou2023universal}, và là một trong những tập được dùng lại nhiều nhất. Nó là một danh sách prompt mục tiêu, không kèm một bộ chấm chuẩn hóa -- và đó chính là nguồn gốc của phần lớn tranh luận về độ tin cậy của các con số tỷ lệ thành công được báo cáo.
+
+\paragraph{HarmBench.} Một khung đánh giá chuẩn hóa cho red teaming tự động và cho khả năng từ chối bền vững \cite{mazeika2024harmbench}. Đóng góp của nó là đưa các phương pháp tấn công về cùng một mặt bằng so sánh: trong lần phát hành đầu, các tác giả so 18 phương pháp red teaming trên 33 LLM mục tiêu và cơ chế phòng thủ. HarmBench phát hành kèm các bộ phân loại để chấm: một bộ cho hành vi tiêu chuẩn và hành vi theo ngữ cảnh, một bộ cho hành vi đa phương thức. Các tác giả cũng đề xuất một phương pháp huấn luyện đối kháng và báo cáo nó làm tăng độ bền của mô hình trên nhiều dạng tấn công.
+
+\paragraph{JailbreakBench.} Một benchmark tập trung cho tấn công jailbreak \cite{chao2024jailbreakbench}, gồm bốn phần: một kho \emph{artifact} là các prompt đối kháng mà mọi bài gửi phải kèm theo để kết quả tái lập được; một khung đánh giá chuẩn hóa định nghĩa mô hình đe dọa, system prompt, chat template và hàm chấm; một bảng xếp hạng cho tấn công và phòng thủ, tách riêng mô hình mở và mô hình đóng; và bộ dữ liệu \textbf{JBB-Behaviors} gồm 100 hành vi lạm dụng khác biệt thuộc mười hạng mục, trong đó khoảng 55\% là hành vi gốc, phần còn lại lấy từ AdvBench và từ TDC/HarmBench. Điểm đáng chú ý nhất về phương pháp: bộ dữ liệu này đi kèm \textbf{100 hành vi vô hại} để đo từ chối sai.
+
+\paragraph{StrongREJECT.} Công trình này \cite{souly2024strongreject} xuất phát từ một nhận định về chính việc đo: các phương pháp đánh giá đang dùng \emph{phóng đại đáng kể} hiệu quả của jailbreak so với phán đoán của con người, và nguyên nhân là thiếu một benchmark chuẩn có chất lượng. Benchmark gồm hai phần: một bộ prompt đòi hỏi thông tin gây hại \emph{cụ thể}, và một bộ chấm tự động cho điểm theo mức độ phản hồi thực sự hữu dụng cho prompt đó. Một phát hiện phụ có ý nghĩa thực hành: những jailbreak vượt được tinh chỉnh an toàn thường đồng thời làm giảm năng lực của mô hình -- nghĩa là một phần các ``jailbreak thành công'' được báo cáo thật ra cho ra những phản hồi vô dụng.
+
+\paragraph{AgentDojo.} Một môi trường động để đánh giá tấn công tiêm chỉ thị và các cơ chế phòng thủ tương ứng, nhắm vào tác tử LLM \cite{debenedetti2024agentdojo}. Đây là benchmark gần nhất với mô hình đe dọa của một hệ thống có công cụ: tấn công đến từ dữ liệu mà công cụ trả về, không phải từ prompt của người dùng. Phần abstract nêu môi trường được dựng với 97 nhiệm vụ thực tế và 629 trường hợp kiểm tra an ninh. Nó được phát hành dưới dạng gói Python.
+
+\paragraph{AgentHarm.} Benchmark đo mức độ gây hại của tác tử LLM \cite{andriushchenko2025agentharm}, gồm 110 nhiệm vụ tác tử mang tính gây hại tường minh -- 440 khi tính các biến thể mở rộng -- thuộc 11 hạng mục nguy hại như gian lận, tội phạm mạng và quấy rối. Benchmark này đo hai thứ cùng lúc, và đó là thiết kế đáng học: nó đo mô hình \emph{có từ chối} yêu cầu tác tử gây hại hay không, và đo một tác tử \emph{đã bị jailbreak} có còn giữ đủ năng lực để hoàn thành một nhiệm vụ gây hại nhiều bước hay không. Phép đo thứ hai cần thiết vì một tác tử đồng ý làm việc xấu nhưng làm không xong thì có mức rủi ro khác với một tác tử làm xong.
+
+\paragraph{XSTest.} Bộ kiểm cho hướng ngược lại: \emph{an toàn thái quá} \cite{rottger2024xstest}. Nó gồm 250 prompt an toàn thuộc mười dạng mà một mô hình được hiệu chỉnh tốt phải trả lời, cùng 200 prompt không an toàn làm đối chứng mà phần lớn mô hình nên từ chối. Các prompt an toàn được soạn để \emph{trông giống} prompt không an toàn về từ ngữ, hoặc để chạm vào chủ đề nhạy cảm mà không gây hại.
+
+Bảng~\ref{tab:safety_benchmarks} tóm tắt bảy benchmark trên. Cột ``đo gì'' là cột quyết định việc chọn: hai benchmark cùng mang nhãn ``an toàn'' hoàn toàn có thể không nói về cùng một rủi ro.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{3.5cm}}
+\toprule
+\textbf{Benchmark} & \textbf{Đo gì} & \textbf{Dạng} \\
+\midrule
+AdvBench & Hành vi gây hại mục tiêu cho tấn công hậu tố đối kháng & Danh sách prompt, không kèm bộ chấm chuẩn \\
+\addlinespace
+HarmBench & So sánh các phương pháp red teaming tự động và khả năng từ chối bền vững trên cùng mặt bằng & Khung đánh giá kèm bộ phân loại chấm \\
+\addlinespace
+JailbreakBench & Hiệu quả của tấn công jailbreak và của phòng thủ; kèm phần đo từ chối sai & Hành vi lạm dụng và hành vi vô hại, kho artifact, bảng xếp hạng \\
+\addlinespace
+StrongREJECT & Mức hữu dụng thực sự của phản hồi bị jailbreak, nhằm sửa việc phóng đại & Bộ prompt đòi thông tin cụ thể, kèm bộ chấm tự động \\
+\addlinespace
+AgentDojo & Bền vững của tác tử trước tiêm chỉ thị đến từ dữ liệu công cụ trả về & Môi trường động, nhiệm vụ và trường hợp kiểm tra an ninh \\
+\addlinespace
+AgentHarm & Tác tử có từ chối nhiệm vụ gây hại, và nếu bị jailbreak thì có còn làm xong & Nhiệm vụ tác tử nhiều bước theo hạng mục nguy hại \\
+\addlinespace
+XSTest & An toàn thái quá: từ chối những yêu cầu rõ ràng vô hại & Prompt an toàn và prompt không an toàn làm đối chứng \\
+\bottomrule
+\end{tabularx}
+\caption{Các benchmark an toàn đo những đại lượng khác nhau và không thay thế nhau. Ba benchmark đầu đo mô hình đứng một mình; hai benchmark tác tử đo cả đường ống có công cụ; XSTest đo chiều ngược lại của cùng một đánh đổi.}
+\label{tab:safety_benchmarks}
+\end{table}
+
+\begin{pitfall}{Benchmark an toàn nhiễm bẩn nhanh hơn benchmark năng lực}
+Prompt tấn công được công bố công khai để kết quả tái lập được. Chúng vì thế đi vào dữ liệu huấn luyện và đi vào tập dữ liệu tinh chỉnh an toàn của vòng mô hình kế tiếp. Điểm số tăng mà không nhất thiết do độ bền tăng -- đây đúng là cơ chế nhiễm bẩn dữ liệu ở mục~\ref{ssec:data_contamination}, nhưng diễn ra nhanh hơn, vì vòng phản hồi ở đây là chủ ý: nhà phát hành mô hình \emph{muốn} vá các tấn công đã công bố.
+
+Hệ quả: một benchmark công khai cho bạn một sàn, không cho bạn một phép đo độ bền. Phần có giá trị nhất của một đợt red teaming luôn là phần tấn công \emph{chưa} công bố, soạn riêng cho hệ thống của bạn.
+\end{pitfall}
+
+\subsection{Cách đo: tỷ lệ tấn công thành công và từ chối sai}
+\label{ssec:asr_overrefusal}
+
+Đại lượng được báo cáo phổ biến nhất là \textbf{tỷ lệ tấn công thành công (attack success rate, ASR)}: tỷ lệ các lần thử tấn công được bộ chấm xem là thành công trên tổng số lần thử. Đơn giản về định nghĩa, nhưng một con số ASR trần trụi gần như không mang thông tin, vì nó phụ thuộc vào bốn tham số thường không được ghi ra.
+
+\begin{enumerate}
+	\item \textbf{Ngân sách truy vấn.} ASR với một lần thử cho mỗi hành vi và ASR với hai mươi lần thử là hai đại lượng khác nhau. PAIR \cite{chao2023pair} cho thấy khoảng cách giữa chúng có thể rất lớn.
+	\item \textbf{Bộ chấm.} Đây là tham số gây sai lệch nhiều nhất. Một bộ chấm chỉ kiểm tra phản hồi \emph{không mở đầu bằng lời từ chối} sẽ tính là thành công cả những phản hồi vô dụng. Đó chính là nhận định trung tâm của StrongREJECT \cite{souly2024strongreject}: các phương pháp đánh giá đang dùng phóng đại đáng kể hiệu quả của jailbreak so với phán đoán con người. Khi bộ chấm là một LLM, mọi hạn chế ở mục~\ref{sec:llm_as_a_judge}, đặc biệt là mục~\ref{ssec:llm_judge_challenges}, đều áp dụng nguyên vẹn.
+	\item \textbf{Hệ thống mục tiêu.} Mô hình trần, hay mô hình kèm system prompt, hay toàn bộ đường ống kèm guardrail. Ba cấu hình cho ba con số, và chỉ con số thứ ba nói về sản phẩm của bạn.
+	\item \textbf{Tập hành vi.} ASR trên một tập hành vi dễ không so sánh được với ASR trên một tập đòi thông tin cụ thể và kiểm chứng được.
+\end{enumerate}
+
+\paragraph{Vì sao phải báo cáo cả tỷ lệ từ chối sai.} ASR có một cách tối ưu tầm thường: một hệ thống từ chối mọi thứ có ASR bằng không. Nó cũng vô dụng. Đây không phải một tình huống giả định mà là chế độ hỏng thường gặp nhất khi siết guardrail: tấn công giảm, và cùng lúc những yêu cầu hợp lệ nhưng chạm vào chủ đề nhạy cảm cũng bị chặn. Đó là \textbf{an toàn thái quá (over-refusal)}, và XSTest \cite{rottger2024xstest} tồn tại để đo nó. JailbreakBench \cite{chao2024jailbreakbench} đi theo cùng logic khi phát hành kèm 100 hành vi vô hại bên cạnh 100 hành vi lạm dụng.
+
+Nhìn từ góc độ thống kê, điều này không mới. Một bộ phân loại guardrail là một bộ phân loại nhị phân, nên nó chịu đúng những đánh đổi đã trình bày ở chương đánh giá: ASR tương ứng với tỷ lệ âm tính giả, tỷ lệ từ chối sai tương ứng với tỷ lệ dương tính giả, và việc dịch ngưỡng quyết định chỉ di chuyển vị trí trên một đường cong chứ không nâng đường cong lên. Mục~\ref{ssec:decision_threshold} nói về việc chọn ngưỡng, mục~\ref{ssec:auc} nói về việc đánh giá bộ phân loại độc lập với ngưỡng, và mục~\ref{ssec:f1_score} nói về cặp precision--recall tương ứng. Báo cáo một con số ASR mà không kèm tỷ lệ từ chối sai cũng vô nghĩa như báo cáo recall mà không kèm precision.
+
+\paragraph{Và cả khoảng tin cậy.} Các tập hành vi an toàn thường nhỏ -- JBB-Behaviors có 100 hành vi, XSTest có 250 prompt an toàn. Một ASR đo trên 100 phép thử có khoảng tin cậy rộng, và hai hệ thống chênh nhau vài điểm phần trăm trên một tập như vậy hoàn toàn có thể không khác nhau. Mục~\ref{ssec:accuracy_ci} cho cách tính, và mục~\ref{ssec:seed_variance} nhắc rằng ngay cả cùng một cấu hình, chạy lại cũng cho con số khác. Với tấn công có thành phần ngẫu nhiên -- phần lớn tấn công tự động -- hãy chạy nhiều lần và báo cáo cả độ phân tán.
+
+\begin{assess}{Bộ số tối thiểu cho một báo cáo an toàn}
+Một báo cáo đủ dùng để ra quyết định phát hành cần, ở mức tối thiểu, bốn con số đi cùng nhau và cùng mô tả cấu hình:
+
+\begin{enumerate}
+	\item \textbf{ASR} trên tập hành vi gây hại, kèm ngân sách truy vấn, tên bộ chấm, và khoảng tin cậy.
+	\item \textbf{Tỷ lệ từ chối sai} trên một tập yêu cầu hợp lệ -- lý tưởng là gồm cả những yêu cầu trông giống yêu cầu gây hại.
+	\item \textbf{Hiệu năng nhiệm vụ} trên tập đánh giá chất lượng thường dùng, để thấy guardrail đã lấy đi bao nhiêu.
+	\item \textbf{Cấu hình được đo:} phiên bản mô hình, system prompt, danh sách guardrail kèm ngưỡng, bộ công cụ và phạm vi quyền.
+\end{enumerate}
+
+Thiếu con số thứ hai thì không đọc được con số thứ nhất. Thiếu con số thứ tư thì không con số nào tái lập được.
+\end{assess}
+
+\subsection{Vì sao kết quả red teaming hết hạn nhanh}
+\label{ssec:redteam_expiry}
+
+Một kết quả đánh giá năng lực giữ giá trị khá lâu, vì nó mô tả một mô hình cố định trên một tập cố định. Một kết quả red teaming thì hỏng theo thời gian, và theo nhiều đường cùng lúc.
+
+\begin{itemize}
+	\item \textbf{Mục tiêu thay đổi.} Mô hình được cập nhật, phiên bản được thay, định tuyến giữa các mô hình thay đổi. Một đợt đánh giá gắn với một phiên bản cụ thể; khi phiên bản đổi, cả hai chiều đều có thể xảy ra -- tấn công cũ hết tác dụng, và tấn công mới xuất hiện ở nơi trước đó không có.
+	\item \textbf{Hệ thống quanh mô hình thay đổi nhiều hơn mô hình.} Một dòng được thêm vào system prompt, một công cụ mới được đăng ký, một nguồn dữ liệu mới được nối vào chỉ mục: mỗi thay đổi như vậy mở lại bề mặt tấn công, và chúng xảy ra với nhịp hằng tuần. Thay đổi phạm vi quyền của một công cụ có thể làm toàn bộ kết luận về mức thiệt hại trở thành sai.
+	\item \textbf{Tấn công mới xuất hiện liên tục.} Các kỹ thuật ở mục~\ref{ssec:manual_auto_redteam} là trạng thái của một thời điểm, không phải một danh mục đóng. Một lớp tấn công chưa được mô tả thì chưa có trong bộ kiểm của bất kỳ ai.
+	\item \textbf{Guardrail cũng là mô hình, và cũng đổi phiên bản.} Nếu phòng thủ của bạn dựa vào một bộ phân loại do nhà cung cấp vận hành, thì ranh giới quyết định của nó thay đổi mà bạn không được thông báo. Cả ASR và tỷ lệ từ chối sai đều có thể dịch chuyển sau một lần nhà cung cấp cập nhật mô hình.
+	\item \textbf{Benchmark công khai mất giá trị theo cơ chế ở hộp cảnh báo trên.}
+\end{itemize}
+
+\begin{pitfall}{Một kết quả red teaming không có ngày tháng là một kết quả không đọc được}
+Hãy ghi cùng mọi con số an toàn: ngày đo, phiên bản mô hình, bản băm của system prompt, danh sách guardrail kèm phiên bản và ngưỡng, và bộ công cụ kèm phạm vi quyền. Thiếu những thông tin này, con số không thể được so sánh với lần đo sau, và cũng không thể được dùng để biết thay đổi nào đã làm nó xấu đi.
+
+Và đừng coi red teaming là một cổng phát hành một lần. Nó là một phép đo hồi quy, phải chạy lại theo cùng nhịp với các thay đổi của hệ thống.
+\end{pitfall}
+
+\subsection{Danh sách kiểm cho một đợt red teaming tối thiểu}
+\label{ssec:redteam_checklist}
+
+\begin{checklist}{Trước khi phát hành một ứng dụng LLM có công cụ}
+\textbf{Xác định phạm vi}
+\begin{enumerate}
+	\item \textbf{Viết ra điều bạn không muốn hệ thống làm}, ở dạng các phát biểu kiểm chứng được. ``Không gây hại'' không kiểm được; ``không gửi email ra ngoài miền của tổ chức khi chưa có xác nhận của người dùng'' thì kiểm được.
+	\item \textbf{Đóng băng cấu hình được đo} và ghi lại: phiên bản mô hình, system prompt, danh sách guardrail kèm ngưỡng, bộ công cụ kèm phạm vi quyền.
+	\item \textbf{Đo trên toàn đường ống}, không đo mô hình trần. Nếu muốn biết guardrail đóng góp bao nhiêu thì đo hai lần, bật và tắt.
+\end{enumerate}
+\textbf{Chạy tấn công}
+\begin{enumerate}\setcounter{enumi}{3}
+	\item \textbf{Một đợt thủ công} nhắm vào các phát biểu ở bước 1, do người không viết hệ thống thực hiện. Đây là bước tìm ra lớp tấn công mới.
+	\item \textbf{Một đợt tự động} có thể chạy lại được: tấn công sinh bằng LLM theo hướng của Perez và cộng sự \cite{perez2022redteaming}, cộng với một tập tấn công đã công bố làm sàn.
+	\item \textbf{Tiêm chỉ thị gián tiếp} qua từng đường vào ngữ cảnh đã liệt kê ở mục~\ref{ssec:system_layer_defense}, không chỉ qua prompt của người dùng. Với hệ thống có công cụ, đây là lớp tấn công có hệ quả nặng nhất; AgentDojo \cite{debenedetti2024agentdojo} cho một khuôn mẫu về cách dựng các trường hợp này.
+	\item \textbf{Thử kênh rò rỉ dữ liệu} một cách tường minh: dựng một tấn công nhằm đưa dữ liệu trong ngữ cảnh ra một miền bên ngoài, kể cả qua đường tải tài nguyên khi hiển thị đầu ra.
+	\item \textbf{Thử moi dữ liệu huấn luyện và dữ liệu ngữ cảnh} theo các dạng tấn công ở mục~\ref{ssec:privacy_attacks}, và kiểm xem các nguồn dữ liệu mà hệ thống đọc có đường ghi nào chưa được kiểm soát hay không, theo mục~\ref{ssec:poisoning_backdoor}. Hai lớp này nằm ngoài phạm vi của mọi benchmark jailbreak công khai.
+	\item \textbf{Ghi lại mọi tấn công thành công từng ký tự}, kèm đầu ra nhận được. Một tấn công được mô tả lại bằng lời thì không tái lập được.
+\end{enumerate}
+\textbf{Đo và báo cáo}
+\begin{enumerate}\setcounter{enumi}{9}
+	\item \textbf{Báo cáo ASR kèm ngân sách truy vấn và tên bộ chấm.} Nếu bộ chấm là LLM, hãy kiểm nó trên một mẫu đã được người gán nhãn trước khi tin vào nó.
+	\item \textbf{Báo cáo tỷ lệ từ chối sai} trên một tập yêu cầu hợp lệ, trong đó có cả những yêu cầu trông giống yêu cầu gây hại. Không có con số này thì không được báo cáo ASR.
+	\item \textbf{Báo cáo khoảng tin cậy} cho cả hai tỷ lệ, theo mục~\ref{ssec:accuracy_ci}, và chạy lại các tấn công có thành phần ngẫu nhiên nhiều lần.
+	\item \textbf{Đo lại hiệu năng nhiệm vụ} sau khi bật guardrail, để biết chi phí an toàn đã trả bằng chất lượng.
+\end{enumerate}
+\textbf{Kết luận và duy trì}
+\begin{enumerate}\setcounter{enumi}{13}
+	\item \textbf{Với mỗi tấn công thành công, phân loại nguyên nhân}: lỗi ở tầng mô hình, hay ở tầng hệ thống. Tấn công thuộc loại thứ hai phải được sửa bằng giới hạn quyền, không bằng việc thêm một mẫu vào bộ lọc.
+	\item \textbf{Chuyển mọi tấn công thành công thành một ca kiểm hồi quy}, chạy lại ở mỗi lần đổi mô hình, đổi system prompt, hoặc thêm công cụ.
+	\item \textbf{Ghi ngày đo và điều kiện làm kết quả hết hạn}: những thay đổi nào ở mục~\ref{ssec:redteam_expiry} buộc đo lại.
+\end{enumerate}
+\end{checklist}
