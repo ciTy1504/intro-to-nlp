@@ -1,0 +1,209 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_efficiency/sec2b_on_policy_distillation.tex
+
+\section{Chưng cất on-policy}
+\label{sec:on_policy_distillation}
+
+Ô thứ tư của bảng~\ref{tab:post_training_quadrants} -- trò tự sinh chuỗi, thầy chấm từng token -- không phải một ý tưởng mới: GKD (mục~\ref{ssec:gkd}) đã mô tả đúng cơ chế đó từ 2023, và MiniLLM (mục~\ref{ssec:minillm}) còn sớm hơn. Cái mới nằm ở ba chỗ khác. Thứ nhất, cách đặt phương pháp này vào \emph{đúng hạ tầng RL sẵn có} thay vì xây một đường ống huấn luyện riêng. Thứ hai, các con số chi phí được công bố, cho phép so sánh nó với RL trên cùng một tác vụ. Thứ ba, một loạt kết quả về \emph{điều kiện} để nó hoạt động và các kiểu thất bại khi điều kiện đó không thỏa -- đủ nhiều để nhánh này đã có bài tổng quan riêng \cite{song2026opdsurvey}.
+
+Mục này đi theo đúng thứ tự ấy: cơ chế, chi phí, biến thể, điều kiện, giới hạn, và cuối cùng là quy tắc chọn giữa chưng cất on-policy, RL và SFT.
+
+\subsection{Cơ chế: trò tự sinh, thầy chấm từng token}
+\label{ssec:opd_mechanism}
+
+Vòng huấn luyện gồm bốn bước lặp lại, theo cách trình bày của Lu và Thinking Machines Lab \cite{lu2025opd}, nơi ý tưởng được diễn đạt gọn nhất: ``sample trajectories from the student model and use a high-performing teacher to grade each token of each trajectory''.
+
+\begin{enumerate}
+	\item \textbf{Sinh.} Lấy một lô prompt và cho \emph{trò} sinh rollout. Cấu hình mặc định trong bài là 64 prompt mỗi lô và 4 mẫu cho mỗi prompt.
+	\item \textbf{Chấm.} Với mỗi rollout, chạy \emph{một lượt forward} của thầy trên chính chuỗi đó để lấy log-xác suất mà thầy gán cho từng token mà trò đã chọn. Thầy không cần lan truyền ngược: nó chỉ là một hàm chấm điểm cố định.
+	\item \textbf{Đặt lợi thế.} Tại mỗi vị trí, tính KL ngược từng token bằng hiệu hai log-xác suất, rồi đặt \emph{lợi thế bằng âm của đại lượng đó}. Bài gốc phát biểu thẳng: ``We set the per-token advantage to the negative reverse KL''.
+	\item \textbf{Cập nhật.} Đưa quỹ đạo kèm lợi thế vào đúng hàm mất mát importance-sampling mà vòng RL vẫn dùng, với \emph{hệ số chiết khấu bằng không}: ``For simplicity, we use a discount factor of zero''. Một chú thích của bài cho biết các hệ số lớn hơn không không cải thiện kết quả trong thực nghiệm của họ.
+\end{enumerate}
+
+Viết thành công thức, đại lượng được cực tiểu tại mỗi vị trí $t$ là
+\[
+\begin{aligned}
+\mathrm{KL}\big(\pi_\theta \,\big\|\, \pi_{\mathrm{T}}\big)
+= \mathbb{E}_{x\sim\pi_\theta}\Big[\,&\log \pi_\theta\big(x_{t+1}\mid x_{1:t}\big) \\
+ &- \log \pi_{\mathrm{T}}\big(x_{t+1}\mid x_{1:t}\big)\Big],
+\end{aligned}
+\]
+và lợi thế gán cho token thứ $t+1$ là
+\[
+A_{t+1} \;=\; -\Big[\log \pi_\theta\big(x_{t+1}\mid x_{1:t}\big) - \log \pi_{\mathrm{T}}\big(x_{t+1}\mid x_{1:t}\big)\Big].
+\]
+
+Ba quan sát làm rõ vì sao bốn bước trên không phải RL dù mặc áo RL.
+
+\paragraph{Thứ nhất, hệ số chiết khấu bằng không làm mục tiêu phân rã hoàn toàn theo token.} Trong RL thông thường, lợi thế tại bước $t$ gộp phần thưởng ở mọi bước tương lai với hệ số $\gamma$, và đó chính là chỗ sinh ra bài toán gán công (credit assignment) cùng toàn bộ bộ máy đi kèm: hàm giá trị, baseline, GAE. Với $\gamma = 0$, lợi thế tại mỗi bước chỉ phụ thuộc token ngay tại bước đó. Mục tiêu trở thành tổng của các số hạng độc lập, mỗi token một số hạng. Không còn bài toán gán công, nên cũng không cần hàm giá trị hay baseline. Về bản chất toán học, đây là một mục tiêu học có giám sát dày đặc chứ không phải một bài RL.
+
+\paragraph{Thứ hai, dùng loss importance-sampling là lựa chọn kỹ thuật, không phải lựa chọn toán học.} Nếu mục tiêu đã phân rã theo token thì việc gì phải đi qua hàm mất mát của RL? Lý do là hạ tầng. Một hệ RL sẵn có đã có bộ sinh rollout, bộ chấm, bộ cập nhật, và vốn đã tính log-xác suất của trò ``for use as part of the importance-sampling loss''. Đưa chưng cất on-policy vào đúng khuôn đó có nghĩa là không phải viết đường ống mới, và quan trọng hơn, khuôn đó chấp nhận việc rollout lệch một chút khỏi chính sách hiện tại -- tình huống luôn xảy ra khi ta sinh theo lô rồi cập nhật tham số nhiều lần trên lô đó.
+
+\paragraph{Thứ ba, ``phần thưởng'' ở đây là một đại lượng có đáy, không phải một thang điểm mở.} Kỳ vọng của lợi thế tại một tiền tố cho trước chính là âm của phân kỳ KL ngược tại đó, nên nó bị chặn trên bởi không, và đạt không khi và chỉ khi trò khớp đúng phân phối của thầy tại tiền tố ấy. Đây là khác biệt cấu trúc so với MiniLLM, nơi thầy đóng vai một hàm thưởng mà trò có thể tìm cách khai thác bằng những chuỗi vô nghĩa nhưng được thầy chấm cao -- khác biệt giải thích vì sao vòng huấn luyện ở đây không cần tới kỹ thuật trộn thầy vào khâu lấy mẫu.
+
+\begin{pitfall}{``Tín hiệu dày'' không có nghĩa là một phân phối đầy đủ cho mỗi token}
+Cần phân biệt hai mức độ dày rất khác nhau. GKD tính phân kỳ trên \emph{toàn từ vựng} tại mỗi vị trí: mỗi token cho một véc-tơ dài bằng cỡ từ vựng. Cách cài đặt mô tả ở trên chỉ lấy log-xác suất của \emph{token mà trò đã chọn}: mỗi token cho đúng một số thực, tức một ước lượng một mẫu của KL ngược tại vị trí đó. Nó vẫn dày hơn RL gấp hàng nghìn lần tính trên mỗi rollout, nhưng thưa hơn hẳn chưng cất mức từ cổ điển. Chính bài gốc cũng ghi rõ: ``we do not consider logit (top-k) distillation in any of our experiments''. Sự khác biệt này sẽ quay lại ở mục~\ref{ssec:opd_conditions} khi bàn về gradient chệch.
+\end{pitfall}
+
+\subsection{Vì sao rẻ hơn RL: đếm tín hiệu trên mỗi rollout}
+\label{ssec:opd_vs_rl_cost}
+
+Lập luận về chi phí không dựa trên một thủ thuật tối ưu nào, mà dựa thẳng vào trục thứ hai của bảng~\ref{tab:post_training_quadrants}.
+
+\paragraph{RL trả về rất ít thông tin cho mỗi lượt sinh.} Một episode RL kết thúc bằng một phần thưởng, thường là nhị phân. Bài gốc mô tả đúng điều đó: RL ``teaching a fixed number of bits per training episode'', và ``this sparsity of feedback makes RL inefficient for many applications''. Mô hình biết là nó sai, ``but it doesn't learn where exactly the mistake was made''. Toàn bộ việc quy trách nhiệm cho từng bước phải được suy ra thống kê, từ rất nhiều rollout, qua rất nhiều bước cập nhật.
+
+\paragraph{Chưng cất on-policy trả về một con số cho mỗi token.} Trên cùng một rollout dài vài nghìn token, số lượng tín hiệu chênh nhau ba tới bốn bậc độ lớn. Hệ quả trực tiếp, theo lời bài gốc, là ``it provides significantly more bits per episode, thereby reducing gradient noise''. Ít nhiễu gradient hơn nghĩa là lô nhỏ hơn vẫn đủ, tức ít rollout hơn cho mỗi bước cập nhật.
+
+\paragraph{Và kéo theo một chuỗi tiết kiệm khác.} Bốn khoản dưới đây đều là hệ quả của việc tín hiệu nằm ở từng token chứ không ở cuối quỹ đạo:
+\begin{itemize}
+	\item Không phải chạy hết câu trả lời mới biết nó đúng hay sai, nên ``we can use shorter or partial rollouts for training''; cùng lý do, chưng cất ``learns reasonably at shorter context lengths''.
+	\item Khâu sinh -- khâu đắt nhất -- do mô hình nhỏ đảm nhiệm: ``the trajectories are generated by the smaller and cheaper student''. Mô hình lớn chỉ tham gia bằng một lượt forward: ``requires just a single forward pass from the larger model''.
+	\item Không cần huấn luyện và vận hành thêm một mô hình thưởng: ``we do not require a separate reward or labeling model either''.
+	\item Cùng một prompt dùng lại được nhiều lần với nhiều mẫu (bài dùng 4 mẫu mỗi prompt), vì cái trò học là phân phối của thầy tại các trạng thái nó ghé qua chứ không phải một đáp án để thuộc lòng.
+\end{itemize}
+
+\paragraph{So sánh với chưng cất off-policy.} Bài gốc dùng một phép so sánh cờ vua đáng giữ lại vì nó chỉ đúng vào trục nguồn dữ liệu: RL on-policy ``is analogous to playing games with no coaching'' -- tự chơi, cuối ván biết thắng thua, không ai nói nước nào hỏng; còn chưng cất off-policy ``is analogous to watching a grandmaster playing'', với từng nước đi được giải thích, nhưng ``they are played in board states that a novice player will rarely find themselves in''. Người học không bao giờ rơi vào những thế cờ ấy, và càng chơi ``it finds itself diverging ever farther from the states it observed in training''. Kết luận của bài là đúng kết luận của DAgger ở mục~\ref{ssec:exposure_bias}: ``to avoid this divergence, the student must learn to recover from its own mistakes''.
+
+\subsection{Những con số đã công bố, và cách đọc chúng cho đúng}
+\label{ssec:opd_numbers}
+
+Bảng~\ref{tab:opd_qwen3_cost} là các con số mà báo cáo kỹ thuật Qwen3 \cite{yang2025qwen3} công bố cho mô hình Qwen3-8B trên AIME'24, và cũng là các con số được dẫn lại trong bài của Thinking Machines Lab \cite{lu2025opd}. Cả ba dòng đều lấy từ cùng một bảng của cùng một báo cáo.
+
+\begin{table}[H]
+\centering\small
+\caption{Qwen3-8B trên AIME'24: điểm và chi phí huấn luyện theo báo cáo kỹ thuật Qwen3. Số trong ngoặc là pass@64.}
+\label{tab:opd_qwen3_cost}
+\begin{tabularx}{\textwidth}{@{}Xll@{}}
+\toprule
+\textbf{Giai đoạn hậu huấn luyện} & \textbf{AIME'24} & \textbf{GPU-giờ} \\
+\midrule
+Chưng cất off-policy & 55,0 (90,0) & không công bố \\
+\quad + học tăng cường & 67,6 (90,0) & 17.920 \\
+\quad + chưng cất on-policy & 74,4 (93,3) & 1.800 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Hai dòng cuối là lý do nhánh này được chú ý: điểm cao hơn gần 7 điểm với chi phí nhỏ hơn khoảng mười lần. Nhưng phải đọc chúng kèm ba điều kiện, và điều kiện thứ nhất đến từ chính các tác giả.
+
+\begin{pitfall}{Đây không phải một phép so sánh sạch, và bài gốc nói thẳng như vậy}
+Bài viết của Thinking Machines Lab, khi dẫn con số 17.920 GPU-giờ của RL, ghi rõ: ``it is hard to compare this directly to the cost of distillation'', và ở chỗ khác: ``comparing compute costs across methods is nontrivial''. Bài còn tự chỉ ra rằng ước lượng quy đổi mà họ đưa ra đòi một luật tỉ lệ tiếp tục đúng, điều ``isn't trivial'', và rằng thước đo theo FLOP ``overestimates the practical cost of computing log-probs'' -- nên tỉ lệ tiết kiệm họ tính ra còn thay đổi (``closer to 18x'') tùy cách song song hóa khâu chấm của thầy. Trích dẫn con số 1.800 so với 17.920 như một kết luận đã chốt là đọc sai cả nguồn lẫn ý định của nguồn.
+\end{pitfall}
+
+Điều kiện thứ hai nằm ngay trong bảng: hai dòng cuối đều \emph{xuất phát từ dòng đầu}, tức từ một mô hình đã qua chưng cất off-policy và đạt 55,0; chi phí của giai đoạn off-policy đó không được công bố. Con số 1.800 GPU-giờ vì vậy là chi phí của riêng pha cuối, không phải tổng chi phí của con đường dẫn tới 74,4.
+
+Điều kiện thứ ba có tính nguyên tắc: pha chưng cất on-policy này cần sẵn một mô hình thầy mạnh hơn (Qwen3-32B hoặc Qwen3-235B-A22B), vốn được tạo ra bằng chính quy trình RL đắt đỏ ở dòng giữa. Phép so sánh vì thế không phải ``chưng cất rẻ hơn RL'' theo nghĩa thay thế được RL, mà là ``một khi đã bỏ tiền chạy RL một lần cho mô hình lớn, chuyển năng lực đó xuống các mô hình nhỏ bằng chưng cất on-policy rẻ hơn nhiều so với chạy lại RL cho từng mô hình nhỏ''. Đó mới là phát biểu mà các con số thực sự ủng hộ.
+
+\subsection{Biến thể: khi thiếu logit, khi khác bộ tách token, khi có nhiều thầy}
+\label{ssec:opd_variants}
+
+Cơ chế ở mục~\ref{ssec:opd_mechanism} giả định ba điều kiện thuận lợi: thầy và trò dùng chung bộ tách token, ta đọc được log-xác suất của thầy, và chỉ có một thầy. Mỗi điều kiện bị phá vỡ sinh ra một nhánh nghiên cứu riêng.
+
+\paragraph{Khi hai bên khác bộ tách token.} Mọi mất mát theo từng token đều ngầm giả định hai mô hình cắt cùng một câu thành cùng một dãy đơn vị. Giả định đó hỏng ngay khi thầy và trò thuộc hai họ khác nhau, và đó là lý do chưng cất theo logit ít được dùng xuyên họ mô hình hơn hẳn mức đáng lẽ. Boizard và cộng sự \cite{boizard2025uld} đề xuất \textbf{Universal Logit Distillation (ULD)}, một hàm mất mát dựa trên \emph{vận tải tối ưu} (optimal transport) cho phép so hai phân phối dù chúng định nghĩa trên hai bộ từ vựng khác nhau. Cần nói rõ phạm vi: ULD giải bài toán ở \emph{số hạng phân kỳ}, chứ bản thân nó không nói gì về nguồn chuỗi; nhưng số hạng phân kỳ chính là mảnh mà chưng cất on-policy cần tại mỗi token, nên đây là mảnh ghép tự nhiên khi thầy nằm ngoài họ mô hình của trò.
+
+\paragraph{Khi không có logit của thầy.} Các mô hình thương mại mạnh nhất thường chỉ cho truy cập qua API và chỉ trả về văn bản, điều mà một bài trong nhánh này mô tả là ``excluding a broad class of capable proprietary models from serving as teachers''. Có hai cách xử lý đã được công bố, và chúng đánh đổi theo hai hướng khác nhau.
+
+Cách thứ nhất là bỏ hẳn tín hiệu từng token và thay bằng một tín hiệu học được. Ye và cộng sự \cite{ye2025gad} đề xuất \textbf{Generative Adversarial Distillation (GAD)}: trò đóng vai bộ sinh, và một bộ phân biệt được huấn luyện để tách câu trả lời của trò khỏi câu trả lời của thầy, tạo thành một trò chơi minimax. Bộ phân biệt ``acts as an on-policy reward model that co-evolves with the student, providing stable, adaptive feedback'' -- nghĩa là hàm thưởng không cố định mà được cập nhật song song với trò, nên trò không kịp khai thác nó. Các tác giả báo cáo rằng GAD vượt chưng cất mức chuỗi một cách nhất quán, và Qwen2.5-14B-Instruct huấn luyện bằng GAD đạt mức tương đương với chính thầy của nó là GPT-5-Chat trên đánh giá tự động LMSYS-Chat. Đọc theo bảng bốn ô: GAD giữ được tính on-policy nhưng trả tính dày về mức chuỗi, tức là nó lùi từ ô thứ tư sang ô RL và bù lại bằng một hàm thưởng tốt hơn.
+
+Cách thứ hai là giữ tín hiệu dày nhưng hạ độ phân giải của nó từ token xuống \emph{đoạn}. Zhou và cộng sự \cite{zhou2026omniopd} đề xuất \textbf{OmniOPD}, thay việc khớp logit bằng các rollout Monte Carlo của thầy, chấm bằng một độ tương tự ngữ nghĩa liên tục trên các đoạn nhiều token; các tác giả lập luận rằng ``chunk-level semantic verification extracts a more reliable learning signal than token-level logit matching''. Để chi phí không bùng nổ, một bộ lập lịch theo đỉnh entropy chỉ ``audits the student only at its high-uncertainty reasoning forks'', tức chỉ kiểm tra tại các vị trí mà trò đang phân vân; một tiên nghiệm Bayes Dirichlet--Multinomial và một mỏ neo KL về mô hình gốc được thêm vào để chặn phương sai của việc lấy mẫu rời rạc và tránh sụp đổ chính sách ở các vị trí không được kiểm. Bài báo cáo mức vượt chưng cất on-policy tiêu chuẩn tới $+28{,}64\%$ ở miền toán, và khi dùng thầy chỉ truy cập qua API (Claude Haiku 4.5, Gemini 2.5 Flash) thì hơn thêm $9{,}54\%$ tương đối so với phiên bản dùng thầy có trọng số mở.
+
+\paragraph{Khi có nhiều thầy.} Một tổ chức thường có nhiều mô hình mạnh ở các miền khác nhau, mỗi mô hình là kết quả của một đợt RL riêng. Ma và cộng sự \cite{ma2026mopd} đề xuất \textbf{MOPD (Multi-Teacher On-Policy Distillation)}: huấn luyện RL chuyên biệt cho từng miền để tạo ra một tập thầy, rồi ``distill these teachers into the student on its own rollouts'', điều mà các tác giả tóm tắt bằng đúng hai trục đang bàn -- ``this eliminates exposure bias and provides a dense optimization signal''. Lợi ích được nhấn mạnh không chỉ là điểm số (bài báo cáo vượt các phương án Mix-RL, Cascade RL, tinh chỉnh off-policy và hợp nhất tham số trên Qwen3-30B-A3B, ``inheriting nearly all of each teacher's capability'') mà còn là lợi ích tổ chức: ``MOPD also enables parallel, independent development of domain teachers''. Nói cách khác, chưng cất on-policy ở đây đóng vai một \emph{cơ chế hợp nhất năng lực}, cho phép các nhóm phát triển từng miền độc lập rồi gộp lại ở bước cuối, thay vì phải chạy một đợt RL đa miền duy nhất mà mọi thay đổi đều phải đồng bộ.
+
+\subsection{Một công dụng khác: vá lại năng lực đã bị quên}
+\label{ssec:opd_personalization}
+
+Chưng cất thường được hiểu là để làm mô hình nhỏ đi. Có một cách dùng thứ hai không liên quan gì tới kích thước, và nó lộ ra một tính chất của phương pháp đáng chú ý hơn các bảng điểm.
+
+Tình huống: một mô hình đã căn chỉnh tốt được huấn luyện thêm trên kho tài liệu nội bộ để nắm kiến thức riêng của tổ chức. Nó học được kiến thức đó, nhưng đánh mất năng lực tuân theo chỉ dẫn. Thí nghiệm trong \cite{lu2025opd} cho thấy đây không phải vấn đề chỉnh tỉ lệ trộn dữ liệu: khi pha thêm dữ liệu hội thoại vào dữ liệu tài liệu, ``there is no weighting which maintains the original performance on IF-eval''. Bảng~\ref{tab:opd_personalization} ghi lại các con số.
+
+\begin{table}[H]
+\centering\small
+\caption{Hỏi đáp nội bộ và IF-eval sau khi huấn luyện thêm trên tài liệu nội bộ, theo \cite{lu2025opd}. Tỉ lệ trong ngoặc là phần dữ liệu tài liệu trong hỗn hợp.}
+\label{tab:opd_personalization}
+\begin{tabularx}{\textwidth}{@{}Xll@{}}
+\toprule
+\textbf{Mô hình} & \textbf{Hỏi đáp nội bộ} & \textbf{IF-eval} \\
+\midrule
+Qwen3-8B gốc & 18\% & 85\% \\
+\quad + huấn luyện thêm (100\% tài liệu) & 43\% & 45\% \\
+\quad + huấn luyện thêm (70\% tài liệu) & 36\% & 79\% \\
+\quad + huấn luyện thêm (70\%), rồi chưng cất on-policy & 41\% & 83\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Điểm đáng chú ý là \emph{ai} làm thầy ở dòng cuối: chính bản Qwen3-8B trước khi huấn luyện thêm. Mô hình được kéo về khớp lại hành vi tuân theo chỉ dẫn của chính nó ngày trước, trên các prompt hội thoại, trong khi kiến thức mới nằm trong tham số không bị động tới. Kết quả được bài mô tả là ``recovers nearly full performance on IF-eval without losing any knowledge''.
+
+Lập luận đi kèm giải thích vì sao phải là chưng cất on-policy chứ không phải SFT trên chính đầu ra cũ: với bất kỳ tốc độ học dương nào, SFT trên một tập mẫu hữu hạn vẫn đẩy mô hình trôi dần khỏi phân phối sinh ra tập mẫu đó, và hành vi lại suy giảm. Trong khi ``on-policy distillation always stays on-policy'': tập dữ liệu được sinh lại từ chính sách hiện tại ở mỗi bước, nên không bao giờ có khoảng cách tích lũy giữa dữ liệu và mô hình. Các tác giả trình bày đây như một hướng có triển vọng cho học liên tục, và ghi rõ đó là giả thuyết chứ chưa phải kết quả đã chứng minh ở quy mô lớn.
+
+\subsection{Điều kiện để nó hoạt động, và các kiểu thất bại đã ghi nhận}
+\label{ssec:opd_conditions}
+
+Chưng cất on-policy không phải một thủ tục luôn cho kết quả tốt khi cắm vào. Hai nghiên cứu hệ thống về chính câu hỏi này đưa ra các điều kiện cụ thể.
+
+\paragraph{Thầy phải \emph{hợp} với trò, không chỉ \emph{giỏi hơn} trò.} Li và cộng sự \cite{li2026rethinkingopd} nêu hai điều kiện. Thứ nhất, ``the student and teacher should share compatible thinking patterns'': nếu thầy trình bày suy luận theo một lối mà trò chưa bao giờ sinh ra, thì các trạng thái mà trò ghé qua nằm ngoài vùng mà thầy chấm được một cách có ý nghĩa. Thứ hai, điểm số cao hơn là chưa đủ -- ``the teacher must offer genuinely new capabilities beyond what the student has seen during training''. Các tác giả minh họa bằng trường hợp chưng cất ngược từ yếu sang mạnh, nơi thầy 1,5B và 7B cùng họ không phân biệt được với trò xét theo phân phối, nên tín hiệu gần như bằng không dù bảng điểm có chênh lệch.
+
+\paragraph{Cơ chế của một lần chưng cất thành công.} Cũng trong nghiên cứu đó: một lần chạy thành công có đặc trưng là ``progressive alignment on high-probability tokens at student-visited states'', trên ``a small shared token set that concentrates most of the probability mass (97\%--99\%)''. Nói cách khác, cái thực sự được chuyển giao là xác suất trên một tập token nhỏ nhưng chiếm gần hết khối lượng tại mỗi vị trí, chứ không phải toàn bộ hình dạng của phân phối. Điều này vừa giải thích vì sao lấy một mẫu cho mỗi token đã đủ dùng, vừa giải thích vì sao thầy có phân phối khác lối với trò thì không truyền được gì.
+
+\paragraph{Hai cách cứu một lần chạy hỏng.} Cùng nghiên cứu đề xuất hai chiến lược: \emph{khởi động nguội bằng off-policy}, tức chạy một pha SFT hoặc chưng cất off-policy trước để trò sinh được những chuỗi nằm trong vùng thầy hiểu; và \emph{chọn prompt theo thầy}, tức chỉ giữ các prompt mà thầy thực sự có gì để dạy. Lưu ý rằng chiến lược thứ nhất chính là cấu trúc hai pha mà Qwen3 dùng (mục~\ref{ssec:gkd}) và cũng là dòng đầu của bảng~\ref{tab:opd_qwen3_cost}: pha off-policy không phải thừa, nó là điều kiện để pha on-policy có chỗ bám.
+
+\paragraph{Nhạy cảm với lựa chọn thầy và dạng hàm mất mát.} Zhu và cộng sự \cite{zhu2026manyfaces} khảo sát cả chưng cất on-policy lẫn \emph{tự} chưng cất on-policy, và kết luận rằng trên suy luận toán học phương pháp ``highly sensitive to teacher choice and loss formulation''. Họ chỉ ra ba cơ chế hỏng. Thứ nhất là lệch phân phối giữa thầy và trò, sinh ra do thầy phải chấm trên tiền tố do trò viết. Thứ hai là bất ổn tối ưu do gradient của KL ngược bị chệch khi chỉ tính trên một tập cắt top-$K$ của từ vựng thay vì trên toàn bộ miền giá trị -- một việc gần như bắt buộc khi từ vựng cỡ trăm nghìn, nhưng có giá của nó; cách sửa họ báo cáo là một dạng mục tiêu top-$K$ có chặn gradient. Thứ ba là giới hạn riêng của tự chưng cất: khi thầy được cho thêm thông tin đặc quyền mà lúc chạy thật không có, trò chỉ học được một chính sách trung bình hóa trên thông tin đó. Điều này hỏng khi thông tin đặc quyền gắn với từng mẫu, nhưng lại chạy tốt khi nó ``represents a shared latent rule, such as a system prompt or alignment preference'' -- tức đúng tình huống ở mục~\ref{ssec:opd_personalization}. Các cách vá được các tác giả nêu là ``stop-gradient TopK objectives, RLVR-adapted teachers, and SFT-stabilized students''.
+
+\subsection{Giới hạn: tín hiệu của thầy kém tin cậy dần theo độ sâu chuỗi}
+\label{ssec:opd_limits}
+
+Giới hạn quan trọng nhất của chưng cất on-policy là một hệ quả trực tiếp của chính cơ chế làm nó hoạt động, nên không thể vá bằng kỹ thuật cài đặt.
+
+\paragraph{Lập luận.} Thầy chấm token thứ $t$ \emph{với điều kiện} tiền tố $x_{1:t}$ do trò viết ra. Càng đi sâu vào chuỗi, tiền tố ấy càng có khả năng là một văn bản mà bản thân thầy cũng sẽ không bao giờ sinh ra. Khi đó phân phối mà thầy trả về tại vị trí $t$ không còn là ``cách một chuyên gia sẽ tiếp tục'' mà là ``cách một chuyên gia phản ứng với một tình huống lạ''. Nói cách khác, cơ chế vốn sinh ra để chữa lệch phân phối \emph{cho trò} lại tạo ra đúng vấn đề lệch phân phối \emph{cho thầy}. Đây chính là cơ chế hỏng thứ nhất mà Zhu và cộng sự \cite{zhu2026manyfaces} nêu tên: lệch phân phối giữa thầy và trò, gây ra bởi việc điều kiện trên tiền tố do trò sinh.
+
+Độ nghiêm trọng của vấn đề tăng theo độ dài chuỗi, vì xác suất tiền tố đã trôi ra ngoài vùng của thầy tích lũy theo từng token. Với một câu trả lời vài trăm token thì ảnh hưởng nhỏ; với một chuỗi suy luận hàng chục nghìn token, hoặc một tác tử chạy nhiều lượt gọi công cụ, không có gì bảo đảm tín hiệu ở nửa sau quỹ đạo còn giá trị. Li và cộng sự \cite{li2026rethinkingopd} đặt đúng câu hỏi này: ``OPD's apparent free lunch of dense token-level reward comes at a cost'', và điều đó đặt ra ``the question of whether OPD can scale to long-horizon distillation''.
+
+\paragraph{Hệ số chiết khấu bằng không cộng thêm vào cùng một giới hạn.} Với $\gamma = 0$, mục tiêu tại mỗi bước chỉ nói về token kế tiếp. Điều đó rất hợp lý khi câu hỏi là ``ở vị trí này, một mô hình giỏi hơn sẽ viết gì'', nhưng nó \emph{không biểu diễn được} loại câu hỏi mà tác vụ dài hơi đặt ra: quyết định ở bước $t$ có dẫn tới trạng thái tốt sau năm nghìn token nữa hay không. Chính tác giả bài gốc ghi rằng hệ số lớn hơn không không giúp ích trong thực nghiệm của họ; nhưng thực nghiệm đó là toán một lượt, không phải tác tử nhiều lượt, và bài không bàn tới tác tử nhiều lượt. Hướng mà bài để ngỏ cũng đúng vào khe hở này: ``there could be advantages to combining distillation-based per-token rewards with sequence-level environment rewards''.
+
+\paragraph{Ba giới hạn còn lại, ngắn gọn.} Thứ nhất, trần năng lực: chưng cất chuyển năng lực chứ không tạo ra năng lực, nên không thay thế được RL ở biên của tri thức hiện có. Thứ hai, chi phí tăng mạnh khi thầy nằm xa vùng hỗ trợ của trò: bài gốc ghi rằng trong trường hợp đó ``we require a significantly larger batch size'', vì ước lượng một mẫu cho mỗi token trở nên quá nhiễu. Thứ ba, phương pháp đòi quyền truy cập thầy ở mức log-xác suất; các biến thể ở mục~\ref{ssec:opd_variants} nới được ràng buộc này nhưng mỗi biến thể đều trả giá ở một trục khác.
+
+\subsection{Chọn SFT, chưng cất on-policy, hay RL}
+\label{ssec:opd_decision}
+
+Ba họ phương pháp này không xếp theo thứ tự tốt dần; chúng trả lời ba câu hỏi khác nhau. Bảng~\ref{tab:opd_decision} đưa ra quy tắc chọn kèm lý do, và lý do mới là phần đáng nhớ.
+
+\begin{table}[H]
+\centering\small
+\caption{Chọn phương pháp hậu huấn luyện theo tình huống.}
+\label{tab:opd_decision}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{2.7cm}X@{}}
+\toprule
+\textbf{Tình huống} & \textbf{Chọn} & \textbf{Vì sao} \\
+\midrule
+Chưa mô hình nào làm được tác vụ này, nhưng có bộ kiểm chứng tự động đáng tin & RL (GRPO, PPO) & Chỉ RL tạo ra được năng lực chưa tồn tại; trần của chưng cất là thầy \\
+\addlinespace
+Trò chưa biết định dạng của tác vụ: chưa biết trình bày suy luận, chưa biết cú pháp gọi công cụ & SFT hoặc chưng cất off-policy & Rollout của trò còn nằm ngoài vùng thầy chấm có ý nghĩa; đây đúng là ``khởi động nguội off-policy'' \\
+\addlinespace
+Đã có thầy mạnh hơn hẳn, chung bộ tách token, đọc được log-xác suất; cần ép năng lực xuống mô hình nhỏ & Chưng cất on-policy & Tín hiệu dày trên đúng phân phối lúc chạy; cùng số rollout cho nhiều bậc độ lớn thông tin hơn RL \\
+\addlinespace
+Có thầy nhưng chỉ truy cập được văn bản qua API & Seq-KD trước, rồi cân nhắc biến thể không cần logit & Seq-KD chỉ cần văn bản; các biến thể ở mục~\ref{ssec:opd_variants} đổi độ dày hoặc độ phân giải lấy quyền truy cập \\
+\addlinespace
+Mô hình đã đủ giỏi, chỉ cần dịch phong cách hay ưu tiên, và đã có sẵn dữ liệu cặp so sánh & DPO và họ (mục~\ref{ssec:dpo}) & Không phải sinh văn bản trong vòng huấn luyện nên rẻ nhất; tín hiệu thưa vẫn đủ cho thứ cần sửa \\
+\addlinespace
+Mô hình vừa học thêm dữ liệu miền và quên mất năng lực cũ & Chưng cất on-policy từ chính bản cũ của nó & Dữ liệu được sinh lại mỗi bước nên không trôi; SFT trên mẫu cũ thì có trôi \\
+\addlinespace
+Quỹ đạo rất dài hoặc nhiều lượt, chỉ biết tốt xấu ở cuối & RL, hoặc ghép phần thưởng môi trường với tín hiệu từng token & $\gamma=0$ không biểu diễn được phần thưởng ở xa, và tín hiệu của thầy kém tin cậy dần theo độ sâu (mục~\ref{ssec:opd_limits}) \\
+\addlinespace
+Thầy không mạnh hơn trò một cách phân biệt được, hoặc lối suy luận khác hẳn & Không chưng cất & Không có gì mới để truyền; tín hiệu gần như bằng không dù bảng điểm có chênh \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{checklist}{Trước khi chạy một đợt chưng cất on-policy}
+\begin{enumerate}
+	\item Kiểm tra thầy và trò dùng chung bộ tách token. Nếu không, chọn một hàm mất mát xuyên bộ tách token trước khi làm bất cứ việc gì khác.
+	\item Kiểm tra thầy thực sự mạnh hơn \emph{trên chính các prompt sẽ dùng}, không phải trên một bảng điểm chung.
+	\item Chạy một pha off-policy ngắn nếu trò chưa thạo định dạng đầu ra của tác vụ.
+	\item Đo khoảng cách giữa hai phân phối ở đầu và ở cuối rollout. Nếu nó tăng mạnh theo độ sâu, cân nhắc rút ngắn rollout thay vì tăng số bước.
+	\item Ghi lại chi phí của \emph{mọi} pha, kể cả pha off-policy và chi phí tạo ra thầy, trước khi công bố bất kỳ tỉ lệ tiết kiệm nào.
+\end{enumerate}
+\end{checklist}
+
+\begin{keyidea}{Tóm tắt mục}
+Chưng cất on-policy lấy phân phối dữ liệu từ trò và tín hiệu học từ thầy, nên nó đồng thời tránh được lệch phân phối của SFT và sự thưa thớt tín hiệu của RL. Cái giá là nó cần một ông thầy sẵn có và mạnh hơn, nên nó là công cụ \emph{chuyển giao} năng lực, không phải công cụ \emph{tạo ra} năng lực; và vì thầy phải chấm trên văn bản do trò viết, độ tin cậy của tín hiệu giảm dần theo độ sâu của chuỗi.
+\end{keyidea}

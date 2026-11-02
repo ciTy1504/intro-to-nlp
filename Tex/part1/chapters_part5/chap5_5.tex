@@ -78,71 +78,84 @@ Quy trình gồm ba giai đoạn: (1) tinh chỉnh có giám sát (SFT), (2) hu�
 
 \subsubsection*{Bước 3: Tối ưu hóa chính sách bằng học tăng cường (Reinforcement Learning -- PPO)}
 
-\begin{itemize}
-    \item \textbf{Mục tiêu:}
-    Cập nhật chính sách sinh phản hồi \( \pi_{\theta}(y \mid x) \) sao cho:
-    \[
-        \max_{\theta} \;
-        \mathbb{E}_{x \sim D, \, y \sim \pi_{\theta}} \big[
-            r_{\phi}(x, y)
-        \big],
-    \]
-    trong khi vẫn giữ chính sách mới không quá xa chính sách tham chiếu (SFT) \( \pi_{\text{ref}} \).
+\paragraph{Bài toán đặt ra.}
+Sau bước 2 ta đã có một bộ chấm điểm tự động \( r_{\phi}(x,y) \). Việc còn lại nghe qua thì đơn giản: chỉnh \( \theta \) sao cho điểm trung bình cao lên,
+\[
+    \max_{\theta} \;
+    \mathbb{E}_{x \sim D, \; y \sim \pi_{\theta}(\cdot \mid x)}
+    \big[ r_{\phi}(x, y) \big].
+\]
+Chỗ vướng nằm ở chỗ \( \theta \) không xuất hiện bên trong \( r_{\phi} \); nó chỉ xuất hiện ở \emph{phân phối} dùng để lấy mẫu \( y \). Mà lấy mẫu một chuỗi token là thao tác rời rạc, không khả vi, nên không thể lan truyền ngược điểm thưởng về \( \theta \) theo kiểu học có giám sát. Bước này vì thế bắt buộc phải dùng học tăng cường, chứ không phải một hàm mất mát thông thường.
 
-    \item \textbf{Hàm phần thưởng có điều chỉnh:}
-    Để tránh việc mô hình “lách luật” hoặc quá khớp với RM, InstructGPT \cite{ouyang2022training} trừ vào phần thưởng một hình phạt log-tỷ-lệ tính \emph{theo từng token}:
-    \[
-        R'(x, y)
-        = r_{\phi}(x, y)
-        - \beta \sum_{t=1}^{|y|} \log \frac{
-            \pi_{\theta}(y_t \mid x, y_{<t})
-        }{
-            \pi_{\text{ref}}(y_t \mid x, y_{<t})
-        },
-    \]
-    trong đó \( \beta > 0 \) là hệ số điều chỉnh mức độ regularization.
-    Tổng trên chính là log-tỷ-lệ của cả chuỗi, \( \log \frac{\pi_{\theta}(y \mid x)}{\pi_{\text{ref}}(y \mid x)} \), và kỳ vọng của nó theo \( y \sim \pi_{\theta} \) bằng \( D_{\text{KL}}\big(\pi_{\theta}(\cdot \mid x) \,\big\|\, \pi_{\text{ref}}(\cdot \mid x)\big) \); vì thế hình phạt này thường được gọi tắt là “phạt KL”. Viết theo từng token để mỗi bước sinh đều nhận được tín hiệu phạt, thay vì chỉ cộng một lượng duy nhất ở cuối chuỗi.
+\paragraph{Từ phần thưởng sang gradient.}
+Lối ra là đồng nhất thức gradient của chính sách (policy gradient): với mọi hàm phần thưởng \( R(x,y) \) không phụ thuộc \( \theta \),
+\[
+    \nabla_{\theta}\,
+    \mathbb{E}_{y \sim \pi_{\theta}}\big[ R(x,y) \big]
+    = \mathbb{E}_{y \sim \pi_{\theta}}\big[
+        R(x,y)\, \nabla_{\theta} \log \pi_{\theta}(y \mid x)
+    \big].
+\]
+Đẳng thức này có được bằng cách viết kỳ vọng thành tổng theo \( y \), lấy đạo hàm vào trong tổng, rồi dùng \( \nabla_{\theta} \pi_{\theta} = \pi_{\theta} \nabla_{\theta} \log \pi_{\theta} \). Vế phải chỉ còn chứa \( \nabla_{\theta} \log \pi_{\theta}(y \mid x) \) -- đúng thứ mà một mô hình ngôn ngữ vẫn tính được bằng lan truyền ngược. Phần thưởng chỉ còn đóng vai trò một \emph{hệ số nhân vô hướng}: câu trả lời điểm cao thì được nhân hệ số lớn, nên xác suất sinh lại nó tăng lên.
 
-    \item \textbf{Thuật toán PPO:}
-    Dùng Proximal Policy Optimization (PPO) \cite{schulman2017proximal}, một biến thể ổn định của Policy Gradient.
-    PPO giới hạn biên độ thay đổi giữa chính sách cũ và mới bằng một hàm \emph{clipping}:
-    \[
-        L_{\text{PPO}}(\theta)
-        = \mathbb{E}_{x, y, t}
-        \Big[
-            \min\Big(
-                r_t(\theta) \, A_t,
-                \text{clip}\big(r_t(\theta), 1 - \epsilon, 1 + \epsilon\big) \, A_t
-            \Big)
-        \Big],
-    \]
-    trong đó:
-    \begin{align*}
-        r_t(\theta) &= \frac{
-            \pi_{\theta}(y_t \mid x, y_{<t})
-        }{
-            \pi_{\theta_{\text{old}}}(y_t \mid x, y_{<t})
-        } \quad &\text{(tỷ lệ xác suất mới/cũ)}, \\
-        A_t &= \hat{R}_t - V_{\psi}(s_t)
-        \quad &\text{(advantage – phần thưởng vượt trội)}, \\
-        \epsilon &\text{ là hệ số clip, thường khoảng } 0.1 \text{–} 0.2.
-    \end{align*}
+\paragraph{Vì sao cần baseline và lợi thế (advantage).}
+Ước lượng trên không chệch nhưng phương sai rất lớn. Nếu mọi câu trả lời cho một prompt đều được chấm quanh 7 điểm, thì hệ số nhân 7 chỉ làm mọi thứ to lên đồng loạt mà không nói được câu nào tốt hơn câu nào; cái mang thông tin là \emph{độ lệch} so với mức trung bình. Trừ đi một đại lượng \( b \) không phụ thuộc \( y \) giữ nguyên tính không chệch (vì \( \mathbb{E}_{y}[\nabla_{\theta} \log \pi_{\theta}(y\mid x)] = 0 \)) nhưng giảm phương sai. PPO lấy \( b \) là một \textbf{mô hình giá trị} (value model, còn gọi là critic) \( V_{\psi}(s_t) \): ước lượng phần thưởng còn lại kỳ vọng nếu sinh tiếp từ trạng thái \( s_t = (x, y_{<t}) \). Lợi thế của token \( t \) là phần vượt trội so với mức kỳ vọng đó. PPO \cite{schulman2017proximal} dùng bộ ước lượng GAE \cite{schulman2016gae} cắt ngắn:
+\[
+    \hat{A}_t = \delta_t + (\gamma\lambda)\,\delta_{t+1} + \dots + (\gamma\lambda)^{T-t+1}\delta_{T-1},
+    \qquad
+    \delta_t = r_t + \gamma V(s_{t+1}) - V(s_t),
+\]
+với \( \gamma \) là hệ số chiết khấu và \( \lambda \) điều chỉnh đánh đổi chệch--phương sai. Trong RLHF, \( V_{\psi} \) thường được khởi tạo từ mô hình phần thưởng và có kích thước xấp xỉ chính sách.
 
-    \item \textbf{Trực giác:}
-    PPO tăng xác suất của các hành động (token) mang lại reward cao,
-    nhưng nếu xác suất mới lệch quá xa so với mô hình cũ (tức \( r_t(\theta) \) quá lớn) thì gradient bị \emph{clip} để chính sách không mất ổn định.
+\paragraph{Vì sao cần tỷ số xác suất và phép cắt.}
+Mỗi vòng cập nhật phải sinh mẫu mới, mà sinh văn bản là phần tốn kém nhất của toàn bộ quy trình. Để dùng lại một lô mẫu cho nhiều bước gradient, ta phải chấp nhận rằng mẫu được sinh bởi chính sách \emph{cũ} \( \pi_{\theta_{\text{old}}} \) trong khi đang tối ưu chính sách \emph{mới} \( \pi_{\theta} \). Hiệu chỉnh chuẩn cho tình huống đó là lấy mẫu quan trọng (importance sampling), nhân thêm tỷ số
+\[
+    \rho_t(\theta) = \frac{
+        \pi_{\theta}(y_t \mid x, y_{<t})
+    }{
+        \pi_{\theta_{\text{old}}}(y_t \mid x, y_{<t})
+    },
+    \qquad
+    \rho_t(\theta_{\text{old}}) = 1 .
+\]
+Tỷ số này chỉ đáng tin khi hai chính sách còn gần nhau. Nếu cứ cực đại hóa \( \mathbb{E}[\rho_t \hat{A}_t] \), bộ tối ưu sẽ đẩy \( \rho_t \) ra xa 1 vô hạn với những token có \( \hat{A}_t > 0 \), và sau vài bước thì lô mẫu cũ không còn đại diện cho chính sách hiện tại nữa. PPO chặn việc đó bằng mục tiêu thay thế có cắt:
+\[
+    L^{\text{CLIP}}(\theta)
+    = \mathbb{E}_{t}
+    \Big[
+        \min\Big(
+            \rho_t(\theta) \, \hat{A}_t,\;
+            \text{clip}\big(\rho_t(\theta), 1 - \epsilon, 1 + \epsilon\big) \, \hat{A}_t
+        \Big)
+    \Big],
+    \qquad \epsilon \approx 0.1 \text{--} 0.2 .
+\]
+Đọc công thức theo dấu của \( \hat{A}_t \) sẽ thấy ngay tác dụng. Khi \( \hat{A}_t > 0 \) (token tốt hơn kỳ vọng), hàm mục tiêu tăng theo \( \rho_t \) nhưng đứng yên khi \( \rho_t > 1 + \epsilon \): mô hình hết động lực đẩy xác suất lên nữa. Khi \( \hat{A}_t < 0 \), nó đứng yên khi \( \rho_t < 1 - \epsilon \): mô hình hết động lực dìm xác suất xuống nữa. Phép \( \min \) là chi tiết quan trọng -- nó lấy giá trị \emph{bi quan} trong hai nhánh, nên chỉ bỏ qua thay đổi của tỷ số khi thay đổi đó làm mục tiêu \emph{tốt lên}, còn khi thay đổi làm mục tiêu xấu đi thì vẫn tính đủ \cite{schulman2017proximal}. Bỏ \( \min \) và chỉ giữ nhánh cắt thì một khi \( \rho_t \) đã ra ngoài khoảng, gradient bằng 0 bất kể dấu của \( \hat{A}_t \); bước đi lố không còn lực nào kéo ngược trở lại.
 
-    \item \textbf{Cập nhật tham số:}
-    Sau mỗi batch huấn luyện, các trọng số \( \theta \) được tối ưu để giảm \( -L_{\text{PPO}}(\theta) \).
-    Chính sách mới \(\pi_{\theta}\) sau đó có thể dùng làm mốc tham chiếu cho vòng cập nhật tiếp theo.
+\paragraph{Phạt KL: chống lách luật mô hình phần thưởng.}
+\( r_{\phi} \) chỉ là \emph{mô hình đại diện} cho sở thích con người, học từ hữu hạn mẫu. Cực đại hóa nó không giới hạn thì chính sách sẽ tìm ra những chuỗi có điểm rất cao nhưng con người không hề thích -- hiện tượng \textbf{lách mô hình phần thưởng} (reward hacking, hay over-optimization). InstructGPT \cite{ouyang2022training} chặn bằng cách trừ vào phần thưởng một hình phạt log-tỷ-lệ tính \emph{theo từng token}:
+\[
+    R'(x, y)
+    = r_{\phi}(x, y)
+    - \beta \sum_{t=1}^{|y|} \log \frac{
+        \pi_{\theta}(y_t \mid x, y_{<t})
+    }{
+        \pi_{\text{ref}}(y_t \mid x, y_{<t})
+    }.
+\]
+Tổng trên chính là log-tỷ-lệ của cả chuỗi, \( \log \frac{\pi_{\theta}(y \mid x)}{\pi_{\text{ref}}(y \mid x)} \), và kỳ vọng của nó theo \( y \sim \pi_{\theta} \) bằng \( D_{\text{KL}}\big(\pi_{\theta}(\cdot \mid x) \,\big\|\, \pi_{\text{ref}}(\cdot \mid x)\big) \); vì thế hình phạt này thường được gọi tắt là ``phạt KL''. Viết theo từng token để mỗi bước sinh đều nhận được tín hiệu phạt, thay vì chỉ cộng một lượng duy nhất ở cuối chuỗi. Hệ số \( \beta \) đặt ra một đánh đổi trực tiếp: \( \beta \) lớn thì mô hình bám sát \( \pi_{\text{ref}} \), an toàn nhưng gần như không cải thiện; \( \beta \) nhỏ thì điểm thưởng tăng nhanh rồi sụp -- điểm do \( r_{\phi} \) chấm vẫn lên trong khi chất lượng thực tế đã đi xuống.
 
-    \item \textbf{Kết quả:}
-    Mô hình cuối cùng \( \pi_{\text{RLHF}} \) vừa sinh phản hồi hợp lý, vừa phù hợp với sở thích con người và giữ được độ ổn định ngữ nghĩa.
-\end{itemize}
+\paragraph{Giá phải trả: bốn mô hình cùng nằm trong bộ nhớ.}
+Một vòng PPO cho LLM cần đồng thời chính sách đang huấn luyện \( \pi_{\theta} \), chính sách cũ dùng để sinh mẫu \( \pi_{\theta_{\text{old}}} \), chính sách tham chiếu đông cứng \( \pi_{\text{ref}} \) để tính phạt KL, mô hình phần thưởng \( r_{\phi} \), và mô hình giá trị \( V_{\psi} \). Trên thực tế người ta thường gộp \( \pi_{\theta} \) với \( \pi_{\theta_{\text{old}}} \), còn lại \textbf{bốn bản sao mô hình} phải nạp cùng lúc, trong đó hai bản có trạng thái bộ tối ưu \cite{ahmadian2024rloo}. Thêm vào đó là một vòng lặp sinh văn bản xen kẽ vòng lặp huấn luyện, với bộ siêu tham số dài (\( \epsilon \), \( \beta \), \( \gamma \), \( \lambda \), số epoch trên mỗi lô, hệ số mất mát giá trị, hệ số entropy). Đây là lý do thực dụng khiến mọi phương pháp ở mục~\ref{ssec:rlhf_alternatives} ra đời.
 
+\begin{pitfall}{Ba chế độ hỏng hay gặp của PPO trong RLHF}
+\textbf{Lách mô hình phần thưởng:} điểm do \( r_{\phi} \) chấm tăng đều trong khi đánh giá của con người đi xuống. Dấu hiệu nhận biết là KL so với \( \pi_{\text{ref}} \) tăng vọt cùng lúc với điểm thưởng. Cách xử lý: theo dõi cặp (điểm thưởng, KL) chứ không chỉ điểm thưởng, và đánh giá định kỳ bằng tập giữ lại do người chấm.\\[4pt]
+\textbf{Sụp chế độ (mode collapse):} chính sách hội tụ về một vài khuôn câu trả lời có điểm cao, entropy giảm mạnh, độ đa dạng biến mất. Thường đi kèm \( \beta \) quá nhỏ hoặc tốc độ học quá lớn.\\[4pt]
+\textbf{Thiên lệch độ dài:} nếu người gán nhãn hơi thích câu trả lời dài, \( r_{\phi} \) sẽ học được thiên lệch đó và PPO khuếch đại nó lên, cho ra các câu trả lời dài dòng mà không thêm thông tin.
+\end{pitfall}
 
-\paragraph{Ghi chú:}
-Trong các nghiên cứu gần đây, giai đoạn (3) có thể được thay thế bằng phương pháp \textbf{Direct Preference Optimization (DPO)} \cite{rafailov2023direct}, giúp tối ưu trực tiếp từ dữ liệu so sánh $(y^+, y^-)$ mà không cần huấn luyện Reward Model riêng biệt, đồng thời loại bỏ nhu cầu triển khai toàn bộ pipeline học tăng cường phức tạp.
+\paragraph{Khi nào nên dùng PPO.}
+PPO vẫn là lựa chọn hợp lý khi có đủ hạ tầng tính toán và một mô hình phần thưởng tốt, khi cần tín hiệu \emph{trực tuyến} (chính sách tự sinh mẫu rồi được chấm ngay, nên không bị lệch phân phối như các phương pháp ngoại tuyến), và khi phần thưởng không rút gọn được về dạng so sánh cặp -- ví dụ phần thưởng kết hợp nhiều tiêu chí có trọng số, hoặc phần thưởng kiểm chứng được bằng chương trình. Ngược lại, nếu chỉ có sẵn một tập dữ liệu so sánh cặp tĩnh và mục tiêu là căn chỉnh văn phong, thì toàn bộ bộ máy critic--GAE--clipping là chi phí thừa; đó chính là lập luận của DPO (mục~\ref{ssec:dpo}) và của RLOO (mục~\ref{ssec:rloo}).
 
 \subsubsection{InstructGPT: công thức RLHF kinh điển trong thực tế}
 \label{sssec:instructgpt}
@@ -160,109 +173,328 @@ Bài học quan trọng nhất: ngoài mặt an toàn, \emph{căn chỉnh còn l
 
 \subsection{Các phương pháp thay thế: đơn giản và ổn định hơn}
 \label{ssec:rlhf_alternatives}
-RLHF hiệu quả nhưng phức tạp, tốn kém và không ổn định khi huấn luyện. Vì vậy có nhiều phương pháp thay thế đơn giản hơn.
+RLHF hiệu quả nhưng phức tạp, tốn kém và không ổn định khi huấn luyện. Các phương pháp ra đời sau chia thành hai hướng, và phân biệt được hai hướng này giúp đọc phần còn lại dễ hơn nhiều.
+
+Hướng thứ nhất \emph{bỏ hẳn học tăng cường}: biến đổi bài toán RLHF cho tới khi nó trở thành một hàm mất mát khả vi tính thẳng trên dữ liệu sở thích. DPO, IPO, KTO và ORPO thuộc hướng này; chúng khác nhau ở giả thiết về cách con người ra quyết định, ở loại dữ liệu cần có, và ở việc có giữ mô hình tham chiếu hay không.
+
+Hướng thứ hai \emph{giữ học tăng cường nhưng cắt bỏ phần không cần thiết}: vẫn để mô hình tự sinh mẫu rồi được chấm điểm, nhưng thay mô hình giá trị bằng một baseline tính trực tiếp từ các mẫu. RLOO và GRPO thuộc hướng này, và chúng chiếm ưu thế ở những bài toán mà phần thưởng kiểm chứng được bằng chương trình.
 
 \subsubsection{Direct Preference Optimization (DPO)}
 \label{ssec:dpo}
 
-Chỗ rắc rối của RLHF nằm ở hai bước trung gian: phải huấn luyện một mô hình phần thưởng (reward model) riêng, rồi mới dùng học tăng cường để tối ưu hoá mô hình chính.
+\paragraph{Bài toán đặt ra.}
+RLHF đi vòng: dữ liệu thu được là các so sánh cặp, nhưng PPO lại cần một \emph{hàm phần thưởng vô hướng}, nên phải dựng một mô hình trung gian \( r_{\phi} \) để dịch so sánh thành điểm số, rồi dùng học tăng cường để dịch điểm số trở lại thành chính sách. Mỗi lần đi vòng là một lần mất mát: \( r_{\phi} \) chỉ khớp với dữ liệu hữu hạn và bị lách ở ngoài miền, còn PPO thì cần bốn mô hình trong bộ nhớ, một vòng lặp sinh mẫu và một bộ siêu tham số dài.
 
-\textbf{Direct Preference Optimization (DPO)} \cite{rafailov2023direct} loại bỏ toàn bộ quy trình huấn luyện trung gian này, cho phép tối ưu hoá trực tiếp trên dữ liệu sở thích của con người chỉ với một hàm mất mát duy nhất.
+Câu hỏi của DPO \cite{rafailov2023direct} là: nếu đằng nào nghiệm cuối cùng cũng là một chính sách, có thể bỏ hẳn khâu phần thưởng trung gian và viết thẳng một hàm mất mát trên chính sách hay không? Câu trả lời là có, và con đường dẫn tới nó gồm bốn bước. Ta sẽ đi từng bước một. Trong suốt mục này, ký hiệu \( y_w \) (winner) là câu trả lời được ưa thích -- chính là \( y^+ \) ở bước 2 của RLHF -- và \( y_l \) (loser) là câu bị loại.
 
-\paragraph{Ý tưởng cốt lõi.}
-Mục tiêu của RLHF thực chất chỉ là tối đa hóa xác suất sinh ra những câu trả lời mà con người ưa thích hơn.
-Do đó, thay vì huấn luyện một reward model rồi dùng PPO để điều chỉnh chính sách, ta có thể \emph{viết lại trực tiếp hàm mục tiêu RLHF} thành một hàm mất mát huấn luyện được bằng lan truyền ngược (backpropagation).
+\paragraph{Bước 1: mô hình Bradley--Terry, vì sao lại là sigmoid của hiệu.}
+Con người không đưa ra điểm số, chỉ đưa ra lựa chọn. Muốn nối hai thứ đó lại thì cần một \emph{mô hình sở thích}: một giả thiết về việc điểm số sinh ra lựa chọn như thế nào. Mô hình kinh điển là Bradley--Terry \cite{bradley1952rank}. Nó gán cho mỗi câu trả lời một ``độ mạnh'' dương \( s(x,y) > 0 \) và giả định rằng khi người ta so sánh hai câu, xác suất chọn câu nào tỷ lệ với độ mạnh của câu đó:
+\[
+    p^{*}(y_1 \succ y_2 \mid x) = \frac{s(x,y_1)}{s(x,y_1) + s(x,y_2)} .
+\]
+Độ mạnh buộc phải dương, mà ta lại muốn tham số hóa nó bằng đầu ra không ràng buộc của một mạng nơ-ron. Cách tự nhiên là viết \( s(x,y) = \exp\big(r(x,y)\big) \) với \( r \in \mathbb{R} \). Thay vào và chia cả tử lẫn mẫu cho \( \exp(r(x,y_1)) \):
+\[
+\begin{aligned}
+    p^{*}(y_1 \succ y_2 \mid x)
+    &= \frac{\exp\big(r(x,y_1)\big)}{\exp\big(r(x,y_1)\big) + \exp\big(r(x,y_2)\big)} \\[4pt]
+    &= \frac{1}{1 + \exp\big(-[\,r(x,y_1) - r(x,y_2)\,]\big)}
+    = \sigma\big(r(x,y_1) - r(x,y_2)\big).
+\end{aligned}
+\]
+Dạng sigmoid không phải là một lựa chọn tùy tiện: nó là hệ quả bắt buộc của giả thiết ``xác suất chọn tỷ lệ với độ mạnh'' cộng với phép tham số hóa mũ. Có một cách nhìn thứ hai cũng dẫn tới đúng công thức này: giả sử người đánh giá cảm nhận được một độ hữu ích nhiễu \( u_i = r(x,y_i) + \varepsilon_i \), với \( \varepsilon_i \) độc lập cùng phân phối Gumbel chuẩn, và họ chọn câu có \( u \) lớn hơn. Hiệu của hai biến Gumbel độc lập có phân phối logistic, nên \( \Pr(u_1 > u_2) = \sigma(r_1 - r_2) \). Nói cách khác, Bradley--Terry chính là mô hình ``điểm số thật cộng nhiễu'' -- và đó là lý do nó được dùng để mô tả người gán nhãn, những người đánh giá không hoàn toàn nhất quán.
 
-\paragraph{Thiết lập.}
-Giống RLHF, ta có một tập dữ liệu gồm các bộ ba:
-    \[
-        (x, y^+, y^-),
-    \]
-    trong đó:
-    \begin{itemize}
-        \item $x$: prompt đầu vào,
-        \item $y^+$: câu trả lời được con người ưa thích hơn,
-        \item $y^-$: câu trả lời kém hơn.
-    \end{itemize}
-    Mô hình hiện tại có chính sách $\pi_{\theta}(y|x)$, và một mô hình tham chiếu (reference policy) $\pi_{\text{ref}}(y|x)$ -- thường chính là mô hình SFT ban đầu.
+Hai hệ quả của công thức này cần ghi nhớ, vì cả hai sẽ được dùng lại ngay sau đây.
+\begin{itemize}
+    \item \textbf{Hàm mất mát ở bước 2 của RLHF chính là ước lượng hợp lý cực đại của Bradley--Terry.} Lấy \( -\log \) của xác suất trên cho mẫu \( (x, y_w, y_l) \) ta được đúng \( -\log\sigma\big(r_\phi(x,y_w) - r_\phi(x,y_l)\big) \). Mô hình phần thưởng không phải là một thiết kế riêng rẽ; nó là hồi quy logistic trên hiệu hai điểm.
+    \item \textbf{Chỉ \emph{hiệu} hai phần thưởng là xác định được.} Cộng vào \( r(x,\cdot) \) một hàm bất kỳ \( c(x) \) chỉ phụ thuộc prompt thì mọi xác suất sở thích giữ nguyên. Vậy dữ liệu so sánh không bao giờ xác định được \( r \) một cách duy nhất, mà chỉ xác định được một \emph{lớp tương đương} các hàm phần thưởng sai khác nhau một số hạng phụ thuộc \( x \). Đây chính là khe hở mà DPO sẽ chui qua.
+\end{itemize}
 
-\paragraph{Công thức.}
-    Xuất phát từ bài toán RLHF có ràng buộc KL, $\max_{\pi} \mathbb{E}_{x \sim D,\, y \sim \pi}[r(x,y)] - \beta\, D_{\text{KL}}\big(\pi(\cdot \mid x) \,\big\|\, \pi_{\text{ref}}(\cdot \mid x)\big)$, nghiệm tối ưu có dạng đóng
-    \[
-        \pi_r(y|x) = \frac{1}{Z(x)}\, \pi_{\text{ref}}(y|x) \exp\!\Big(\tfrac{1}{\beta}\, r(x,y)\Big),
-        \qquad
-        Z(x) = \sum_{y} \pi_{\text{ref}}(y|x) \exp\!\Big(\tfrac{1}{\beta}\, r(x,y)\Big).
-    \]
-    Đảo ngược quan hệ này cho \emph{phần thưởng ngầm} ứng với một chính sách bất kỳ:
-    \[
-        r(x,y) = \beta \log \frac{\pi_{\theta}(y|x)}{\pi_{\text{ref}}(y|x)} + \beta \log Z(x).
-    \]
-    Hàm phân hoạch $Z(x)$ không tính được, nhưng khi thay biểu thức trên vào mô hình sở thích Bradley--Terry thì chỉ còn \emph{hiệu} hai phần thưởng trên cùng một prompt, nên số hạng $\beta \log Z(x)$ triệt tiêu. Việc huấn luyện reward model vì thế có thể bỏ qua, và còn lại một hàm mất mát tối ưu trực tiếp trên dữ liệu sở thích:
-    \[
-        \mathcal{L}_{\text{DPO}}(\theta)
-        = -\mathbb{E}_{(x, y^+, y^-)} 
-        \Big[
-            \log \sigma\big(
-                \beta \big[
-                    \log \frac{\pi_{\theta}(y^+|x)}{\pi_{\text{ref}}(y^+|x)}
-                    -
-                    \log \frac{\pi_{\theta}(y^-|x)}{\pi_{\text{ref}}(y^-|x)}
-                \big]
-            \big)
-        \Big],
-    \]
-    trong đó $\sigma(\cdot)$ là hàm sigmoid và $\beta$ là một siêu tham số điều chỉnh độ “mềm” của hàm phần thưởng.
+\paragraph{Bước 2: nghiệm tối ưu dạng đóng của bài toán RLHF.}
+Bài toán mà PPO đang giải, viết lại cho một prompt \( x \), là
+\[
+    \max_{\pi}\;
+    \mathbb{E}_{y \sim \pi(\cdot \mid x)}\big[ r(x,y) \big]
+    - \beta\, D_{\text{KL}}\big(\pi(\cdot \mid x) \,\big\|\, \pi_{\text{ref}}(\cdot \mid x)\big).
+\]
+Bài toán này có \emph{nghiệm dạng đóng}, viết thẳng ra được, không cần học tăng cường:
+\[
+    \pi_r(y \mid x) = \frac{1}{Z(x)}\, \pi_{\text{ref}}(y \mid x)\,
+    \exp\!\Big( \tfrac{1}{\beta}\, r(x,y) \Big),
+    \qquad
+    Z(x) = \sum_{y} \pi_{\text{ref}}(y \mid x)\, \exp\!\Big( \tfrac{1}{\beta}\, r(x,y) \Big).
+\]
+Đọc công thức này theo nghĩa trực tiếp: chính sách tối ưu là chính sách tham chiếu \emph{được nhân thêm một trọng số mũ theo phần thưởng}. Phần thưởng không viết lại mô hình từ đầu; nó chỉ nghiêng lại phân phối sẵn có. \( Z(x) \) là hằng số chuẩn hóa để tổng xác suất bằng 1, và nó là tổng trên \emph{toàn bộ} không gian chuỗi, nên không tính được trong thực tế.
 
-\paragraph{Trực giác.}
-    \begin{itemize}
-        \item Nếu mô hình $\pi_{\theta}$ gán cho $y^+$ xác suất cao hơn $y^-$ (sau khi chuẩn hóa bằng $\pi_{\text{ref}}$), hàm mất mát giảm: mô hình đang học đúng hướng.
-        \item Nếu ngược lại, mô hình gán xác suất cao cho $y^-$ hơn $y^+$, gradient sẽ đẩy mô hình theo chiều tăng xác suất cho $y^+$.
-        \item Việc chia cho $\pi_{\text{ref}}$ giữ cho mô hình mới không “trôi quá xa” khỏi mô hình SFT ban đầu, tương tự ràng buộc KL trong PPO.
-    \end{itemize}
+\begin{deepdive}{Dẫn ra nghiệm dạng đóng (có thể bỏ qua ở lần đọc đầu)}
+Gộp hai số hạng trong hàm mục tiêu lại, đặt \( -\beta \) làm thừa số chung:
+\[
+\begin{aligned}
+    &\mathbb{E}_{y \sim \pi}\big[ r(x,y) \big] - \beta\, D_{\text{KL}}(\pi \,\|\, \pi_{\text{ref}}) \\[4pt]
+    &\qquad = -\beta\, \mathbb{E}_{y \sim \pi}\left[ \log \frac{\pi(y \mid x)}{\pi_{\text{ref}}(y \mid x)} - \frac{1}{\beta} r(x,y) \right] \\[4pt]
+    &\qquad = -\beta\, \mathbb{E}_{y \sim \pi}\left[ \log \frac{\pi(y \mid x)}{\pi_{\text{ref}}(y \mid x)\exp\big(\frac{1}{\beta} r(x,y)\big)} \right].
+\end{aligned}
+\]
+Mẫu số bên trong logarit chưa phải một phân phối vì chưa chuẩn hóa. Chia và nhân cho \( Z(x) \) để biến nó thành phân phối \( \pi_r \) định nghĩa ở trên:
+\[
+\begin{aligned}
+    &= -\beta\, \mathbb{E}_{y \sim \pi}\left[ \log \frac{\pi(y \mid x)}{\pi_r(y \mid x)} \right] + \beta \log Z(x) \\[4pt]
+    &= -\beta\, D_{\text{KL}}\big(\pi \,\|\, \pi_r\big) + \beta \log Z(x).
+\end{aligned}
+\]
+Số hạng \( \beta \log Z(x) \) không phụ thuộc \( \pi \), nên cực đại hóa vế trái tương đương với cực tiểu hóa \( D_{\text{KL}}(\pi \| \pi_r) \). Bất đẳng thức Gibbs nói rằng phân kỳ KL không âm và bằng 0 khi và chỉ khi hai phân phối trùng nhau. Vậy nghiệm duy nhất là \( \pi = \pi_r \).
+\end{deepdive}
 
-\paragraph{So sánh với RLHF.}
-    \begin{itemize}
-        \item RLHF cần 3 mô hình: SFT, RM và policy được huấn luyện bằng PPO.
-        \item DPO chỉ cần 2 mô hình: mô hình SFT (làm $\pi_{\text{ref}}$) và mô hình đang fine-tune ($\pi_{\theta}$).
-        \item Không cần huấn luyện RM, không cần chạy PPO hay lấy gradient từ môi trường: chỉ cần fine-tune trực tiếp bằng gradient descent.
-    \end{itemize}
+\paragraph{Bước 3: đảo ngược để lấy phần thưởng ngầm.}
+Quan hệ \( r \mapsto \pi_r \) ở trên đảo ngược được: lấy logarit hai vế rồi chuyển vế, ta được phần thưởng \emph{ứng với} một chính sách bất kỳ:
+\[
+    r(x,y) = \beta \log \frac{\pi_r(y \mid x)}{\pi_{\text{ref}}(y \mid x)} + \beta \log Z(x).
+\]
+Đây là bước đổi vai quan trọng nhất của toàn bộ phương pháp. Trước đó ta nghĩ theo chiều ``có phần thưởng thì tìm được chính sách''. Bây giờ ta đọc ngược: \emph{mọi chính sách đều ngầm định nghĩa một hàm phần thưởng}, cụ thể là \( \beta \) lần log-tỷ-lệ của nó so với chính sách tham chiếu, cộng một số hạng chỉ phụ thuộc \( x \). Đó chính là ý nghĩa của nhan đề bài báo gốc: mô hình ngôn ngữ \emph{đã là} một mô hình phần thưởng. Ta đặt tên cho đại lượng tính được:
+\[
+    \hat{r}_{\theta}(x,y) = \beta \log \frac{\pi_{\theta}(y \mid x)}{\pi_{\text{ref}}(y \mid x)}
+    \qquad \text{(phần thưởng ngầm).}
+\]
 
-\paragraph{Lợi ích.}
-    \begin{itemize}
-        \item Đơn giản hơn nhiều, vì không cần mô hình phần thưởng riêng.
-        \item Ổn định hơn, vì chỉ dùng một hàm mất mát rõ ràng, tránh dao động do PPO gây ra.
-        \item Huấn luyện hiệu quả hơn: dễ song song hóa và tận dụng được pipeline fine-tuning có sẵn.
-        \item Chất lượng đầu ra tương đương hoặc vượt RLHF trong nhiều nghiên cứu thực nghiệm \cite{rafailov2023direct}.
-    \end{itemize}
+\paragraph{Bước 4: thay vào Bradley--Terry, \( Z(x) \) biến mất.}
+Bây giờ ghép hai mảnh lại. Thay biểu thức phần thưởng ở bước 3 vào mô hình Bradley--Terry ở bước 1, với \( y_w \) và \( y_l \) cùng một prompt \( x \):
+\[
+\begin{aligned}
+    p\big(y_w \succ y_l \mid x\big)
+    &= \sigma\big( r(x,y_w) - r(x,y_l) \big) \\[4pt]
+    &= \sigma\Big(
+        \big[\hat{r}_{\theta}(x,y_w) + \beta \log Z(x)\big]
+        - \big[\hat{r}_{\theta}(x,y_l) + \beta \log Z(x)\big]
+    \Big) \\[4pt]
+    &= \sigma\big( \hat{r}_{\theta}(x,y_w) - \hat{r}_{\theta}(x,y_l) \big).
+\end{aligned}
+\]
+Số hạng \( \beta \log Z(x) \) xuất hiện hai lần với cùng giá trị -- vì cả hai câu trả lời dùng chung prompt \( x \) -- nên nó triệt tiêu. Đây đúng là khe hở đã nói ở bước 1: Bradley--Terry chỉ nhìn thấy hiệu hai phần thưởng, mà phần không tính được lại nằm gọn trong số hạng phụ thuộc \( x \). Hàm phân hoạch không bao giờ phải tính.
 
-\noindent
-Nói ngắn gọn, DPO thay toàn bộ phần “RL” của RLHF bằng một hàm mất mát xác suất trên dữ liệu sở thích con người.
+\paragraph{Hàm mất mát DPO.}
+Còn lại một việc: lấy hợp lý cực đại cho mô hình Bradley--Terry vừa viết lại, đúng như cách bước 2 của RLHF huấn luyện \( r_{\phi} \). Khác biệt là tham số bây giờ nằm trong chính sách chứ không nằm trong một mạng phần thưởng riêng:
+\[
+    \mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}})
+    = -\,\mathbb{E}_{(x, y_w, y_l) \sim D}
+    \left[
+        \log \sigma\!\left(
+            \beta \log \frac{\pi_{\theta}(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)}
+            - \beta \log \frac{\pi_{\theta}(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)}
+        \right)
+    \right].
+\]
+Đây là một hàm mất mát phân loại nhị phân thông thường, tính được bằng bốn lượt truyền xuôi (hai câu trả lời, nhân hai mô hình) và một lượt lan truyền ngược. Không mô hình phần thưởng, không mô hình giá trị, không vòng lặp sinh mẫu.
+
+\paragraph{Đọc từng ký hiệu.}
+\begin{itemize}
+    \item \( \pi_{\theta}(y \mid x) \) là xác suất \emph{của cả chuỗi}; trong cài đặt, thứ được tính là \( \log \pi_{\theta}(y \mid x) = \sum_t \log \pi_{\theta}(y_t \mid x, y_{<t}) \), tức tổng log-xác suất của mọi token trong \( y \). Tổng này không được chuẩn hóa theo độ dài, và chính chỗ đó là nguồn gốc của thiên lệch độ dài nói ở dưới.
+    \item \( \pi_{\text{ref}} \) là mô hình SFT bị đông cứng. Bỏ nó đi thì hàm mất mát trở thành ``tăng log-xác suất của \( y_w \), giảm của \( y_l \)'' thuần túy, không còn mốc nào neo mô hình lại; đó không còn là nghiệm của bài toán có ràng buộc KL nữa, và mô hình sẽ trôi khỏi phân phối ngôn ngữ ban đầu. Vai trò của \( \pi_{\text{ref}} \) trong DPO đúng bằng vai trò của phạt KL trong PPO, chỉ khác là nó nằm sẵn trong công thức thay vì được cộng thêm vào phần thưởng.
+    \item \( \sigma \) đến từ Bradley--Terry, không phải từ một lựa chọn thiết kế. Thay \( \sigma \) bằng hàm khác tức là thay giả thiết về cách con người ra quyết định -- đó chính là điều IPO làm ở mục~\ref{ssec:ipo}.
+    \item \( \beta \) là hệ số KL của bài toán gốc, đi theo suốt phép biến đổi. Nó nhân vào hiệu hai log-tỷ-lệ, nên quyết định hiệu đó phải lớn đến đâu thì sigmoid mới bão hòa.
+    \item Cặp \( (y_w, y_l) \) phải thuộc \emph{cùng một prompt}. Nếu ghép hai câu trả lời của hai prompt khác nhau thì \( \beta\log Z(x) \) không còn triệt tiêu và toàn bộ phép dẫn sụp đổ.
+\end{itemize}
+
+\paragraph{Gradient và cách đọc nó.}
+Phần soi sáng nhất của DPO không nằm ở hàm mất mát mà ở gradient của nó. Đặt \( u = \hat{r}_{\theta}(x,y_w) - \hat{r}_{\theta}(x,y_l) \). Vì \( \frac{d}{du}\log\sigma(u) = 1 - \sigma(u) = \sigma(-u) \), và vì \( \pi_{\text{ref}} \) không phụ thuộc \( \theta \) nên \( \nabla_{\theta} u = \beta\big(\nabla_{\theta}\log\pi_{\theta}(y_w \mid x) - \nabla_{\theta}\log\pi_{\theta}(y_l \mid x)\big) \), ta được
+\[
+\begin{aligned}
+    \nabla_{\theta}\mathcal{L}_{\text{DPO}}
+    = -\beta\, \mathbb{E}_{(x,y_w,y_l) \sim D}\Big[\;
+    &\underbrace{\sigma\big(\hat{r}_{\theta}(x,y_l) - \hat{r}_{\theta}(x,y_w)\big)}_{\text{trọng số: mức độ xếp hạng sai}} \\[6pt]
+    &\times \Big(
+        \underbrace{\nabla_{\theta} \log \pi_{\theta}(y_w \mid x)}_{\text{kéo } y_w \text{ lên}}
+        - \underbrace{\nabla_{\theta} \log \pi_{\theta}(y_l \mid x)}_{\text{dìm } y_l \text{ xuống}}
+    \Big) \Big].
+\end{aligned}
+\]
+Hệ số nhân phía trước là điểm cần dừng lại. Nó là \( \sigma \) của hiệu phần thưởng ngầm tính theo chiều \emph{ngược} -- tức là, theo đúng mô hình Bradley--Terry, \emph{xác suất mà mô hình phần thưởng ngầm hiện tại gán cho thứ tự sai}. Hệ quả:
+\begin{itemize}
+    \item Nếu mô hình đang xếp \( y_l \) cao hơn \( y_w \), hệ số tiến về 1 và mẫu đó nhận gần như toàn bộ độ lớn gradient.
+    \item Nếu mô hình đã xếp đúng và xếp đúng một cách rõ ràng, hệ số tiến về 0 và mẫu đó gần như bị bỏ qua.
+    \item Giữa hai cực là một phép gán trọng số liên tục theo mức độ sai, không cần khai báo thêm cơ chế nào.
+\end{itemize}
+Nói cách khác, DPO tự động dồn sức học vào những cặp mà nó còn xếp sai, và tự buông những cặp đã xong. Bài báo gốc nhấn mạnh rằng bỏ hệ số này đi -- tức là chỉ lấy hiệu hai log-xác suất làm hàm mất mát -- sẽ khiến mô hình thoái hóa, vì mọi cặp, kể cả cặp đã học xong, vẫn tiếp tục bị kéo với cùng một lực.
+
+\begin{keyidea}{Gradient DPO nói gì}
+Gradient của DPO có đúng hình dạng của một gradient chính sách: \emph{một trọng số vô hướng nhân với hiệu hai score function}. Trọng số đó chính là mức độ mà mô hình đang xếp hạng sai cặp hiện tại, đo bằng chính mô hình phần thưởng ngầm của nó. Mô hình phần thưởng không biến mất khỏi DPO -- nó chỉ chuyển từ một mạng riêng thành một đại lượng tính từ tỷ lệ \( \pi_{\theta}/\pi_{\text{ref}} \).
+\end{keyidea}
+
+Gradient này còn cho thấy một giới hạn mà hàm mất mát không lộ ra: thứ duy nhất bị điều khiển là \emph{hiệu} \( \log\pi_{\theta}(y_w \mid x) - \log\pi_{\theta}(y_l \mid x) \). Không có gì trong công thức bắt buộc \( \log\pi_{\theta}(y_w \mid x) \) phải tăng. Hạ cả hai xuống, miễn là hạ \( y_l \) nhanh hơn, cũng làm hàm mất mát giảm. Đây là nguồn gốc của chế độ hỏng đầu tiên dưới đây.
+
+\paragraph{Siêu tham số \( \beta \).}
+\( \beta \) là hệ số KL của bài toán gốc, nên ý nghĩa của nó đọc được từ nghiệm dạng đóng ở bước 2: khi \( \beta \to \infty \), số mũ \( \frac{1}{\beta} r \) tiến về 0 và \( \pi_r \to \pi_{\text{ref}} \) -- không căn chỉnh gì cả; khi \( \beta \to 0 \), phân phối dồn hết khối lượng vào câu trả lời có phần thưởng cao nhất -- chính sách tất định và rời xa mô hình nền. Trong hàm mất mát, hiệu ứng thể hiện qua điểm bão hòa của sigmoid: với \( \beta \) lớn, chỉ cần một chênh lệch log-tỷ-lệ nhỏ là \( \sigma \) đã bão hòa, trọng số gradient tụt về 0 và mô hình gần như không nhúc nhích khỏi \( \pi_{\text{ref}} \); với \( \beta \) nhỏ, mô hình phải đẩy log-tỷ-lệ đi rất xa mới làm \( \sigma \) bão hòa, nghĩa là phải trôi xa khỏi \( \pi_{\text{ref}} \) -- đổi lại là nguy cơ thoái hóa văn phong và mất đa dạng. Bài báo gốc dùng \( \beta = 0.1 \) làm mặc định và \( \beta = 0.5 \) cho tác vụ tóm tắt TL;DR, đồng thời quét \( \beta \in \{0.05, 0.1, 1, 5\} \) ở thí nghiệm điều khiển sắc thái. Trong thực hành, \( \beta \) là siêu tham số đáng quét đầu tiên, trước cả tốc độ học.
+
+\begin{pitfall}{Bốn chế độ hỏng đã được ghi nhận của DPO}
+\textbf{Xác suất của chính câu được chọn có thể giảm.} Như gradient đã chỉ ra, chỉ hiệu hai log-xác suất được điều khiển. Trong thực tế người ta quan sát thấy \( \log\pi_{\theta}(y_w \mid x) \) đi xuống trong lúc huấn luyện. Pal và cộng sự \cite{pal2024smaug} chứng minh và đo được hiện tượng này, đặc biệt nghiêm trọng khi hai câu trả lời trong cặp có khoảng cách soạn thảo (edit distance) nhỏ, và đề xuất thêm một số hạng neo (DPO-Positive). Razin và cộng sự \cite{razin2025displacement} gọi tên hiện tượng là \emph{likelihood displacement} và cho thấy nó có thể gây hậu quả nặng: khối lượng xác suất không chỉ rời khỏi \( y_w \) mà còn chuyển sang những câu trả lời \emph{trái nghĩa}; trong một thí nghiệm huấn luyện từ chối yêu cầu không an toàn, tỷ lệ từ chối của Llama-3-8B-Instruct giảm từ 74.4\% xuống 33.4\%. Nguyên nhân được quy về các cặp mà hai câu trả lời sinh ra biểu diễn ẩn quá giống nhau.\\[4pt]
+\textbf{Thiên lệch độ dài.} \( \pi_{\theta}(y \mid x) \) là tích xác suất của mọi token, nên chênh lệch độ dài giữa \( y_w \) và \( y_l \) đi thẳng vào hàm mất mát. Nếu dữ liệu sở thích hơi thiên về câu dài -- điều rất hay gặp -- DPO khuếch đại thiên lệch đó. Park và cộng sự \cite{park2024length} đo được mức khai thác độ dài đáng kể ở DPO và truy nguyên nó về việc ngoại suy ra ngoài miền dữ liệu.\\[4pt]
+\textbf{Sở thích gần như tất định.} Nếu trong dữ liệu \( y_w \) luôn được chọn, ước lượng \( \hat{p} = 1 \), và Bradley--Terry đòi hiệu phần thưởng tiến ra vô cực. Thay vào nghiệm dạng đóng thì \( \pi(y_l) \to 0 \) với \emph{mọi} \( \beta \): ràng buộc KL mất tác dụng đúng vào lúc cần nó nhất. Azar và cộng sự \cite{azar2024ipo} chỉ ra đây là hệ quả của việc dùng hàm logit không bị chặn, và nó xảy ra ngay cả khi sở thích thật chỉ là 0.8 nhưng dữ liệu hữu hạn cho ra tần suất 1. Đây là động cơ trực tiếp của IPO.\\[4pt]
+\textbf{Lệch phân phối giữa dữ liệu và \( \pi_{\text{ref}} \).} DPO là phương pháp ngoại tuyến: nó không bao giờ lấy mẫu từ \( \pi_{\theta} \). Phép dẫn chỉ đúng khi các cặp được sinh ra từ chính \( \pi_{\text{ref}} \). Dùng một tập so sánh do mô hình khác sinh ra thì \( \pi_{\text{ref}} \) gán xác suất thấp cho cả hai câu, log-tỷ-lệ xuất phát từ một vùng xa, và tín hiệu học bị chi phối bởi phần ngoài miền. Bài báo gốc xử lý bằng cách tinh chỉnh trước trên riêng các câu được chọn để tạo \( \pi_{\text{ref}} \) khi không có sẵn mô hình SFT.
+\end{pitfall}
+
+\paragraph{Dữ liệu: cần gì, bao nhiêu, chất lượng ra sao.}
+Đơn vị dữ liệu là bộ ba \( (x, y_w, y_l) \) với hai câu trả lời của \emph{cùng} một prompt. Không cần điểm số, không cần xếp hạng đầy đủ, chỉ cần thứ tự của một cặp. Về quy mô, các tập công khai được dùng trong tài liệu nằm ở mức vài chục đến vài trăm nghìn cặp: bài báo gốc dùng tập Anthropic HH (khoảng 170 nghìn hội thoại) và Reddit TL;DR, còn bản UltraFeedback đã làm sạch mà ORPO dùng có khoảng 61 nghìn mẫu. Để so sánh, bước 2 của RLHF trong InstructGPT dùng 33 nghìn prompt. Về chất lượng, ba điều kiện quan trọng hơn số lượng: (1) hai câu trong cặp phải \emph{phân biệt được thật}, vì các cặp gần trùng nhau là nguyên nhân chính của likelihood displacement; (2) cả hai câu nên nằm trong miền của \( \pi_{\text{ref}} \); (3) độ dài hai câu nên được cân bằng hoặc ít nhất được theo dõi, nếu không mô hình sẽ học ``dài là tốt'' thay vì học nội dung.
+
+\begin{assess}{DPO so với RLHF: được gì, mất gì}
+\textbf{Được:} hai mô hình trong bộ nhớ thay vì bốn, và một trong hai bị đông cứng; một hàm mất mát khả vi duy nhất, chạy trên đúng hạ tầng tinh chỉnh có sẵn; không có vòng lặp sinh mẫu, nên thời gian mỗi bước ổn định và tái lập được; ít siêu tham số, thực tế chỉ có \( \beta \) và tốc độ học. Bài báo gốc báo cáo chất lượng ngang hoặc hơn RLHF dựa trên PPO ở điều khiển sắc thái, tóm tắt và hội thoại một lượt.\\[4pt]
+\textbf{Mất:} tín hiệu trở thành ngoại tuyến, nên mô hình không bao giờ được chấm trên chính những gì nó đang sinh ra -- đúng chỗ mà PPO mạnh. Không còn mô hình phần thưởng tái sử dụng được cho vòng dữ liệu sau. Và như mục chế độ hỏng cho thấy, các vấn đề không biến mất mà đổi dạng: lách mô hình phần thưởng của PPO trở thành thiên lệch độ dài và likelihood displacement của DPO.
+\end{assess}
+
+\paragraph{Khi nào nên dùng, khi nào không.}
+Dùng DPO khi đã có sẵn một tập so sánh cặp tĩnh và mục tiêu là căn chỉnh văn phong, mức hữu ích hoặc mức vô hại; khi ngân sách GPU không cho phép giữ bốn mô hình và chạy sinh mẫu trực tuyến; khi cần một quy trình tái lập được để đưa vào CI. Không nên dùng DPO khi phần thưởng kiểm chứng được bằng chương trình (toán, mã) -- ở đó giá trị nằm ở việc mô hình tự khám phá lời giải mới trong lúc huấn luyện, nên GRPO hoặc PPO hợp hơn; khi dự kiến lặp nhiều vòng thu dữ liệu, vì khi đó một mô hình phần thưởng dùng lại được sẽ rẻ hơn; và khi dữ liệu sở thích có nhiều cặp gần trùng hoặc gần tất định, vì đó đúng là vùng DPO hỏng -- hoặc lọc dữ liệu, hoặc chuyển sang IPO.
+
+\subsubsection{IPO: sửa chỗ DPO vỡ khi sở thích gần tất định}
+\label{ssec:ipo}
+
+\paragraph{Bài toán đặt ra.}
+Chế độ hỏng thứ ba của DPO ở trên không phải một trục trặc kỹ thuật mà là một lỗi nằm trong chính phép dẫn. Azar và cộng sự \cite{azar2024ipo} truy nguyên nó về hai phép xấp xỉ mà RLHF và DPO cùng mắc: thứ nhất, quy các so sánh cặp về một điểm số vô hướng qua Bradley--Terry; thứ hai, tin rằng hàm phần thưởng học được sẽ tổng quát hóa ra ngoài miền dữ liệu. DPO bỏ được phép xấp xỉ thứ hai -- nó không huấn luyện mô hình phần thưởng nào cả -- nhưng vẫn giữ nguyên phép xấp xỉ thứ nhất.
+
+\paragraph{Một khung chung để nhìn thấy lỗi.}
+Các tác giả gộp cả RLHF lẫn DPO vào một hàm mục tiêu duy nhất, gọi là \( \Psi \)-PO:
+\[
+    \max_{\pi}\;
+    \mathbb{E}_{\substack{x \sim \rho,\; y \sim \pi(\cdot \mid x) \\ y' \sim \mu(\cdot \mid x)}}
+    \Big[ \Psi\big( p^{*}(y \succ y' \mid x) \big) \Big]
+    - \tau\, D_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big),
+\]
+trong đó \( \mu \) là chính sách sinh ra câu trả lời đối chứng, \( p^{*} \) là xác suất sở thích thật, \( \Psi \) là một hàm không giảm biến xác suất sở thích thành độ hữu ích, và \( \tau > 0 \) là hệ số điều hòa KL. Khung này hữu ích vì nó tách bạch được phần nào là bản chất và phần nào là lựa chọn.
+
+Chọn \( \Psi \) là hàm logit, \( \Psi(q) = \log\frac{q}{1-q} \), thì dưới giả thiết Bradley--Terry ta có \( \Psi(p^{*}(y \succ y')) = r(x,y) - r(x,y') \), và hàm mục tiêu trở lại đúng bài toán cực đại hóa phần thưởng có ràng buộc KL -- tức RLHF và DPO. Vậy Bradley--Terry không phải một giả thiết vô hại: nó tương đương với việc chọn một hàm \( \Psi \) \emph{không bị chặn}. Khi \( q \to 1 \) thì \( \Psi(q) \to +\infty \). Với dữ liệu hữu hạn, chỉ cần mọi người gán nhãn đều chọn \( y_w \) trong một cặp là ước lượng thực nghiệm \( \hat{p} = 1 \), hàm mục tiêu không còn bị chặn trên, và số hạng \( \tau\, D_{\text{KL}} \) -- vốn hữu hạn -- không cản được nữa. Bài báo diễn đạt điều này rất gọn: sở thích càng tất định thì ràng buộc KL càng yếu. Tệ hơn, điều đó xảy ra ngay cả khi sở thích thật chỉ là 0.8 mà mẫu hữu hạn tình cờ cho ra 1.
+
+\paragraph{Sửa bằng cách đổi \( \Psi \).}
+Cách sửa của IPO (Identity Preference Optimization) là lấy \( \Psi \) bằng hàm đồng nhất. Khi đó độ hữu ích là chính xác suất thắng, bị chặn trong \( [0,1] \), nên số hạng KL luôn có trọng lượng và không bao giờ bị lấn át:
+\[
+    \max_{\pi}\; p^{*}_{\rho}(\pi \succ \mu) - \tau\, D_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big).
+\]
+Đi từ đây tới một hàm mất mát huấn luyện được, các tác giả đặt log-tỷ-lệ chéo
+\[
+\begin{aligned}
+    h_{\pi}(y, y' \mid x)
+    &= \log \frac{\pi(y \mid x)\,\pi_{\text{ref}}(y' \mid x)}{\pi(y' \mid x)\,\pi_{\text{ref}}(y \mid x)} \\[4pt]
+    &= \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \log\frac{\pi(y'\mid x)}{\pi_{\text{ref}}(y'\mid x)},
+\end{aligned}
+\]
+tức đúng đại lượng nằm trong sigmoid của DPO, chỉ bỏ hệ số \( \beta \). Thay xác suất sở thích thật bằng nhãn quan sát được rồi đối xứng hóa theo từng cặp, ta được hàm mất mát IPO:
+\[
+    \mathcal{L}_{\text{IPO}}(\theta)
+    = \mathbb{E}_{(x, y_w, y_l) \sim D}
+    \left[
+        \left( h_{\pi_\theta}(y_w, y_l \mid x) - \frac{\tau^{-1}}{2} \right)^{2}
+    \right].
+\]
+
+\paragraph{Đọc công thức.}
+Thay đổi quan trọng không nằm ở chi tiết đại số mà ở \emph{kiểu bài toán}. DPO là một bài toán phân loại: mục tiêu ngầm của nó là đẩy \( h \) ra \( +\infty \), và thứ duy nhất ghìm lại là việc sigmoid bão hòa -- một cái phanh yếu, và như đã thấy, nó mất tác dụng hẳn khi nhãn tất định. IPO là một bài toán \emph{hồi quy}: nó yêu cầu \( h \) bằng đúng một giá trị hữu hạn \( \tau^{-1}/2 \). Gradient là
+\[
+    \nabla_{\theta}\mathcal{L}_{\text{IPO}}
+    = 2\,\mathbb{E}\Big[
+        \big( h_{\pi_\theta}(y_w, y_l \mid x) - \tfrac{\tau^{-1}}{2} \big)
+        \big( \nabla_{\theta}\log\pi_{\theta}(y_w \mid x) - \nabla_{\theta}\log\pi_{\theta}(y_l \mid x) \big)
+    \Big],
+\]
+với trọng số là \emph{phần dư có dấu} \( h_{\pi_\theta} - \tau^{-1}/2 \). Khi khoảng cách còn nhỏ hơn mục tiêu, phần dư âm và bước giảm gradient làm \( h \) tăng lên; khi khoảng cách vượt quá mục tiêu, phần dư đổi dấu và bước giảm gradient kéo \( h \) trở lại. Đó là một điểm dừng tường minh, không phụ thuộc vào việc nhãn có tất định hay không. Đổi lại, IPO mất cơ chế tự gán trọng số theo mức độ sai của DPO: phần dư tuyến tính và không bị chặn, nên một cặp bị gán nhãn sai sẽ kéo mô hình mạnh đúng bằng mức nó bị sai, thay vì bão hòa.
+
+\( \tau \) đóng đúng vai trò của \( \beta \) và theo cùng chiều: \( \tau \) lớn thì mục tiêu \( \tau^{-1}/2 \) nhỏ, mô hình dừng gần \( \pi_{\text{ref}} \); \( \tau \) nhỏ thì mục tiêu lớn, mô hình được phép đi xa. Khác biệt là lần này quan hệ đó đúng kể cả với dữ liệu tất định. Trong ví dụ hai hành động của bài báo, nghiệm tối ưu là \( \pi^{*}(y_1) = \sigma(0.5\,\tau^{-1}) \), tiến về phân phối đều khi \( \tau \to \infty \) và về chính sách tất định khi \( \tau \to 0 \).
+
+\paragraph{Giới hạn và khi nào nên dùng.}
+IPO vẫn là phương pháp ngoại tuyến, vẫn cần dữ liệu cặp và vẫn giữ \( \pi_{\text{ref}} \) trong bộ nhớ; nó không sửa thiên lệch độ dài, cũng không bảo đảm \( \log\pi_{\theta}(y_w \mid x) \) tăng lên. Bằng chứng thực nghiệm trong bài báo gốc là các ví dụ minh họa quy mô nhỏ, nơi ưu thế so với DPO thể hiện rõ; ở quy mô lớn, IPO là một lựa chọn trong hộp công cụ chứ chưa phải lựa chọn mặc định. Nên cân nhắc IPO khi dữ liệu sở thích ít, nhiều cặp mà mọi người gán nhãn đều đồng ý, hoặc khi quan sát thấy DPO làm KL so với \( \pi_{\text{ref}} \) tăng không kiểm soát mà chất lượng không lên tương ứng.
+
+\subsubsection{RLOO: quay lại REINFORCE với baseline bỏ-một}
+\label{ssec:rloo}
+
+\paragraph{Bài toán đặt ra.}
+DPO và IPO bỏ học tăng cường đi. Hướng ngược lại là giữ học tăng cường nhưng hỏi xem trong bộ máy của PPO, phần nào thực sự cần thiết cho LLM. PPO được thiết kế cho điều khiển liên tục: chuỗi dài hàng nghìn bước, phần thưởng rải rác dọc đường, chuyển trạng thái ngẫu nhiên, lấy mẫu đắt tới mức bắt buộc phải tái sử dụng dữ liệu. Ahmadian và cộng sự \cite{ahmadian2024rloo} chỉ ra rằng RLHF cho mô hình ngôn ngữ hầu như không có đặc điểm nào trong số đó.
+
+\paragraph{Vì sao bài toán thực ra là một bandit.}
+Hai quan sát. Thứ nhất, trong RLHF phần thưởng chỉ được trao \emph{một lần}, ở token \texttt{<EOS>}; mọi token khác chỉ nhận số hạng phạt KL. Thứ hai, chuyển trạng thái là tất định: nối thêm một token vào tiền tố cho ra đúng một tiền tố mới, không có môi trường ngẫu nhiên nào. Một quá trình quyết định Markov có chuyển trạng thái tất định và phần thưởng chỉ ở trạng thái cuối thì rút gọn được thành bài toán \textbf{bandit}: trạng thái đầu là prompt, \emph{một hành động} là toàn bộ câu trả lời, và thế là hết.
+
+Hệ quả đi thẳng vào thiết kế: hàm giá trị theo từng token mà GAE cần đang mô hình hóa các chuỗi dở dang -- những đối tượng không bao giờ được chấm điểm độc lập. Nó học một đại lượng mà bài toán không cung cấp dữ liệu trực tiếp, trong khi chiếm một bản sao mô hình đầy đủ trong bộ nhớ.
+
+\paragraph{Quay lại ước lượng gốc.}
+Bỏ phân rã theo token, ta trở về đúng công thức policy gradient ở bước 3 của RLHF, lần này với \( y \) là cả chuỗi và \( R(x,y) \) là phần thưởng đã trừ phạt KL:
+\[
+    \nabla_{\theta}\, J(\theta)
+    = \mathbb{E}_{x \sim D,\; y \sim \pi_{\theta}(\cdot \mid x)}
+    \big[ R(x,y)\, \nabla_{\theta}\log \pi_{\theta}(y \mid x) \big].
+\]
+Vấn đề còn lại vẫn là phương sai, và cách chữa vẫn là trừ đi một baseline \( b \). Điều kiện duy nhất để giữ tính không chệch là \( b \) không phụ thuộc vào chính mẫu \( y \) đang được nhân, vì khi đó \( \mathbb{E}_y\big[ b\, \nabla_{\theta}\log\pi_{\theta}(y \mid x) \big] = b\, \mathbb{E}_y\big[\nabla_{\theta}\log\pi_{\theta}(y \mid x)\big] = 0 \). PPO thỏa điều kiện đó ở mức từng token, bằng một mạng giá trị học được. Nhưng có một cách rẻ hơn nhiều.
+
+\paragraph{Baseline bỏ-một (leave-one-out).}
+Với mỗi prompt \( x \), lấy \( k \) câu trả lời độc lập cùng phân phối từ \( \pi_{\theta} \). Khi tính gradient cho mẫu thứ \( i \), dùng \emph{trung bình phần thưởng của \( k-1 \) mẫu còn lại} làm baseline:
+\[
+\begin{gathered}
+    \nabla_{\theta} J_{\text{RLOO}}
+    = \frac{1}{k}\sum_{i=1}^{k}
+    \Big[
+        R(x, y_{(i)}) - \underbrace{\frac{1}{k-1}\sum_{j \neq i} R(x, y_{(j)})}_{\text{baseline cho mẫu } i}
+    \Big]
+    \nabla_{\theta} \log \pi_{\theta}\big(y_{(i)} \mid x\big),
+    \\[4pt]
+    y_{(1)}, \dots, y_{(k)} \overset{\text{i.i.d.}}{\sim} \pi_{\theta}(\cdot \mid x).
+\end{gathered}
+\]
+Baseline này thỏa đúng điều kiện không chệch: \( k-1 \) mẫu kia độc lập với mẫu thứ \( i \), nên kỳ vọng của tích tách được thành tích các kỳ vọng và số hạng baseline triệt tiêu. Nó cũng không tốn thêm gì ngoài những mẫu ta đã phải sinh ra để ước lượng gradient. Nói cách khác, RLOO đổi một mô hình giá trị lấy vài lần lấy mẫu thêm -- và thu lại một ước lượng không chệch thay vì một xấp xỉ học được.
+
+Siêu tham số duy nhất mới là \( k \). Bài báo dùng \( k = 2 \) và \( k = 4 \); \( k \) lớn hơn cho baseline chính xác hơn và phương sai nhỏ hơn, với chi phí sinh văn bản tăng tuyến tính. So với PPO, RLOO giảm được một bản sao mô hình trong bộ nhớ vì không còn mạng giá trị, và bỏ hẳn các siêu tham số \( \gamma, \lambda \) của GAE. Trong thí nghiệm của bài báo trên TL;DR với trọng tài tự động, RLOO \( k=4 \) đạt tỷ lệ thắng 77.9 so với 67.6 của PPO và 66.6 của DPO; xu hướng tương tự lặp lại trên tập hội thoại Anthropic HH.
+
+\begin{keyidea}{RLOO là cầu nối tự nhiên sang GRPO}
+Cả RLOO lẫn GRPO đều bắt đầu từ cùng một nhận xét: nếu đã lấy nhiều mẫu cho \emph{cùng một prompt}, thì bản thân nhóm mẫu đó đã là một baseline, không cần học thêm mô hình giá trị nào. Khác biệt nằm ở ba chi tiết. RLOO loại mẫu đang xét ra khỏi baseline nên ước lượng không chệch, còn GRPO lấy trung bình cả nhóm (kể cả mẫu đang xét) rồi chia thêm cho độ lệch chuẩn. RLOO giữ phần thưởng ở mức cả chuỗi, còn GRPO trải advantage xuống từng token để dùng lại tỷ số xác suất và phép cắt của PPO. Và RLOO trừ phạt KL vào phần thưởng, còn GRPO cộng KL thẳng vào hàm mục tiêu.
+\end{keyidea}
+
+\paragraph{Giới hạn và khi nào nên dùng.}
+RLOO vẫn là phương pháp trực tuyến, nên chi phí sinh văn bản vẫn chiếm phần lớn thời gian huấn luyện, và vẫn cần một mô hình phần thưởng -- nghĩa là nguy cơ lách mô hình phần thưởng không hề giảm. Ước lượng chỉ đúng khi các mẫu được sinh từ chính \( \pi_{\theta} \) hiện tại, nên không có cơ chế tái sử dụng lô mẫu cho nhiều bước gradient như phép cắt của PPO; bước đi phải được kiểm soát bằng tốc độ học. Với \( k \) nhỏ, baseline chỉ dựa trên một hoặc vài mẫu nên vẫn nhiễu. RLOO là lựa chọn tốt khi đã có mô hình phần thưởng và ngân sách sinh mẫu trực tuyến, nhưng muốn cắt bớt bộ nhớ và số siêu tham số của PPO; và nó là bước đệm khái niệm thuận lợi để hiểu GRPO ở mục~\ref{ssec:grpo}.
 
 \subsubsection{KTO: căn chỉnh chỉ với tín hiệu “tốt / không tốt”}
 \label{ssec:kto}
-DPO cần dữ liệu \emph{cặp} $(y^+, y^-)$ cho cùng một prompt -- loại dữ liệu đắt và hiếm. Trong thực tế, phản hồi phổ biến hơn nhiều là tín hiệu nhị phân: người dùng bấm “thích” hoặc “không thích” một câu trả lời. \textbf{KTO} (Kahneman--Tversky Optimization) \cite{ethayarajh2024kto} tận dụng được loại dữ liệu này.
 
-\paragraph{Cảm hứng từ lý thuyết triển vọng.} Kahneman và Tversky chỉ ra con người đánh giá kết quả \emph{tương đối so với một điểm tham chiếu}, và “sợ mất” hơn “thích được” (loss aversion). Các tác giả nhận thấy nhiều hàm mất mát căn chỉnh (kể cả DPO) ngầm mô phỏng những thiên kiến này, và thiết kế một hàm mất mát mô phỏng chúng một cách tường minh.
+\paragraph{Bài toán đặt ra.} DPO và IPO đều cần dữ liệu \emph{cặp}: hai câu trả lời cho cùng một prompt, kèm thứ tự giữa chúng. Loại dữ liệu đó phải đặt hàng riêng, vì nó không xuất hiện tự nhiên trong quá trình vận hành. Thứ xuất hiện tự nhiên là tín hiệu nhị phân rời rạc: người dùng bấm ``thích'' hoặc ``không thích'' một câu trả lời duy nhất, không có câu đối chứng. Không ghép được cặp thì toàn bộ phép dẫn ở mục~\ref{ssec:dpo} không dùng được, vì nó dựa vào việc \( \beta\log Z(x) \) triệt tiêu giữa hai câu cùng prompt. \textbf{KTO} (Kahneman--Tversky Optimization) \cite{ethayarajh2024kto} xây lại hàm mất mát từ một điểm khác để làm việc được với tín hiệu này.
 
-\paragraph{Công thức.} Với “phần thưởng ngầm” $r_\theta(x,y) = \log\frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}$ như trong DPO, và điểm tham chiếu $z_0$ là ước lượng của $\text{KL}\big(\pi_\theta(y'\mid x)\,\|\,\pi_{\text{ref}}(y'\mid x)\big)$ (tính trên các cặp prompt--câu trả lời không khớp trong batch, không lan truyền gradient):
+\paragraph{Thay điểm tựa: lý thuyết triển vọng.} Kahneman và Tversky mô tả cách con người đánh giá kết quả bằng một \emph{hàm giá trị} có ba đặc điểm: đo theo độ lệch so với một điểm tham chiếu chứ không theo giá trị tuyệt đối, lõm ở phía được, và dốc hơn ở phía mất (loss aversion):
+\[
+    v(z; \lambda, \alpha, z_0) =
+    \begin{cases}
+        (z - z_0)^{\alpha} & \text{nếu } z \geq z_0, \\
+        -\lambda\,(z_0 - z)^{\alpha} & \text{nếu } z < z_0,
+    \end{cases}
+\]
+với các giá trị trung vị ước lượng được từ thực nghiệm tâm lý là \( \alpha \approx 0.88 \) (độ cong) và \( \lambda \approx 2.25 \) (độ dốc phía mất). Đóng góp khái niệm của bài báo là nhận ra rằng các hàm mất mát căn chỉnh đang dùng -- DPO và cả mục tiêu có cắt của PPO -- đều đã ngầm có dạng này. Các tác giả gọi chung chúng là \textbf{HALO} (human-aware loss): hàm mất mát dạng
+\[
+    f(\pi_{\theta}, \pi_{\text{ref}})
+    = \mathbb{E}_{x,y \sim D}\Big[ a_{x,y}\, v\big( r_{\theta}(x,y) - \mathbb{E}_{Q}[\,r_{\theta}(x,y')\,] \big) \Big] + C_{D},
+\]
+trong đó \( v \) không giảm và lõm trên \( (0, \infty) \), còn \( \mathbb{E}_{Q}[r_{\theta}(x,y')] \) là điểm tham chiếu. Nhìn như vậy thì DPO là trường hợp điểm tham chiếu được lấy chính là phần thưởng ngầm của câu bị loại. Và nếu điểm tham chiếu có thể là \emph{thứ khác}, thì không cần cặp nữa.
+
+\paragraph{Công thức.} KTO giữ nguyên phần thưởng ngầm của DPO, \( r_{\theta}(x,y) = \log\frac{\pi_{\theta}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \), nhưng thay điểm tham chiếu bằng mức trôi trung bình của chính mô hình, \( z_0 = D_{\text{KL}}\big(\pi_\theta(y'\mid x)\,\|\,\pi_{\text{ref}}(y'\mid x)\big) \), và thay hàm giá trị lũy thừa bằng hàm logistic để gradient không phân kỳ:
 \[
 \begin{gathered}
 v(x,y) = \begin{cases}
 \lambda_D\, \sigma\big(\beta\,(r_\theta(x,y) - z_0)\big) & \text{nếu } y \text{ là câu trả lời mong muốn},\\
 \lambda_U\, \sigma\big(\beta\,(z_0 - r_\theta(x,y))\big) & \text{nếu } y \text{ là câu trả lời không mong muốn},
 \end{cases}\\[6pt]
-\mathcal{L}_{\text{KTO}} = \mathbb{E}_{x,y}\big[\lambda_y - v(x,y)\big].
+\mathcal{L}_{\text{KTO}} = \mathbb{E}_{x,y \sim D}\big[\lambda_y - v(x,y)\big].
 \end{gathered}
 \]
-Trực giác: đẩy phần thưởng ngầm của câu trả lời tốt lên \emph{trên} điểm tham chiếu, và của câu trả lời xấu xuống \emph{dưới}. Hai hệ số $\lambda_D, \lambda_U$ cho phép bù trừ khi số mẫu tốt và xấu chênh lệch nhau.
+Đọc từng mảnh. Câu được thích phải có phần thưởng ngầm \emph{trên} điểm tham chiếu, câu bị chê phải \emph{dưới} điểm tham chiếu; đó là lý do hai nhánh đảo dấu cho nhau. Hàm \( \sigma \) bão hòa, nên một mẫu đã nằm xa đúng phía gần như không đóng góp gradient, còn mẫu nằm sai phía thì đóng góp mạnh -- cùng một cơ chế tự gán trọng số như DPO, chỉ khác là đo so với điểm tham chiếu thay vì so với câu đối chứng. \( \beta \) điều khiển độ dốc của \( \sigma \), tức mức độ ngại rủi ro: \( \beta \) lớn thì bão hòa sớm và mô hình đổi ít.
 
-\paragraph{Kết quả.} KTO ngang hoặc vượt DPO ở các quy mô từ 1B đến 30B tham số, dù chỉ dùng tín hiệu yếu hơn; vẫn hoạt động khi dữ liệu mất cân bằng nặng giữa mẫu tốt và mẫu xấu; và ở quy mô đủ lớn có thể bỏ qua bước SFT.
+Điểm tham chiếu \( z_0 \) không tính chính xác được vì phải lấy mẫu từ \( \pi_{\theta} \). Cách ước lượng trong bài báo là dịch vòng các câu trả lời trong một microbatch để tạo ra \( m \) cặp prompt--câu trả lời \emph{không khớp nhau}, rồi lấy
+\[
+    \hat{z}_0 = \max\!\left( 0,\; \frac{1}{m} \sum_{i} \log \frac{\pi_{\theta}(y_j \mid x_i)}{\pi_{\text{ref}}(y_j \mid x_i)} \right),
+    \qquad j = (i+1) \bmod m,
+\]
+và \emph{không} lan truyền gradient qua \( \hat{z}_0 \). Phép cắt tại 0 tạo ra độ chệch dương nhưng đổi lại phương sai thấp hơn. Khi KTO chạy ngay sau SFT trên cùng dữ liệu mong muốn, bài báo cho phép đặt thẳng \( \hat{z}_0 = 0 \).
+
+Hai hệ số \( \lambda_D, \lambda_U \) vừa mang ý nghĩa loss aversion, vừa là chỗ hiệu chỉnh mất cân bằng lớp. Khuyến nghị của bài báo là giữ \( \frac{\lambda_D\, n_D}{\lambda_U\, n_U} \in \left[1, \tfrac{3}{2}\right] \), với \( n_D, n_U \) là số mẫu mong muốn và không mong muốn; ví dụ với tỷ lệ 1:10 thì đặt \( \lambda_U = 1 \) và \( \lambda_D \in [10, 15] \).
+
+\begin{pitfall}{Những chỗ KTO dễ hỏng}
+Điểm tham chiếu \( \hat{z}_0 \) ước lượng trong từng microbatch, nên \textbf{batch nhỏ cho điểm tham chiếu nhiễu} và toàn bộ tín hiệu học bị xê dịch theo. Tỷ lệ mẫu tốt/xấu cũng phải ổn định giữa các batch, nếu không phép hiệu chỉnh \( \lambda_D, \lambda_U \) tính theo \( n_D, n_U \) toàn tập sẽ lệch. Cuối cùng, tín hiệu ``thích/không thích'' thu từ sản phẩm phản ánh nhiều thứ ngoài chất lượng câu trả lời -- tốc độ phản hồi, kỳ vọng sai của người dùng, lỗi giao diện -- nên dữ liệu phải được lọc trước, không đưa thẳng vào huấn luyện.
+\end{pitfall}
+
+\paragraph{Kết quả và khi nào nên dùng.} Bài báo báo cáo KTO ngang hoặc vượt các phương pháp dựa trên cặp ở quy mô từ 1B đến 30B tham số, dù chỉ dùng tín hiệu yếu hơn; vẫn hoạt động khi dữ liệu mất cân bằng nặng; và khi mô hình nền đủ tốt thì có thể bỏ qua bước SFT mà chất lượng sinh không giảm đáng kể, trong khi DPO không qua SFT có xu hướng cho ra câu trả lời dài bất thường. Nên dùng KTO khi tín hiệu sẵn có là nhị phân trên từng câu trả lời đơn lẻ, đặc biệt với phản hồi thu từ người dùng thật; không nên dùng khi đã có sẵn dữ liệu cặp chất lượng tốt, vì khi đó cặp mang nhiều thông tin hơn một nhãn nhị phân trên cùng lượng công sức gán nhãn.
 
 \subsubsection{ORPO: gộp SFT và căn chỉnh làm một, không cần mô hình tham chiếu}
 \label{ssec:orpo}
-Cả RLHF, DPO lẫn KTO đều cần hai giai đoạn (SFT rồi căn chỉnh) và một mô hình tham chiếu $\pi_{\text{ref}}$ nằm trong bộ nhớ. \textbf{ORPO} (Odds Ratio Preference Optimization) \cite{hong2024orpo} bắt đầu từ một quan sát: trong SFT, xác suất của cả câu trả lời \emph{được chọn} lẫn \emph{bị loại} đều tăng lên, vì chúng cùng miền và cùng văn phong. Chỉ cần một hình phạt nhỏ đối với phong cách bị loại \emph{ngay trong lúc SFT} là đủ để căn chỉnh.
 
-\paragraph{Công thức.} Dùng xác suất chuẩn hóa theo độ dài $P_\theta(y\mid x) = \exp\big(\frac{1}{m}\sum_{t=1}^{m}\log P_\theta(y_t\mid x, y_{<t})\big)$ và định nghĩa \emph{odds}:
+\paragraph{Bài toán đặt ra.} Mọi phương pháp ở trên đều cần hai giai đoạn (SFT rồi căn chỉnh) và một mô hình tham chiếu \( \pi_{\text{ref}} \) nằm trong bộ nhớ suốt giai đoạn hai. \textbf{ORPO} (Odds Ratio Preference Optimization) \cite{hong2024orpo} bắt đầu từ một quan sát về bản thân bước SFT: khi tinh chỉnh trên các câu trả lời được chọn, log-xác suất của các câu \emph{bị loại} cũng tăng theo, vì chúng cùng miền và cùng văn phong. SFT dạy mô hình miền mới nhưng đồng thời làm cho cả phong cách không mong muốn trở nên dễ sinh ra hơn. Nếu đúng vậy thì không cần một giai đoạn riêng để sửa; chỉ cần một hình phạt nhỏ lên phong cách bị loại \emph{ngay trong lúc SFT}.
+
+\paragraph{Công thức.} Dùng xác suất chuẩn hóa theo độ dài \( P_\theta(y\mid x) = \exp\big(\frac{1}{m}\sum_{t=1}^{m}\log P_\theta(y_t\mid x, y_{<t})\big) \) và định nghĩa \emph{odds} (tỷ lệ cược):
 \[
 \text{odds}_\theta(y\mid x) = \frac{P_\theta(y\mid x)}{1 - P_\theta(y\mid x)}, \qquad
 \mathcal{L}_{\text{OR}} = -\log\sigma\left(\log\frac{\text{odds}_\theta(y_w\mid x)}{\text{odds}_\theta(y_l\mid x)}\right),
@@ -270,9 +502,25 @@ Cả RLHF, DPO lẫn KTO đều cần hai giai đoạn (SFT rồi căn chỉnh) 
 \[
 \mathcal{L}_{\text{ORPO}} = \mathbb{E}_{(x, y_w, y_l)}\big[\mathcal{L}_{\text{SFT}} + \lambda\cdot\mathcal{L}_{\text{OR}}\big].
 \]
-$\mathcal{L}_{\text{SFT}}$ là loss negative log-likelihood thông thường trên câu trả lời được chọn $y_w$; $\mathcal{L}_{\text{OR}}$ làm tăng tỷ số odds giữa $y_w$ và $y_l$. Dùng tỷ số odds thay vì tỷ số xác suất cho gradient “mềm” hơn, tránh việc đè bẹp xác suất của $y_l$ quá mạnh.
+\( \mathcal{L}_{\text{SFT}} \) là mất mát log-hợp-lý âm thông thường trên câu được chọn \( y_w \); nó vừa là mục tiêu học miền, vừa là thứ \emph{thay thế} \( \pi_{\text{ref}} \) trong vai trò giữ mô hình khỏi trôi. \( \mathcal{L}_{\text{OR}} \) làm tăng tỷ số odds giữa \( y_w \) và \( y_l \). Vì cả hai số hạng đều tính từ một mô hình duy nhất, ORPO chạy với một bản sao mô hình và một giai đoạn huấn luyện.
 
-\paragraph{Kết quả.} Chỉ với một giai đoạn huấn luyện trên UltraFeedback, Mistral-ORPO 7B đạt tới 12.20\% trên AlpacaEval 2.0, 66.19\% trên IFEval và 7.32 trên MT-Bench, vượt nhiều mô hình lớn hơn tại thời điểm công bố.
+\paragraph{Vì sao odds chứ không phải tỷ số xác suất.} Đây là lựa chọn thiết kế quan trọng nhất của ORPO. Nếu dùng tỷ số xác suất \( P_\theta(y_w\mid x)/P_\theta(y_l\mid x) \), logarit của nó có phân bố rất nhọn, nên để làm giảm \( -\log\sigma \) mô hình buộc phải tạo ra một chênh lệch cực lớn -- tức dìm logit của các token thuộc câu bị loại xuống rất sâu, ngay khi mô hình còn chưa kịp thích nghi với miền dữ liệu. Hậu quả là thoái hóa sinh văn bản. Log của tỷ số odds có khoảng giá trị rộng hơn với cùng một cặp xác suất, nên áp lực phân biệt nhẹ hơn. Phần phụ lục của bài báo đo được điều này: với tỷ số xác suất, log-xác suất của câu bị loại nhanh chóng tụt xuống dưới \( -4 \), còn với tỷ số odds thì chỉ xảy ra khi đã quá khớp.
+
+\paragraph{Gradient.} Gradient của số hạng odds tách thành hai thừa số:
+\[
+    \nabla_\theta \mathcal{L}_{\text{OR}} = \delta(d) \cdot h(d),
+    \qquad
+    \delta(d) = \left[ 1 + \frac{\text{odds}_\theta(y_w \mid x)}{\text{odds}_\theta(y_l \mid x)} \right]^{-1},
+\]
+\[
+    h(d) = \frac{\nabla_\theta \log P_\theta(y_w \mid x)}{1 - P_\theta(y_w \mid x)}
+         - \frac{\nabla_\theta \log P_\theta(y_l \mid x)}{1 - P_\theta(y_l \mid x)} .
+\]
+\( \delta(d) \) đóng đúng vai trò hệ số nhân của DPO: nó tiến về 0 khi câu được chọn đã có odds cao hơn hẳn, và lớn lên khi mô hình vẫn còn thiên về sinh ra câu bị loại -- tức lại là một phép gán trọng số theo mức độ xếp hạng sai. \( h(d) \) là hiệu hai score function, nhưng mỗi vế được nhân thêm \( 1/(1-P_\theta) \): thừa số này phóng đại gradient khi xác suất tương ứng còn thấp, nên mô hình thích nghi nhanh về phía câu được chọn ở giai đoạn đầu.
+
+\paragraph{Siêu tham số và chế độ hỏng.} \( \lambda \) cân bằng hai số hạng và là siêu tham số nhạy nhất: bài báo dùng \( \lambda = 0.1 \) cho Mistral 7B, \( 0.2 \) cho Llama-2 7B, \( 0.25 \) cho Phi-2 2.7B, và khảo sát thêm \( \lambda \in \{0.1, 0.5, 1.0\} \). Đặt \( \lambda \) quá lớn thì số hạng odds lấn át mất mục tiêu ngôn ngữ, và vì không còn \( \pi_{\text{ref}} \) nào để neo, mô hình không có gì cản việc thoái hóa ngoài chính \( \mathcal{L}_{\text{SFT}} \). Ràng buộc thứ hai là về dữ liệu: ORPO \emph{thay thế} bước SFT chứ không đứng sau nó, nên các câu \( y_w \) phải đủ tốt để làm mục tiêu SFT; nếu dữ liệu sở thích lấy từ một miền khác với miền triển khai, ta mất cả hai mục tiêu cùng lúc.
+
+\paragraph{Kết quả.} Chỉ với một giai đoạn huấn luyện một epoch trên bản UltraFeedback đã làm sạch (khoảng 61 nghìn mẫu), Mistral-ORPO-\( \beta \) 7B đạt 12.20\% trên AlpacaEval 2.0, 66.19\% độ chính xác nới lỏng ở mức chỉ dẫn trên IFEval và 7.32 trên MT-Bench, vượt nhiều mô hình lớn hơn tại thời điểm công bố.
 
 \begin{table}[H]
 \centering
@@ -283,7 +531,9 @@ $\mathcal{L}_{\text{SFT}}$ là loss negative log-likelihood thông thường tr�
 \textbf{Phương pháp} & \textbf{Dữ liệu cần} & \textbf{Reward model} & \textbf{Mô hình tham chiếu} & \textbf{Số giai đoạn} \\
 \midrule
 RLHF (PPO) & Xếp hạng/cặp so sánh + prompt & Có & Có & 3 \\
-DPO & Cặp $(y^+, y^-)$ & Không & Có & 2 (SFT + DPO) \\
+RLOO & Prompt + mô hình thưởng (sinh mẫu trực tuyến) & Có & Có (cho KL) & 3 \\
+DPO & Cặp $(y_w, y_l)$ & Không & Có & 2 (SFT + DPO) \\
+IPO & Cặp $(y_w, y_l)$ & Không & Có & 2 (SFT + IPO) \\
 KTO & Nhãn nhị phân tốt/xấu & Không & Có & 1--2 \\
 ORPO & Cặp $(y_w, y_l)$ & Không & Không & 1 \\
 GRPO (RL) & Prompt + hàm thưởng (thường kiểm chứng được) & Tùy chọn & Có (cho KL) & 2+ \\
@@ -359,8 +609,10 @@ Như vậy, trong CAI con người không còn trực tiếp gán nhãn dữ li�
 
 \textbf{GRPO} được giới thiệu trong DeepSeekMath \cite{shao2024deepseekmath} và trở nên nổi tiếng nhờ DeepSeek-R1 \cite{deepseekai2025r1}. Mục này trình bày thuật toán; vai trò của nó trong việc huấn luyện các mô hình suy luận được phân tích sâu ở chương~\ref{chap:reasoning}.
 
-\paragraph{Động cơ: bỏ mô hình giá trị của PPO.}
-PPO (bước 3 của RLHF) cần một \textbf{mô hình giá trị} (critic) $V_\psi$ để ước lượng advantage. Với LLM, critic thường lớn ngang mô hình chính sách, nên tốn gấp đôi bộ nhớ và tính toán. Hơn nữa, khi phần thưởng chỉ được trao ở \emph{token cuối cùng} (câu trả lời đúng hay sai), việc học một hàm giá trị chính xác cho \emph{từng token} là rất khó. GRPO thay critic bằng một baseline đơn giản: \textbf{điểm trung bình của một nhóm câu trả lời cho cùng câu hỏi}.
+\paragraph{Bài toán đặt ra: lấy baseline ở đâu nếu bỏ mô hình giá trị.}
+PPO (bước 3 của RLHF) cần một \textbf{mô hình giá trị} (critic) $V_\psi$ để ước lượng advantage. Với LLM, critic thường lớn ngang mô hình chính sách, nên tốn gần gấp đôi bộ nhớ và tính toán. Khó khăn thứ hai nghiêm trọng hơn: khi phần thưởng chỉ được trao ở \emph{token cuối cùng} (câu trả lời đúng hay sai), không có dữ liệu giám sát trực tiếp nào cho giá trị của một chuỗi suy luận \emph{dở dang}, nên $V_\psi$ phải học một đại lượng mà bài toán gần như không nói gì về nó. Đây chính là nhận xét đã dẫn tới RLOO ở mục~\ref{ssec:rloo}.
+
+Vậy bỏ critic đi thì lấy gì làm baseline? Nhớ lại điều kiện duy nhất: baseline phải xấp xỉ phần thưởng kỳ vọng của prompt và không phụ thuộc quá chặt vào chính mẫu đang xét. Nhưng phần thưởng kỳ vọng của một câu hỏi thì ước lượng được bằng Monte Carlo, chỉ cần lấy vài mẫu cho cùng câu hỏi đó -- mà việc lấy nhiều mẫu cho cùng một câu hỏi vốn đã phải làm, vì đó là cách mô hình phần thưởng được huấn luyện (so sánh giữa các câu trả lời cho cùng một câu hỏi) và cũng là cách các bài toán kiểm chứng được vận hành. GRPO \cite{shao2024deepseekmath} lấy thẳng \textbf{điểm trung bình của nhóm} làm baseline, không học thêm mạng nào.
 
 \paragraph{Thuật toán.} Với mỗi câu hỏi $q$:
 \begin{enumerate}
@@ -381,14 +633,29 @@ PPO (bước 3 của RLHF) cần một \textbf{mô hình giá trị} (critic) $V
 	với tỷ số xác suất theo từng token $\rho_{i,t} = \dfrac{\pi_\theta(o_{i,t}\mid q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t}\mid q, o_{i,<t})}$.
 \end{enumerate}
 
+\paragraph{Đọc công thức advantage.}
+Tử số $r_i - \text{mean}(\mathbf{r})$ là phần cốt lõi: nó nói câu trả lời thứ $i$ tốt hơn hay kém hơn \emph{mức trung bình của chính nhóm này}. Câu trả lời trên trung bình được kéo lên, dưới trung bình bị dìm xuống, bất kể thang điểm tuyệt đối là bao nhiêu. Hai chi tiết cần lưu ý.
+
+Thứ nhất, trung bình ở đây tính trên \emph{cả nhóm, kể cả mẫu $i$}. RLOO loại mẫu đang xét ra để giữ tính không chệch; GRPO không làm vậy, nên baseline có tương quan nhẹ với mẫu nó đang trừ và ước lượng gradient bị chệch một lượng cỡ $1/G$. Với $G$ đủ lớn thì ảnh hưởng nhỏ, nhưng đây là một khác biệt thật giữa hai phương pháp, không phải cách viết khác nhau của cùng một thứ.
+
+Thứ hai, mẫu số $\text{std}(\mathbf{r})$ đưa advantage của mọi câu hỏi về cùng một thang, nhờ đó một tốc độ học duy nhất dùng được cho cả lô dù các câu hỏi có độ khó rất khác nhau. Cái giá là nó khuếch đại gradient của những câu hỏi mà cả nhóm gần như đồng thuận (độ lệch chuẩn nhỏ), tức là thiên lệch theo độ khó; và nó không xác định khi độ lệch chuẩn bằng 0.
+
+\paragraph{Vì sao mọi token nhận cùng một advantage.}
+Với giám sát theo kết quả, phần thưởng gắn với \emph{cả câu trả lời}, nên $\hat{A}_{i,t}$ không đổi theo $t$: toàn bộ chuỗi $o_i$ được nâng lên hoặc dìm xuống như một khối. Nghĩa là GRPO không thực hiện phân bổ công (credit assignment) bên trong một câu trả lời -- nó không biết bước suy luận nào đã cứu bài giải. Việc phân bổ công diễn ra \emph{giữa các mẫu}: một bước suy luận xuất hiện thường xuyên trong các câu trả lời đúng và hiếm khi xuất hiện trong các câu sai sẽ nhận tổng lực kéo dương qua cả nhóm, còn bước chỉ xuất hiện trong những câu sai sẽ bị dìm. Đây là lý do $G$ không thể quá nhỏ: tín hiệu học đến từ sự tương phản trong nhóm.
+
 \paragraph{Hai chi tiết khác PPO kinh điển.}
 \begin{itemize}
-	\item \textbf{KL nằm trong loss, không nằm trong phần thưởng.} InstructGPT trừ KL vào phần thưởng ở từng token; GRPO cộng trực tiếp số hạng KL vào mục tiêu, để không làm phức tạp việc tính advantage.
+	\item \textbf{Vẫn giữ tỷ số xác suất và phép cắt.} Tuy baseline đã khác, GRPO vẫn dùng $\rho_{i,t}$ và \texttt{clip} như PPO, để một lô mẫu đã sinh ra có thể dùng cho vài bước gradient liên tiếp -- phần sinh văn bản là phần đắt nhất, nên tái sử dụng lô mẫu là điều đáng làm. Nếu chỉ đi đúng một bước gradient cho mỗi lô, tỷ số luôn bằng 1 và GRPO rút về đúng một biến thể REINFORCE với baseline nhóm, rất gần RLOO.
+	\item \textbf{KL nằm trong loss, không nằm trong phần thưởng.} InstructGPT trừ KL vào phần thưởng ở từng token; GRPO cộng trực tiếp số hạng KL vào mục tiêu. Nhờ vậy advantage chỉ phản ánh chất lượng câu trả lời, không trộn lẫn mức trôi của chính sách, và phép chuẩn hóa trong nhóm không bị số hạng KL làm méo.
 	\item \textbf{Bộ ước lượng KL không chệch và luôn dương:}
 	\[
 	\mathbb{D}_{\text{KL}}\big[\pi_\theta\|\pi_{\text{ref}}\big] \approx \frac{\pi_{\text{ref}}(o_{i,t}\mid q, o_{i,<t})}{\pi_\theta(o_{i,t}\mid q, o_{i,<t})} - \log\frac{\pi_{\text{ref}}(o_{i,t}\mid q, o_{i,<t})}{\pi_\theta(o_{i,t}\mid q, o_{i,<t})} - 1.
 	\]
+	Đặt $\rho = \pi_{\text{ref}}/\pi_\theta$ thì biểu thức là $\rho - \log\rho - 1$, luôn không âm với mọi $\rho > 0$ và bằng 0 khi $\rho = 1$. Bộ ước lượng hiển nhiên hơn, $-\log\rho$, cũng không chệch nhưng có thể \emph{âm} trên một mẫu đơn lẻ -- nghĩa là hình phạt biến thành phần thưởng ở một số token, gây nhiễu không cần thiết.
 \end{itemize}
+
+\paragraph{Siêu tham số.}
+Ba siêu tham số chính: $G$ (số câu trả lời mỗi câu hỏi -- lớn thì baseline chính xác hơn và tương phản trong nhóm rõ hơn, nhưng chi phí sinh mẫu tăng tuyến tính), $\epsilon$ (bề rộng cắt, vai trò hệt như trong PPO), và $\beta$ (trọng số KL). Với huấn luyện suy luận chuỗi dài, $\beta$ thường được đặt rất nhỏ hoặc bằng 0: DAPO \cite{yu2025dapo} bỏ hẳn số hạng KL, với lập luận rằng ở chế độ này phân phối của mô hình \emph{phải} đi xa khỏi mô hình ban đầu nên ràng buộc đó không còn hợp lý. Ngược lại, trong căn chỉnh theo sở thích thông thường, $\beta$ vẫn cần thiết vì mô hình phần thưởng dễ bị lách.
 
 \paragraph{Kết quả gốc.} Áp dụng GRPO lên DeepSeekMath-Instruct 7B chỉ với khoảng 144 nghìn câu hỏi dạng chuỗi suy luận từ GSM8K và MATH, độ chính xác tăng từ 82.9\% lên 88.2\% trên GSM8K và từ 46.8\% lên 51.7\% trên MATH -- kể cả trên các bài ngoài miền huấn luyện.
 
@@ -416,4 +683,4 @@ GRPO hiện được hỗ trợ sẵn trong các framework phổ biến như TRL
     \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
 \end{center}
 
-\textit{Chương này đã trình bày các kỹ thuật để biến một mô hình nền thô thành một công cụ hữu ích và an toàn: các phương pháp tinh chỉnh kinh điển và thích ứng miền, các kỹ thuật PEFT (LoRA, DoRA, QLoRA), prompt engineering, và các phương pháp căn chỉnh -- RLHF theo công thức InstructGPT, DPO, KTO, ORPO và GRPO. Phần còn bỏ ngỏ là làm cho mô hình \emph{suy luận đúng} trên những bài toán khó, chứ không chỉ \emph{trả lời theo ý con người}. Đó là nội dung của chương tiếp theo về mô hình suy luận và tính toán lúc suy luận, hướng phát triển chính của giai đoạn 2024--2026.}
+\textit{Chương này đã trình bày các kỹ thuật để biến một mô hình nền thô thành một công cụ hữu ích và an toàn: các phương pháp tinh chỉnh kinh điển và thích ứng miền, các kỹ thuật PEFT (LoRA, DoRA, QLoRA), prompt engineering, và các phương pháp căn chỉnh -- RLHF theo công thức InstructGPT, DPO, IPO, RLOO, KTO, ORPO và GRPO. Phần còn bỏ ngỏ là làm cho mô hình \emph{suy luận đúng} trên những bài toán khó, chứ không chỉ \emph{trả lời theo ý con người}. Đó là nội dung của chương tiếp theo về mô hình suy luận và tính toán lúc suy luận, hướng phát triển chính của giai đoạn 2024--2026.}

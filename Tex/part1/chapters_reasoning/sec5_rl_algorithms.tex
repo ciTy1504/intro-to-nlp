@@ -1,0 +1,314 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_reasoning/sec5_rl_algorithms.tex
+
+\section{Họ thuật toán sau GRPO và câu hỏi về giới hạn của RL}
+\label{sec:rl_algorithms}
+
+Từ sau R1, phần lớn các công trình RL cho suy luận không đề xuất một thuật toán mới từ đầu mà đổi một vài chỗ xác định trong mục tiêu của GRPO. Đọc chúng như một danh sách tên gọi kèm điểm số là bỏ lỡ toàn bộ nội dung kỹ thuật: thứ đáng học là \emph{chỗ nào trong công thức bị đổi, vì lý do gì, và đổi xong thì mất gì}. Mục này trình bày các biến thể theo đúng cách đó, rồi quay lại câu hỏi nền tảng -- liệu cả họ thuật toán này có thực sự mở rộng năng lực của mô hình, hay chỉ sắp xếp lại những gì mô hình nền đã có.
+
+\subsection{Họ biến thể GRPO: mỗi thuật toán đổi gì trong công thức}
+\label{ssec:grpo_variants}
+
+Để so sánh được, trước hết viết lại mục tiêu GRPO (mục~\ref{ssec:grpo}) và tách riêng những thành phần sẽ bị thay đổi:
+\[
+\begin{aligned}
+\mathcal{J}_{\mathrm{GRPO}}(\theta) = \mathbb{E}\Big[\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|o_i|}\sum_{t=1}^{|o_i|}\Big\{
+&\min\big(\rho_{i,t}\hat{A}_{i,t},\ \mathrm{clip}(\rho_{i,t},\,1-\epsilon,\,1+\epsilon)\,\hat{A}_{i,t}\big)\\
+&{}-\beta\,\mathbb{D}_{\mathrm{KL}}\big[\pi_\theta\,\big\|\,\pi_{\mathrm{ref}}\big]\Big\}\Big],
+\end{aligned}
+\]
+\[
+\hat{A}_{i,t} \;=\; \frac{R_i - \operatorname{mean}(\{R_j\}_{j=1}^{G})}{\operatorname{std}(\{R_j\}_{j=1}^{G})},
+\qquad\quad
+\rho_{i,t} \;=\; \frac{\pi_\theta(o_{i,t}\mid q,\,o_{i,<t})}{\pi_{\theta_{\mathrm{old}}}(o_{i,t}\mid q,\,o_{i,<t})},
+\]
+trong đó $R_i$ là phần thưởng của câu trả lời $o_i$ trong nhóm $G$ câu trả lời cùng lấy mẫu cho câu hỏi $q$.
+Năm chỗ dưới đây là gần như toàn bộ không gian thiết kế mà các biến thể phổ biến di chuyển trong đó.
+\begin{enumerate}[label=(\Alph*)]
+	\item \textbf{Cách gộp loss.} Hệ số $\frac{1}{G}\sum_i\frac{1}{|o_i|}\sum_t$ cho mỗi \emph{câu trả lời} trọng số bằng nhau, nên mỗi \emph{token} trong một câu trả lời dài có trọng số nhỏ hơn token trong câu trả lời ngắn.
+	\item \textbf{Mẫu số của advantage.} Chia cho độ lệch chuẩn phần thưởng của chính nhóm đó.
+	\item \textbf{Ngưỡng cắt.} Một $\epsilon$ đối xứng. Điểm then chốt ít được nói tới: khi nhánh $\mathrm{clip}$ thắng trong $\min$, hàm mục tiêu trở thành hằng số theo $\theta$, nên gradient của token đó bằng \emph{đúng} không. Cắt ở đây nghĩa là xóa token khỏi gradient, không phải thu nhỏ bước đi của nó.
+	\item \textbf{Mức tính tỷ số importance sampling.} $\rho_{i,t}$ được tính riêng cho từng token, trong khi phần thưởng được trao cho cả chuỗi.
+	\item \textbf{Nhóm nào được vào batch.} Mọi câu hỏi đều vào, kể cả nhóm có $\operatorname{std}(\{R_j\}) = 0$.
+\end{enumerate}
+DAPO đổi (A), (C) và (E); Dr.~GRPO đổi (A) và (B); GSPO đổi (D); CISPO đổi (C); REINFORCE++ và RLOO đổi (B); VAPO đi ngược chiều cả họ, bỏ hẳn advantage theo nhóm để quay lại mô hình giá trị.
+
+\subsubsection{DAPO: bốn chỗ vá cho RL quy mô lớn}
+
+DAPO \cite{yu2025dapo} ra đời từ một quan sát thực nghiệm: chép lại đúng mô tả GRPO trong bài báo R1 không tái lập được kết quả, vì những chi tiết giữ cho huấn luyện ổn định ở quy mô lớn không nằm trong mô tả đó. Mục tiêu của DAPO là
+\[
+\begin{aligned}
+\mathcal{J}_{\mathrm{DAPO}}(\theta) = \mathbb{E}\Big[\frac{1}{\sum_{i=1}^{G}|o_i|}\sum_{i=1}^{G}\sum_{t=1}^{|o_i|}
+\min\big(&\rho_{i,t}\hat{A}_{i,t},\\
+&\mathrm{clip}(\rho_{i,t},\,1-\epsilon_{\mathrm{low}},\,1+\epsilon_{\mathrm{high}})\,\hat{A}_{i,t}\big)\Big],
+\end{aligned}
+\]
+\[
+\text{với ràng buộc}\qquad 0 \;<\; \big|\{\,o_i : \texttt{is\_equivalent}(a,\, o_i)\,\}\big| \;<\; G .
+\]
+So với $\mathcal{J}_{\mathrm{GRPO}}$ có ba chỗ đổi nằm ngay trong công thức, cộng một chỗ đổi trong hàm thưởng.
+
+\paragraph{Clip-Higher -- vì sao cắt bất đối xứng.}
+Ngưỡng cắt tách làm hai: $\epsilon_{\mathrm{low}} = 0.2$ giữ nguyên, $\epsilon_{\mathrm{high}}$ nâng lên $0.28$. Lý do nằm ở chỗ ràng buộc $\rho_{i,t} \le 1 + \epsilon$ là một ràng buộc \emph{nhân}, nên hiệu lực thực tế của nó phụ thuộc mạnh vào $\pi_{\theta_{\mathrm{old}}}$. Với $\epsilon = 0.2$, một token đang có xác suất $0.01$ chỉ được nâng tối đa lên khoảng $0.012$, trong khi một token đang có xác suất $0.9$ gần như không bị chặn. Mà token xác suất thấp chính là các token khám phá. Hệ quả quan sát được là entropy của chính sách tụt nhanh ngay trong giai đoạn đầu, chính sách sớm trở nên tất định và quá trình học đứng lại -- hiện tượng \textbf{sụp đổ entropy}. Nâng $\epsilon_{\mathrm{high}}$ nới trần cho đúng nhóm token này. Nhóm tác giả không nâng $\epsilon_{\mathrm{low}}$, vì hạ sàn $1-\epsilon_{\mathrm{low}}$ xuống thấp hơn sẽ cho phép đẩy xác suất của chính những token đó về 0 nhanh hơn, tức là thắt chặt đúng thứ vừa nới.
+
+\paragraph{Dynamic Sampling -- vì sao bỏ nhóm toàn đúng hoặc toàn sai.}
+Ràng buộc $0 < |\{o_i : \texttt{is\_equivalent}(a, o_i)\}| < G$ loại khỏi batch mọi câu hỏi mà cả nhóm cùng đúng hoặc cùng sai. Với phần thưởng nhị phân, nhóm toàn đúng cho $R_i \equiv 1$, nên $\operatorname{mean} = 1$, $\operatorname{std} = 0$ và $\hat{A}$ có dạng $0/0$; cài đặt thực tế gán $\hat{A} = 0$. Câu hỏi đó tiêu tốn $G$ lượt sinh dài hàng nghìn token để đóng góp đúng một gradient bằng không. Vấn đề không chỉ là lãng phí mà là \emph{batch co lại theo thời gian}: mô hình càng khá lên thì tỷ lệ nhóm toàn đúng càng tăng, số mẫu thực sự đóng góp gradient càng giảm, và phương sai gradient tăng dần trong khi kích thước batch danh nghĩa không đổi. DAPO lấy mẫu dư rồi lọc cho tới khi đủ số nhóm hợp lệ, đổi thêm thời gian sinh để lấy một batch có kích thước hiệu dụng ổn định.
+
+\paragraph{Token-level loss -- chuyển mẫu số từ câu trả lời sang token.}
+Mẫu số đổi từ $\frac{1}{G}\sum_i \frac{1}{|o_i|}$ sang $\frac{1}{\sum_i |o_i|}$. Dưới cách gộp của GRPO, mỗi câu trả lời mang tổng trọng số $1/G$ bất kể dài ngắn, nên một token trong câu trả lời 10 nghìn token chỉ có trọng số bằng một phần hai mươi token trong câu trả lời 500 token. Điều này gây hại theo cả hai chiều: các lời giải dài \emph{tốt} không được học đủ, và các kiểu suy biến vốn chỉ xuất hiện trong chuỗi dài -- lặp vô hạn, văn bản vô nghĩa sau đáp án -- cũng không bị phạt đủ, khiến độ dài và entropy tăng một cách không lành mạnh. Chuẩn hóa theo tổng số token trong batch trả lại cho mọi token trọng số bằng nhau.
+
+\paragraph{Overlong reward shaping -- bỏ vách đứng ở trần độ dài.}
+Lời giải bị cắt vì chạm trần nhận phần thưởng như lời giải sai, dù nội dung của nó có thể đang đúng hướng. DAPO thay hình phạt dốc đứng bằng một hình phạt có độ dốc trên một vùng đệm $L_{\mathrm{cache}}$ ngay trước trần $L_{\max}$:
+\[
+R_{\mathrm{length}}(y) =
+\begin{cases}
+0, & |y| \le L_{\max} - L_{\mathrm{cache}},\\[6pt]
+\dfrac{(L_{\max} - L_{\mathrm{cache}}) - |y|}{L_{\mathrm{cache}}}, & L_{\max} - L_{\mathrm{cache}} < |y| \le L_{\max},\\[8pt]
+-1, & |y| > L_{\max},
+\end{cases}
+\]
+và cộng số hạng này vào phần thưởng đúng/sai. Nhờ vậy mô hình nhận được một tín hiệu giảm dần báo rằng nó đang tiến tới trần, thay vì một vách đứng xuất hiện bất ngờ.
+
+\paragraph{Hệ quả đo được và đánh đổi.}
+DAPO đạt 50 điểm trên AIME 2024 với mô hình nền Qwen2.5-32B, so với 47.0 điểm của DeepSeek-R1-Zero-Qwen-32B -- thí nghiệm RL trực tiếp trên cùng mô hình nền ở mục~\ref{ssec:r1_distill} -- và chỉ dùng 50\% số bước huấn luyện. Cái giá: dynamic sampling làm chi phí sinh của mỗi bước trở nên không xác định trước và tăng dần theo thời gian; bốn kỹ thuật cộng thêm bốn siêu tham số ($\epsilon_{\mathrm{high}}$, mức lấy mẫu dư, $L_{\max}$, $L_{\mathrm{cache}}$) cần dò. DAPO cũng bỏ hẳn số hạng KL (mục~\ref{ssec:rlvr}), nên không còn gì níu chính sách lại gần $\pi_{\mathrm{ref}}$ -- lựa chọn hợp lý khi phần thưởng kiểm chứng được, nhưng nguy hiểm nếu trong hệ có bất kỳ thành phần thưởng học được nào.
+
+\subsubsection{Dr.~GRPO: gỡ hai thiên lệch khỏi phép chuẩn hóa}
+
+Dr.~GRPO \cite{liu2025drgrpo} xuất phát từ một câu hỏi khác: hai phép chia trong $\mathcal{J}_{\mathrm{GRPO}}$ có làm méo gradient không? Câu trả lời là có, và theo hai hướng khác nhau.
+
+\paragraph{Thiên lệch độ dài, đến từ $1/|o_i|$.}
+Gradient của token $t$ trong câu trả lời $o_i$ được nhân với $\hat{A}_i / |o_i|$. Xét một câu trả lời \emph{sai}, khi đó $\hat{A}_i < 0$: câu trả lời sai càng dài thì hình phạt trên mỗi token càng nhỏ. Bộ tối ưu không có cách nào biết rằng độ dài chỉ là mẫu số; nó chỉ thấy rằng trong số các câu trả lời sai, những câu dài bị đẩy xuống nhẹ hơn, nên khối lượng xác suất dịch dần về phía các câu trả lời sai và dài. Nhận xét này có hệ quả diễn giải đáng kể: đường cong độ dài tăng đều trong huấn luyện R1-Zero (hình~\ref{fig:r1_zero_length}) thường được đọc là mô hình ``tự học suy nghĩ lâu hơn'', nhưng một phần của nó là tạo tác của bộ tối ưu chứ không phải hành vi nảy sinh.
+
+\paragraph{Thiên lệch độ khó, đến từ $\operatorname{std}(\{R_j\})$.}
+Chia advantage cho độ lệch chuẩn của \emph{chính nhóm đó} khiến các câu hỏi có $\operatorname{std}$ nhỏ bị nhân lên một hệ số lớn. Mà $\operatorname{std}$ nhỏ đúng là các câu hỏi gần như luôn giải được hoặc gần như luôn thất bại -- những câu ít thông tin nhất. Vì phép chuẩn hóa thực hiện theo từng câu hỏi chứ không theo toàn batch, trọng số hiệu dụng giữa các câu hỏi trở nên tùy tiện. Đáng chú ý: GRPO và DAPO phản ứng ngược nhau trước cùng một đại lượng. GRPO \emph{chia} cho nó, tức khuếch đại những nhóm gần đồng nhất; DAPO \emph{vứt bỏ} những nhóm đồng nhất hoàn toàn.
+
+\paragraph{Mục tiêu sau khi gỡ.}
+\[
+\begin{aligned}
+\mathcal{J}_{\mathrm{Dr.\,GRPO}}(\theta) = \mathbb{E}\Big[\frac{1}{G}\sum_{i=1}^{G}\sum_{t=1}^{|o_i|}
+\min\big(&\rho_{i,t}\tilde{A}_i,\\
+&\mathrm{clip}(\rho_{i,t},\,1-\epsilon,\,1+\epsilon)\,\tilde{A}_i\big)\Big],
+\end{aligned}
+\]
+\[
+\tilde{A}_i \;=\; R(q, o_i) - \operatorname{mean}\big(\{R(q,o_1),\dots,R(q,o_G)\}\big).
+\]
+Đúng hai thứ biến mất: hệ số $1/|o_i|$ ở tổng ngoài và mẫu số $\operatorname{std}$ trong advantage. Nhóm tác giả chỉ ra rằng cái còn lại chính là mục tiêu policy gradient chuẩn -- nghĩa là GRPO bằng mục tiêu chuẩn \emph{cộng thêm} hai phép chuẩn hóa gây lệch, chứ không phải ngược lại.
+
+\paragraph{Hệ quả đo được và đánh đổi.}
+Công thức gọn lại này cho phép một quy trình huấn luyện tối giản kiểu R1-Zero đạt 43.3\% trên AIME 2024 với một mô hình nền 7B, và quan trọng hơn là độ dài câu trả lời sai không còn phình ra, tức là cùng một mức chính xác đạt được với ít token hơn. Đánh đổi nằm ở chỗ bỏ $1/|o_i|$ khiến một câu trả lời dài đóng góp tổng gradient lớn hơn một câu trả lời ngắn trong cùng nhóm. Hướng đi này trùng với lựa chọn token-level của DAPO, nhưng hai bên dùng mẫu số khác nhau: DAPO chia cho tổng số token thực tế của batch nên thang gradient không đổi khi độ dài trung bình thay đổi, còn Dr.~GRPO dùng một hằng số cố định, nên khi câu trả lời dài ra thì tổng gradient của batch cũng lớn lên -- giữ được tính không chệch nhưng để learning rate hiệu dụng trôi theo độ dài.
+
+\paragraph{Phát hiện thứ hai, về diễn giải.}
+Bài báo cũng kiểm tra các mô hình nền \emph{trước} khi RL và thấy DeepSeek-V3-Base đã thể hiện hành vi kiểu ``aha'' từ trước, còn các mô hình nền Qwen2.5 suy luận tốt ngay cả khi không dùng mẫu prompt nào -- dấu hiệu của thiên lệch trong dữ liệu tiền huấn luyện. Nói cách khác, ``khoảnh khắc aha'' ở mục~\ref{ssec:r1_zero} không hẳn là thứ RL tạo ra.
+
+\begin{deepdive}{Ba thuật toán, một con số}
+Với phần thưởng nhị phân, quan hệ giữa GRPO, Dr.~GRPO và DAPO viết được thành một hằng đẳng thức. Đặt $s_i = \nabla_\theta \log \pi_\theta(o_i \mid q)$ là hướng gradient của mẫu thứ $i$, giả sử trong nhóm $G$ mẫu có đúng $k$ mẫu đúng, và gọi $\bar{s}_+$, $\bar{s}_-$ là trung bình của $s_i$ trên tập mẫu đúng và tập mẫu sai. Bay và Yearick \cite{bay2026stdidentity} chỉ ra rằng gradient của nhóm theo GRPO bằng
+\[
+g \;=\; \frac{1}{G}\sum_{i=1}^{G}\hat{A}_i\, s_i \;=\; \sigma\,\big(\bar{s}_+ - \bar{s}_-\big),
+\qquad
+\sigma \;=\; \frac{\sqrt{k\,(G-k)}}{G} \;=\; \sqrt{\mu\,(1-\mu)},
+\]
+với $\mu = k/G$, và đẳng thức này không phụ thuộc vào việc chọn baseline nào. Ba thuật toán chỉ khác nhau ở cách xử lý đúng một đại lượng $\sigma$:
+\begin{itemize}
+	\item GRPO chia advantage cho $\sigma$ và thu được $g \propto \sigma\,(\bar{s}_+ - \bar{s}_-)$;
+	\item Dr.~GRPO bỏ phép chia đó và thu được $g \propto \sigma^2\,(\bar{s}_+ - \bar{s}_-)$;
+	\item DAPO giữ công thức GRPO nhưng chỉ nhận các nhóm có $0 < k < G$, tức là nhân thêm chỉ thị $\mathbf{1}\{\sigma > 0\}$.
+\end{itemize}
+Cách đọc: độ lớn của bước cập nhật cho một câu hỏi được quyết định bởi \emph{mức bất đồng} trong nhóm -- lớn nhất khi $k = G/2$ và bằng 0 khi cả nhóm đồng thuận. Đây là một hằng đẳng thức đại số trên nhóm hữu hạn với phần thưởng nhị phân, không phải một khẳng định thực nghiệm. Nó không nói thuật toán nào tốt hơn; nó nói rằng ba lựa chọn tưởng như độc lập thực ra là ba thao tác trên cùng một con số, và rằng mọi câu hỏi mà mô hình trả lời đồng nhất đều vô giá trị với RL (xem mục~\ref{ssec:r1_distill}).
+\end{deepdive}
+
+\subsubsection{GSPO: đưa tỷ số importance sampling lên mức chuỗi}
+
+Ba biến thể trên đều giữ nguyên $\rho_{i,t}$ ở mức token. GSPO \cite{zheng2025gspo} cho rằng đó mới là chỗ hỏng cơ bản.
+
+\paragraph{Vì sao tỷ số theo token là nhiễu chứ không phải hiệu chỉnh.}
+Importance sampling chỉ có ý nghĩa khi ta lấy \emph{nhiều} mẫu từ phân phối đề xuất và dùng trọng số để sửa kỳ vọng. Ở vị trí $t$ của chuỗi $o_i$ ta chỉ có đúng một token được lấy mẫu, nên $\rho_{i,t}$ không hiệu chỉnh được gì; nó chỉ đưa vào một hệ số nhiễu. Nhiễu này lại cộng dồn qua hàng nghìn vị trí của một chuỗi suy luận dài, và cơ chế cắt -- vốn cũng hoạt động theo token -- không chặn được nó. Sâu xa hơn là một sự lệch pha: đơn vị \emph{nhận phần thưởng} là cả chuỗi, còn đơn vị chịu hiệu chỉnh và chịu cắt lại là token.
+
+\paragraph{Chỗ đổi.}
+GSPO định nghĩa tỷ số ở mức chuỗi, chuẩn hóa theo độ dài bằng trung bình nhân:
+\[
+\begin{aligned}
+s_i(\theta) &\;=\; \left(\frac{\pi_\theta(y_i\mid x)}{\pi_{\theta_{\mathrm{old}}}(y_i\mid x)}\right)^{1/|y_i|}\\[4pt]
+&\;=\; \exp\!\left(\frac{1}{|y_i|}\sum_{t=1}^{|y_i|}\log\frac{\pi_\theta(y_{i,t}\mid x,\, y_{i,<t})}{\pi_{\theta_{\mathrm{old}}}(y_{i,t}\mid x,\, y_{i,<t})}\right),
+\end{aligned}
+\]
+và cắt ngưỡng cũng ở mức chuỗi:
+\[
+\mathcal{J}_{\mathrm{GSPO}}(\theta) = \mathbb{E}\Big[\frac{1}{G}\sum_{i=1}^{G}
+\min\big(s_i(\theta)\,\hat{A}_i,\ \mathrm{clip}(s_i(\theta),\,1-\epsilon,\,1+\epsilon)\,\hat{A}_i\big)\Big].
+\]
+Số mũ $1/|y_i|$ không phải trang trí. Không có nó, tỷ số chuỗi là tích của hàng nghìn tỷ số token: phương sai của tích bùng nổ theo độ dài và giá trị của nó lệch khỏi 1 nhiều bậc độ lớn, khiến mọi chuỗi đều bị cắt và không còn thuật toán nào nữa. Trung bình nhân kéo tỷ số về đúng thang của một tỷ số token, nhờ đó một $\epsilon$ cỡ thông thường mới có nghĩa. Cũng vì vậy, $\epsilon$ của GSPO và $\epsilon$ của GRPO tác động lên hai đại lượng khác nhau và không so sánh trực tiếp được với nhau.
+
+\paragraph{Vì sao điều này đặc biệt quan trọng với MoE.}
+Trong một mô hình MoE, tập chuyên gia được kích hoạt cho cùng một token có thể \emph{đổi} sau một bước cập nhật gradient. Nhóm tác giả đo trên Qwen3-30B-A3B-Base và thấy khoảng 10\% số chuyên gia được kích hoạt dưới chính sách mới khác với dưới chính sách cũ. Khi đó $\rho_{i,t}$ không chỉ nhiễu mà còn \emph{nhảy bậc}: nó phản ánh việc token đi qua một mạng con khác, chứ không phản ánh việc chính sách đã thay đổi bao nhiêu. Cách chữa trước GSPO là \textbf{Routing Replay} -- lưu lại tuyến chuyên gia của chính sách cũ rồi phát lại nó cho chính sách mới, nhờ đó tỷ số theo token trở lại ổn định, nhưng phải trả thêm bộ nhớ, thêm giao tiếp giữa các thiết bị, và chấp nhận giới hạn dung lượng hiệu dụng của mô hình. GSPO không cần cơ chế này vì nó chỉ phụ thuộc vào likelihood của \emph{cả chuỗi}: dù một phần tuyến chuyên gia đổi, mô hình vẫn giữ khả năng mô hình hóa ngôn ngữ nên likelihood chuỗi không dao động mạnh.
+
+\paragraph{Hệ quả và đánh đổi.}
+GSPO được dùng trong huấn luyện dòng Qwen3 \cite{yang2025qwen3}, và việc bỏ được Routing Replay là một đơn giản hóa hạ tầng đáng kể. Cái mất là độ phân giải: một quyết định cắt duy nhất áp cho toàn bộ chuỗi, nên khi một chuỗi bị cắt thì \emph{mọi} token của nó mất gradient. Bài báo đưa thêm biến thể GSPO-token cho các tình huống cần advantage riêng theo token:
+\[
+s_{i,t}(\theta) \;=\; \mathrm{sg}\big[s_i(\theta)\big]\cdot\frac{\pi_\theta(y_{i,t}\mid x,\, y_{i,<t})}{\mathrm{sg}\big[\pi_\theta(y_{i,t}\mid x,\, y_{i,<t})\big]},
+\]
+trong đó $\mathrm{sg}[\cdot]$ là toán tử chặn gradient. Giá trị số của $s_{i,t}$ bằng đúng $s_i$, nên hành vi cắt vẫn ở mức chuỗi, nhưng gradient thì chảy qua từng token.
+
+\subsubsection{CISPO: cắt trọng số thay vì xóa gradient}
+
+CISPO, được đề xuất cùng MiniMax-M1 \cite{minimax2025m1}, tấn công mục (C) chứ không phải (D): vấn đề không phải tỷ số được tính ở đâu, mà là \emph{việc cắt làm gì với gradient}.
+
+\paragraph{Cắt trong PPO và GRPO là xóa, không phải hãm.}
+Khi $\rho_{i,t}$ vượt ra ngoài $[1-\epsilon,\, 1+\epsilon]$ và nhánh $\mathrm{clip}$ thắng trong $\min$, số hạng tương ứng trở thành hằng số theo $\theta$ và đạo hàm của nó bằng không. Token đó biến mất hoàn toàn khỏi các bước cập nhật tiếp theo trong cùng vòng lặp. Câu hỏi đáng hỏi là: \emph{những token nào hay bị cắt nhất?} Đó là các token có xác suất thấp dưới $\pi_{\theta_{\mathrm{old}}}$ nhưng advantage dương lớn -- tức chính những token mà bản cập nhật muốn nâng mạnh nhất. Nhóm MiniMax quan sát thấy trong huấn luyện suy luận, đó là các từ nối phản tư như \texttt{However}, \texttt{Recheck}, \texttt{Wait}: hiếm gặp và có xác suất thấp trong mô hình nền, bị cắt ngay sau bước cập nhật on-policy đầu tiên, và từ đó không còn đóng góp gradient nào cho các bước off-policy tiếp theo. Nghĩa là cơ chế ổn định hóa của PPO đang loại bỏ đúng những token mang hành vi mà ta muốn mô hình học.
+
+\paragraph{Chỗ đổi.}
+CISPO bỏ hẳn dạng surrogate theo tỷ số và quay lại dạng policy gradient có trọng số, trong đó trọng số importance sampling bị cắt nhưng được \emph{chặn gradient}:
+\[
+\begin{aligned}
+\mathcal{J}_{\mathrm{CISPO}}(\theta) = \mathbb{E}\bigg[\frac{1}{\sum_{i=1}^{G}|o_i|}&\sum_{i=1}^{G}\sum_{t=1}^{|o_i|}\\
+&\mathrm{sg}\big[\hat{r}_{i,t}(\theta)\big]\;\hat{A}_{i,t}\;\log \pi_\theta(o_{i,t}\mid q,\, o_{i,<t})\bigg],
+\end{aligned}
+\]
+\[
+\hat{r}_{i,t}(\theta) \;=\; \mathrm{clip}\big(\rho_{i,t},\ 1-\epsilon^{\mathrm{IS}}_{\mathrm{low}},\ 1+\epsilon^{\mathrm{IS}}_{\mathrm{high}}\big).
+\]
+So sánh trực tiếp hai công thức: trong GRPO, $\rho_{i,t}$ nằm \emph{bên trong} phần được lấy đạo hàm nên khi bị cắt thì gradient mất hẳn; trong CISPO, $\hat{r}_{i,t}$ chỉ là một hệ số nhân bị chặn gradient đứng trước $\nabla_\theta \log\pi_\theta$, nên cắt chỉ \emph{giới hạn độ lớn} của đóng góp chứ không xóa nó. Mọi token đều giữ một gradient khác không, kể cả token hiếm nằm sâu trong chuỗi rất dài.
+
+\paragraph{Hệ quả và đánh đổi.}
+CISPO được dùng để huấn luyện MiniMax-M1, một mô hình MoE 456 tỷ tham số với 45.9 tỷ tham số hoạt động trên mỗi token và cửa sổ ngữ cảnh một triệu token. Đánh đổi chính là thứ PPO sinh ra để bảo vệ: vùng tin cậy. Trong GRPO, việc gradient bị xóa khi $\rho$ đi quá xa chính là cơ chế ngăn một bước cập nhật quá lớn; CISPO thay nó bằng một chặn trên của \emph{hệ số nhân}, nên không còn gì ngăn bản thân $\nabla_\theta\log\pi_\theta$ lớn. Nhóm tác giả cũng ghi nhận trọng số bị cắt làm bộ ước lượng hơi chệch.
+
+\subsubsection{REINFORCE++: chuẩn hóa trên toàn batch thay vì trong từng nhóm}
+
+Tất cả các biến thể trên chuẩn hóa advantage \emph{bên trong từng nhóm}. REINFORCE++ \cite{hu2025reinforceplusplus} lập luận rằng đó là một bộ ước lượng chệch, và đổi đúng mục (B).
+
+\paragraph{Vấn đề với chuẩn hóa theo từng prompt.}
+Sau khi chia cho $\operatorname{std}$ của chính nhóm nó, advantage của mọi câu hỏi đều có cùng thang, bất kể câu hỏi đó còn gì để học hay không. Một câu hỏi mà 15 trên 16 lời giải đã đúng cho ra advantage cùng độ lớn với một câu hỏi mà 8 trên 16 đúng. Độ lớn gradient vì thế không còn mang thông tin về việc câu hỏi nào đáng học hơn, và sự khác biệt về độ khó giữa các câu hỏi -- vốn là tín hiệu chương trình học quan trọng nhất -- bị xóa đi.
+
+\paragraph{Chỗ đổi.}
+REINFORCE++ bỏ critic, bỏ advantage theo nhóm, đưa KL trở lại \emph{bên trong phần thưởng} theo từng token như InstructGPT, rồi chuẩn hóa trên toàn batch:
+\[
+\begin{aligned}
+A_{q,o_t} &= r(o_{1:T},\, q) \;-\; \beta \sum_{i=t}^{T} \mathrm{KL}(i),
+\qquad
+\mathrm{KL}(t) = \log\frac{\pi_{\theta_{\mathrm{old}}}(o_t\mid q,\, o_{<t})}{\pi_{\mathrm{ref}}(o_t\mid q,\, o_{<t})},\\[4pt]
+A^{\mathrm{norm}}_{q,o_t} &= \frac{A_{q,o_t} - \operatorname{mean}\big(A \mid A \in \mathcal{D}_{\mathrm{batch}}\big)}{\operatorname{std}\big(A \mid A \in \mathcal{D}_{\mathrm{batch}}\big) + \epsilon}.
+\end{aligned}
+\]
+Khác biệt với GRPO nằm trọn trong phạm vi của $\operatorname{mean}$ và $\operatorname{std}$: GRPO lấy chúng trên $G$ lời giải của \emph{một} câu hỏi, REINFORCE++ lấy trên \emph{toàn bộ} batch. Biến thể \textbf{REINFORCE++-baseline} giữ cả hai -- trừ trung bình trong nhóm để giảm phương sai, rồi mới chuẩn hóa toàn cục để chỉnh thang:
+\[
+\begin{aligned}
+A'_{q,o_t} &= R_{q,o_t} - \operatorname{mean}_{\text{nhóm}}\big(R_{q,o_t}\big),\\[4pt]
+A^{\mathrm{norm}}_{q,o_t} &= \frac{A'_{q,o_t} - \operatorname{mean}_{\text{batch}}(A')}{\operatorname{std}_{\text{batch}}(A') + \epsilon}.
+\end{aligned}
+\]
+
+\paragraph{Đánh đổi.}
+Chuẩn hóa toàn cục khiến bước cập nhật cho một câu hỏi phụ thuộc vào những câu hỏi \emph{khác} tình cờ có mặt trong cùng batch. Thành phần của batch trở thành một siêu tham số thực sự: trộn thêm nhiều câu dễ sẽ nâng $\operatorname{mean}$ của batch lên và kéo advantage của mọi câu còn lại dịch xuống. Đó là cái giá phải trả để lấy lại thông tin về độ khó mà chuẩn hóa theo nhóm đã xóa mất.
+
+\subsubsection{RLOO: baseline bỏ-một và quan hệ chính xác với GRPO}
+
+RLOO \cite{ahmadian2024rloo} có trước GRPO và lập luận từ một hướng khác. Phần lớn bộ máy của PPO -- critic, GAE, cắt ngưỡng, nhiều epoch trên cùng một đợt dữ liệu -- được thiết kế cho các bài toán RL nhiều bước có phần thưởng trung gian, trong khi RLHF là một bài toán gần như \emph{một bước}: sinh ra cả câu trả lời là một hành động, phần thưởng được trao đúng một lần ở cuối. Bỏ bộ máy đó đi và dùng REINFORCE với một baseline tốt là đủ.
+
+\paragraph{Chỗ đổi.}
+Với $k$ mẫu cho mỗi prompt, RLOO dùng làm baseline cho mẫu $i$ chính phần thưởng trung bình của $k-1$ mẫu \emph{còn lại}:
+\[
+\frac{1}{k}\sum_{i=1}^{k}\Big[R(y_{(i)},\, x) - \frac{1}{k-1}\sum_{j \ne i} R(y_{(j)},\, x)\Big]\;\nabla_\theta \log \pi_\theta(y_{(i)}\mid x).
+\]
+Lý do bỏ mẫu thứ $i$ ra khỏi baseline của chính nó: nếu đưa $R(y_{(i)})$ vào, baseline tương quan với mẫu và bộ ước lượng gradient trở nên chệch. Loại nó ra thì baseline độc lập với $y_{(i)}$ và bộ ước lượng không chệch -- baseline đóng đúng vai trò một hàm giá trị không tham số.
+
+\paragraph{Quan hệ chính xác với GRPO.}
+GRPO dùng $\operatorname{mean}$ của \emph{cả} nhóm, tức có chứa $R_i$. Hai advantage chỉ khác nhau một hằng số: với $\bar{R} = \frac{1}{k}\sum_j R_j$,
+\[
+R_i - \frac{1}{k-1}\sum_{j\ne i} R_j
+\;=\; R_i - \frac{k\bar{R} - R_i}{k-1}
+\;=\; \frac{k}{k-1}\big(R_i - \bar{R}\big).
+\]
+Nghĩa là advantage của RLOO bằng advantage \emph{chưa chia cho} $\operatorname{std}$ của GRPO -- tức advantage của Dr.~GRPO -- nhân với $k/(k-1)$. Ba thuật toán được công bố độc lập nhau hóa ra chỉ khác nhau ở một hệ số và ở việc có chia cho độ lệch chuẩn của nhóm hay không.
+
+\paragraph{Đánh đổi.}
+RLOO thuần túy on-policy: không có tỷ số importance sampling nên cũng không có ngưỡng cắt, và mỗi đợt sinh mẫu chỉ dùng được cho \emph{một} bước gradient. Trong khi đó, phần lớn hiệu quả tính toán của PPO và GRPO ở quy mô lớn đến từ việc chạy nhiều bước cập nhật trên cùng một đợt rollout, mà sinh rollout mới lại là phần đắt nhất của RL cho LLM. Đó là lý do RLOO ít được dùng cho các vòng RL dài trên chuỗi suy luận, dù về mặt thống kê nó sạch hơn.
+
+\subsubsection{VAPO: quay lại mô hình giá trị}
+
+Cả họ trên đều bỏ critic. VAPO \cite{yue2025vapo} đi ngược lại, với lập luận rằng advantage theo nhóm gán \emph{cùng một} giá trị cho mọi token của một câu trả lời, nên không gán được công trạng cho từng bước suy luận -- điều mà một hàm giá trị theo token làm được. Vấn đề là các phương pháp dựa trên giá trị rất khó dùng cho chuỗi suy luận dài, vì ba lý do mà bài báo nêu rõ: mô hình giá trị bị chệch (thường được khởi tạo từ reward model), độ dài chuỗi không đồng nhất, và phần thưởng thưa.
+
+\paragraph{Chỗ đổi.} Bảy thành phần, trong đó ba cái đầu là riêng của VAPO.
+\begin{itemize}
+	\item \textbf{Value-Pretraining:} huấn luyện critic trên lợi tức Monte-Carlo của một chính sách \emph{cố định} cho tới khi loss thấp và phương sai giải thích được đủ cao, \emph{trước khi} bắt đầu cập nhật chính sách, nhằm khử chệch do khởi tạo từ reward model.
+	\item \textbf{Decoupled GAE:} tách tham số $\lambda$ làm hai -- $\lambda = 1.0$ cho mục tiêu huấn luyện critic (cần không chệch) và một $\lambda$ riêng cho advantage của chính sách (cần phương sai thấp). GAE kinh điển buộc hai nhu cầu đối nghịch này dùng chung một tham số.
+	\item \textbf{Length-adaptive GAE:} đặt $\lambda_{\text{policy}} = 1 - \dfrac{1}{\alpha\,l}$ với $l$ là độ dài đầu ra và $\alpha = 0.05$. Vì tầm nhìn hiệu dụng của GAE xấp xỉ $1/(1-\lambda)$, công thức này giữ tầm nhìn \emph{tỉ lệ với độ dài} thay vì cố định, nhờ đó sai số TD của một câu trả lời 500 token và của một câu trả lời 10 nghìn token được gộp với trọng số tương đương.
+	\item Bốn thành phần còn lại mượn từ DAPO và các công trình trước: clip-higher ($\epsilon_{\mathrm{low}} = 0.2$, $\epsilon_{\mathrm{high}} = 0.28$), token-level policy gradient loss, một số hạng NLL đặt trên các mẫu \emph{đúng} với trọng số $\mu = 0.1$, và group-sampling (ít prompt hơn nhưng 16 mẫu mỗi prompt).
+\end{itemize}
+
+\paragraph{Hệ quả và đánh đổi.}
+Từ một mô hình nền Qwen 32B, VAPO đạt 60.4 điểm trên AIME 2024 trong khoảng 5 nghìn bước huấn luyện, và các lần chạy độc lập đều không sập. Cái giá là critic quay trở lại cùng toàn bộ chi phí bộ nhớ của nó -- chính thứ GRPO sinh ra để tránh -- cộng với một công thức gồm nhiều thành phần tương tác, khó tách riêng để biết phần nào đóng góp bao nhiêu.
+
+\begin{assess}{Nên đổi chỗ nào trước}
+Nếu phải chọn thứ tự áp dụng, thứ tự sau phản ánh mức độ phổ quát của vấn đề mà mỗi thay đổi xử lý. Token-level loss và bỏ phép chia cho $\operatorname{std}$ (A, B) sửa thiên lệch có mặt trong \emph{mọi} lần chạy GRPO, chi phí cài đặt gần bằng không, nên làm trước. Dynamic sampling (E) trở nên cần thiết khi mô hình đã đủ khá để nhiều nhóm toàn đúng, và nó đánh đổi bằng thời gian sinh. Clip-higher (C) cần khi theo dõi thấy entropy tụt sớm. GSPO (D) gần như bắt buộc nếu mô hình là MoE, và ít cần thiết nếu không. CISPO và VAPO là hai lựa chọn kiến trúc lớn hơn: chúng thay đổi dạng của mục tiêu chứ không chỉ các hệ số, nên chỉ hợp lý khi đã có hạ tầng và ngân sách để đo lại từ đầu. Mục~\ref{ssec:rl_capability_debate} đưa thêm một lý do để thận trọng với mọi so sánh kiểu này.
+\end{assess}
+
+\subsection{RL mở rộng năng lực hay chỉ làm nhọn phân phối?}
+\label{ssec:rl_capability_debate}
+
+Mọi con số ở mục trên đều là pass@1. Câu hỏi đáng đặt ra là pass@1 đo cái gì.
+
+\paragraph{Hai đại lượng khác nhau.}
+Với một mô hình sinh ngẫu nhiên, pass@$k$ là xác suất có ít nhất một lời giải đúng trong $k$ lần lấy mẫu độc lập. Khi $k = 1$, đại lượng này đo \emph{mức tập trung}: khối lượng xác suất có dồn vào lời giải đúng hay không. Khi $k$ lớn, nó tiến dần tới một đại lượng khác hẳn -- \emph{giá đỡ} (support) của phân phối, tức liệu lời giải đúng có nằm trong tập những chuỗi mà mô hình có thể sinh ra hay không. Một thủ tục chỉ dồn khối lượng xác suất lại mà không thêm chuỗi mới vào giá đỡ sẽ làm pass@1 tăng và pass@$k$ với $k$ lớn \emph{giảm}, vì phân phối hẹp lại thì $k$ lần lấy mẫu cho ra ít chuỗi phân biệt hơn.
+
+\paragraph{Lập luận rằng RLVR chỉ làm nhọn phân phối.}
+Yue et al.~\cite{yue2025rlboundary} đo pass@$k$ trên một dải $k$ rộng, cho nhiều họ mô hình, nhiều thuật toán RL và các benchmark toán, lập trình, suy luận thị giác. Kết quả nhất quán: mô hình sau RLVR thắng mô hình nền ở $k$ nhỏ nhưng \emph{thua} ở $k$ lớn -- hai đường pass@$k$ cắt nhau. Phân tích độ bao phủ và perplexity cho thấy các lối suy luận mà mô hình RLVR sinh ra đã nằm sẵn trong phân phối của mô hình nền và bị chặn bởi nó. Sáu thuật toán RLVR phổ biến cho kết quả gần như nhau và đều còn cách xa biên trên do mô hình nền đặt ra. Ngược lại, chưng cất từ một mô hình thầy \emph{có} đưa vào những khuôn mẫu suy luận mới và thực sự mở rộng biên. Công trình được chọn báo cáo miệng tại NeurIPS 2025.
+
+Cơ chế khiến kết luận này hợp lý đã xuất hiện ở mục~\ref{ssec:r1_distill}: với phần thưởng nhị phân, một câu hỏi chỉ đóng góp gradient khi số lời giải đúng trong nhóm nằm hẳn giữa 0 và $G$. Một lời giải mà mô hình \emph{không bao giờ} lấy mẫu trúng thì không bao giờ nhận được phần thưởng, nên không bao giờ được tăng xác suất. Thêm vào đó, số hạng KL và cơ chế cắt đều chủ động giữ $\pi_\theta$ ở gần $\pi_{\mathrm{ref}}$. Nhìn từ công thức, RLVR không có kênh nào để đưa một chuỗi mới vào giá đỡ.
+
+\paragraph{Một lưu ý về phép đo.}
+Trước khi nhận kết luận trên, cần nói rõ pass@$k$ với $k$ rất lớn cũng có điểm yếu riêng. Lấy mẫu ở nhiệt độ cao từ một mô hình nền trên những bài có không gian đáp án nhỏ -- trắc nghiệm, đúng/sai, một con số trong vài chục khả năng -- sẽ tính cả những lần đoán trúng vào pass@$k$; cộng thêm dương tính giả của verifier (mục~\ref{ssec:rlvr}), con số này bị thổi lên theo hướng có lợi cho mô hình nền. Một mô hình có pass@256 cao nhưng pass@1 bằng 5\% cũng không phải một mô hình dùng được. Phát biểu chặt chẽ vì vậy là: \emph{chưa chứng minh được RLVR mở rộng giá đỡ}, chứ không phải \emph{mô hình nền mạnh hơn}.
+
+\paragraph{Lập luận phản biện: chạy đủ lâu và dời mỏ neo.}
+ProRL \cite{liu2025prorl} nhận xét rằng kết luận trên được rút ra từ các vòng RL ngắn với một mỏ neo cố định, và thử phá cả hai điều kiện đó. Công thức: GRPO cộng các cải tiến của DAPO (cắt tách đôi với $\epsilon_{\mathrm{low}} = 0.2$, $\epsilon_{\mathrm{high}} = 0.4$; dynamic sampling; 16 rollout mỗi prompt), chạy hơn 2 nghìn bước trên một tập nhiệm vụ đa dạng, với mục tiêu
+\[
+\mathcal{L}_{\text{KL-RL}}(\theta) \;=\; \mathcal{L}_{\mathrm{GRPO}}(\theta) \;-\; \beta\,\mathbb{D}_{\mathrm{KL}}\big[\pi_\theta\,\big\|\,\pi_{\mathrm{ref}}\big].
+\]
+Chỗ đổi quan trọng không nằm trong công thức mà nằm ở câu hỏi \emph{$\pi_{\mathrm{ref}}$ là gì}. Khi hiệu năng trên tập kiểm định chững lại hoặc tụt, nhóm tác giả \textbf{đặt lại cứng} $\pi_{\mathrm{ref}}$ bằng một bản chụp gần đây của chính sách đang huấn luyện, đồng thời khởi tạo lại trạng thái bộ tối ưu, rồi chạy tiếp. Đây chính xác là kênh mà lập luận ``RL không mở rộng được giá đỡ'' giả định là không tồn tại: số hạng KL trói $\pi_\theta$ vào $\pi_{\mathrm{ref}}$, nhưng nếu bản thân $\pi_{\mathrm{ref}}$ được dời đi theo từng chặng thì tổng quãng đường mà chính sách đi được không còn bị chặn. Kết quả báo cáo: pass@1 trung bình trên các nhiệm vụ toán tăng từ 44.45 lên 60.14, và mô hình sau RL vượt mô hình nền trên một dải pass@$k$, kể cả ở những nhiệm vụ mà mô hình nền thất bại ở mọi lần thử. Mức mở rộng tương quan với năng lực sẵn có của mô hình nền trên nhiệm vụ đó và với độ dài huấn luyện.
+
+Cần ghi nhận một hạn chế của đối chứng này: ProRL xuất phát từ DeepSeek-R1-Distill-Qwen-1.5B, tức là một mô hình \emph{đã được chưng cất} chứ không phải một mô hình nền. Một phần biên mà nó khám phá đã được người thầy đặt vào từ trước.
+
+\paragraph{Cảnh báo: điểm số tăng không chứng minh phần thưởng có tác dụng.}
+Shao et al.~\cite{shao2025spurious} huấn luyện Qwen2.5-Math-7B bằng GRPO với các phần thưởng \emph{giả} -- tương quan thấp, bằng không, thậm chí âm với tính đúng của đáp án. Phần thưởng gán \emph{ngẫu nhiên} vẫn nâng MATH-500 lên 21.4 điểm, trong khi phần thưởng từ đáp án thật nâng 29.1 điểm: phần lớn mức tăng không đến từ thông tin trong phần thưởng. Nhóm tác giả quy nguyên nhân cho một thiên lệch trong số hạng cắt của GRPO, khiến nó khuếch đại những hành vi mô hình đã học sẵn trong tiền huấn luyện ngay cả khi phần thưởng không mang thông tin. Trường hợp cụ thể là ``suy luận bằng mã'' -- viết mã để lập luận mà không chạy mã -- vốn có sẵn ở họ Qwen2.5-Math, với tần suất tăng từ 65\% lên hơn 90\% dưới phần thưởng giả. Quan trọng không kém: các phần thưởng giả có tác dụng trên Qwen thường \emph{không} có tác dụng trên Llama3 hay OLMo2. Hiệu ứng phụ thuộc vào mô hình chứ không phải vào thuật toán, nên một kết quả đo trên một họ mô hình duy nhất không nói được gì về thuật toán.
+
+\begin{checklist}{Đối chứng tối thiểu trước khi tin một kết quả RLVR}
+\begin{enumerate}
+	\item \textbf{Đối chứng phần thưởng vô nghĩa.} Chạy lại đúng thuật toán, đúng số bước, đúng siêu tham số, chỉ thay phần thưởng bằng ngẫu nhiên hoặc hằng số. Nếu phần chênh lệch còn lại nhỏ thì thuật toán, chứ không phải phần thưởng, mới là thứ đang hoạt động.
+	\item \textbf{Ít nhất hai họ mô hình không liên quan nhau.} Kết quả chỉ trên Qwen không phân biệt được ``thuật toán tốt'' với ``thiên lệch tiền huấn luyện của Qwen''.
+	\item \textbf{Đường pass@$k$ trên dải $k$ rộng, vẽ cùng trục với mô hình nền,} dùng cùng tham số lấy mẫu cho cả hai. Một điểm pass@1 đơn lẻ không phân biệt được làm nhọn với mở rộng.
+	\item \textbf{Mẫu prompt dùng cho đường cơ sở.} Dr.~GRPO cho thấy mô hình nền Qwen2.5 đạt điểm cao hơn hẳn khi không bị ép vào mẫu hội thoại. Một đường cơ sở bị dựng yếu sẽ chế tạo ra mức tăng.
+	\item \textbf{Khử nhiễm benchmark.} AIME và MATH đã công bố từ lâu; phần của mức tăng đến từ việc gợi lại nội dung đã có trong dữ liệu tiền huấn luyện cần được tách ra.
+	\item \textbf{Báo cáo ngân sách tính toán.} Không có nó thì không biết thuật toán A hơn B vì trần cao hơn hay chỉ vì đang đứng ở chỗ dốc hơn trên cùng một đường cong.
+\end{enumerate}
+\end{checklist}
+
+\paragraph{Đo RL như đo tiền huấn luyện.}
+Điểm cuối trong danh sách trên dẫn tới một công trình đặt lại cách so sánh các thuật toán ở mục~\ref{ssec:grpo_variants}. Khatri et al.~\cite{khatri2025scalerl} chạy một nghiên cứu hệ thống tiêu hơn 400 nghìn giờ GPU, khớp đường cong hiệu năng theo tính toán của các lần chạy RL bằng hàm sigmoid, và tách rõ hai tham số: \emph{tiệm cận} $A$ -- mức hiệu năng mà một công thức huấn luyện hội tụ tới khi tính toán tiến ra vô cùng -- và \emph{hiệu suất tính toán} $B$, tốc độ tiến tới tiệm cận đó. Ba kết luận:
+\begin{itemize}
+	\item Các công thức huấn luyện khác nhau \emph{không} cùng tiệm cận, nên lựa chọn công thức quyết định trần.
+	\item Nhưng phần lớn những chi tiết mà mục~\ref{ssec:grpo_variants} vừa mổ xẻ -- cách gộp loss, cách chuẩn hóa, chương trình học, thuật toán off-policy -- chủ yếu tác động lên $B$ chứ không lên $A$. Chúng đưa ta tới đích nhanh hơn, không làm đích cao hơn.
+	\item Các công thức ổn định đi theo quỹ đạo \emph{dự đoán được}, nên kết quả từ các lần chạy nhỏ ngoại suy được lên lần chạy lớn. Nhóm tác giả kiểm chứng bằng cách dự đoán trước hiệu năng của một lần chạy đơn lẻ kéo dài tới 100 nghìn giờ GPU, và gom các lựa chọn tốt nhất thành công thức \textbf{ScaleRL}.
+\end{itemize}
+Hệ quả đối với cách đọc cả mục~\ref{ssec:grpo_variants}: so sánh hai thuật toán RL tại \emph{một} mức tính toán là so sánh hai điểm trên hai đường cong khác nhau. Chênh lệch vài điểm AIME có thể là chênh lệch trần, cũng có thể chỉ là chênh lệch tốc độ -- và hai cách đọc dẫn tới hai quyết định kỹ thuật trái ngược nhau.
+
+\begin{keyidea}{Tình trạng của tranh luận}
+Ba mảnh bằng chứng trên không mâu thuẫn nếu được phát biểu cho chính xác. Với RL ngắn, mỏ neo cố định và phần thưởng chỉ đặt ở kết quả, RLVR chủ yếu dồn khối lượng xác suất vào những lời giải mà mô hình nền đã sinh ra được -- đó là điều Yue et al.\ đo được. Khi mỏ neo được dời theo từng chặng và quá trình kéo dài hàng nghìn bước, giới hạn đó không còn là tất yếu về mặt công thức -- đó là điều ProRL chỉ ra. Và trong cả hai trường hợp, một phần mức tăng quan sát được có thể không đến từ phần thưởng -- đó là điều Shao et al.\ cảnh báo. Câu hỏi còn bỏ ngỏ là phần nào trong đó còn lại khi ta chạy một công thức ổn định tới gần tiệm cận của nó, trên một mô hình nền không thuộc họ Qwen.
+\end{keyidea}
+
+\subsection{Những vấn đề mở}
+\label{ssec:reasoning_open_problems}
+\begin{itemize}
+	\item \textbf{Suy nghĩ quá mức (overthinking):} Mô hình sinh hàng nghìn token cho câu hỏi đơn giản. Các hướng giải quyết: phần thưởng theo độ dài, chế độ ``suy nghĩ/không suy nghĩ'' có thể bật tắt (như Qwen3), ngân sách suy nghĩ do người dùng đặt. Lưu ý rằng một phần của vấn đề là thiên lệch độ dài trong chính mục tiêu tối ưu, và phần đó sửa được bằng công thức chứ không cần thưởng phạt thêm.
+	\item \textbf{Tính trung thực của chuỗi suy nghĩ (faithfulness):} Chuỗi suy nghĩ hiển thị không nhất thiết phản ánh đúng quá trình tính toán thực sự bên trong mô hình. RLVR làm vấn đề nặng thêm vì nó chỉ thưởng kết quả: mọi chuỗi dẫn tới đáp án đúng đều được thưởng như nhau, kể cả chuỗi không liên quan đến cách mô hình thực sự đi tới đáp án.
+	\item \textbf{Mở rộng ra ngoài miền kiểm chứng được:} Viết lách, tư vấn, nghiên cứu mở không có phần thưởng dựa trên luật, nên cần reward model hoặc LLM-as-a-judge (mục~\ref{sec:llm_as_a_judge}) -- và lập luận Goodhart ở mục~\ref{ssec:rlvr} quay trở lại nguyên vẹn, kèm theo đó là nhu cầu giữ lại số hạng KL mà DAPO đã bỏ.
+	\item \textbf{Đo lường còn chưa đủ chặt.} Như mục~\ref{ssec:rl_capability_debate} cho thấy, một phần đáng kể các kết quả RLVR đã công bố chưa có đối chứng phần thưởng vô nghĩa, chưa báo cáo pass@$k$ trên dải rộng, và chỉ chạy trên một họ mô hình. Chuẩn báo cáo cho RL còn kém xa chuẩn đã quen thuộc ở tiền huấn luyện.
+\end{itemize}
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Chương này đi từ các verifier kiểm chứng lời giải (ORM, PRM), qua các quy luật mở rộng tính toán lúc suy luận và các phương pháp tự học suy luận (STaR, ReST$^{EM}$, Quiet-STaR), đến học tăng cường với phần thưởng kiểm chứng được -- nền tảng của DeepSeek-R1 -- và cuối cùng là họ thuật toán hậu GRPO cùng tranh luận về việc RL thực sự thêm được gì vào mô hình nền. Năng lực của một LLM vì vậy đến từ cả số tham số lẫn cách chúng ta cho phép và dạy nó sử dụng tính toán khi trả lời. Nhưng mô hình suy luận vẫn cần tri thức cập nhật từ bên ngoài, chủ đề của chương tiếp theo về tìm kiếm và sinh tăng cường.}
