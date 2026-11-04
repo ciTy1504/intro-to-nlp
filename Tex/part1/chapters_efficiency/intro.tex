@@ -2,14 +2,14 @@
 % File: part1/chapters_efficiency/intro.tex
 % Chương mới (cập nhật 2026) -- trục Distillation + Inference/Serving của LLM Research Reading List
 
-\chapter{HIỆU QUẢ LLM: CHƯNG CẤT, LƯỢNG TỬ HÓA VÀ PHỤC VỤ}
+\chapter{HIỆU QUẢ LLM: LƯỢNG TỬ HÓA VÀ PHỤC VỤ}
 \label{chap:efficiency}
 
 Một mô hình suy luận hàng đầu có thể có hàng trăm tỷ tham số và sinh hàng nghìn token cho mỗi câu hỏi. Nếu phục vụ nó một cách ngây thơ, mỗi yêu cầu có thể tốn hàng chục giây và vài GB bộ nhớ GPU; nhân lên với hàng triệu người dùng, chi phí suy luận nhanh chóng vượt xa chi phí huấn luyện. Chương này bàn về cách đạt cùng một mức chất lượng với chi phí thấp hơn nhiều.
 
 Vấn đề được xử lý ở ba tầng:
 \begin{enumerate}
-	\item \textbf{Làm mô hình nhỏ đi:} Chưng cất tri thức (mục~\ref{sec:model_optimization} cho nguyên lý chung, mục~\ref{sec:llm_distillation} cho LLM).
+	\item \textbf{Làm mô hình nhỏ đi:} Cắt tỉa và các phép biến đổi trên một mô hình đã huấn luyện xong (mục~\ref{sec:model_optimization}). Họ kỹ thuật còn lại cho mục đích này -- chưng cất tri thức -- là một quy trình huấn luyện chứ không phải một phép biến đổi trên trọng số, nên nằm ở chương~\ref{chap:post_training} (mục~\ref{sec:llm_distillation} và mục~\ref{sec:on_policy_distillation}).
 	\item \textbf{Làm mỗi tham số rẻ đi:} Lượng tử hóa sau huấn luyện, gồm LLM.int8(), SmoothQuant, GPTQ, AWQ (mục~\ref{sec:llm_quantization}).
 	\item \textbf{Làm hệ thống phục vụ thông minh hơn:} Quản lý KV cache với PagedAttention, batching liên tục, offloading (mục~\ref{sec:llm_serving}); giải mã suy đoán (mục~\ref{sec:speculative_decoding}); và kiến trúc tách rời prefill/decode ở quy mô cụm máy (mục~\ref{sec:disaggregated_serving}).
 \end{enumerate}

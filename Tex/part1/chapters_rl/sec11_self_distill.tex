@@ -1,0 +1,81 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_rl/sec11_self_distill.tex
+% Mục mới: nhánh tự chưng cất 2026.
+
+\section{Tự chưng cất: mô hình làm thầy của chính nó}
+\label{sec:self_distillation}
+
+Chưng cất on-policy có một điều kiện cứng: phải có sẵn một mô hình thầy \emph{giỏi hơn}. Điều kiện đó là nút thắt của cả nhánh. Muốn có thầy thì phải chạy học tăng cường quy mô lớn, mà đó chính là thứ đắt đỏ ta đang tìm cách né. Và với mô hình mạnh nhất hiện có thì theo định nghĩa không tồn tại ông thầy nào cả.
+
+Nhánh nổi lên trong năm 2026 đặt câu hỏi: nếu thầy và trò là \emph{cùng một mô hình} thì sao? Nghe qua thì vô nghĩa -- một bản sao của chính mình không giỏi hơn mình. Nhưng nó giỏi hơn được, nếu nó được cho xem một thứ mà bản kia không có.
+
+\begin{keyidea}{Ý tưởng chung của cả nhánh: lợi thế thông tin thay cho lợi thế năng lực}
+Trong chưng cất thường, thầy hơn trò vì nó \emph{lớn hơn}. Trong tự chưng cất, thầy hơn trò vì nó \emph{biết thêm} -- nó được đặt vào một ngữ cảnh có thông tin đặc quyền mà trò không được thấy. Cả hai nhánh dùng chung hạ tầng và chung công thức; chỉ chỗ sinh ra chênh lệch là khác.
+\end{keyidea}
+
+Đọc theo bảng~\ref{tab:post_training_quadrants}, đây vẫn là ô dưới bên phải: chuỗi do mô hình tự sinh, tín hiệu dày theo từng token. Cái khác là ta không phải trả tiền cho một mô hình thầy riêng. Ba cách cấp ``thông tin đặc quyền'' đã được thử, và chúng khác nhau ở chỗ thông tin ấy đến từ đâu.
+
+\subsection{Thông tin đặc quyền là đáp án đúng}
+\label{ssec:opsd}
+
+\textbf{OPSD} (On-Policy Self-Distillation) \cite{zhao2026opsd} cho thầy xem lời giải đã được kiểm chứng, còn trò chỉ thấy đề bài. Cùng một bộ trọng số, hai ngữ cảnh khác nhau:
+\[
+\pi_{\text{thầy}}(\cdot \mid x,\, y^\star, \hat{y}_{<t}), \qquad
+\pi_\theta(\cdot \mid x,\, \hat{y}_{<t}), \qquad
+\hat{y} \sim \pi_\theta(\cdot \mid x),
+\]
+rồi cực tiểu phân kỳ giữa hai phân phối tại từng token, trên chuỗi $\hat{y}$ do trò tự sinh.
+
+\paragraph{Vì sao cách này mạnh hơn cả học tăng cường lẫn chưng cất off-policy.} So với học tăng cường trên cùng dữ liệu có đáp án: học tăng cường chỉ nhận được một bit cho cả rollout, và như mục~\ref{ssec:rl_capability_debate} đã chỉ ra, bit đó bằng 0 khi cả nhóm cùng sai -- đúng những bài khó nhất thì không học được gì. Ở đây, ngay cả một rollout sai hoàn toàn vẫn cho tín hiệu dày: tại mỗi vị trí, bản biết đáp án nói ``đáng lẽ chỗ này phải rẽ hướng khác''.
+
+So với chưng cất off-policy trên chính các lời giải $y^\star$ ấy -- tức SFT thông thường: tín hiệu dày như nhau, nhưng đo trên tiền tố của \emph{thầy} chứ không phải của trò, nên dính đúng vấn đề lệch phân phối ở mục~\ref{ssec:exposure_bias}. Tự chưng cất on-policy giữ được tín hiệu dày mà bỏ được lệch phân phối, và nó làm vậy \emph{mà không cần mô hình nào ngoài chính nó}.
+
+Bài báo gốc báo cáo hiệu quả theo số token huấn luyện cao hơn các phương pháp học tăng cường, và chất lượng cao hơn chưng cất off-policy, trên các tập toán. Cần đọc kết quả ấy với đúng phạm vi của nó: các thí nghiệm nằm trong miền toán có đáp án kiểm chứng được, nơi $y^\star$ tồn tại và đúng.
+
+\subsection{Thông tin đặc quyền là ví dụ trong ngữ cảnh}
+\label{ssec:sdft}
+
+\textbf{SDFT} (Self-Distillation Fine-Tuning) \cite{shenfeld2026sdft} thay đáp án bằng \emph{minh họa}: thầy là chính mô hình với vài ví dụ mẫu đặt trong ngữ cảnh, trò là mô hình không có ví dụ nào. Nói cách khác, nó chưng cất năng lực học trong ngữ cảnh vào trong trọng số.
+
+Bài toán mà các tác giả nhắm tới không phải chất lượng tối đa mà là \textbf{học liên tục}: dạy mô hình một kỹ năng mới mà không xóa mất kỹ năng cũ. Lập luận của họ đọc thẳng được từ hai trục. Học tăng cường quên ít, vì nó chỉ sắp xếp lại khối lượng xác suất bên trong vùng mô hình vốn đã sinh ra được -- nhưng nó đòi một hàm thưởng mà phần lớn kỹ năng mới không có. SFT thì chỉ cần vài minh họa, nhưng nó off-policy, nên nó kéo mô hình tới một phân phối xa lạ và kéo theo cả những thứ không liên quan. SDFT lấy cái dễ kiếm của SFT -- minh họa -- rồi học nó theo kiểu on-policy.
+
+Kết quả báo cáo: độ chính xác trên nhiệm vụ mới cao hơn SFT, mức quên thảm họa giảm đáng kể, và trong thí nghiệm nối tiếp nhiều nhiệm vụ, một mô hình tích lũy được nhiều kỹ năng mà không tụt ở các kỹ năng trước.
+
+\subsection{Thông tin đặc quyền là phản hồi về cái sai}
+\label{ssec:sdpo}
+
+Hai cách trên cần một thứ có sẵn trước: đáp án, hoặc minh họa. \textbf{SDPO} (Self-Distillation Policy Optimization) \cite{huebotter2026sdpo} dùng thứ chỉ xuất hiện \emph{sau khi} mô hình đã thử và trượt: thông báo lỗi của trình biên dịch, test case nào fail, nhận xét của một mô hình chấm. Đây là loại thông tin mà mọi vòng lặp học tăng cường đều tạo ra rồi vứt đi, vì hàm thưởng chỉ giữ lại một con số.
+
+Cơ chế: cho mô hình thử; thu phản hồi dạng chữ về lần thử đó; đặt phản hồi ấy vào ngữ cảnh để có bản ``thầy''; rồi chưng cất dự đoán của thầy về lại chính sách, trên rollout của chính sách. Hai chi tiết kỹ thuật đáng chú ý, cả hai đều là lời giải cho cùng một rủi ro -- thầy và trò là một nên vòng lặp dễ tự khuếch đại sai lầm của chính nó.
+
+\begin{itemize}
+	\item \textbf{Thầy được neo lại.} Bản thầy không phải chính sách hiện tại mà là một trung bình trượt lũy thừa của trọng số, hoặc một nội suy với mô hình khởi đầu. Vai trò của nó giống hệt $\pi_{\text{ref}}$ trong phạt KL ở mục~\ref{ssec:rlhf}: một mốc đổi chậm hơn chính sách.
+	\item \textbf{Phân kỳ là Jensen--Shannon đối xứng}, không phải KL. Lựa chọn này khớp với lập luận ở mục~\ref{ssec:jsd}: khi ``thầy'' chỉ hơn trò một chút và bản thân nó cũng có thể sai, một phân kỳ \emph{bị chặn} và \emph{đối xứng} là hợp lý hơn một phân kỳ phạt vô hạn theo một chiều.
+\end{itemize}
+
+Khi môi trường không trả về gì ngoài một con số đúng/sai, phương pháp vẫn chạy được bằng cách dùng chính các rollout thành công làm phản hồi ngầm cho các rollout thất bại.
+
+\begin{table}[H]
+\centering\small
+\caption{Ba cách cấp lợi thế thông tin cho bản ``thầy'' trong tự chưng cất.}
+\label{tab:self_distillation}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{1.9cm}>{\raggedright\arraybackslash}p{3.6cm}XX@{}}
+\toprule
+\textbf{Phương pháp} & \textbf{Thầy được thấy thêm gì} & \textbf{Cần có sẵn} & \textbf{Nhắm vào bài toán nào} \\
+\midrule
+OPSD & Lời giải đã kiểm chứng & Đáp án đúng cho mỗi câu hỏi & Suy luận có đáp án kiểm chứng được \\
+\addlinespace
+SDFT & Vài minh họa trong ngữ cảnh & Một nhúm ví dụ mẫu & Học kỹ năng mới mà không quên kỹ năng cũ \\
+\addlinespace
+SDPO & Phản hồi dạng chữ về lần thử vừa rồi & Một môi trường trả về lỗi hoặc nhận xét & Sinh mã, tác tử, mọi nơi có vòng lặp thử--sai \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{assess}{Nhánh này đáng theo dõi, nhưng còn mới}
+Cả ba bài báo đều là tiền ấn bản năm 2026 và chưa có bản sao chép độc lập ở quy mô lớn tại thời điểm viết. Điều đáng tin hơn các con số là \emph{cấu trúc} của ý tưởng: nó giải thích gọn vì sao học trong ngữ cảnh lại mạnh (mô hình đã biết làm, chỉ thiếu điều kiện để kích hoạt), và nó cho một cách chuyển năng lực từ ngữ cảnh vào trọng số mà không cần mô hình thứ hai. Hai rủi ro đã thấy rõ: thầy và trò chung trọng số nên sai lệch tự khuếch đại nếu không neo lại, và chất lượng bị chặn bởi chính thông tin đặc quyền -- đáp án sai thì cả vòng lặp học cái sai.
+\end{assess}
+
+\begin{pitfall}{Đừng lẫn với ``tự chưng cất'' theo nghĩa cũ}
+Thuật ngữ \emph{self-distillation} trước đây chỉ một kỹ thuật khác hẳn: lấy chính mô hình ở epoch trước làm thầy cho epoch sau, để chính quy hóa (mục~\ref{ssec:knowledge_distillation}). Ở đó thầy và trò khác nhau về \emph{thời điểm}; ở đây chúng khác nhau về \emph{ngữ cảnh được cấp}, và cơ chế hoạt động không giống nhau.
+\end{pitfall}

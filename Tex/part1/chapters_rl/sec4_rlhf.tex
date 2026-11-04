@@ -1,0 +1,163 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_rl/sec4_rlhf.tex
+% Chuyển từ chapters_part5/chap5_5.tex (RLHF, InstructGPT, CAI)
+
+\section{Học tăng cường từ phản hồi con người (RLHF)}
+\label{ssec:rlhf}
+
+\textbf{Reinforcement Learning from Human Feedback (RLHF)} \cite{christiano2017deep, stiennon2020learning} là phương pháp tiên phong và phổ biến nhất để căn chỉnh mô hình ngôn ngữ lớn (LLM), cũng là kỹ thuật nền tảng của ChatGPT.
+RLHF kết hợp học có giám sát với học tăng cường để điều chỉnh mô hình cho phù hợp hơn với sở thích của con người.
+Quy trình gồm ba giai đoạn: (1) tinh chỉnh có giám sát (SFT), (2) huấn luyện mô hình phần thưởng (Reward Model, RM), và (3) tối ưu hóa chính sách bằng học tăng cường (PPO).
+
+\begin{center}
+    \bookimage[1.0\textwidth]{rlhf_pipeline}{Sơ đồ ba khối nối tiếp. Khối 1: base LLM được tinh chỉnh trên các cặp prompt--câu trả lời do người viết, cho ra mô hình SFT. Khối 2: mô hình SFT sinh nhiều câu trả lời cho cùng một prompt, người gán nhãn xếp hạng chúng, dữ liệu xếp hạng dùng để huấn luyện mô hình phần thưởng. Khối 3: mô hình phần thưởng chấm điểm các câu trả lời mới và PPO cập nhật chính sách, với một mũi tên phản hồi từ chính sách trở lại bước sinh câu trả lời.}
+    \captionof{figure}{Quy trình ba bước của RLHF: (1) Supervised Fine-Tuning (SFT), (2) Reward Model (RM), (3) Policy Optimization (PPO).}
+    \label{fig:rlhf_pipeline}
+\end{center}
+
+\subsection*{Bước 1: Tinh chỉnh có giám sát (Supervised Fine-Tuning -- SFT)}
+\begin{itemize}
+    \item \textbf{Mục tiêu:} Dạy cho mô hình văn phong, cấu trúc và hành vi của một \textit{assistant} thân thiện, trung thực và hữu ích.
+    \item \textbf{Quy trình:} Mô hình ngôn ngữ cơ sở (base LLM), được huấn luyện trước trên dữ liệu web, được tinh chỉnh lại trên tập dữ liệu hướng dẫn (instruction dataset) gồm các cặp \texttt{(prompt, answer)} do người gán nhãn biên soạn.
+    Hàm mất mát là \textbf{cross-entropy loss}, huấn luyện mô hình để sinh ra câu trả lời khớp với mẫu con người:
+    \[
+        L_{\text{SFT}}(\theta) = - \mathbb{E}_{(x,y)\sim D_{\text{SFT}}} \sum_{t=1}^{T} \log \pi_{\theta}(y_t | x, y_{<t})
+    \]
+    \item \textbf{Kết quả:} Mô hình sau bước này, ký hiệu là $\pi_{\text{SFT}}$ hoặc $\pi_{\text{ref}}$, có khả năng tuân theo chỉ dẫn nhưng chưa được căn chỉnh sâu về sở thích tinh tế của người dùng.
+\end{itemize}
+
+\subsection*{Bước 2: Huấn luyện mô hình phần thưởng (Reward Model -- RM)}
+
+\begin{itemize}
+    \item \textbf{Mục tiêu:} Huấn luyện một mô hình \( r_{\phi}(x, y) \) \emph{định lượng} được mức độ hài lòng của con người đối với phản hồi \( y \) khi nhận prompt \( x \).
+
+    \item \textbf{Kiến trúc mô hình:}
+    Với LLM hiện đại, mô hình phần thưởng gần như luôn là \textbf{decoder-only}: khởi tạo từ chính mô hình SFT (hoặc từ một checkpoint đã tiền huấn luyện cùng họ), bỏ tầng unembedding và thay bằng một \emph{reward head} tuyến tính trên biểu diễn của token cuối để cho ra \( r_{\phi}(x, y) \in \mathbb{R} \). InstructGPT \cite{ouyang2022training} làm đúng như vậy, và đây vẫn là cách dựng mặc định. Dùng chung kiến trúc và trọng số khởi tạo với chính sách giúp mô hình phần thưởng chấm điểm trên cùng một nền biểu diễn mà chính sách đang sinh.
+    Kiến trúc \textbf{encoder-only} (BERT/RoBERTa-style) -- mã hóa toàn bộ chuỗi \([x; y]\) rồi tính điểm qua pooling hoặc token đặc biệt \texttt{[CLS]} -- vẫn còn gặp ở các mô hình phần thưởng nhỏ, nhưng không còn là lựa chọn phổ biến ở quy mô LLM.
+    Trong cả hai trường hợp, \( r_{\phi}(x, y) \) được huấn luyện thông qua học so sánh (pairwise ranking).
+
+    \item \textbf{Dữ liệu huấn luyện:}
+    \begin{enumerate}
+        \item Từ mỗi prompt \( x \), cho mô hình SFT sinh ra nhiều phản hồi \( \{y_1, y_2, \dots, y_k\} \).
+        \item Người gán nhãn xếp hạng các phản hồi này theo mức độ ưa thích: \( y^+ \succ y^- \).
+    \end{enumerate}
+
+    \item \textbf{Hàm mất mát (ranking loss):}
+    Mô hình được huấn luyện sao cho phần thưởng của phản hồi được ưa thích cao hơn:
+    \[
+        L_{\text{RM}}(\phi)
+        = - \mathbb{E}_{(x, y^+, y^-)} \left[
+            \log \sigma \big( r_{\phi}(x, y^+) - r_{\phi}(x, y^-) \big)
+        \right],
+    \]
+    trong đó \( \sigma(z) = \frac{1}{1 + e^{-z}} \) là hàm sigmoid.
+    \item \textbf{Kết quả:} Mô hình \( r_{\phi} \) gán được điểm cho bất kỳ cặp \((x, y)\), tức một bộ chấm điểm tự động mô phỏng sở thích của con người.
+\end{itemize}
+
+\subsection*{Bước 3: Tối ưu hóa chính sách bằng học tăng cường (Reinforcement Learning -- PPO)}
+
+\paragraph{Bước này là học tăng cường, không phải một hàm mất mát.}
+Sau bước 2 ta đã có một bộ chấm điểm tự động \( r_{\phi}(x,y) \), và việc còn lại là chỉnh \( \theta \) sao cho điểm trung bình cao lên. Đó đúng là bài toán đã dựng ở mục~\ref{sec:rl_foundations}, với \( R = r_{\phi} \): phần thưởng không khả vi theo \( \theta \) nên phải đi qua gradient chính sách (mục~\ref{ssec:policy_gradient}), phương sai lớn nên phải trừ baseline và dùng mô hình giá trị (mục~\ref{ssec:baseline_advantage}), và muốn tái sử dụng lô mẫu đã sinh thì phải thêm tỷ số xác suất cùng phép cắt của PPO (mục~\ref{ssec:importance_clip}).
+
+Phần còn lại của bước 3 là những gì \emph{riêng} của RLHF: một hình phạt để chính sách không lách mô hình phần thưởng, và cái giá bộ nhớ của cả bộ máy.
+
+\paragraph{Phạt KL: chống lách luật mô hình phần thưởng.}
+\( r_{\phi} \) chỉ là \emph{mô hình đại diện} cho sở thích con người, học từ hữu hạn mẫu. Cực đại hóa nó không giới hạn thì chính sách sẽ tìm ra những chuỗi có điểm rất cao nhưng con người không hề thích -- hiện tượng \textbf{lách mô hình phần thưởng} (reward hacking, hay over-optimization). InstructGPT \cite{ouyang2022training} chặn bằng cách trừ vào phần thưởng một hình phạt log-tỷ-lệ tính \emph{theo từng token}:
+\[
+    R'(x, y)
+    = r_{\phi}(x, y)
+    - \beta \sum_{t=1}^{|y|} \log \frac{
+        \pi_{\theta}(y_t \mid x, y_{<t})
+    }{
+        \pi_{\text{ref}}(y_t \mid x, y_{<t})
+    }.
+\]
+Tổng trên chính là log-tỷ-lệ của cả chuỗi, \( \log \frac{\pi_{\theta}(y \mid x)}{\pi_{\text{ref}}(y \mid x)} \), và kỳ vọng của nó theo \( y \sim \pi_{\theta} \) bằng \( D_{\text{KL}}\big(\pi_{\theta}(\cdot \mid x) \,\big\|\, \pi_{\text{ref}}(\cdot \mid x)\big) \); vì thế hình phạt này thường được gọi tắt là ``phạt KL''. Viết theo từng token để mỗi bước sinh đều nhận được tín hiệu phạt, thay vì chỉ cộng một lượng duy nhất ở cuối chuỗi. Hệ số \( \beta \) đặt ra một đánh đổi trực tiếp: \( \beta \) lớn thì mô hình bám sát \( \pi_{\text{ref}} \), an toàn nhưng gần như không cải thiện; \( \beta \) nhỏ thì điểm thưởng tăng nhanh rồi sụp -- điểm do \( r_{\phi} \) chấm vẫn lên trong khi chất lượng thực tế đã đi xuống.
+
+\paragraph{Giá phải trả: bốn mô hình cùng nằm trong bộ nhớ.}
+Một vòng PPO cho LLM cần đồng thời chính sách đang huấn luyện \( \pi_{\theta} \), chính sách cũ dùng để sinh mẫu \( \pi_{\theta_{\text{old}}} \), chính sách tham chiếu đông cứng \( \pi_{\text{ref}} \) để tính phạt KL, mô hình phần thưởng \( r_{\phi} \), và mô hình giá trị \( V_{\psi} \). Trên thực tế người ta thường gộp \( \pi_{\theta} \) với \( \pi_{\theta_{\text{old}}} \), còn lại \textbf{bốn bản sao mô hình} phải nạp cùng lúc, trong đó hai bản có trạng thái bộ tối ưu \cite{ahmadian2024rloo}. Thêm vào đó là một vòng lặp sinh văn bản xen kẽ vòng lặp huấn luyện, với bộ siêu tham số dài (\( \epsilon \), \( \beta \), \( \gamma \), \( \lambda \), số epoch trên mỗi lô, hệ số mất mát giá trị, hệ số entropy). Đây là lý do thực dụng khiến mọi phương pháp ở mục~\ref{ssec:rlhf_alternatives} ra đời.
+
+\begin{pitfall}{Ba chế độ hỏng hay gặp của PPO trong RLHF}
+\textbf{Lách mô hình phần thưởng:} điểm do \( r_{\phi} \) chấm tăng đều trong khi đánh giá của con người đi xuống. Dấu hiệu nhận biết là KL so với \( \pi_{\text{ref}} \) tăng vọt cùng lúc với điểm thưởng. Cách xử lý: theo dõi cặp (điểm thưởng, KL) chứ không chỉ điểm thưởng, và đánh giá định kỳ bằng tập giữ lại do người chấm.\\[4pt]
+\textbf{Sụp chế độ (mode collapse):} chính sách hội tụ về một vài khuôn câu trả lời có điểm cao, entropy giảm mạnh, độ đa dạng biến mất. Thường đi kèm \( \beta \) quá nhỏ hoặc tốc độ học quá lớn.\\[4pt]
+\textbf{Thiên lệch độ dài:} nếu người gán nhãn hơi thích câu trả lời dài, \( r_{\phi} \) sẽ học được thiên lệch đó và PPO khuếch đại nó lên, cho ra các câu trả lời dài dòng mà không thêm thông tin.
+\end{pitfall}
+
+\paragraph{Khi nào nên dùng PPO.}
+PPO vẫn là lựa chọn hợp lý khi có đủ hạ tầng tính toán và một mô hình phần thưởng tốt, khi cần tín hiệu \emph{trực tuyến} (chính sách tự sinh mẫu rồi được chấm ngay, nên không bị lệch phân phối như các phương pháp ngoại tuyến), và khi phần thưởng không rút gọn được về dạng so sánh cặp -- ví dụ phần thưởng kết hợp nhiều tiêu chí có trọng số, hoặc phần thưởng kiểm chứng được bằng chương trình. Ngược lại, nếu chỉ có sẵn một tập dữ liệu so sánh cặp tĩnh và mục tiêu là căn chỉnh văn phong, thì toàn bộ bộ máy critic--GAE--clipping là chi phí thừa; đó chính là lập luận của DPO (mục~\ref{ssec:dpo}) và của RLOO (mục~\ref{ssec:rloo}).
+
+\subsection{InstructGPT: công thức RLHF kinh điển trong thực tế}
+\label{sssec:instructgpt}
+Bài báo InstructGPT \cite{ouyang2022training} là bản mô tả chi tiết đầu tiên về việc áp dụng ba bước trên cho một LLM thực sự (GPT-3), và vẫn là tài liệu tham chiếu chuẩn cho RLHF.
+\begin{itemize}
+	\item \textbf{Dữ liệu:} Prompt được lấy từ API của OpenAI và do người gán nhãn tự viết. Khoảng 13 nghìn prompt cho SFT, 33 nghìn prompt cho huấn luyện RM, và 31 nghìn prompt (không cần nhãn) cho giai đoạn PPO. Khoảng 40 người gán nhãn được tuyển chọn qua bài kiểm tra về khả năng nhận diện nội dung nhạy cảm.
+	\item \textbf{Huấn luyện reward model hiệu quả:} Với mỗi prompt, người gán nhãn xếp hạng $K$ câu trả lời ($K$ từ 4 đến 9), tạo ra $\binom{K}{2}$ cặp so sánh. Tất cả các cặp của \emph{cùng một prompt} được đưa vào như một phần tử batch duy nhất -- nếu xáo trộn các cặp như dữ liệu độc lập, RM nhanh chóng bị quá khớp. RM có 6B tham số (dùng RM 175B không ổn định).
+	\item \textbf{Mục tiêu PPO-ptx:} Để giảm “thuế căn chỉnh” (alignment tax -- hiện tượng mô hình kém đi trên các benchmark NLP công khai sau RLHF), InstructGPT trộn thêm gradient tiền huấn luyện vào mục tiêu RL:
+	\[
+	\text{objective}(\phi) = \mathbb{E}_{(x,y)\sim D_{\pi_\phi^{\text{RL}}}}\Big[r_\theta(x,y) - \beta \log\frac{\pi_\phi^{\text{RL}}(y\mid x)}{\pi^{\text{SFT}}(y\mid x)}\Big] + \gamma\, \mathbb{E}_{x\sim D_{\text{pretrain}}}\Big[\log \pi_\phi^{\text{RL}}(x)\Big].
+	\]
+	\item \textbf{Kết quả nổi bật:} Người gán nhãn \textbf{ưa thích câu trả lời của InstructGPT 1.3B hơn GPT-3 175B} -- mô hình nhỏ hơn hơn 100 lần. InstructGPT trung thực hơn trên TruthfulQA, ít bịa đặt hơn trong các tác vụ đóng, và sinh ít nội dung độc hại hơn khi được yêu cầu cư xử tôn trọng; trong khi PPO-ptx giữ được hiệu năng trên các benchmark công khai.
+\end{itemize}
+Bài học quan trọng nhất: ngoài mặt an toàn, \emph{căn chỉnh còn là cách rẻ nhất để làm mô hình hữu ích hơn}, rẻ hơn nhiều so với việc tăng kích thước mô hình.
+
+\subsection{Constitutional AI (CAI)}
+\label{ssec:cai}
+
+\textbf{Constitutional AI (CAI)} \cite{bai2022constitutional} là hướng tiếp cận do Anthropic đề xuất nhằm giảm sự phụ thuộc vào phản hồi trực tiếp của con người trong giai đoạn căn chỉnh mô hình, đặc biệt khi xử lý các chủ đề độc hại hoặc nhạy cảm.
+
+Thay vì yêu cầu con người gán nhãn hoặc xếp hạng thủ công cho các nội dung có thể gây hại, CAI cho phép mô hình tự học cách hành xử phù hợp dựa trên một tập hợp nguyên tắc nền tảng, gọi là \textbf{hiến pháp (constitution)}.
+
+\paragraph{Ý tưởng cốt lõi.}
+    Truyền đạt cho mô hình những “giá trị” định hướng (như trung thực, an toàn, tôn trọng, công bằng, v.v.) thông qua một văn bản hiến pháp chứa các điều khoản hướng dẫn cách hành xử.
+    Mô hình được huấn luyện để tự phê bình và sửa đổi câu trả lời của chính nó cho phù hợp với các nguyên tắc đó, không cần con người tham gia trực tiếp vào việc chấm điểm.
+
+\paragraph{Cấu trúc của hiến pháp.}
+    Bộ hiến pháp gồm nhiều quy tắc viết bằng ngôn ngữ tự nhiên, ví dụ:
+    \begin{itemize}
+        \item “Không tạo ra hoặc cổ vũ nội dung bạo lực, thù ghét hoặc phân biệt đối xử.”
+        \item “Hãy cung cấp thông tin chính xác và trung thực trong mọi câu trả lời.”
+        \item “Nếu được yêu cầu làm điều gì có thể gây hại, hãy từ chối một cách lịch sự và giải thích lý do.” 
+    \end{itemize}
+    Tập hợp các quy tắc này là bộ luật mà mô hình phải tuân thủ trong quá trình tự điều chỉnh.
+
+\paragraph{Quy trình huấn luyện (RLAIF -- Reinforcement Learning from AI Feedback).}
+    CAI được triển khai theo hai giai đoạn, thường gọi là \textbf{critique-and-revision}:
+
+    \begin{enumerate}
+        \item \textbf{Phê bình (critique).}
+        Cho mô hình SFT hoặc một mô hình ngôn ngữ khác xem một prompt có khả năng gây hại.
+        Yêu cầu mô hình tự đánh giá câu trả lời của chính nó dựa trên các điều khoản trong hiến pháp, ví dụ:
+        \begin{quote}
+            “Dựa trên hiến pháp, hãy giải thích xem trong câu trả lời sau có điểm nào vi phạm các nguyên tắc đạo đức (ví dụ, thiếu tôn trọng hoặc gây hại).” 
+        \end{quote}
+        Mô hình sinh ra một đoạn phê bình (critique).
+
+        \item \textbf{Sửa đổi (revision).}
+        Tiếp theo, mô hình được yêu cầu viết lại câu trả lời, dùng đoạn phê bình ở trên làm hướng dẫn, ví dụ:
+        \begin{quote}
+            “Hãy viết lại câu trả lời sao cho nó tuân thủ các nguyên tắc trong hiến pháp, dựa trên những phê bình vừa nêu.” 
+        \end{quote}
+        Kết quả là ta thu được một cặp câu trả lời: câu gốc $y_{\text{original}}$ và câu đã chỉnh sửa $y_{\text{revised}}$.
+
+        \item \textbf{Huấn luyện.}
+        Cặp dữ liệu $(x, y_{\text{revised}}, y_{\text{original}})$ được xem như một cặp sở thích (revised $>$ original).
+        Tập dữ liệu này có thể được dùng để huấn luyện một reward model như trong RLHF, hoặc để tinh chỉnh trực tiếp bằng DPO, với $y_{\text{revised}}$ là phản hồi được ưa thích hơn.
+    \end{enumerate}
+
+\paragraph{Trực giác.}
+    CAI là một phiên bản mở rộng của RLHF, trong đó người đánh giá được thay bằng một mô hình biết phê bình và chấm điểm dựa trên bộ nguyên tắc.
+    Mô hình tự sinh ra dữ liệu phản hồi (AI feedback) có tính nhất quán cao, nhờ đó giảm rủi ro và chi phí của việc thuê người đánh giá.
+
+\paragraph{Lợi ích.}
+    \begin{itemize}
+        \item Giảm đáng kể sự phụ thuộc vào phản hồi của con người trong các tác vụ nhạy cảm hoặc độc hại.
+        \item Cho phép mở rộng quy mô dữ liệu căn chỉnh nhanh chóng và an toàn.
+        \item Duy trì hành vi “helpful, honest, harmless” mà không cần tiếp xúc với dữ liệu độc hại.
+        \item Tương thích tốt với các kỹ thuật tối ưu hóa hiện đại như DPO hoặc RLAIF.
+    \end{itemize}
+
+\paragraph{Kết quả.}
+    Anthropic đã áp dụng Constitutional AI để huấn luyện các mô hình thuộc họ \textbf{Claude}. Mô hình trở nên an toàn hơn (giảm hành vi độc hại) và tự điều chỉnh được phản hồi trong những tình huống đạo đức phức tạp, mà tính hữu ích không giảm.
+
+\noindent
+Như vậy, trong CAI con người không còn trực tiếp gán nhãn dữ liệu phản hồi; mô hình \emph{tự phê bình} và \emph{tự sửa} theo các nguyên tắc hiến pháp định trước.

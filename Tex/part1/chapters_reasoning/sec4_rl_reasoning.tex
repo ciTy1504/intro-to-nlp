@@ -1,42 +1,10 @@
 % !TEX root = ../main.tex
 % File: part1/chapters_reasoning/sec4_rl_reasoning.tex
 
-\section{Học tăng cường với phần thưởng kiểm chứng được: từ GRPO đến DeepSeek-R1}
+\section{DeepSeek-R1: một mô hình suy luận được huấn luyện như thế nào}
 \label{sec:rl_reasoning}
 
-\subsection{RLVR: phần thưởng kiểm chứng được đổi gì trong bài toán tối ưu}
-\label{ssec:rlvr}
-RLHF (mục~\ref{ssec:rlhf}) giải bài toán
-\[
-\max_{\pi_\theta}\ \mathbb{E}_{x\sim\mathcal{D},\ y\sim\pi_\theta(\cdot\mid x)}\big[r_\phi(x,y)\big]
-\;-\; \beta\,\mathbb{D}_{\mathrm{KL}}\big[\pi_\theta(\cdot\mid x)\,\big\|\,\pi_{\mathrm{ref}}(\cdot\mid x)\big],
-\]
-trong đó $r_\phi$ là một mạng nơ-ron được khớp vào một tập so sánh hữu hạn. Hãy viết $r_\phi = r^\star + \varepsilon_\phi$, với $r^\star$ là đại lượng ta thực sự muốn cực đại và $\varepsilon_\phi$ là sai số xấp xỉ. Bộ tối ưu không phân biệt được hai số hạng; nó cực đại hóa tổng. Sai số $\varepsilon_\phi$ chỉ nhỏ trên vùng phân phối mà $r_\phi$ được khớp, còn nghiệm của $\arg\max$ lại có xu hướng rơi đúng vào nơi $\varepsilon_\phi$ dương và lớn. Vì vậy chính sách càng mạnh thì càng dễ tìm ra những câu trả lời ghi điểm cao theo $r_\phi$ nhưng kém theo $r^\star$ -- đó là \textbf{reward hacking}. Hệ quả: số hạng KL trong công thức trên không phải một chi tiết kỹ thuật mà là điều kiện để bài toán còn ý nghĩa. Hệ số $\beta$ giữ $\pi_\theta$ ở lại vùng mà $r_\phi$ còn đáng tin, tức là một vùng tin cậy quanh dữ liệu đã dùng để huấn luyện reward model.
-
-\paragraph{Thay hàm học được bằng một chương trình.}
-\textbf{RLVR (Reinforcement Learning with Verifiable Rewards)} -- thuật ngữ được đặt trong Tulu 3 \cite{lambert2024tulu3} -- thay $r_\phi$ bằng một hàm không có tham số:
-\[
-r(x,y) \;=\; \alpha \cdot \mathbf{1}\big[\texttt{check}(y,\, a^\star_x)\big],
-\]
-trong đó $a^\star_x$ là đáp án tham chiếu của câu hỏi $x$, $\alpha$ là một hằng số, và \texttt{check} là một chương trình do con người viết: so khớp đáp số trong \texttt{\textbackslash boxed\{\}}, chạy bộ test case, hoặc gọi một trình chứng minh. Ba tính chất của hàm này đổi bản chất bài toán tối ưu.
-\begin{itemize}
-	\item \textbf{Không có tham số nên không có $\varepsilon_\phi$ để khai thác.} Không tồn tại một câu trả lời nào ghi điểm cao theo \texttt{check} mà lại sai theo định nghĩa của \texttt{check}. Toàn bộ lập luận Goodhart ở trên sụp đổ ngay tại gốc.
-	\item \textbf{Không trôi theo phân phối.} Reward model phải được huấn luyện lại định kỳ khi chính sách rời xa dữ liệu cũ, và vòng lặp đó là phần tốn kém nhất của RLHF. Chương trình \texttt{check} cho ra đúng một kết quả ở bước 1 và ở bước 10 nghìn.
-	\item \textbf{Số hạng KL không còn phải gánh vai trò chống hack.} Đây là chỗ thay đổi quan sát được ngay trong công thức: DAPO \cite{yu2025dapo} \emph{bỏ hẳn} số hạng $\beta\,\mathbb{D}_{\mathrm{KL}}$, với lý do khi huấn luyện mô hình suy luận chuỗi dài thì phân phối của mô hình \emph{cần} đi rất xa khỏi mô hình khởi tạo, nên ràng buộc này không cần thiết.
-\end{itemize}
-Nói cách khác, RLVR không chỉ đổi nguồn tín hiệu; nó cho phép tháo bỏ chính ràng buộc vốn giới hạn mức dịch chuyển mà RLHF được phép thực hiện.
-
-\begin{pitfall}{RLVR loại bỏ reward hacking ở đâu, và không loại bỏ ở đâu}
-Phần thưởng là chính xác \emph{đối với phép kiểm tra}, không phải đối với điều ta muốn. Bốn kênh khai thác vẫn còn nguyên.
-\begin{enumerate}
-	\item \textbf{Verifier có dương tính giả.} So khớp đáp số chấp nhận một lời giải đi tới con số đúng bằng suy luận sai, bằng đoán, hoặc bằng ghi nhớ đáp án từ dữ liệu tiền huấn luyện. Bộ test case chấp nhận đoạn mã đặc biệt hóa đúng các test đó. Tối ưu đủ lâu, chính sách sẽ hội tụ vào các lối tắt này vì chúng rẻ hơn lời giải thật.
-	\item \textbf{Phần thưởng chỉ đặt ở kết quả nên chuỗi suy nghĩ không bị ràng buộc gì.} R1-Zero trộn lẫn ngôn ngữ chính vì không có gì trong $r$ phạt điều đó. Cách DeepSeek chữa là \emph{thêm} một số hạng thưởng định hình -- tỷ lệ từ thuộc ngôn ngữ mục tiêu -- tức là quay lại với reward shaping thủ công, và phải trả giá bằng một phần hiệu năng.
-	\item \textbf{Cắt cụt vì vượt độ dài tạo ra nhiễu nhãn.} Một lời giải đang đi đúng hướng nhưng bị cắt ở trần độ dài nhận phần thưởng 0. Tín hiệu này không nói ``lời giải sai'' mà nói ``ngân sách hết''. DAPO coi đây là nhiễu phần thưởng và vá bằng một hàm phạt có độ dốc (mục~\ref{ssec:grpo_variants}).
-	\item \textbf{Bản thân quy tắc cập nhật có thể sinh ra lợi ích mà không cần thông tin nào trong phần thưởng.} Huấn luyện Qwen2.5-Math-7B bằng GRPO với phần thưởng \emph{ngẫu nhiên} vẫn nâng MATH-500 lên 21.4 điểm, so với 29.1 điểm khi dùng đáp án thật \cite{shao2025spurious}. Khi đó ``phần thưởng kiểm chứng được'' không phải là thứ đang dạy mô hình. Đây là kênh nguy hiểm nhất vì nó không để lại dấu vết trong đường cong phần thưởng; mục~\ref{ssec:rl_capability_debate} bàn cách đối chứng.
-\end{enumerate}
-\end{pitfall}
-
-Thuật toán tối ưu phổ biến nhất cho RLVR là \textbf{GRPO} (mục~\ref{ssec:grpo}); họ biến thể của nó được mổ xẻ ở mục~\ref{ssec:grpo_variants}.
+Chương~\ref{chap:post_training} đã dựng toàn bộ bộ máy: phần thưởng kiểm chứng được (mục~\ref{ssec:rlvr}), thuật toán GRPO (mục~\ref{ssec:grpo}) và họ biến thể sau nó (mục~\ref{ssec:grpo_variants}). Mục này dùng chúng để đọc một trường hợp cụ thể -- mô hình suy luận mở đầu tiên được mô tả đầy đủ công thức huấn luyện.
 
 \subsection{DeepSeek-R1-Zero: suy luận “nảy sinh” từ học tăng cường thuần túy}
 \label{ssec:r1_zero}
@@ -101,8 +69,18 @@ Cross-entropy trên trace của thầy không có cơ chế chặn này. Gradien
 \paragraph{Hệ quả thực hành và giới hạn.}
 Khi đã có sẵn một mô hình thầy mạnh và ngân sách cố định, chưng cất gần như luôn thắng RL chạy thẳng trên mô hình nhỏ. Nhưng trò bị chặn trên bởi thầy: chưng cất không tạo ra năng lực mà thầy không có, nên để đẩy biên hiện tại vẫn cần mô hình nền mạnh cộng RL quy mô lớn -- chính là quy trình tạo ra người thầy. Hai hướng cũng không loại trừ nhau. Tinh chỉnh trước để nâng $\pi_\theta$ lên đủ cao cho $k > 0$ trên nhiều câu hỏi hơn, rồi mới chạy RL, chính là lý do R1 có giai đoạn khởi động lạnh. Đọc theo cùng khung này, dynamic sampling của DAPO không chữa được vấn đề $k = 0$; nó chỉ ngừng trả tiền cho nó.
 
-Mối liên hệ giữa chưng cất và RL được phân tích tiếp ở chương~\ref{chap:efficiency}; câu hỏi liệu RL có mở rộng được năng lực hay không được bàn ở mục~\ref{ssec:rl_capability_debate}.
+Mối liên hệ giữa chưng cất và học tăng cường được phân tích tiếp ở mục~\ref{sec:llm_distillation} và mục~\ref{sec:on_policy_distillation}; câu hỏi liệu học tăng cường có mở rộng được năng lực hay không được bàn ở mục~\ref{ssec:rl_capability_debate}.
 
 \paragraph{Những thử nghiệm không thành công.} Nhóm DeepSeek cũng chia sẻ thất bại: (1) \textbf{PRM} gặp các vấn đề đã nêu ở mục~\ref{sec:verifiers}; (2) \textbf{Monte Carlo Tree Search} kiểu AlphaGo khó mở rộng vì không gian sinh token lớn hơn nhiều so với cờ vây và mô hình giá trị chi tiết rất khó huấn luyện.
 
-Các cải tiến thuật toán xuất hiện sau R1 -- và câu hỏi liệu chúng có đang mở rộng năng lực của mô hình hay không -- là nội dung của mục~\ref{sec:rl_algorithms}.
+Các cải tiến thuật toán xuất hiện sau R1 -- và câu hỏi liệu chúng có đang mở rộng năng lực của mô hình hay không -- đã được trình bày ở mục~\ref{sec:rl_algorithms} và mục~\ref{sec:rl_limits}.
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+	\textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Chương này đi từ các verifier kiểm chứng lời giải (ORM, PRM), qua các quy luật mở rộng tính toán lúc suy luận, đến các phương pháp tự học suy luận (STaR, ReST$^{EM}$, Quiet-STaR), rồi khép lại bằng DeepSeek-R1 -- trường hợp đầu tiên mà toàn bộ công thức huấn luyện một mô hình suy luận được mô tả công khai. Điểm chung của cả chương là một trục mở rộng thứ hai bên cạnh số tham số: lượng tính toán mà mô hình được phép tiêu lúc trả lời. Nhưng dù suy luận giỏi đến đâu, mô hình vẫn chỉ biết những gì đã nằm trong trọng số của nó; đưa tri thức cập nhật từ bên ngoài vào là chủ đề của chương tiếp theo về tìm kiếm và sinh tăng cường.}

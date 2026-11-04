@@ -5,7 +5,7 @@
 \section{Huấn luyện hậu kỳ với TRL: SFT, DPO và GRPO}
 \label{sec:posttraining_trl}
 
-Phần 1 đã trình bày lý thuyết của tinh chỉnh có giám sát (chương~\ref{chap:finetuning_alignment}), căn chỉnh theo sở thích (mục~\ref{sec:alignment_methods}) và học tăng cường cho suy luận (chương~\ref{chap:reasoning}). Trong thực tế, cả ba giai đoạn này đều có thể được thực hiện với thư viện \textbf{TRL} (Transformer Reinforcement Learning) của Hugging Face -- được xây dựng trên \texttt{transformers}, \texttt{accelerate} và \texttt{peft}, và tích hợp vLLM để sinh văn bản nhanh trong quá trình RL.
+Phần 1 đã trình bày lý thuyết của tinh chỉnh có giám sát (chương~\ref{chap:finetuning_alignment}), căn chỉnh theo sở thích (chương~\ref{chap:post_training}) và học tăng cường cho suy luận (chương~\ref{chap:reasoning}). Trong thực tế, cả ba giai đoạn này đều có thể được thực hiện với thư viện \textbf{TRL} (Transformer Reinforcement Learning) của Hugging Face -- được xây dựng trên \texttt{transformers}, \texttt{accelerate} và \texttt{peft}, và tích hợp vLLM để sinh văn bản nhanh trong quá trình RL.
 
 \begin{checklist}{Quy trình hậu huấn luyện điển hình}
 \textbf{Mô hình nền} $\xrightarrow{\text{SFT}}$ \textbf{mô hình tuân theo chỉ dẫn} $\xrightarrow{\text{DPO/ORPO/KTO}}$ \textbf{mô hình được căn chỉnh} $\xrightarrow{\text{GRPO + phần thưởng kiểm chứng được}}$ \textbf{mô hình suy luận tốt hơn trên toán/mã}.
@@ -131,7 +131,7 @@ trainer = DPOTrainer(
 trainer.train()
 \end{minted}
 \end{example}
-Khi không truyền \texttt{ref\_model}, TRL dùng chính mô hình ở trạng thái trước khi huấn luyện làm mô hình tham chiếu $\pi_{\text{ref}}$ (với LoRA, chỉ cần tắt adapter là có mô hình tham chiếu, không tốn thêm bộ nhớ). Các chỉ số cần theo dõi: \texttt{rewards/margins} (khoảng cách phần thưởng ngầm giữa câu được chọn và bị loại -- nên tăng dần) và \texttt{rewards/accuracies}. TRL cũng cung cấp \texttt{KTOTrainer} cho dữ liệu nhãn nhị phân và hỗ trợ ORPO (mục~\ref{sec:alignment_methods}).
+Khi không truyền \texttt{ref\_model}, TRL dùng chính mô hình ở trạng thái trước khi huấn luyện làm mô hình tham chiếu $\pi_{\text{ref}}$ (với LoRA, chỉ cần tắt adapter là có mô hình tham chiếu, không tốn thêm bộ nhớ). Các chỉ số cần theo dõi: \texttt{rewards/margins} (khoảng cách phần thưởng ngầm giữa câu được chọn và bị loại -- nên tăng dần) và \texttt{rewards/accuracies}. TRL cũng cung cấp \texttt{KTOTrainer} cho dữ liệu nhãn nhị phân và hỗ trợ ORPO (mục~\ref{sec:direct_preference}).
 
 \subsection{Bước 3 -- Học tăng cường với GRPO và phần thưởng kiểm chứng được}
 \label{ssec:trl_grpo}

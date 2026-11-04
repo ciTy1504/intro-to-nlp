@@ -1,0 +1,121 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_rl/sec9_offpolicy_distill.tex
+% Gộp hai chỗ trước đây cùng nói về chưng cất: mục nhập môn trong
+% chapters_part7/chap7_1.tex và mục chuyên sâu trong
+% chapters_efficiency/sec2_llm_distillation.tex.
+
+\section{Chưng cất off-policy: học từ đầu ra có sẵn của thầy}
+\label{sec:llm_distillation}
+
+Ba mục vừa rồi lấy tín hiệu học từ con người (sở thích) hoặc từ một chương trình (phần thưởng kiểm chứng được). Còn một nguồn thứ ba, và trong thực tế nó là nguồn phổ biến nhất: \emph{một mô hình khác đã giỏi sẵn}. Nguồn này nằm ở hai ô bên phải của bảng~\ref{tab:post_training_quadrants}, vì một mô hình thầy cho ra cả phân phối trên từ vựng ở mỗi vị trí, tức tín hiệu dày. Mục này đi ô trên bên phải -- chuỗi lấy từ kho có sẵn; mục~\ref{sec:on_policy_distillation} đi ô dưới bên phải.
+
+Với mô hình tự hồi quy, ``nhãn'' không còn là một lớp mà là cả một \emph{chuỗi} token sinh ra tuần tự, và mỗi token đã sinh lại là điều kiện cho mọi token sau nó. Khác biệt ấy sinh ra ba câu hỏi thiết kế mà chưng cất cho bài toán phân loại không hề có:
+\begin{enumerate}
+	\item \textbf{Trò học trên những tiền tố nào?} Tiền tố lấy từ văn bản người viết, từ văn bản thầy sinh ra, hay từ chính văn bản trò đang sinh ra trong lúc huấn luyện.
+	\item \textbf{Khớp hai phân phối theo độ đo nào?} Tại một tiền tố cho trước, thầy và trò đều cho một phân phối trên toàn từ vựng; so sánh chúng bằng KL xuôi, KL ngược, hay một thỏa hiệp giữa hai chiều.
+	\item \textbf{Chưng cất cái gì?} Chỉ đáp án cuối cùng, hay cả chuỗi suy luận dẫn tới đáp án.
+\end{enumerate}
+
+Câu hỏi thứ nhất là trục nguồn dữ liệu của mục~\ref{sec:post_training_axes}; câu hỏi thứ hai là nội dung của mục~\ref{sec:divergences}. Mục này trả lời câu hỏi thứ ba, và trả lời hai câu đầu theo phương án rẻ nhất: tiền tố lấy từ kho cố định, phân kỳ là KL xuôi.
+
+\subsection{Chưng cất tri thức kinh điển: nhãn mềm và nhiệt độ}
+\label{ssec:knowledge_distillation}
+
+Các mô hình ngôn ngữ lớn (LLM) có chi phí tính toán cao cả khi huấn luyện và khi suy luận. Chưng cất tri thức chuyển kiến thức từ một mô hình lớn, phức tạp sang một mô hình nhỏ hơn, nhanh hơn mà vẫn giữ được phần lớn hiệu năng.
+
+\paragraph{Trực giác cốt lõi: thầy dạy trò.}
+Ý tưởng này được Hinton và cộng sự \cite{hinton2015distilling} phổ biến năm 2015. Có hai mạng nơ-ron: một mạng rất lớn, phức tạp nhưng chính xác, gọi là \textbf{mô hình thầy (teacher model)}, và một mạng nhỏ hơn, nhanh hơn nhiều, gọi là \textbf{mô hình trò (student model)}. Thay vì huấn luyện mô hình trò từ đầu trên dữ liệu gốc, chưng cất tri thức huấn luyện nó bắt chước hành vi của mô hình thầy.
+
+\begin{keyidea}{Nhãn mềm của mô hình thầy mang nhiều thông tin hơn nhãn cứng}
+	Ngoài các nhãn cứng (hard labels) của dữ liệu (ví dụ: “tích cực” hoặc “tiêu cực”), mô hình trò còn được dạy bắt chước \textbf{phân phối xác suất đầu ra “mềm” (soft probabilities)} của mô hình thầy. Phân phối mềm cho biết mô hình thầy khái quát hóa và đánh giá mức tương đồng giữa các lớp như thế nào; phần thông tin này được gọi là \emph{dark knowledge}.
+\end{keyidea}
+
+Ví dụ, khi phân loại cảm xúc cho câu “Bộ phim này cũng được.”, một mô hình thầy có thể gán xác suất 0.7 cho “Trung tính”, 0.25 cho “Tích cực” và 0.05 cho “Tiêu cực”. Phân phối này cho biết câu gần với “Tích cực” hơn là với “Tiêu cực”, một tín hiệu huấn luyện giàu thông tin hơn nhãn cứng “Trung tính”.
+
+\paragraph{Nhãn mềm mang gì mà nhãn cứng không có.}
+Với một nhãn cứng dạng one-hot, cross-entropy chỉ nhìn vào xác suất mà mô hình gán cho lớp đúng. Mọi cách phân bổ phần xác suất còn lại trên các lớp sai đều cho cùng một giá trị mất mát: hàm mất mát không phân biệt được một mô hình cho rằng ảnh con số 2 hơi giống số 3, với một mô hình cho rằng nó hơi giống con bò. Nhưng thầy thì phân biệt được, và nó ghi điều đó vào các xác suất rất nhỏ ở đuôi phân phối. Hinton và cộng sự \cite{hinton2015distilling} phát biểu đúng ý này: ``The relative probabilities of incorrect answers tell us a lot about how the cumbersome model tends to generalize''.
+
+Nói cách khác, nhãn mềm không chỉ nói \emph{đáp án là gì}; nó còn nói \emph{cấu trúc tương tự giữa các đáp án theo cách nhìn của thầy}. Đó là một ràng buộc hình học lên không gian biểu diễn mà nhãn cứng hoàn toàn không có. Bài báo gốc gắn thẳng điều này với hiệu quả dữ liệu: ``When the soft targets have high entropy, they provide much more information per training case than hard targets'', và phương sai của gradient giữa các mẫu cũng nhỏ hơn. Đây chính là bản gốc của lập luận ``tín hiệu dày'' ở trục thứ hai trong bảng~\ref{tab:post_training_quadrants}: cùng một số mẫu, nhãn mềm chở nhiều thông tin hơn hẳn.
+
+\paragraph{Vai trò của nhiệt độ $T$.} Vấn đề là với một thầy đã hội tụ tốt, chính những xác suất mang thông tin ấy lại nhỏ cỡ $10^{-6}$ và gần như không đóng góp gì vào mất mát. Nhiệt độ sinh ra để kéo chúng lên mức nhìn thấy được:
+\[
+p^{(T)}_i = \frac{\exp(z_i/T)}{\sum_j \exp(z_j/T)} .
+\]
+Với $T=1$ ta có softmax thường. Tăng $T$ làm phân phối phẳng ra, nâng tỉ trọng tương đối của các lớp đuôi, nên gradient bắt đầu ``nghe thấy'' thông tin ở đuôi. Thầy và trò phải dùng \emph{cùng một} $T$ khi tính mất mát mềm; lúc suy luận thì trò quay về $T=1$.
+
+\paragraph{Vì sao phải nhân lại $T^2$.} Đạo hàm của mất mát mềm theo logit $z_i$ của trò có dạng $\tfrac{1}{T}\big(q^{(T)}_i - p^{(T)}_i\big)$, và bản thân hiệu trong ngoặc cũng co lại theo $1/T$ khi $T$ lớn, vì cả hai phân phối cùng phẳng dần về phân phối đều. Hệ quả là độ lớn gradient của thành phần mềm tỉ lệ với $1/T^2$. Bài báo gốc nói thẳng: ``Since the magnitudes of the gradients produced by the soft targets scale as $1/T^2$'' nên ``it is important to multiply them by $T^2$ when using both hard and soft targets''. Mất mát kết hợp vì vậy có dạng
+\[
+\mathcal{L} = (1-\alpha)\,\mathcal{L}_{\mathrm{CE}}\big(y,\, q^{(1)}\big)
+ \;+\; \alpha\,T^2\,\mathcal{L}_{\mathrm{soft}}\big(p^{(T)},\, q^{(T)}\big).
+\]
+Lý do thực dụng của hệ số $T^2$: không có nó, mỗi lần đổi $T$ là tỉ lệ đóng góp giữa hai thành phần lại đổi theo, và siêu tham số $\alpha$ phải dò lại từ đầu. Nhân $T^2$ giữ cho hai thành phần cân bằng xấp xỉ như nhau khi $T$ thay đổi, nên $T$ và $\alpha$ có thể dò gần như độc lập.
+
+Viết lại cho khớp cách trình bày quen thuộc trong tài liệu, hàm mất mát kết hợp là
+\begin{equation}
+	\mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{cứng}} + (1-\alpha) \cdot T^2 \cdot \mathcal{L}_{\text{mềm}},
+	\label{eq:distillation_loss}
+\end{equation}
+trong đó $\mathcal{L}_{\text{cứng}}$ là cross-entropy giữa dự đoán của trò tại $T = 1$ và nhãn thật, còn $\mathcal{L}_{\text{mềm}}$ là phân kỳ KL giữa hai phân phối mềm của thầy và trò, cả hai tính tại cùng nhiệt độ $T$. Siêu tham số $\alpha$ cân bằng giữa học từ dữ liệu thật và học từ thầy.
+
+\begin{center}
+	\bookimage[0.8\textwidth]{knowledge_distillation}{Sơ đồ: cùng một mẫu dữ liệu đầu vào đi vào hai nhánh. Nhánh trên là mô hình thầy đã huấn luyện, cho ra logits rồi qua softmax với nhiệt độ T để thành nhãn mềm. Nhánh dưới là mô hình trò, cho ra hai đầu: một đầu softmax với T=1 so với nhãn thật để tính Hard Loss, một đầu softmax với cùng nhiệt độ T so với nhãn mềm của mô hình thầy để tính Soft Loss. Hai mất mát được cộng có trọng số thành mất mát tổng dùng để cập nhật mô hình trò.}
+	\captionof{figure}{Quy trình chưng cất tri thức. Mô hình trò học đồng thời từ nhãn cứng của dữ liệu (Hard Loss) và nhãn mềm được tạo ra bởi mô hình thầy (Soft Loss).}
+	\label{fig:knowledge_distillation}
+\end{center}
+
+\paragraph{Vài biến thể cần biết tên.}
+\begin{itemize}
+	\item \textbf{DistilBERT:} Dùng kỹ thuật này để tạo ra một phiên bản BERT nhỏ hơn 40\% và nhanh hơn 60\%, trong khi vẫn giữ lại 97\% hiệu năng trên benchmark GLUE.
+	\item \textbf{Chưng cất đặc trưng (Feature Distillation):} Thay vì chỉ bắt chước đầu ra cuối cùng, mô hình trò còn được huấn luyện để bắt chước các biểu diễn ở các lớp trung gian (ví dụ: các hidden state hoặc attention map) của mô hình thầy.
+	\item \textbf{Tự chưng cất (Self-Distillation):} Mô hình thầy và mô hình trò là cùng một kiến trúc. Mô hình được huấn luyện để đầu ra của nó ở các epoch sau chưng cất kiến thức từ chính nó ở các epoch trước.
+\end{itemize}
+Biến thể thứ ba trong danh sách trên -- tự chưng cất -- năm 2026 đã phát triển thành một nhánh riêng với cơ chế khác hẳn, và được trình bày ở mục~\ref{sec:self_distillation}.
+
+\subsection{Từ nhãn mềm đến chuỗi: word-level KD và Seq-KD}
+\label{ssec:seq_kd}
+
+\paragraph{Word-level KD: áp thẳng ý tưởng trên vào từng vị trí.} Với mô hình chuỗi, cách chuyển trực tiếp nhất là coi mỗi vị trí trong câu là một bài phân loại riêng, trên tiền tố \emph{lấy từ dữ liệu huấn luyện}:
+\[
+\mathcal{L}_{\text{word}} = \sum_{t} \mathrm{KL}\Big(p_T(\cdot\mid y_{<t}, x)\,\Big\|\, q_S(\cdot\mid y_{<t}, x)\Big).
+\]
+Mất mát này dày tối đa: mỗi token cho một phân phối đầy đủ trên từ vựng. Nhưng nó đòi hai điều kiện ngặt -- thầy và trò phải dùng chung bộ tách token, và ta phải có quyền đọc logit của thầy.
+
+\paragraph{Sequence-level KD \cite{kim2016sequence}.} Kim và Rush chỉ ra rằng đại lượng ta thật sự quan tâm không phải phân phối tại từng vị trí mà phân phối trên \emph{cả chuỗi}:
+\[
+\mathcal{L}_{\text{seq}} = -\sum_{\mathbf{t}\in\mathcal{T}} q(\mathbf{t}\mid \mathbf{s})\,\log p(\mathbf{t}\mid \mathbf{s}),
+\]
+trong đó $\mathcal{T}$ là tập \emph{mọi} chuỗi có thể. Bài báo nhấn mạnh rằng đây là một đại lượng khác hẳn mất mát mức từ, vì ``the sum is over an exponential number of terms''. Tổng đó không tính được, nên các tác giả xấp xỉ bằng cách thay phân phối của thầy bởi \emph{mode} của nó -- và mode thì tìm gần đúng được bằng beam search:
+\[
+\mathcal{L}_{\text{seq}} \approx -\log p(\mathbf{t} = \hat{\mathbf{y}} \mid \mathbf{s}),
+\qquad \hat{\mathbf{y}} = \text{beam-search}(q,\mathbf{s}).
+\]
+Biện minh cho xấp xỉ này là một giả thiết thực nghiệm về dịch máy: hiệu quả đã biết của beam search khiến các tác giả tin rằng phần lớn khối lượng xác suất của $q$ dồn vào một chuỗi đầu ra duy nhất. Bài báo còn đề xuất một biến thể trung gian, \emph{nội suy mức chuỗi}, trộn mất mát trên câu đích thật với mất mát trên chuỗi trong beam gần câu đích nhất theo BLEU mức câu. Kết quả: mô hình trò chạy nhanh gấp mười lần thầy với mức giảm chất lượng nhỏ, hơn mô hình huấn luyện không chưng cất 4,2 BLEU khi giải mã tham lam và 1,7 BLEU khi dùng beam search; cắt tỉa trọng số thêm cho mô hình ít hơn thầy 13 lần tham số với mức giảm 0,4 BLEU.
+
+\paragraph{Vì sao Seq-KD là nền của ``SFT trên đầu ra của thầy''.} Hãy đọc lại công thức xấp xỉ ở trên. Sau khi thay phân phối của thầy bằng mode của nó, chưng cất mức chuỗi \emph{chính là} cross-entropy thông thường trên một tập văn bản do thầy sinh ra. Không cần logit của thầy, không cần chạy thầy trong vòng huấn luyện, không cần chung bộ tách token, không cần chung kiến trúc. Chỉ cần văn bản. Đó là lý do mọi quy trình dạng ``sinh dữ liệu bằng mô hình lớn rồi SFT mô hình nhỏ trên dữ liệu đó'' -- Alpaca, hay 800 nghìn mẫu chưng cất từ DeepSeek-R1 ở mục~\ref{ssec:r1_distill} -- đều là Seq-KD dưới một cái tên khác, và là lý do nhánh này phổ biến hơn hẳn mọi nhánh còn lại.
+
+Cái mất cũng nằm ngay trong xấp xỉ ấy: ta vứt bỏ toàn bộ phần phân phối nằm ngoài mode. Thầy có thể biết năm cách diễn đạt đều đúng; trò chỉ nhìn thấy một. Với dịch máy, giả thiết ``phần lớn khối lượng dồn vào một chuỗi'' còn hợp lý. Với hội thoại mở, với văn bản sáng tạo, hay với suy luận nhiều bước mà nhiều lối đi khác nhau cùng dẫn tới đáp án đúng, giả thiết đó yếu đi rõ rệt.
+
+\subsection{Chưng cất quá trình suy luận}
+\label{ssec:rationale_distillation}
+
+Hai mục trên bàn về \emph{cách} khớp phân phối. Mục này bàn về câu hỏi thiết kế thứ ba: chưng cất \emph{cái gì}. Nếu thầy giải được bài toán nhờ một chuỗi suy luận dài, thì học thuộc đáp án cuối là bỏ phí gần hết thông tin mà thầy đã tạo ra.
+
+\paragraph{Distilling Step-by-Step \cite{hsieh2023distilling}.} Thay vì chỉ học đáp án, trò học cả \emph{lý giải} (rationale) do LLM sinh ra bằng Chain-of-Thought, dưới dạng \textbf{học đa nhiệm}:
+\[
+\mathcal{L} = \mathcal{L}_{\text{label}} + \lambda\, \mathcal{L}_{\text{rationale}},
+\]
+trong đó cùng một đầu vào được gắn tiền tố \texttt{[label]} để dự đoán đáp án và \texttt{[rationale]} để sinh lý giải. Khi suy luận chỉ cần chạy nhiệm vụ \texttt{[label]}, nên không tốn thêm chi phí sinh lý giải. Lý giải ở đây đóng vai một dạng \emph{giám sát bổ sung giàu thông tin}: nó buộc mô hình nhỏ phải mã hóa được các bước trung gian chứ không chỉ ghi nhớ ánh xạ từ câu hỏi sang đáp án, nên cùng một lượng dữ liệu cho nhiều ràng buộc hơn. Mô hình T5 770M vượt PaLM 540B dùng few-shot prompting trên ANLI chỉ với 80\% dữ liệu huấn luyện, trong khi nhỏ hơn 700 lần.
+
+\paragraph{KARD: chưng cất suy luận có tăng cường tri thức \cite{kang2023kard}.} Với các tác vụ \emph{cần nhiều kiến thức} (y khoa, câu hỏi đa bước), mô hình nhỏ không đủ dung lượng tham số để ghi nhớ mọi kiến thức mà lý giải của thầy dựa vào. Học thuộc lý giải khi đó dạy trò bắt chước hình thức lập luận mà không có dữ kiện để lập luận. KARD kết hợp chưng cất lý giải với truy xuất:
+\begin{itemize}
+	\item Tinh chỉnh trò sinh lý giải của LLM, \emph{kèm theo} các tài liệu được truy xuất từ kho tri thức bên ngoài.
+	\item Huấn luyện một \textbf{bộ xếp hạng lại (reranker)} nơ-ron để tìm các tài liệu thực sự liên quan tới việc sinh lý giải, chứ không chỉ liên quan tới câu hỏi.
+\end{itemize}
+Kết quả: mô hình T5 250M tham số dùng KARD vượt các mô hình 3B (lớn hơn 12 lần) được tinh chỉnh thông thường trên MedQA-USMLE và StrategyQA. Bài học đáng nhớ hơn con số: \emph{tách kiến thức (đưa vào truy xuất) khỏi kỹ năng suy luận (chưng cất vào tham số)}, tức tinh thần của RAG (chương~\ref{chap:rag}) áp dụng cho mô hình nhỏ.
+
+\subsection{Chưng cất kết hợp học tăng cường: RLAD}
+\label{ssec:rlad}
+
+Ở mục~\ref{ssec:r1_distill}, chúng ta thấy chưng cất từ mô hình suy luận lớn hiệu quả hơn RL trực tiếp trên mô hình nhỏ. Đọc theo bảng~\ref{tab:post_training_quadrants}, câu hỏi tiếp theo là làm sao dùng cùng lúc hai nguồn tín hiệu ở hai ô khác nhau: phần thưởng thưa nhưng đúng đắn của bộ kiểm chứng, và tín hiệu dày nhưng bị chặn trên của thầy. Cách đơn giản nhất là thêm một số hạng KL giữa trò và thầy vào mục tiêu RL. Zhang và cộng sự \cite{zhang2026rlad} chỉ ra hai vấn đề của cách này: dữ liệu của thầy bị \textbf{lệch phân phối} so với các chuỗi do trò sinh ra trong RL, và số hạng KL \textbf{xung đột mục tiêu} với việc cực đại phần thưởng -- kéo trò về phía thầy ngay cả ở những chỗ mà làm vậy khiến phần thưởng giảm.
+
+\textbf{RLAD (RL-Aware Distillation)} đề xuất \emph{bắt chước có chọn lọc}: chỉ kéo trò về phía thầy khi điều đó thực sự cải thiện bước cập nhật chính sách hiện tại. Thành phần chính, \textbf{Trust Region Ratio Distillation (TRRD)}, thay số hạng KL thầy--trò bằng một mục tiêu dạng tỷ số xác suất kiểu PPO/GRPO, được neo vào một \emph{hỗn hợp giữa thầy và chính sách cũ}. Nhờ vậy việc chưng cất vừa nhận biết advantage (chỉ học từ thầy ở nơi có lợi) vừa bị giới hạn trong vùng tin cậy (không nhảy quá xa khỏi chính sách hiện tại). Trên các benchmark suy luận logic và toán học, RLAD vượt cả chưng cất ngoại tuyến, GRPO tiêu chuẩn, và chưng cất on-policy dựa trên KL.

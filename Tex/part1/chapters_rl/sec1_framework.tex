@@ -1,0 +1,100 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_rl/sec1_framework.tex
+% Khung hai trục + lệch phân phối. Phần lớn chuyển từ
+% chapters_efficiency/sec2_llm_distillation.tex, nơi nó bị chôn trong một mục
+% về chưng cất dù nó là khung chung của cả chương.
+
+\section{Hai trục của hậu huấn luyện}
+\label{sec:post_training_axes}
+
+Danh sách các phương pháp hậu huấn luyện dài và vẫn đang dài thêm: SFT, RLHF, DPO, IPO, KTO, ORPO, SimPO, RLOO, PPO, GRPO, DAPO, GSPO, Seq-KD, GKD, chưng cất on-policy, tự chưng cất. Học thuộc danh sách ấy gần như vô dụng, vì mỗi năm nó lại đổi. Thứ không đổi là \emph{hai câu hỏi} mà bất kỳ thuật toán nào trong danh sách cũng phải trả lời, và hai câu hỏi ấy đủ để xếp toàn bộ danh sách vào bốn ô.
+
+\subsection{Hai câu hỏi, bốn ô}
+\label{ssec:post_training_quadrants}
+
+Mọi thuật toán hậu huấn luyện đều nhận vào hai thứ: một tập chuỗi để học, và một tín hiệu nói chuỗi đó tốt hay xấu ở chỗ nào. Hai thứ ấy tạo thành hai trục phân loại độc lập.
+
+\paragraph{Trục thứ nhất: nguồn dữ liệu.} Chuỗi mà ta tính mất mát trên đó được lấy từ phân phối nào?
+\begin{itemize}
+	\item \textbf{Off-policy.} Chuỗi đến từ một kho cố định, có sẵn trước khi vòng huấn luyện bắt đầu: văn bản người viết, dữ liệu chỉ dẫn, hoặc đầu ra do một mô hình thầy sinh ra từ trước. Tập dữ liệu không đổi khi tham số của mô hình đang học đổi.
+	\item \textbf{On-policy.} Chuỗi do \emph{chính mô hình đang được huấn luyện} sinh ra, tại thời điểm cập nhật hiện tại. Mỗi bước gradient đổi tham số, nên phân phối dữ liệu của bước sau cũng khác bước trước.
+\end{itemize}
+
+Hai chữ này mượn từ học tăng cường, nơi \emph{policy} (chính sách) là quy tắc chọn hành động. Với mô hình ngôn ngữ, chính sách là bản thân mô hình: trạng thái là tiền tố đã sinh, hành động là token tiếp theo. ``On-policy'' vì vậy có nghĩa đen là \emph{dữ liệu được sinh bởi đúng chính sách đang được cập nhật}, và tính chất này mất đi ngay khi ta đi một bước gradient. Đó là lý do mọi thuật toán on-policy đều phải sinh văn bản \emph{trong} vòng huấn luyện, và cũng là lý do chúng đắt.
+
+\paragraph{Trục thứ hai: độ dày tín hiệu.} Trên một chuỗi dài $T$ token, ta nhận được bao nhiêu con số để học?
+\begin{itemize}
+	\item \textbf{Tín hiệu thưa (sparse).} Một con số cho cả chuỗi: phần thưởng đúng/sai của bộ kiểm chứng, điểm của mô hình thưởng, hoặc một nhãn ``câu A tốt hơn câu B''.
+	\item \textbf{Tín hiệu dày (dense).} Một con số cho \emph{mỗi} token: cross-entropy tại từng vị trí, hoặc phân kỳ giữa hai phân phối tại từng vị trí.
+\end{itemize}
+
+Cắt hai trục này cho bốn ô, và bốn ô ấy chính là bốn họ phương pháp của cả chương (bảng~\ref{tab:post_training_quadrants}).
+
+\begin{table}[H]
+\centering\small
+\caption{Bốn ô của hậu huấn luyện, cắt theo nguồn dữ liệu và độ dày tín hiệu.}
+\label{tab:post_training_quadrants}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.3cm}XX@{}}
+\toprule
+ & \textbf{Tín hiệu thưa} & \textbf{Tín hiệu dày} \\
+\midrule
+\textbf{Off-policy} & Tối ưu sở thích ngoại tuyến: DPO và họ của nó (mục~\ref{sec:direct_preference}). Một cặp (được chọn, bị loại) đã ghi sẵn, một tín hiệu cho cả câu trả lời. & SFT và chưng cất off-policy (mục~\ref{sec:llm_distillation}): cross-entropy hoặc phân kỳ KL theo từng token trên văn bản cố định. \\
+\addlinespace
+\textbf{On-policy} & Học tăng cường: PPO (mục~\ref{ssec:rlhf}), GRPO (mục~\ref{ssec:grpo}). Mô hình tự sinh rollout, nhận một phần thưởng cho cả rollout. & \textbf{Chưng cất on-policy} (mục~\ref{sec:on_policy_distillation}): mô hình tự sinh rollout, thầy chấm từng token. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Hai trục giải quyết hai vấn đề khác nhau, nên không thay thế được cho nhau.} Trục nguồn dữ liệu quyết định ta có đang tối ưu \emph{đúng đại lượng} hay không. Một hàm mất mát nhỏ trên phân phối $A$ không bảo đảm điều gì về hành vi trên phân phối $B$; mà lúc chạy thật, mô hình luôn đứng trên phân phối của chính nó, không phải trên phân phối của dữ liệu huấn luyện. Trục độ dày quyết định ta học \emph{nhanh} đến đâu: nó đếm số bit thông tin thu được trên mỗi lượt sinh. Một phần thưởng nhị phân cho một chuỗi suy luận dài mười nghìn token là một bit cho mười nghìn quyết định; muốn biết quyết định nào gây ra cái sai, thuật toán phải suy ra từ rất nhiều mẫu khác nhau.
+
+Vì thế ba ô đầu đều hy sinh một thứ. SFT và chưng cất off-policy có tín hiệu dày nhưng đo trên phân phối sai. Học tăng cường đo trên đúng phân phối nhưng tín hiệu quá thưa. Tối ưu sở thích ngoại tuyến hy sinh cả hai, đổi lại là rẻ và ổn định vì không phải sinh văn bản trong vòng huấn luyện.
+
+\paragraph{Ô thứ tư là ô duy nhất không phải chọn một trong hai.} Nếu ta để mô hình tự sinh chuỗi, rồi hỏi một mô hình thầy ``ở mỗi vị trí, anh sẽ đặt xác suất thế nào'', ta vừa đo trên phân phối mô hình thật sự sẽ gặp khi chạy, vừa có một con số cho từng token. Đó là chưng cất on-policy, và đó là lý do nhánh này bùng nổ từ cuối 2025 \cite{lu2025opd, song2026opdsurvey}.
+
+Cái giá của ô thứ tư cũng rõ ràng, và cần nói ngay để tránh hiểu nó là phương pháp tốt nhất trong mọi trường hợp. Nó đòi một mô hình thầy \emph{đã giỏi sẵn} ở tác vụ đích và chấm được từng token -- điều học tăng cường không cần. Chất lượng mô hình học vì thế bị chặn bởi chất lượng thầy, trong khi học tăng cường với một bộ kiểm chứng đúng đắn về nguyên tắc có thể vượt mọi mô hình hiện có. Chưng cất on-policy là cách \emph{chuyển} năng lực đã tồn tại ở đâu đó sang một mô hình khác với chi phí thấp; nó không phải cách \emph{tạo ra} năng lực mới. Mục~\ref{ssec:exopd} sẽ cho thấy ranh giới này mỏng hơn vẻ ngoài của nó, nhưng không biến mất.
+
+\begin{keyidea}{Đọc bảng bốn ô như thế nào}
+Hai trục trả lời hai câu hỏi khác nhau: \emph{đo trên phân phối nào} (đúng hay sai mục tiêu) và \emph{mỗi lượt sinh cho bao nhiêu bit} (nhanh hay chậm). Khi đọc một phương pháp mới, câu hỏi đầu tiên nên là ``nó nằm ô nào'', và câu hỏi thứ hai là ``nó trả giá cho ô đó bằng gì''.
+\end{keyidea}
+
+\subsection{Bằng chứng cho trục thứ nhất: ghi nhớ và tổng quát hóa}
+\label{ssec:sft_vs_rl_generalization}
+
+Lập luận ở trên là lập luận lý thuyết. Có một đối chứng thực nghiệm trực tiếp cho nó. Chu và cộng sự \cite{chu2025sftrl} huấn luyện cùng một mô hình nền trên cùng một tác vụ bằng hai cách -- tinh chỉnh có giám sát và học tăng cường với phần thưởng theo kết quả -- rồi đánh giá trên các biến thể của tác vụ mà mô hình chưa gặp: đổi luật chơi dưới dạng văn bản, đổi màu sắc và bố cục dưới dạng hình ảnh.
+
+Kết quả tách bạch hai hành vi. Học tăng cường tổng quát hóa sang các biến thể đó; tinh chỉnh có giám sát có xu hướng \emph{ghi nhớ} dữ liệu huấn luyện và kém hẳn khi ra ngoài phân phối. Nhưng kết luận không phải ``bỏ SFT đi'': cũng chính bài báo ấy ghi nhận SFT vẫn cần thiết, vì nó ổn định định dạng đầu ra và nhờ đó học tăng cường mới có chỗ bám để phát huy tác dụng. Đây đúng là cấu trúc mà mọi quy trình thực tế đang dùng -- SFT làm bước khởi động, học tăng cường làm bước đẩy biên.
+
+\subsection{Lệch phân phối: vì sao huấn luyện ngoài chính sách thì sai dần}
+\label{ssec:exposure_bias}
+
+Trục thứ nhất đáng được trình bày kỹ hơn một dòng trong bảng, vì nó là lý do tồn tại của toàn bộ nhánh on-policy.
+
+\paragraph{Cơ chế.} Trong huấn luyện, ở bước $t$ mô hình được cho sẵn tiền tố đúng $y_{<t}$ và chỉ phải đoán $y_t$. Khi chạy thật, không ai cho nó tiền tố đúng: nó phải tiếp tục từ $\hat{y}_{<t}$ do chính nó vừa sinh ra. Giả sử ở bước nào đó nó chọn nhầm một token. Tiền tố ở bước sau bây giờ là một chuỗi \emph{không hề xuất hiện trong dữ liệu huấn luyện}. Trên tiền tố đó, mô hình không có bảo đảm nào về chất lượng dự đoán, nên khả năng sai lại cao hơn mức trung bình, và sai lầm mới lại đẩy tiền tố đi xa hơn nữa khỏi vùng đã học. Vòng lặp này là \textbf{lệch phân phối} (còn gọi là exposure bias, hay compounding error trong học bắt chước).
+
+\paragraph{Gốc lý thuyết: DAgger.} Ross, Gordon và Bagnell \cite{ross2011dagger} đã chứng minh điều này bằng ngôn ngữ của học bắt chước, với một cận rất dễ nhớ. Nếu một chính sách học theo kiểu giám sát thông thường có tỉ lệ sai $\epsilon$ mỗi bước \emph{đo trên phân phối trạng thái của thầy}, thì chi phí của nó trên một bài toán dài $T$ bước bị chặn bởi
+\[
+J(\pi) \;\le\; J(\pi^\star) + T^2\epsilon ,
+\]
+tức là sai số tích lũy tăng theo \emph{bình phương} độ dài, chứ không phải tuyến tính. Trực giác đằng sau số mũ hai rất đơn giản: trong $T$ bước có cỡ $T\epsilon$ lần sai, và mỗi lần sai có thể làm hỏng phần còn lại dài cỡ $T$ của quỹ đạo.
+
+Cách sửa mà các tác giả đề xuất, DAgger, là một vòng lặp gộp dữ liệu: cho chính sách \emph{hiện tại} chạy để thu đúng những trạng thái mà nó thật sự ghé qua, hỏi thầy nên làm gì tại chính các trạng thái ấy, gộp các cặp (trạng thái của trò, hành động của thầy) vào tập dữ liệu tích lũy, huấn luyện lại, rồi lặp. Ở vòng đầu, chính sách còn quá kém nên thuật toán cho thầy cầm lái một phần với hệ số trộn giảm dần qua các vòng. Chính sách thu được được bảo đảm hoạt động tốt \emph{trên chính phân phối trạng thái mà nó sinh ra}, và cận sai số trở thành tuyến tính theo $T$.
+
+\paragraph{Ánh xạ sang mô hình ngôn ngữ.} Phép tương ứng gần như một--một: trạng thái là tiền tố, hành động là token tiếp theo, chính sách là mô hình đang học, thầy là mô hình lớn, và ``hỏi thầy'' là chạy một lượt forward của thầy trên tiền tố do mô hình học sinh ra. Có một khác biệt, và nó làm mọi chuyện dễ hơn nhiều so với bối cảnh robot mà DAgger ra đời: thầy là mô hình ngôn ngữ nên không trả về một hành động duy nhất mà trả về \emph{cả một phân phối trên toàn từ vựng}. Mỗi lần truy vấn thầy vì thế cho nhiều thông tin hơn hẳn một nhãn. Toàn bộ nhánh trình bày ở mục~\ref{sec:on_policy_distillation} có thể đọc như DAgger với một ông thầy giàu thông tin hơn.
+
+\begin{pitfall}{Lệch phân phối không phải là vấn đề chất lượng dữ liệu}
+Dữ liệu của thầy có thể hoàn hảo, không nhiễu, không mâu thuẫn, mà mô hình học vẫn sai dần khi chạy. Nguyên nhân không nằm ở \emph{nội dung} dữ liệu mà ở \emph{phân phối} sinh ra nó. Thu thập thêm dữ liệu cùng loại làm giảm $\epsilon$ nhưng không đụng được vào thừa số $T$ thứ hai trong cận $T^2\epsilon$. Muốn bỏ thừa số đó thì phải đổi phân phối lấy mẫu, chứ không phải đổi lượng dữ liệu.
+\end{pitfall}
+
+\subsection{Khung này được dùng như thế nào trong một quy trình thật}
+\label{ssec:post_training_pipeline}
+
+Bốn ô không phải bốn lựa chọn loại trừ nhau; một quy trình sản xuất đi qua nhiều ô theo thứ tự. Hình dạng đã ổn định vào năm 2026, và các bản báo cáo kỹ thuật đều mô tả cùng một bộ khung \cite{ma2026mopd, song2026opdsurvey}:
+
+\begin{enumerate}
+	\item \textbf{Tiền huấn luyện}, rồi một giai đoạn \textbf{mid-training} trên dữ liệu chọn lọc hơn (chương~\ref{chap:pretraining}).
+	\item \textbf{SFT khởi động lạnh} -- ô off-policy, tín hiệu dày. Mục tiêu không phải chất lượng cuối mà là đưa mô hình vào đúng định dạng và nâng xác suất sinh ra lời giải đúng lên mức khác không, để bước sau có tín hiệu.
+	\item \textbf{Học tăng cường} trên từng miền -- ô on-policy, tín hiệu thưa. Bước này đẩy biên năng lực, và sản phẩm thường là \emph{nhiều} mô hình chuyên biệt: một cho toán, một cho mã, một cho tác tử.
+	\item \textbf{Chưng cất on-policy nhiều thầy} -- ô on-policy, tín hiệu dày. Gộp các mô hình chuyên biệt vào một mô hình duy nhất, với chi phí nhỏ hơn hẳn việc chạy lại học tăng cường trên hỗn hợp mọi miền.
+\end{enumerate}
+
+Đọc theo bảng bốn ô, quy trình này là một đường đi có lý do ở mỗi bước: bước 2 mua định dạng và một xác suất khởi điểm khác không bằng tín hiệu rẻ nhất; bước 3 trả giá đắt nhất cho thứ duy nhất chỉ nó làm được là mở rộng biên; bước 4 dùng tín hiệu dày để chuyển kết quả của bước 3 đi mà không phải trả lại cái giá ấy.

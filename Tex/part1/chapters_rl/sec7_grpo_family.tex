@@ -1,10 +1,11 @@
 % !TEX root = ../main.tex
-% File: part1/chapters_reasoning/sec5_rl_algorithms.tex
+% File: part1/chapters_rl/sec7_grpo_family.tex
+% Chuyển từ chapters_reasoning/sec5_rl_algorithms.tex
 
-\section{Họ thuật toán sau GRPO và câu hỏi về giới hạn của RL}
+\section{Họ biến thể sau GRPO}
 \label{sec:rl_algorithms}
 
-Từ sau R1, phần lớn các công trình RL cho suy luận không đề xuất một thuật toán mới từ đầu mà đổi một vài chỗ xác định trong mục tiêu của GRPO. Đọc chúng như một danh sách tên gọi kèm điểm số là bỏ lỡ toàn bộ nội dung kỹ thuật: thứ đáng học là \emph{chỗ nào trong công thức bị đổi, vì lý do gì, và đổi xong thì mất gì}. Mục này trình bày các biến thể theo đúng cách đó, rồi quay lại câu hỏi nền tảng -- liệu cả họ thuật toán này có thực sự mở rộng năng lực của mô hình, hay chỉ sắp xếp lại những gì mô hình nền đã có.
+Từ sau DeepSeek-R1, phần lớn các công trình học tăng cường cho suy luận không đề xuất một thuật toán mới từ đầu mà đổi một vài chỗ xác định trong mục tiêu của GRPO. Đọc chúng như một danh sách tên gọi kèm điểm số là bỏ lỡ toàn bộ nội dung kỹ thuật: thứ đáng học là \emph{chỗ nào trong công thức bị đổi, vì lý do gì, và đổi xong thì mất gì}. Mục này trình bày các biến thể theo đúng cách đó; mục~\ref{sec:rl_limits} ngay sau đó quay lại câu hỏi nền tảng -- liệu cả họ thuật toán này có thực sự mở rộng năng lực của mô hình, hay chỉ sắp xếp lại những gì mô hình nền đã có.
 
 \subsection{Họ biến thể GRPO: mỗi thuật toán đổi gì trong công thức}
 \label{ssec:grpo_variants}
@@ -241,74 +242,3 @@ Từ một mô hình nền Qwen 32B, VAPO đạt 60.4 điểm trên AIME 2024 tr
 \begin{assess}{Nên đổi chỗ nào trước}
 Nếu phải chọn thứ tự áp dụng, thứ tự sau phản ánh mức độ phổ quát của vấn đề mà mỗi thay đổi xử lý. Token-level loss và bỏ phép chia cho $\operatorname{std}$ (A, B) sửa thiên lệch có mặt trong \emph{mọi} lần chạy GRPO, chi phí cài đặt gần bằng không, nên làm trước. Dynamic sampling (E) trở nên cần thiết khi mô hình đã đủ khá để nhiều nhóm toàn đúng, và nó đánh đổi bằng thời gian sinh. Clip-higher (C) cần khi theo dõi thấy entropy tụt sớm. GSPO (D) gần như bắt buộc nếu mô hình là MoE, và ít cần thiết nếu không. CISPO và VAPO là hai lựa chọn kiến trúc lớn hơn: chúng thay đổi dạng của mục tiêu chứ không chỉ các hệ số, nên chỉ hợp lý khi đã có hạ tầng và ngân sách để đo lại từ đầu. Mục~\ref{ssec:rl_capability_debate} đưa thêm một lý do để thận trọng với mọi so sánh kiểu này.
 \end{assess}
-
-\subsection{RL mở rộng năng lực hay chỉ làm nhọn phân phối?}
-\label{ssec:rl_capability_debate}
-
-Mọi con số ở mục trên đều là pass@1. Câu hỏi đáng đặt ra là pass@1 đo cái gì.
-
-\paragraph{Hai đại lượng khác nhau.}
-Với một mô hình sinh ngẫu nhiên, pass@$k$ là xác suất có ít nhất một lời giải đúng trong $k$ lần lấy mẫu độc lập. Khi $k = 1$, đại lượng này đo \emph{mức tập trung}: khối lượng xác suất có dồn vào lời giải đúng hay không. Khi $k$ lớn, nó tiến dần tới một đại lượng khác hẳn -- \emph{giá đỡ} (support) của phân phối, tức liệu lời giải đúng có nằm trong tập những chuỗi mà mô hình có thể sinh ra hay không. Một thủ tục chỉ dồn khối lượng xác suất lại mà không thêm chuỗi mới vào giá đỡ sẽ làm pass@1 tăng và pass@$k$ với $k$ lớn \emph{giảm}, vì phân phối hẹp lại thì $k$ lần lấy mẫu cho ra ít chuỗi phân biệt hơn.
-
-\paragraph{Lập luận rằng RLVR chỉ làm nhọn phân phối.}
-Yue et al.~\cite{yue2025rlboundary} đo pass@$k$ trên một dải $k$ rộng, cho nhiều họ mô hình, nhiều thuật toán RL và các benchmark toán, lập trình, suy luận thị giác. Kết quả nhất quán: mô hình sau RLVR thắng mô hình nền ở $k$ nhỏ nhưng \emph{thua} ở $k$ lớn -- hai đường pass@$k$ cắt nhau. Phân tích độ bao phủ và perplexity cho thấy các lối suy luận mà mô hình RLVR sinh ra đã nằm sẵn trong phân phối của mô hình nền và bị chặn bởi nó. Sáu thuật toán RLVR phổ biến cho kết quả gần như nhau và đều còn cách xa biên trên do mô hình nền đặt ra. Ngược lại, chưng cất từ một mô hình thầy \emph{có} đưa vào những khuôn mẫu suy luận mới và thực sự mở rộng biên. Công trình được chọn báo cáo miệng tại NeurIPS 2025.
-
-Cơ chế khiến kết luận này hợp lý đã xuất hiện ở mục~\ref{ssec:r1_distill}: với phần thưởng nhị phân, một câu hỏi chỉ đóng góp gradient khi số lời giải đúng trong nhóm nằm hẳn giữa 0 và $G$. Một lời giải mà mô hình \emph{không bao giờ} lấy mẫu trúng thì không bao giờ nhận được phần thưởng, nên không bao giờ được tăng xác suất. Thêm vào đó, số hạng KL và cơ chế cắt đều chủ động giữ $\pi_\theta$ ở gần $\pi_{\mathrm{ref}}$. Nhìn từ công thức, RLVR không có kênh nào để đưa một chuỗi mới vào giá đỡ.
-
-\paragraph{Một lưu ý về phép đo.}
-Trước khi nhận kết luận trên, cần nói rõ pass@$k$ với $k$ rất lớn cũng có điểm yếu riêng. Lấy mẫu ở nhiệt độ cao từ một mô hình nền trên những bài có không gian đáp án nhỏ -- trắc nghiệm, đúng/sai, một con số trong vài chục khả năng -- sẽ tính cả những lần đoán trúng vào pass@$k$; cộng thêm dương tính giả của verifier (mục~\ref{ssec:rlvr}), con số này bị thổi lên theo hướng có lợi cho mô hình nền. Một mô hình có pass@256 cao nhưng pass@1 bằng 5\% cũng không phải một mô hình dùng được. Phát biểu chặt chẽ vì vậy là: \emph{chưa chứng minh được RLVR mở rộng giá đỡ}, chứ không phải \emph{mô hình nền mạnh hơn}.
-
-\paragraph{Lập luận phản biện: chạy đủ lâu và dời mỏ neo.}
-ProRL \cite{liu2025prorl} nhận xét rằng kết luận trên được rút ra từ các vòng RL ngắn với một mỏ neo cố định, và thử phá cả hai điều kiện đó. Công thức: GRPO cộng các cải tiến của DAPO (cắt tách đôi với $\epsilon_{\mathrm{low}} = 0.2$, $\epsilon_{\mathrm{high}} = 0.4$; dynamic sampling; 16 rollout mỗi prompt), chạy hơn 2 nghìn bước trên một tập nhiệm vụ đa dạng, với mục tiêu
-\[
-\mathcal{L}_{\text{KL-RL}}(\theta) \;=\; \mathcal{L}_{\mathrm{GRPO}}(\theta) \;-\; \beta\,\mathbb{D}_{\mathrm{KL}}\big[\pi_\theta\,\big\|\,\pi_{\mathrm{ref}}\big].
-\]
-Chỗ đổi quan trọng không nằm trong công thức mà nằm ở câu hỏi \emph{$\pi_{\mathrm{ref}}$ là gì}. Khi hiệu năng trên tập kiểm định chững lại hoặc tụt, nhóm tác giả \textbf{đặt lại cứng} $\pi_{\mathrm{ref}}$ bằng một bản chụp gần đây của chính sách đang huấn luyện, đồng thời khởi tạo lại trạng thái bộ tối ưu, rồi chạy tiếp. Đây chính xác là kênh mà lập luận ``RL không mở rộng được giá đỡ'' giả định là không tồn tại: số hạng KL trói $\pi_\theta$ vào $\pi_{\mathrm{ref}}$, nhưng nếu bản thân $\pi_{\mathrm{ref}}$ được dời đi theo từng chặng thì tổng quãng đường mà chính sách đi được không còn bị chặn. Kết quả báo cáo: pass@1 trung bình trên các nhiệm vụ toán tăng từ 44.45 lên 60.14, và mô hình sau RL vượt mô hình nền trên một dải pass@$k$, kể cả ở những nhiệm vụ mà mô hình nền thất bại ở mọi lần thử. Mức mở rộng tương quan với năng lực sẵn có của mô hình nền trên nhiệm vụ đó và với độ dài huấn luyện.
-
-Cần ghi nhận một hạn chế của đối chứng này: ProRL xuất phát từ DeepSeek-R1-Distill-Qwen-1.5B, tức là một mô hình \emph{đã được chưng cất} chứ không phải một mô hình nền. Một phần biên mà nó khám phá đã được người thầy đặt vào từ trước.
-
-\paragraph{Cảnh báo: điểm số tăng không chứng minh phần thưởng có tác dụng.}
-Shao et al.~\cite{shao2025spurious} huấn luyện Qwen2.5-Math-7B bằng GRPO với các phần thưởng \emph{giả} -- tương quan thấp, bằng không, thậm chí âm với tính đúng của đáp án. Phần thưởng gán \emph{ngẫu nhiên} vẫn nâng MATH-500 lên 21.4 điểm, trong khi phần thưởng từ đáp án thật nâng 29.1 điểm: phần lớn mức tăng không đến từ thông tin trong phần thưởng. Nhóm tác giả quy nguyên nhân cho một thiên lệch trong số hạng cắt của GRPO, khiến nó khuếch đại những hành vi mô hình đã học sẵn trong tiền huấn luyện ngay cả khi phần thưởng không mang thông tin. Trường hợp cụ thể là ``suy luận bằng mã'' -- viết mã để lập luận mà không chạy mã -- vốn có sẵn ở họ Qwen2.5-Math, với tần suất tăng từ 65\% lên hơn 90\% dưới phần thưởng giả. Quan trọng không kém: các phần thưởng giả có tác dụng trên Qwen thường \emph{không} có tác dụng trên Llama3 hay OLMo2. Hiệu ứng phụ thuộc vào mô hình chứ không phải vào thuật toán, nên một kết quả đo trên một họ mô hình duy nhất không nói được gì về thuật toán.
-
-\begin{checklist}{Đối chứng tối thiểu trước khi tin một kết quả RLVR}
-\begin{enumerate}
-	\item \textbf{Đối chứng phần thưởng vô nghĩa.} Chạy lại đúng thuật toán, đúng số bước, đúng siêu tham số, chỉ thay phần thưởng bằng ngẫu nhiên hoặc hằng số. Nếu phần chênh lệch còn lại nhỏ thì thuật toán, chứ không phải phần thưởng, mới là thứ đang hoạt động.
-	\item \textbf{Ít nhất hai họ mô hình không liên quan nhau.} Kết quả chỉ trên Qwen không phân biệt được ``thuật toán tốt'' với ``thiên lệch tiền huấn luyện của Qwen''.
-	\item \textbf{Đường pass@$k$ trên dải $k$ rộng, vẽ cùng trục với mô hình nền,} dùng cùng tham số lấy mẫu cho cả hai. Một điểm pass@1 đơn lẻ không phân biệt được làm nhọn với mở rộng.
-	\item \textbf{Mẫu prompt dùng cho đường cơ sở.} Dr.~GRPO cho thấy mô hình nền Qwen2.5 đạt điểm cao hơn hẳn khi không bị ép vào mẫu hội thoại. Một đường cơ sở bị dựng yếu sẽ chế tạo ra mức tăng.
-	\item \textbf{Khử nhiễm benchmark.} AIME và MATH đã công bố từ lâu; phần của mức tăng đến từ việc gợi lại nội dung đã có trong dữ liệu tiền huấn luyện cần được tách ra.
-	\item \textbf{Báo cáo ngân sách tính toán.} Không có nó thì không biết thuật toán A hơn B vì trần cao hơn hay chỉ vì đang đứng ở chỗ dốc hơn trên cùng một đường cong.
-\end{enumerate}
-\end{checklist}
-
-\paragraph{Đo RL như đo tiền huấn luyện.}
-Điểm cuối trong danh sách trên dẫn tới một công trình đặt lại cách so sánh các thuật toán ở mục~\ref{ssec:grpo_variants}. Khatri et al.~\cite{khatri2025scalerl} chạy một nghiên cứu hệ thống tiêu hơn 400 nghìn giờ GPU, khớp đường cong hiệu năng theo tính toán của các lần chạy RL bằng hàm sigmoid, và tách rõ hai tham số: \emph{tiệm cận} $A$ -- mức hiệu năng mà một công thức huấn luyện hội tụ tới khi tính toán tiến ra vô cùng -- và \emph{hiệu suất tính toán} $B$, tốc độ tiến tới tiệm cận đó. Ba kết luận:
-\begin{itemize}
-	\item Các công thức huấn luyện khác nhau \emph{không} cùng tiệm cận, nên lựa chọn công thức quyết định trần.
-	\item Nhưng phần lớn những chi tiết mà mục~\ref{ssec:grpo_variants} vừa mổ xẻ -- cách gộp loss, cách chuẩn hóa, chương trình học, thuật toán off-policy -- chủ yếu tác động lên $B$ chứ không lên $A$. Chúng đưa ta tới đích nhanh hơn, không làm đích cao hơn.
-	\item Các công thức ổn định đi theo quỹ đạo \emph{dự đoán được}, nên kết quả từ các lần chạy nhỏ ngoại suy được lên lần chạy lớn. Nhóm tác giả kiểm chứng bằng cách dự đoán trước hiệu năng của một lần chạy đơn lẻ kéo dài tới 100 nghìn giờ GPU, và gom các lựa chọn tốt nhất thành công thức \textbf{ScaleRL}.
-\end{itemize}
-Hệ quả đối với cách đọc cả mục~\ref{ssec:grpo_variants}: so sánh hai thuật toán RL tại \emph{một} mức tính toán là so sánh hai điểm trên hai đường cong khác nhau. Chênh lệch vài điểm AIME có thể là chênh lệch trần, cũng có thể chỉ là chênh lệch tốc độ -- và hai cách đọc dẫn tới hai quyết định kỹ thuật trái ngược nhau.
-
-\begin{keyidea}{Tình trạng của tranh luận}
-Ba mảnh bằng chứng trên không mâu thuẫn nếu được phát biểu cho chính xác. Với RL ngắn, mỏ neo cố định và phần thưởng chỉ đặt ở kết quả, RLVR chủ yếu dồn khối lượng xác suất vào những lời giải mà mô hình nền đã sinh ra được -- đó là điều Yue et al.\ đo được. Khi mỏ neo được dời theo từng chặng và quá trình kéo dài hàng nghìn bước, giới hạn đó không còn là tất yếu về mặt công thức -- đó là điều ProRL chỉ ra. Và trong cả hai trường hợp, một phần mức tăng quan sát được có thể không đến từ phần thưởng -- đó là điều Shao et al.\ cảnh báo. Câu hỏi còn bỏ ngỏ là phần nào trong đó còn lại khi ta chạy một công thức ổn định tới gần tiệm cận của nó, trên một mô hình nền không thuộc họ Qwen.
-\end{keyidea}
-
-\subsection{Những vấn đề mở}
-\label{ssec:reasoning_open_problems}
-\begin{itemize}
-	\item \textbf{Suy nghĩ quá mức (overthinking):} Mô hình sinh hàng nghìn token cho câu hỏi đơn giản. Các hướng giải quyết: phần thưởng theo độ dài, chế độ ``suy nghĩ/không suy nghĩ'' có thể bật tắt (như Qwen3), ngân sách suy nghĩ do người dùng đặt. Lưu ý rằng một phần của vấn đề là thiên lệch độ dài trong chính mục tiêu tối ưu, và phần đó sửa được bằng công thức chứ không cần thưởng phạt thêm.
-	\item \textbf{Tính trung thực của chuỗi suy nghĩ (faithfulness):} Chuỗi suy nghĩ hiển thị không nhất thiết phản ánh đúng quá trình tính toán thực sự bên trong mô hình. RLVR làm vấn đề nặng thêm vì nó chỉ thưởng kết quả: mọi chuỗi dẫn tới đáp án đúng đều được thưởng như nhau, kể cả chuỗi không liên quan đến cách mô hình thực sự đi tới đáp án.
-	\item \textbf{Mở rộng ra ngoài miền kiểm chứng được:} Viết lách, tư vấn, nghiên cứu mở không có phần thưởng dựa trên luật, nên cần reward model hoặc LLM-as-a-judge (mục~\ref{sec:llm_as_a_judge}) -- và lập luận Goodhart ở mục~\ref{ssec:rlvr} quay trở lại nguyên vẹn, kèm theo đó là nhu cầu giữ lại số hạng KL mà DAPO đã bỏ.
-	\item \textbf{Đo lường còn chưa đủ chặt.} Như mục~\ref{ssec:rl_capability_debate} cho thấy, một phần đáng kể các kết quả RLVR đã công bố chưa có đối chứng phần thưởng vô nghĩa, chưa báo cáo pass@$k$ trên dải rộng, và chỉ chạy trên một họ mô hình. Chuẩn báo cáo cho RL còn kém xa chuẩn đã quen thuộc ở tiền huấn luyện.
-\end{itemize}
-
-\bigskip
-\hrule
-\bigskip
-
-\begin{center}
-    \textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
-\end{center}
-
-\textit{Chương này đi từ các verifier kiểm chứng lời giải (ORM, PRM), qua các quy luật mở rộng tính toán lúc suy luận và các phương pháp tự học suy luận (STaR, ReST$^{EM}$, Quiet-STaR), đến học tăng cường với phần thưởng kiểm chứng được -- nền tảng của DeepSeek-R1 -- và cuối cùng là họ thuật toán hậu GRPO cùng tranh luận về việc RL thực sự thêm được gì vào mô hình nền. Năng lực của một LLM vì vậy đến từ cả số tham số lẫn cách chúng ta cho phép và dạy nó sử dụng tính toán khi trả lời. Nhưng mô hình suy luận vẫn cần tri thức cập nhật từ bên ngoài, chủ đề của chương tiếp theo về tìm kiếm và sinh tăng cường.}

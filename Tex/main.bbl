@@ -128,6 +128,21 @@ Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
 \newblock {\em Deep learning}.
 \newblock MIT press, 2016.
 
+\bibitem{xiao2023streaming}
+Guangxuan Xiao, Yuandong Tian, Beidi Chen, Song Han, and Mike Lewis.
+\newblock Efficient streaming language models with attention sinks.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2309.17453.
+
+\bibitem{martins2016softmax}
+Andr\'e F.~T. Martins and Ram\'on~Fernandez Astudillo.
+\newblock From softmax to sparsemax: A sparse model of attention and
+  multi-label classification.
+\newblock In {\em Proceedings of the 33rd International Conference on Machine
+  Learning (ICML)}, 2016.
+\newblock arXiv:1602.02068.
+
 \bibitem{gao2018black}
 Ji~Gao, Jack Lanchantin, Mary~Lou Soffa, and Yanjun Qi.
 \newblock Black-box attacks against rnns: The power of gradient-free methods.
@@ -265,6 +280,11 @@ Ian Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley,
 \newblock Generative adversarial nets.
 \newblock In {\em Advances in neural information processing systems 27}, 2014.
 
+\bibitem{ba2016layer}
+Jimmy~Lei Ba, Jamie~Ryan Kiros, and Geoffrey~E. Hinton.
+\newblock Layer normalization.
+\newblock {\em arXiv preprint arXiv:1607.06450}, 2016.
+
 \bibitem{kingma2014adam}
 Diederik~P Kingma and Jimmy Ba.
 \newblock Adam: A method for stochastic optimization.
@@ -277,10 +297,37 @@ Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever, and Ruslan
 \newblock {\em The journal of machine learning research}, 15(1):1929--1958,
   2014.
 
+\bibitem{shaw2018self}
+Peter Shaw, Jakob Uszkoreit, and Ashish Vaswani.
+\newblock Self-attention with relative position representations.
+\newblock In {\em Proceedings of NAACL-HLT 2018}, 2018.
+\newblock arXiv:1803.02155.
+
+\bibitem{press2021train}
+Ofir Press, Noah~A Smith, and Mike Lewis.
+\newblock Train short, test long: Attention with linear biases enables input
+  length extrapolation.
+\newblock In {\em Proceedings of the 9th International Conference on Learning
+  Representations (ICLR)}, 2022.
+
 \bibitem{su2021roformer}
-Jianlin Su, Yu~Lu, Shengfeng Pan, Ahmed Murtadha, Bo~Wen, and Yunbo Liu.
-\newblock Roformer: Enhanced transformer with rotary position embedding.
+Jianlin Su, Yu~Lu, Shengfeng Pan, Ahmed Murtadha, Bo~Wen, and Yunfeng Liu.
+\newblock {RoFormer}: Enhanced transformer with rotary position embedding.
 \newblock {\em arXiv preprint arXiv:2104.09864}, 2021.
+
+\bibitem{grattafiori2024llama3}
+Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Aditya
+  Kadian, et~al.
+\newblock The llama 3 herd of models.
+\newblock {\em arXiv preprint arXiv:2407.21783}, 2024.
+
+\bibitem{kazemnejad2023impact}
+Amirhossein Kazemnejad, Inkit Padhi, Karthikeyan Natesan~Ramamurthy, Payel Das,
+  and Siva Reddy.
+\newblock The impact of positional encoding on length generalization in
+  transformers.
+\newblock In {\em Advances in Neural Information Processing Systems 36}, 2023.
+\newblock arXiv:2305.19466.
 
 \bibitem{reimers2019sentencebert}
 Nils Reimers and Iryna Gurevych.
@@ -296,16 +343,25 @@ Tianyu Gao, Xingcheng Yao, and Danqi Chen.
   Natural Language Processing}, pages 6894--6910, 2021.
 
 \bibitem{wang2022textembeddings}
-Alex Wang, Jason Kuo, Alec Radford, Lilian Weng, and Ilya Sutskever.
+Arvind Neelakantan, Tao Xu, Raul Puri, Alec Radford, Jesse~Michael Han, Jerry
+  Tworek, Qiming Yuan, Nikolas Tezak, Jong~Wook Kim, Chris Hallacy, et~al.
 \newblock Text and code embeddings by contrastive pre-training.
-\newblock \url{https://platform.openai.com/docs/guides/embeddings}, 2022.
-\newblock OpenAI Technical Report.
+\newblock {\em arXiv preprint arXiv:2201.10005}, 2022.
+
+\bibitem{zhang2019rmsnorm}
+Biao Zhang and Rico Sennrich.
+\newblock Root mean square layer normalization.
+\newblock In {\em Advances in Neural Information Processing Systems 32}, 2019.
+
+\bibitem{shazeer2020glu}
+Noam Shazeer.
+\newblock {GLU} variants improve transformer.
+\newblock {\em arXiv preprint arXiv:2002.05202}, 2020.
 
 \bibitem{su2021rope}
-Jianlin Su, Yu~Lu, Shengfeng Pan, Bo~Wen, and Yunfeng Liu.
-\newblock Roformer: Enhanced transformer with rotary position embedding.
-\newblock In {\em Findings of the Association for Computational Linguistics:
-  ACL 2021}, pages 683--692. Association for Computational Linguistics, 2021.
+Jianlin Su, Yu~Lu, Shengfeng Pan, Ahmed Murtadha, Bo~Wen, and Yunfeng Liu.
+\newblock {RoFormer}: Enhanced transformer with rotary position embedding.
+\newblock {\em arXiv preprint arXiv:2104.09864}, 2021.
 
 \bibitem{dao2022flashattention}
 Tri Dao, Daniel~Y Fu, Stefano Ermon, Atri Rudra, and Christopher R{\'e}.
@@ -313,6 +369,33 @@ Tri Dao, Daniel~Y Fu, Stefano Ermon, Atri Rudra, and Christopher R{\'e}.
   io-awareness.
 \newblock In {\em Advances in Neural Information Processing Systems 35}, pages
   16344--16359, 2022.
+
+\bibitem{dao2024flashattention2}
+Tri Dao.
+\newblock {FlashAttention-2}: Faster attention with better parallelism and work
+  partitioning.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2307.08691.
+
+\bibitem{shazeer2019fast}
+Noam Shazeer.
+\newblock Fast transformer decoding: One write-head is all you need.
+\newblock {\em arXiv preprint arXiv:1911.02150}, 2019.
+
+\bibitem{ainslie2023gqa}
+Joshua Ainslie, James Lee-Thorp, Michiel de~Jong, Yury Zemlyanskiy, Federico
+  Lebr{\'o}n, and Sumit Sanghai.
+\newblock {GQA}: Training generalized multi-query transformer models from
+  multi-head checkpoints.
+\newblock In {\em Proceedings of EMNLP 2023}, 2023.
+\newblock arXiv:2305.13245.
+
+\bibitem{deepseekai2024v2}
+{DeepSeek-AI}.
+\newblock {DeepSeek-V2}: A strong, economical, and efficient mixture-of-experts
+  language model.
+\newblock {\em arXiv preprint arXiv:2405.04434}, 2024.
 
 \bibitem{shazeer2017outrageously}
 Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le,
@@ -322,12 +405,38 @@ Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le,
 \newblock In {\em Proceedings of the 5th International Conference on Learning
   Representations (ICLR)}, 2017.
 
-\bibitem{jiang2023mistral}
-Albert~Q Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford,
-  Devendra~S Chaplot, Diego de~las Casas, Florian Bressand, Gianna Lengyel,
-  Guillaume Lample, Lucile Saulnier, et~al.
-\newblock Mistral 7b.
-\newblock {\em arXiv preprint arXiv:2310.06825}, 2023.
+\bibitem{fedus2022switch}
+William Fedus, Barret Zoph, and Noam Shazeer.
+\newblock Switch transformers: Scaling to trillion parameter models with simple
+  and efficient sparsity.
+\newblock In {\em The Journal of Machine Learning Research}, volume~22, pages
+  1--39, 2021.
+
+\bibitem{jiang2024mixtral}
+Albert~Q. Jiang, Alexandre Sablayrolles, Antoine Roux, Arthur Mensch, Blanche
+  Savary, Chris Bamford, Devendra~Singh Chaplot, Diego de~las Casas, Emma
+  Bou~Hanna, Florian Bressand, et~al.
+\newblock Mixtral of experts.
+\newblock {\em arXiv preprint arXiv:2401.04088}, 2024.
+
+\bibitem{dai2024deepseekmoe}
+Damai Dai, Chengqi Deng, Chenggang Zhao, R.~X. Xu, Huazuo Gao, Deli Chen,
+  Jiashi Li, Wangding Zeng, Xingkai Yu, Y.~Wu, et~al.
+\newblock {DeepSeekMoE}: Towards ultimate expert specialization in
+  mixture-of-experts language models.
+\newblock {\em arXiv preprint arXiv:2401.06066}, 2024.
+
+\bibitem{gloeckle2024mtp}
+Fabian Gloeckle, Badr~Youbi Idrissi, Baptiste Rozi{\`e}re, David Lopez-Paz, and
+  Gabriel Synnaeve.
+\newblock Better and faster large language models via multi-token prediction.
+\newblock In {\em International Conference on Machine Learning (ICML)}, 2024.
+\newblock arXiv:2404.19737.
+
+\bibitem{deepseekai2024v3}
+{DeepSeek-AI}.
+\newblock {DeepSeek-V3} technical report.
+\newblock {\em arXiv preprint arXiv:2412.19437}, 2024.
 
 \bibitem{ouyang2022training}
 Long Ouyang, Jeff Wu, Xu~Jiang, Diogo Almeida, Carroll Wainwright, Pamela
@@ -347,12 +456,51 @@ OpenAI.
 \newblock \url{https://openai.com/index/hello-gpt-4o/}, 2024.
 \newblock Accessed: 2024-05-15.
 
+\bibitem{deepseekai2025r1}
+{DeepSeek-AI}.
+\newblock {DeepSeek-R1}: Incentivizing reasoning capability in {LLMs} via
+  reinforcement learning.
+\newblock {\em arXiv preprint arXiv:2501.12948}, 2025.
+\newblock Phiên bản tạp chí: Nature 645, 633--638 (2025).
+
+\bibitem{jiang2023mistral}
+Albert~Q Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford,
+  Devendra~S Chaplot, Diego de~las Casas, Florian Bressand, Gianna Lengyel,
+  Guillaume Lample, Lucile Saulnier, et~al.
+\newblock Mistral 7b.
+\newblock {\em arXiv preprint arXiv:2310.06825}, 2023.
+
 \bibitem{bai2022constitutional}
 Yuntao Bai, Saurav Kadavath, Sandipan Kundu, Amanda Askell, Jackson Kernion,
   Andy Jones, Anna Chen, Anna Goldie, Azalia Mirhoseini, Cameron McKinnon,
   et~al.
 \newblock Constitutional ai: Harmlessness from ai feedback.
 \newblock {\em arXiv preprint arXiv:2212.08073}, 2022.
+
+\bibitem{geminiteam2023gemini}
+{Gemini Team, Google}.
+\newblock Gemini: A family of highly capable multimodal models.
+\newblock {\em arXiv preprint arXiv:2312.11805}, 2023.
+
+\bibitem{yang2025qwen3}
+An~Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, et~al.
+\newblock Qwen3 technical report.
+\newblock {\em arXiv preprint arXiv:2505.09388}, 2025.
+
+\bibitem{kimiteam2025k2}
+{Kimi Team}.
+\newblock Kimi {K2}: Open agentic intelligence.
+\newblock {\em arXiv preprint arXiv:2507.20534}, 2025.
+
+\bibitem{penedo2023refinedweb}
+Guilherme Penedo, Quentin Malartic, Daniel Hesslow, Ruxandra Cojocaru,
+  Alessandro Cappelli, Hamza Alobeidli, Baptiste Pannier, Ebtesam Almazrouei,
+  and Julien Launay.
+\newblock The {RefinedWeb} dataset for {Falcon LLM}: Outperforming curated
+  corpora with web data, and web data only.
+\newblock In {\em Advances in Neural Information Processing Systems 36
+  (Datasets and Benchmarks Track)}, 2023.
+\newblock arXiv:2306.01116.
 
 \bibitem{chen2021evaluating}
 Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, Henrique Ponde de~Oliveira
@@ -409,7 +557,7 @@ Yi~Tay, Mostafa Dehghani, Vinh~Q Tran, Siyuan Hsieh, et~al.
 \newblock {\em arXiv preprint arXiv:2205.05131}, 2022.
 
 \bibitem{chung2022scaling}
-Hyung~Won Chung, Le~Hou, Shayne Longpre, Barret Zoph, , et~al.
+Hyung~Won Chung, Le~Hou, Shayne Longpre, Barret Zoph, et~al.
 \newblock Scaling instruction-finetuned language models.
 \newblock {\em arXiv preprint arXiv:2210.11416}, 2022.
 
@@ -446,12 +594,11 @@ Manzil Zaheer, Guru Guruganesh, Kumar~Avinava Dubey, Joshua Ainslie, Chris
 \newblock In {\em Advances in Neural Information Processing Systems 33}, pages
   17283--17297, 2020.
 
-\bibitem{press2021train}
-Ofir Press, Noah~A Smith, and Mike Lewis.
-\newblock Train short, test long: Attention with linear biases enables input
-  length extrapolation.
-\newblock In {\em Proceedings of the 9th International Conference on Learning
-  Representations (ICLR)}, 2022.
+\bibitem{chen2023extending}
+Shouyuan Chen, Sherman Wong, Liangjian Chen, and Yuandong Tian.
+\newblock Extending context window of large language models via positional
+  interpolation.
+\newblock {\em arXiv preprint arXiv:2306.15595}, 2023.
 
 \bibitem{bloc972023ntkaware}
 The~BLOC team.
@@ -461,10 +608,26 @@ The~BLOC team.
   \url{https://www.reddit.com/r/LocalLLaMA/comments/14lz7j5/ntkaware_scaled_rope_allows_llama_models_to_have/},
   2023.
 
+\bibitem{xiong2023effective}
+Wenhan Xiong, Jingyu Liu, Igor Molybog, Hejia Zhang, Prajjwal Bhargava, Rui
+  Hou, Louis Martin, Rashi Rungta, Karthik~Abinav Sankararaman, Barlas Oguz,
+  Madian Khabsa, Han Fang, Yashar Mehdad, Sharan Narang, Kshitiz Malik, Angela
+  Fan, Shruti Bhosale, Sergey Edunov, Mike Lewis, Sinong Wang, and Hao Ma.
+\newblock Effective long-context scaling of foundation models.
+\newblock In {\em Proceedings of NAACL 2024}, 2023.
+\newblock arXiv:2309.16039.
+
 \bibitem{peng2023yarn}
 Bowen Peng, Jeffrey Quesnelle, Angsheng Fan, and Ayush Aneja.
 \newblock Yarn: Efficient context window extension of large language models.
 \newblock {\em arXiv preprint arXiv:2309.00071}, 2023.
+
+\bibitem{wang2024bfloat16rope}
+Haonan Wang, Qian Liu, Chao Du, Tongyao Zhu, Cunxiao Du, Kenji Kawaguchi, and
+  Tianyu Pang.
+\newblock When precision meets position: {BFloat16} breaks down {RoPE} in
+  long-context training.
+\newblock {\em arXiv preprint arXiv:2411.13476}, 2024.
 
 \bibitem{gu2021efficiently}
 Albert Gu, Karan Goel, and Christopher R{\'e}.
@@ -477,12 +640,166 @@ Albert Gu and Tri Dao.
 \newblock Mamba: Linear-time sequence modeling with selective state spaces.
 \newblock {\em arXiv preprint arXiv:2312.00752}, 2023.
 
-\bibitem{fedus2022switch}
-William Fedus, Barret Zoph, and Noam Shazeer.
-\newblock Switch transformers: Scaling to trillion parameter models with simple
-  and efficient sparsity.
-\newblock In {\em The Journal of Machine Learning Research}, volume~22, pages
-  1--39, 2021.
+\bibitem{liu2023ring}
+Hao Liu, Matei Zaharia, and Pieter Abbeel.
+\newblock Ring attention with blockwise transformers for near-infinite context.
+\newblock {\em arXiv preprint arXiv:2310.01889}, 2023.
+
+\bibitem{wang2024auxlossfree}
+Lean Wang, Huazuo Gao, Chenggang Zhao, Xu~Sun, and Damai Dai.
+\newblock Auxiliary-loss-free load balancing strategy for mixture-of-experts.
+\newblock {\em arXiv preprint arXiv:2408.15664}, 2024.
+
+\bibitem{xiong2020layernorm}
+Ruibin Xiong, Yunchang Yang, Di~He, Kai Zheng, Shuxin Zheng, Chen Xing,
+  Huishuai Zhang, Yanyan Lan, Liwei Wang, and Tie-Yan Liu.
+\newblock On layer normalization in the transformer architecture.
+\newblock In {\em Proceedings of the 37th International Conference on Machine
+  Learning (ICML)}, 2020.
+\newblock arXiv:2002.04745.
+
+\bibitem{kaplan2020scaling}
+Jared Kaplan, Sam McCandlish, Tom Henighan, Tom~B. Brown, Benjamin Chess, Rewon
+  Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei.
+\newblock Scaling laws for neural language models.
+\newblock {\em arXiv preprint arXiv:2001.08361}, 2020.
+
+\bibitem{hoffmann2022chinchilla}
+Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor
+  Cai, Diego de~Las Casas, Lisa~Anne Hendricks, Johannes Welbl, Aidan Clark,
+  et~al.
+\newblock Training compute-optimal large language models.
+\newblock In {\em Advances in Neural Information Processing Systems 35}, 2022.
+\newblock arXiv:2203.15556.
+
+\bibitem{muennighoff2023scaling}
+Niklas Muennighoff, Alexander~M. Rush, Boaz Barak, Teven Le~Scao, Aleksandra
+  Piktus, Nouamane Tazi, Sampo Pyysalo, Thomas Wolf, and Colin Raffel.
+\newblock Scaling data-constrained language models.
+\newblock In {\em Advances in Neural Information Processing Systems 36}, 2023.
+\newblock arXiv:2305.16264.
+
+\bibitem{lee2022dedup}
+Katherine Lee, Daphne Ippolito, Andrew Nystrom, Chiyuan Zhang, Douglas Eck,
+  Chris Callison-Burch, and Nicholas Carlini.
+\newblock Deduplicating training data makes language models better.
+\newblock In {\em Proceedings of ACL 2022}, 2022.
+\newblock arXiv:2107.06499.
+
+\bibitem{gao2020pile}
+Leo Gao, Stella Biderman, Sid Black, Laurence Golding, Travis Hoppe, Charles
+  Foster, Jason Phang, Horace He, Anish Thite, Noa Nabeshima, et~al.
+\newblock The {Pile}: An 800{GB} dataset of diverse text for language modeling.
+\newblock {\em arXiv preprint arXiv:2101.00027}, 2020.
+
+\bibitem{penedo2024fineweb}
+Guilherme Penedo, Hynek Kydl{\'\i}{\v{c}}ek, Loubna Ben~Allal, Anton Lozhkov,
+  Margaret Mitchell, Colin Raffel, Leandro Von~Werra, and Thomas Wolf.
+\newblock The {FineWeb} datasets: Decanting the web for the finest text data at
+  scale.
+\newblock In {\em Advances in Neural Information Processing Systems 37
+  (Datasets and Benchmarks Track)}, 2024.
+\newblock arXiv:2406.17557.
+
+\bibitem{li2024dclm}
+Jeffrey Li, Alex Fang, Georgios Smyrnis, Maor Ivgi, Matt Jordan, Samir Gadre,
+  Hritik Bansal, Etash Guha, Sedrick Keh, Kushal Arora, et~al.
+\newblock {DataComp-LM}: In search of the next generation of training sets for
+  language models.
+\newblock In {\em Advances in Neural Information Processing Systems 37
+  (Datasets and Benchmarks Track)}, 2024.
+\newblock arXiv:2406.11794.
+
+\bibitem{xie2023doremi}
+Sang~Michael Xie, Hieu Pham, Xuanyi Dong, Nan Du, Hanxiao Liu, Yifeng Lu, Percy
+  Liang, Quoc~V. Le, Tengyu Ma, and Adams~Wei Yu.
+\newblock {DoReMi}: Optimizing data mixtures speeds up language model
+  pretraining.
+\newblock In {\em Advances in Neural Information Processing Systems 36}, 2023.
+\newblock arXiv:2305.10429.
+
+\bibitem{gunasekar2023textbooks}
+Suriya Gunasekar, Yi~Zhang, Jyoti Aneja, Caio C{\'e}sar~Teodoro Mendes, Allie
+  Del~Giorno, Sivakanth Gopi, Mojan Javaheripi, Piero Kauffmann, Gustavo
+  de~Rosa, Olli Saarikivi, et~al.
+\newblock Textbooks are all you need.
+\newblock {\em arXiv preprint arXiv:2306.11644}, 2023.
+
+\bibitem{maini2024wrap}
+Pratyush Maini, Skyler Seto, He~Bai, David Grangier, Yizhe Zhang, and Navdeep
+  Jaitly.
+\newblock Rephrasing the web: A recipe for compute and data-efficient language
+  modeling.
+\newblock In {\em Proceedings of ACL 2024}, 2024.
+\newblock arXiv:2401.16380.
+
+\bibitem{kang2025synthetic}
+Feiyang Kang, Newsha Ardalani, Michael Kuchnik, Youssef Emad, Mostafa Elhoushi,
+  Shubhabrata Sengupta, Shang-Wen Li, Ramya Raghavendra, Ruoxi Jia, and
+  Carole-Jean Wu.
+\newblock Demystifying synthetic data in {LLM} pre-training: A systematic study
+  of scaling laws, benefits, and pitfalls.
+\newblock {\em arXiv preprint arXiv:2510.01631}, 2025.
+
+\bibitem{balles2018dissecting}
+Lukas Balles and Philipp Hennig.
+\newblock Dissecting adam: The sign, magnitude and variance of stochastic
+  gradients.
+\newblock In {\em Proceedings of the 35th International Conference on Machine
+  Learning (ICML)}, 2018.
+\newblock arXiv:1705.07774.
+
+\bibitem{loshchilov2019adamw}
+Ilya Loshchilov and Frank Hutter.
+\newblock Decoupled weight decay regularization.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2019.
+\newblock arXiv:1711.05101.
+
+\bibitem{liu2024sophia}
+Hong Liu, Zhiyuan Li, David Hall, Percy Liang, and Tengyu Ma.
+\newblock Sophia: A scalable stochastic second-order optimizer for language
+  model pre-training.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2305.14342.
+
+\bibitem{zhang2025adammini}
+Yushun Zhang, Congliang Chen, Ziniu Li, Tian Ding, Chenwei Wu, Diederik~P.
+  Kingma, Yinyu Ye, Zhi-Quan Luo, and Ruoyu Sun.
+\newblock {Adam-mini}: Use fewer learning rates to gain more.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2025.
+\newblock arXiv:2406.16793.
+
+\bibitem{jordan2024muon}
+Keller Jordan, Yuchen Jin, Vlado Boza, Jiacheng You, Franz Cesista, Laker
+  Newhouse, and Jeremy Bernstein.
+\newblock Muon: An optimizer for hidden layers in neural networks.
+\newblock \url{https://kellerjordan.github.io/posts/muon/}, 2024.
+
+\bibitem{liu2025muon}
+Jingyuan Liu, Jianlin Su, Xingcheng Yao, Zhejun Jiang, Guokun Lai, Yulun Du,
+  Yidao Qin, Weixin Xu, Enzhe Lu, Junjie Yan, et~al.
+\newblock Muon is scalable for {LLM} training.
+\newblock {\em arXiv preprint arXiv:2502.16982}, 2025.
+
+\bibitem{wen2025fantastic}
+Kaiyue Wen, David Hall, Tengyu Ma, and Percy Liang.
+\newblock Fantastic pretraining optimizers and where to find them.
+\newblock {\em arXiv preprint arXiv:2509.02046}, 2025.
+
+\bibitem{gururangan2020dontstop}
+Suchin Gururangan, Rabeeh~Karimi Mahabadi, Iz~Beltagy, Kyle Lo, and Noah~A.
+  Smith.
+\newblock Don't stop pretraining: Adapt language models to domains and tasks.
+\newblock In {\em Proceedings of ACL 2020}, 2020.
+\newblock arXiv:2004.10964.
+
+\bibitem{moslem2023adaptivemt}
+Yasmin Moslem, Rejwanul Haque, and Andy Way.
+\newblock Fine-tuning large language models for adaptive machine translation.
+\newblock {\em arXiv preprint arXiv:2312.12740}, 2023.
 
 \bibitem{houlsby2019parameter}
 Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna Morrone, Quentin
@@ -509,15 +826,17 @@ Elad Ben~Zaken, Yoav Goldberg, and Shauli Ravfogel.
 \newblock In {\em ACL Findings}, 2022.
 
 \bibitem{he2022towards}
-Xuandong He, Kai Zhang, Honglak Lee, et~al.
-\newblock Towards unified parameter-efficient transfer learning for pretrained
-  language models.
-\newblock In {\em ACL}, 2022.
+Junxian He, Chunting Zhou, Xuezhe Ma, Taylor Berg-Kirkpatrick, and Graham
+  Neubig.
+\newblock Towards a unified view of parameter-efficient transfer learning.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2022.
+\newblock arXiv:2110.04366.
 
 \bibitem{hu2023llmpeft}
-Edward Hu, Tim Dettmers, Xiang~Lisa Zeng, et~al.
-\newblock A survey on parameter-efficient fine-tuning methods and applications
-  in large language models.
+Lingling Xu, Haoran Xie, Si-Zhao~Joe Qin, Xiaohui Tao, and Fu~Lee Wang.
+\newblock Parameter-efficient fine-tuning methods for pretrained language
+  models: A critical review and assessment.
 \newblock {\em arXiv preprint arXiv:2312.12148}, 2023.
 
 \bibitem{dettmers2023qlora}
@@ -532,15 +851,19 @@ Jonas Pfeiffer, Aishwarya Kamath, Andreas R{\"u}ckl{\'e}, et~al.
 \newblock In {\em EACL}, 2021.
 
 \bibitem{chen2022adamixture}
-Liang Chen, Hang Zhang, et~al.
-\newblock Adamix: Mixture-of-adapter tuning for parameter-efficient
-  fine-tuning.
-\newblock In {\em EMNLP}, 2022.
+Yaqing Wang, Sahaj Agarwal, Subhabrata Mukherjee, Xiaodong Liu, Jing Gao,
+  Ahmed~Hassan Awadallah, and Jianfeng Gao.
+\newblock {AdaMix}: Mixture-of-adaptations for parameter-efficient model
+  tuning.
+\newblock In {\em Proceedings of EMNLP 2022}, 2022.
+\newblock arXiv:2205.12410.
 
 \bibitem{he2021laddersidetuning}
-Junxian He et~al.
-\newblock Ladder-side tuning for parameter-efficient transfer learning.
-\newblock In {\em EMNLP}, 2021.
+Yi-Lin Sung, Jaemin Cho, and Mohit Bansal.
+\newblock {LST}: Ladder side-tuning for parameter and memory efficient transfer
+  learning.
+\newblock In {\em Advances in Neural Information Processing Systems 35}, 2022.
+\newblock arXiv:2206.06522.
 
 \bibitem{liu2022ia3}
 Haokun Liu, Dorsa Tam, Mohammed Muqeeth, et~al.
@@ -549,21 +872,27 @@ Haokun Liu, Dorsa Tam, Mohammed Muqeeth, et~al.
 \newblock In {\em NeurIPS}, 2022.
 
 \bibitem{mahabadi2021compacter}
-Rabeeh~Karimi Mahabadi, James Henderson, and Sebastian Ruder.
+Rabeeh Karimi~Mahabadi, James Henderson, and Sebastian Ruder.
 \newblock Compacter: Efficient low-rank hypercomplex adapter layers.
-\newblock In {\em NeurIPS}, 2021.
+\newblock In {\em Advances in Neural Information Processing Systems 34}, 2021.
+\newblock arXiv:2106.04647.
 
 \bibitem{ma2022unipelt}
-Weicheng Ma et~al.
-\newblock Unipelt: A unified framework for parameter-efficient language model
+Yuning Mao, Lambert Mathias, Rui Hou, Amjad Almahairi, Hao Ma, Jiawei Han,
+  Wen-tau Yih, and Madian Khabsa.
+\newblock {UniPELT}: A unified framework for parameter-efficient language model
   tuning.
-\newblock In {\em ACL}, 2022.
+\newblock In {\em Proceedings of ACL 2022}, 2022.
+\newblock arXiv:2110.07577.
 
 \bibitem{zhang2021phm}
-Huan Zhang et~al.
-\newblock Parameterized hypercomplex multiplication for multi-dimensional data
-  transformation.
-\newblock In {\em ICLR}, 2022.
+Aston Zhang, Yi~Tay, Shuai Zhang, Alvin Chan, Anh~Tuan Luu, Siu~Cheung Hui, and
+  Jie Fu.
+\newblock Beyond fully-connected layers with quaternions: Parameterization of
+  hypercomplex multiplications with $1/n$ parameters.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2021.
+\newblock arXiv:2102.08597.
 
 \bibitem{li2021prefix}
 Xiang~Lisa Li and Percy Liang.
@@ -573,42 +902,28 @@ Xiang~Lisa Li and Percy Liang.
   Natural Language Processing (Volume 1: Long Papers)}, pages 4582--4597, 2021.
 
 \bibitem{liu2021p}
-Xiao Liu, Zihan Ji, Yicheng Fu, et~al.
-\newblock Gpt understands, too.
-\newblock In {\em arXiv preprint arXiv:2103.10385}, 2021.
+Xiao Liu, Yanan Zheng, Zhengxiao Du, Ming Ding, Yujie Qian, Zhilin Yang, and
+  Jie Tang.
+\newblock {GPT} understands, too.
+\newblock {\em arXiv preprint arXiv:2103.10385}, 2021.
 
 \bibitem{liu2021ptuningv2}
-Xiao Liu, Yicheng Zheng, et~al.
-\newblock P-tuning v2: Prompt tuning can be comparable to fine-tuning
+Xiao Liu, Kaixuan Ji, Yicheng Fu, Weng~Lam Tam, Zhengxiao Du, Zhilin Yang, and
+  Jie Tang.
+\newblock {P-Tuning v2}: Prompt tuning can be comparable to fine-tuning
   universally across scales and tasks.
-\newblock In {\em ACL}, 2022.
+\newblock {\em arXiv preprint arXiv:2110.07602}, 2021.
 
 \bibitem{gheini2022warp}
-Mozhdeh Gheini, Xuanyi Ren, and Jonathan May.
-\newblock Warp: Word-level adversarial reprogramming.
-\newblock In {\em EMNLP}, 2022.
+Karen Hambardzumyan, Hrant Khachatrian, and Jonathan May.
+\newblock {WARP}: Word-level adversarial reprogramming.
+\newblock In {\em Proceedings of ACL 2021}, 2021.
+\newblock arXiv:2101.00121.
 
 \bibitem{vu2022spot}
 Tu~Vu, Brian Lester, Noah Constant, et~al.
 \newblock Spot: Better frozen model adaptation through soft prompt transfer.
 \newblock In {\em ACL}, 2022.
-
-\bibitem{wang2022ipt}
-Sinong Wang, Jason Wei, et~al.
-\newblock Instruction-based prompt tuning for few-shot text classification.
-\newblock In {\em EMNLP}, 2022.
-
-\bibitem{jia2022promptadapter}
-Menglin Jia, Luming Tang, Claire Chen, et~al.
-\newblock Promptadapter: Parameter-efficient vision-language fine-tuning via
-  prompt learning.
-\newblock In {\em CVPR}, 2023.
-
-\bibitem{ben-zaken2022ln-tuning}
-Elad Ben~Zaken and Yoav Goldberg.
-\newblock Layernorm tuning: Towards parameter-efficient fine-tuning for large
-  language models.
-\newblock {\em arXiv preprint arXiv:2206.01726}, 2022.
 
 \bibitem{ansell2022composable}
 Alan Ansell et~al.
@@ -621,9 +936,10 @@ Demi Guo, Alexander~M. Rush, and Yoon Kim.
 \newblock In {\em EMNLP}, 2021.
 
 \bibitem{sung2022fishmask}
-Mujeen Sung, Minjoon Cho, Hwanjun Lee, and Jaewoo Kang.
-\newblock Fine-tuning pretrained language models with neural mask generator.
-\newblock In {\em ICLR}, 2022.
+Yi-Lin Sung, Varun Nair, and Colin Raffel.
+\newblock Training neural networks with fixed sparse masks.
+\newblock In {\em Advances in Neural Information Processing Systems 34}, 2021.
+\newblock arXiv:2111.09839.
 
 \bibitem{frankle2019lottery}
 Jonathan Frankle and Michael Carbin.
@@ -632,15 +948,10 @@ Jonathan Frankle and Michael Carbin.
 \newblock In {\em ICLR}, 2019.
 
 \bibitem{buczak2023krona}
-Lukasz Buczak et~al.
-\newblock Kronecker adapters for efficient parameter-efficient fine-tuning.
-\newblock In {\em ICML}, 2023.
-
-\bibitem{gupta2022s4adapter}
-Rajat Gupta et~al.
-\newblock S4-adapter: Leveraging structured state-space models for
-  parameter-efficient fine-tuning.
-\newblock In {\em arXiv preprint arXiv:2210.11750}, 2022.
+Ali Edalati, Marzieh Tahaei, Ivan Kobyzev, Vahid~Partovi Nia, James~J. Clark,
+  and Mehdi Rezagholizadeh.
+\newblock {KronA}: Parameter efficient tuning with kronecker adapter.
+\newblock {\em arXiv preprint arXiv:2212.10650}, 2022.
 
 \bibitem{aghajanyan2021intrinsic}
 Armen Aghajanyan, Sonal Gupta, and Luke Zettlemoyer.
@@ -648,11 +959,20 @@ Armen Aghajanyan, Sonal Gupta, and Luke Zettlemoyer.
   fine-tuning.
 \newblock In {\em ACL}, 2021.
 
-\bibitem{hu2022sparsellora}
-Edward Hu, Tim Dettmers, et~al.
-\newblock Sparse lora: Low-rank and sparse adaptation for efficient
-  fine-tuning.
-\newblock {\em arXiv preprint arXiv:2211.04403}, 2022.
+\bibitem{liu2024dora}
+Shih-Yang Liu, Chien-Yi Wang, Hongxu Yin, Pavlo Molchanov, Yu-Chiang~Frank
+  Wang, Kwang-Ting Cheng, and Min-Hung Chen.
+\newblock {DoRA}: Weight-decomposed low-rank adaptation.
+\newblock In {\em International Conference on Machine Learning (ICML)}, 2024.
+\newblock arXiv:2402.09353.
+
+\bibitem{thakkar2024deepdive}
+Megh Thakkar, Quentin Fournier, Matthew~D. Riemer, Pin-Yu Chen, Amal Zouaq,
+  Payel Das, and Sarath Chandar.
+\newblock A deep dive into the trade-offs of parameter-efficient preference
+  alignment techniques.
+\newblock In {\em Proceedings of ACL 2024}, 2024.
+\newblock arXiv:2406.04879.
 
 \bibitem{wei2022chain}
 Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Ed~Chi, Quoc Le, and
@@ -669,8 +989,8 @@ Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc Le, Ed~Chi, Sharan Narang,
 \newblock {\em arXiv preprint arXiv:2203.11171}, 2022.
 
 \bibitem{yao2023tree}
-Shunyu Yao, Dian Yu, Jeffrey Zhao, Izhak Sha, Silvio Savarese, and Anima
-  Anandkumar.
+Shunyu Yao, Dian Yu, Jeffrey Zhao, Izhak Shafran, Thomas~L. Griffiths, Yuan
+  Cao, and Karthik Narasimhan.
 \newblock Tree of thoughts: Deliberate problem solving with large language
   models.
 \newblock {\em arXiv preprint arXiv:2305.10601}, 2023.
@@ -688,6 +1008,86 @@ Yizhong Wang, Yeganeh Kordi, Swaroop Mishra, Alisa Liu, Noah~A. Smith, Daniel
   instructions.
 \newblock {\em arXiv preprint arXiv:2212.10560}, 2022.
 
+\bibitem{lu2025opd}
+Kevin Lu and {Thinking Machines Lab}.
+\newblock On-policy distillation.
+\newblock \url{https://thinkingmachines.ai/blog/on-policy-distillation/}, 2025.
+\newblock Truy cập: 2026-11-02.
+
+\bibitem{song2026opdsurvey}
+Mingyang Song and Mao Zheng.
+\newblock A survey of on-policy distillation for large language models.
+\newblock {\em arXiv preprint arXiv:2604.00626}, 2026.
+
+\bibitem{chu2025sftrl}
+Tianzhe Chu, Yuexiang Zhai, Jihan Yang, Shengbang Tong, Saining Xie, Dale
+  Schuurmans, Quoc~V. Le, Sergey Levine, and Yi~Ma.
+\newblock {SFT} memorizes, {RL} generalizes: A comparative study of foundation
+  model post-training.
+\newblock {\em arXiv preprint arXiv:2501.17161}, 2025.
+
+\bibitem{ross2011dagger}
+St{\'e}phane Ross, Geoffrey~J. Gordon, and J.~Andrew Bagnell.
+\newblock A reduction of imitation learning and structured prediction to
+  no-regret online learning.
+\newblock In {\em Proceedings of the 14th International Conference on
+  Artificial Intelligence and Statistics (AISTATS)}, 2011.
+\newblock arXiv:1011.0686.
+
+\bibitem{ma2026mopd}
+Wenhan Ma, Jianyu Wei, Liang Zhao, Hailin Zhang, Bangjun Xiao, Lei Li, Qibin
+  Yang, Bofei Gao, Yudong Wang, Rang Li, Jinhao Dong, Zhifang Sui, and Fuli
+  Luo.
+\newblock {MOPD}: Multi-teacher on-policy distillation for capability
+  integration in {LLM} post-training.
+\newblock {\em arXiv preprint arXiv:2606.30406}, 2026.
+
+\bibitem{lin1991divergence}
+Jianhua Lin.
+\newblock Divergence measures based on the shannon entropy.
+\newblock {\em IEEE Transactions on Information Theory}, 37(1):145--151, 1991.
+
+\bibitem{agarwal2024gkd}
+Rishabh Agarwal, Nino Vieillard, Yongchao Zhou, Piotr Stanczyk, Sabela Ramos,
+  Matthieu Geist, and Olivier Bachem.
+\newblock On-policy distillation of language models: Learning from
+  self-generated mistakes.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2306.13649.
+
+\bibitem{ko2024distillm}
+Jongwoo Ko, Sungnyun Kim, Tianyi Chen, and Se-Young Yun.
+\newblock {DistiLLM}: Towards streamlined distillation for large language
+  models.
+\newblock In {\em International Conference on Machine Learning (ICML)}, 2024.
+\newblock arXiv:2402.03898.
+
+\bibitem{williams1992reinforce}
+Ronald~J. Williams.
+\newblock Simple statistical gradient-following algorithms for connectionist
+  reinforcement learning.
+\newblock {\em Machine Learning}, 8(3--4):229--256, 1992.
+
+\bibitem{sutton2000policygradient}
+Richard~S. Sutton, David McAllester, Satinder Singh, and Yishay Mansour.
+\newblock Policy gradient methods for reinforcement learning with function
+  approximation.
+\newblock In {\em Advances in Neural Information Processing Systems (NIPS)},
+  volume~12, pages 1057--1063, 2000.
+
+\bibitem{schulman2017proximal}
+John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov.
+\newblock Proximal policy optimization algorithms.
+\newblock {\em arXiv preprint arXiv:1707.06347}, 2017.
+
+\bibitem{schulman2016gae}
+John Schulman, Philipp Moritz, Sergey Levine, Michael Jordan, and Pieter
+  Abbeel.
+\newblock High-dimensional continuous control using generalized advantage
+  estimation.
+\newblock {\em arXiv preprint arXiv:1506.02438}, 2015.
+
 \bibitem{christiano2017deep}
 Paul~F Christiano, Jan Leike, Tom Brown, Miljan Martic, Shane Legg, and Dario
   Amodei.
@@ -701,10 +1101,12 @@ Nisan Stiennon, Long Ouyang, Jeff Wu, Daniel~M Ziegler, Ryan Lowe, Chelsea
 \newblock In {\em Advances in Neural Information Processing Systems 33}, pages
   3008--3021, 2020.
 
-\bibitem{schulman2017proximal}
-John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov.
-\newblock Proximal policy optimization algorithms.
-\newblock {\em arXiv preprint arXiv:1707.06347}, 2017.
+\bibitem{ahmadian2024rloo}
+Arash Ahmadian, Chris Cremer, Matthias Gall{\'e}, Marzieh Fadaee, Julia
+  Kreutzer, Olivier Pietquin, Ahmet {\"U}st{\"u}n, and Sara Hooker.
+\newblock Back to basics: Revisiting {REINFORCE} style optimization for
+  learning from human feedback in {LLMs}.
+\newblock {\em arXiv preprint arXiv:2402.14740}, 2024.
 
 \bibitem{rafailov2023direct}
 Rafael Rafailov, Archit Sharma, Eric Mitchell, Stefano Ermon, Christopher~D
@@ -713,16 +1115,965 @@ Rafael Rafailov, Archit Sharma, Eric Mitchell, Stefano Ermon, Christopher~D
   reward model.
 \newblock {\em arXiv preprint arXiv:2305.18290}, 2023.
 
-\bibitem{verl2024}
-Thomas Verl, Chenguang Wu, et~al.
-\newblock Verl: Vision-enhanced reinforcement learning framework for llm-based
-  agents.
-\newblock {\em arXiv preprint arXiv:2401.06573}, 2024.
+\bibitem{bradley1952rank}
+Ralph~Allan Bradley and Milton~E. Terry.
+\newblock Rank analysis of incomplete block designs: I. the method of paired
+  comparisons.
+\newblock {\em Biometrika}, 39(3/4):324--345, 1952.
 
-\bibitem{grpo2024}
-Shunyu Guo, Kai Sun, et~al.
-\newblock Grpo: Generalized reward policy optimization for instruction-tuned
+\bibitem{pal2024smaug}
+Arka Pal, Deep Karkhanis, Samuel Dooley, Manley Roberts, Siddartha Naidu, and
+  Colin White.
+\newblock Smaug: Fixing failure modes of preference optimisation with
+  {DPO-Positive}.
+\newblock {\em arXiv preprint arXiv:2402.13228}, 2024.
+
+\bibitem{razin2025displacement}
+Noam Razin, Sadhika Malladi, Adithya Bhaskar, Danqi Chen, Sanjeev Arora, and
+  Boris Hanin.
+\newblock Unintentional unalignment: Likelihood displacement in direct
+  preference optimization.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2025.
+\newblock arXiv:2410.08847.
+
+\bibitem{park2024length}
+Ryan Park, Rafael Rafailov, Stefano Ermon, and Chelsea Finn.
+\newblock Disentangling length from quality in direct preference optimization.
+\newblock {\em arXiv preprint arXiv:2403.19159}, 2024.
+
+\bibitem{azar2024ipo}
+Mohammad Gheshlaghi~Azar, Zhaohan~Daniel Guo, Bilal Piot, R{\'e}mi Munos, Mark
+  Rowland, Michal Valko, and Daniele Calandriello.
+\newblock A general theoretical paradigm to understand learning from human
+  preferences.
+\newblock In {\em Proceedings of the 27th International Conference on
+  Artificial Intelligence and Statistics (AISTATS)}, volume 238 of {\em PMLR},
+  pages 4447--4455, 2024.
+\newblock arXiv:2310.12036.
+
+\bibitem{ethayarajh2024kto}
+Kawin Ethayarajh, Winnie Xu, Niklas Muennighoff, Dan Jurafsky, and Douwe Kiela.
+\newblock {KTO}: Model alignment as prospect theoretic optimization.
+\newblock In {\em International Conference on Machine Learning (ICML)}, 2024.
+\newblock arXiv:2402.01306.
+
+\bibitem{hong2024orpo}
+Jiwoo Hong, Noah Lee, and James Thorne.
+\newblock {ORPO}: Monolithic preference optimization without reference model.
+\newblock In {\em Proceedings of EMNLP 2024}, 2024.
+\newblock arXiv:2403.07691.
+
+\bibitem{meng2024simpo}
+Yu~Meng, Mengzhou Xia, and Danqi Chen.
+\newblock {SimPO}: Simple preference optimization with a reference-free reward.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  2024.
+\newblock arXiv:2405.14734.
+
+\bibitem{lambert2024tulu3}
+Nathan Lambert, Jacob Morrison, Valentina Pyatkin, Shengyi Huang, Hamish
+  Ivison, Faeze Brahman, Lester James~V. Miranda, Alisa Liu, Nouha Dziri, Shane
+  Lyu, Yuling Gu, Saumya Malik, Victoria Graf, Jena~D. Hwang, Jiangjiang Yang,
+  Ronan Le~Bras, Oyvind Tafjord, Chris Wilhelm, Luca Soldaini, Noah~A. Smith,
+  Yizhong Wang, Pradeep Dasigi, and Hannaneh Hajishirzi.
+\newblock {Tulu 3}: Pushing frontiers in open language model post-training.
+\newblock {\em arXiv preprint arXiv:2411.15124}, 2024.
+
+\bibitem{yu2025dapo}
+Qiying Yu, Zheng Zhang, Ruofei Zhu, Yufeng Yuan, Xiaochen Zuo, et~al.
+\newblock {DAPO}: An open-source {LLM} reinforcement learning system at scale.
+\newblock {\em arXiv preprint arXiv:2503.14476}, 2025.
+
+\bibitem{shao2025spurious}
+Rulin Shao, Shuyue~Stella Li, Rui Xin, Scott Geng, Yiping Wang, Sewoong Oh,
+  Simon~Shaolei Du, Nathan Lambert, Sewon Min, Ranjay Krishna, Yulia Tsvetkov,
+  Hannaneh Hajishirzi, Pang~Wei Koh, and Luke Zettlemoyer.
+\newblock Spurious rewards: Rethinking training signals in {RLVR}.
+\newblock {\em arXiv preprint arXiv:2506.10947}, 2025.
+
+\bibitem{shao2024deepseekmath}
+Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei
+  Zhang, Mingchuan Zhang, Y.~K. Li, Y.~Wu, and Daya Guo.
+\newblock {DeepSeekMath}: Pushing the limits of mathematical reasoning in open
+  language models.
+\newblock {\em arXiv preprint arXiv:2402.03300}, 2024.
+
+\bibitem{liu2025drgrpo}
+Zichen Liu, Changyu Chen, Wenjun Li, Penghui Qi, Tianyu Pang, Chao Du, Wee~Sun
+  Lee, and Min Lin.
+\newblock Understanding {R1-Zero}-like training: A critical perspective.
+\newblock {\em arXiv preprint arXiv:2503.20783}, 2025.
+
+\bibitem{zheng2025gspo}
+Chujie Zheng, Shixuan Liu, Mingze Li, Xiong-Hui Chen, Bowen Yu, et~al.
+\newblock Group sequence policy optimization.
+\newblock {\em arXiv preprint arXiv:2507.18071}, 2025.
+
+\bibitem{sheng2024hybridflow}
+Guangming Sheng, Chi Zhang, Zilingfeng Ye, Xibin Wu, Wang Zhang, Ru~Zhang,
+  Yanghua Peng, Haibin Lin, and Chuan Wu.
+\newblock {HybridFlow}: A flexible and efficient {RLHF} framework.
+\newblock {\em arXiv preprint arXiv:2409.19256}, 2024.
+\newblock Bài báo mô tả framework verl.
+
+\bibitem{bay2026stdidentity}
+Yong~Yi Bay and Kathleen~A. Yearick.
+\newblock {GRPO}, {Dr. GRPO}, and {DAPO} are three operations on one number:
+  The group-standard-deviation identity.
+\newblock {\em arXiv preprint arXiv:2607.00152}, 2026.
+
+\bibitem{minimax2025m1}
+{MiniMax}.
+\newblock {MiniMax-M1}: Scaling test-time compute efficiently with lightning
+  attention.
+\newblock {\em arXiv preprint arXiv:2506.13585}, 2025.
+
+\bibitem{hu2025reinforceplusplus}
+Jian Hu, Jason~Klein Liu, Haotian Xu, and Wei Shen.
+\newblock {REINFORCE++}: Stabilizing critic-free policy optimization with
+  global advantage normalization.
+\newblock {\em arXiv preprint arXiv:2501.03262}, 2025.
+
+\bibitem{yue2025vapo}
+Yu~Yue et~al.
+\newblock {VAPO}: Efficient and reliable reinforcement learning for advanced
+  reasoning tasks.
+\newblock {\em arXiv preprint arXiv:2504.05118}, 2025.
+
+\bibitem{yue2025rlboundary}
+Yang Yue, Zhiqi Chen, Rui Lu, Andrew Zhao, Zhaokai Wang, Shiji Song, and Gao
+  Huang.
+\newblock Does reinforcement learning really incentivize reasoning capacity in
+  {LLMs} beyond the base model?
+\newblock {\em arXiv preprint arXiv:2504.13837}, 2025.
+\newblock NeurIPS 2025 (Oral).
+
+\bibitem{liu2025prorl}
+Mingjie Liu, Shizhe Diao, Ximing Lu, Jian Hu, Xin Dong, Yejin Choi, Jan Kautz,
+  and Yi~Dong.
+\newblock {ProRL}: Prolonged reinforcement learning expands reasoning
+  boundaries in large language models.
+\newblock {\em arXiv preprint arXiv:2505.24864}, 2025.
+
+\bibitem{khatri2025scalerl}
+Devvrit Khatri, Lovish Madaan, Rishabh Tiwari, Rachit Bansal, Sai~Surya
+  Duvvuri, Manzil Zaheer, Inderjit~S. Dhillon, David Brandfonbrener, and
+  Rishabh Agarwal.
+\newblock The art of scaling reinforcement learning compute for {LLMs}.
+\newblock {\em arXiv preprint arXiv:2510.13786}, 2025.
+
+\bibitem{yan2025luffy}
+Jianhao Yan, Yafu Li, Zican Hu, Zhi Wang, Ganqu Cui, Xiaoye Qu, Yu~Cheng, and
+  Yue Zhang.
+\newblock Learning to reason under off-policy guidance.
+\newblock {\em arXiv preprint arXiv:2504.14945}, 2025.
+
+\bibitem{hinton2015distilling}
+Geoffrey Hinton, Oriol Vinyals, and Jeff Dean.
+\newblock Distilling the knowledge in a neural network.
+\newblock {\em arXiv preprint arXiv:1503.02531}, 2015.
+
+\bibitem{kim2016sequence}
+Yoon Kim and Alexander~M. Rush.
+\newblock Sequence-level knowledge distillation.
+\newblock In {\em Proceedings of EMNLP 2016}, 2016.
+\newblock arXiv:1606.07947.
+
+\bibitem{hsieh2023distilling}
+Cheng-Yu Hsieh, Chun-Liang Li, Chih-Kuan Yeh, Hootan Nakhost, Yasuhisa Fujii,
+  Alexander Ratner, Ranjay Krishna, Chen-Yu Lee, and Tomas Pfister.
+\newblock Distilling step-by-step! outperforming larger language models with
+  less training data and smaller model sizes.
+\newblock In {\em Findings of ACL 2023}, 2023.
+\newblock arXiv:2305.02301.
+
+\bibitem{kang2023kard}
+Minki Kang, Seanie Lee, Jinheon Baek, Kenji Kawaguchi, and Sung~Ju Hwang.
+\newblock Knowledge-augmented reasoning distillation for small language models
+  in knowledge-intensive tasks.
+\newblock In {\em Advances in Neural Information Processing Systems 36}, 2023.
+\newblock arXiv:2305.18395.
+
+\bibitem{zhang2026rlad}
+Zhaoyang Zhang, Shuli Jiang, Yantao Shen, Yuting Zhang, Dhananjay Ram, Shuo
+  Yang, Zhuowen Tu, Wei Xia, and Stefano Soatto.
+\newblock Reinforcement-aware knowledge distillation for {LLM} reasoning.
+\newblock {\em arXiv preprint arXiv:2602.22495}, 2026.
+
+\bibitem{gu2024minillm}
+Yuxian Gu, Zhonghui Dai, Furu Wei, and Minlie Huang.
+\newblock {MiniLLM}: Knowledge distillation of large language models.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2306.08543.
+
+\bibitem{boizard2025uld}
+Nicolas Boizard, Kevin El~Haddad, C{\'e}line Hudelot, and Pierre Colombo.
+\newblock Towards cross-tokenizer distillation: the universal logit
+  distillation loss for {LLMs}.
+\newblock {\em Transactions on Machine Learning Research}, 2025.
+\newblock arXiv:2402.12030.
+
+\bibitem{ye2025gad}
+Tianzhu Ye, Li~Dong, Zewen Chi, Xun Wu, Shaohan Huang, and Furu Wei.
+\newblock Black-box on-policy distillation of large language models.
+\newblock {\em arXiv preprint arXiv:2511.10643}, 2025.
+
+\bibitem{zhou2026omniopd}
+Yuhang Zhou, Lizhu Zhang, Yifan Wu, Mingyi Wang, Bo~Peng, Jiayi Liu, Xiangjun
+  Fan, and Zhuokai Zhao.
+\newblock {OmniOPD}: Logit-free on-policy distillation via speculative
+  verification.
+\newblock {\em arXiv preprint arXiv:2606.01476}, 2026.
+
+\bibitem{li2026rethinkingopd}
+Yaxuan Li, Yuxin Zuo, Bingxiang He, Jinqian Zhang, Chaojun Xiao, Cheng Qian,
+  Tianyu Yu, Huan-ang Gao, Wenkai Yang, Zhiyuan Liu, and Ning Ding.
+\newblock Rethinking on-policy distillation of large language models:
+  Phenomenology, mechanism, and recipe.
+\newblock {\em arXiv preprint arXiv:2604.13016}, 2026.
+
+\bibitem{zhu2026manyfaces}
+Siqi Zhu, Xuyan Ye, Hongyu Lu, Weiye Shi, and Ge~Liu.
+\newblock The many faces of on-policy distillation: Pitfalls, mechanisms, and
+  fixes.
+\newblock {\em arXiv preprint arXiv:2605.11182}, 2026.
+
+\bibitem{yang2026exopd}
+Wenkai Yang, Weijie Liu, Ruobing Xie, Kai Yang, Saiyong Yang, and Yankai Lin.
+\newblock Learning beyond teacher: Generalized on-policy distillation with
+  reward extrapolation.
+\newblock {\em arXiv preprint arXiv:2602.12125}, 2026.
+
+\bibitem{zhao2026opsd}
+Siyan Zhao, Zhihui Xie, Mengchen Liu, Jing Huang, Guan Pang, Feiyu Chen, and
+  Aditya Grover.
+\newblock Self-distilled reasoner: On-policy self-distillation for large
+  language models.
+\newblock {\em arXiv preprint arXiv:2601.18734}, 2026.
+
+\bibitem{shenfeld2026sdft}
+Idan Shenfeld, Mehul Damani, Jonas H{\"u}botter, and Pulkit Agrawal.
+\newblock Self-distillation enables continual learning.
+\newblock {\em arXiv preprint arXiv:2601.19897}, 2026.
+
+\bibitem{huebotter2026sdpo}
+Jonas H{\"u}botter, Frederike L{\"u}beck, Lejs Behric, Anton Baumann, Marco
+  Bagatella, Daniel Marta, Ido Hakimi, Idan Shenfeld, Thomas Kleine~Buening,
+  Carlos Guestrin, and Andreas Krause.
+\newblock Reinforcement learning via self-distillation.
+\newblock {\em arXiv preprint arXiv:2601.20802}, 2026.
+
+\bibitem{cobbe2021gsm8k}
+Karl Cobbe, Vijay Kosaraju, Mohammad Bavarian, Mark Chen, Heng Jiang, Lukasz
+  Kaiser, Matthias Plappert, Jin Tworek, Jacob Hilton, Reiichi Nakano,
+  Christopher Hesse, and John Schulman.
+\newblock Training verifiers to solve math word problems.
+\newblock {\em arXiv preprint arXiv:2110.14168}, 2021.
+
+\bibitem{lightman2024verify}
+Hunter Lightman, Vijay Kosaraju, Yura Burda, Harry Edwards, Bowen Baker, Teddy
+  Lee, Jan Leike, John Schulman, Ilya Sutskever, and Karl Cobbe.
+\newblock Let's verify step by step.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2305.20050.
+
+\bibitem{hendrycks2021math}
+Dan Hendrycks, Collin Burns, Saurav Kundu, Akul Arora, Steven Basart, Eric
+  Tang, Dan Song, and Jacob Steinhardt.
+\newblock Measuring mathematical problem solving with the {MATH} dataset.
+\newblock In {\em NeurIPS 2021 Datasets and Benchmarks Track}, 2021.
+\newblock arXiv:2103.03874.
+
+\bibitem{wang2024mathshepherd}
+Peiyi Wang, Lei Li, Zhihong Shao, R.~X. Xu, Damai Dai, Yifei Li, Deli Chen,
+  Y.~Wu, and Zhifang Sui.
+\newblock {Math-Shepherd}: Verify and reinforce {LLMs} step-by-step without
+  human annotations.
+\newblock In {\em Proceedings of ACL 2024}, 2024.
+\newblock arXiv:2312.08935.
+
+\bibitem{snell2024scaling}
+Charlie Snell, Jonathan Lee, Kelvin Xu, and Aviral Kumar.
+\newblock Scaling {LLM} test-time compute optimally can be more effective than
+  scaling model parameters.
+\newblock {\em arXiv preprint arXiv:2408.03314}, 2024.
+
+\bibitem{zelikman2022star}
+Eric Zelikman, Yuhuai Wu, Jesse Mu, and Noah~D. Goodman.
+\newblock {STaR}: Bootstrapping reasoning with reasoning.
+\newblock In {\em Advances in Neural Information Processing Systems 35}, 2022.
+\newblock arXiv:2203.14465.
+
+\bibitem{singh2024restem}
+Avi Singh, John~D. Co-Reyes, Rishabh Agarwal, Ankesh Anand, Piyush Patil,
+  et~al.
+\newblock Beyond human data: Scaling self-training for problem-solving with
+  language models.
+\newblock {\em Transactions on Machine Learning Research (TMLR)}, 2024.
+\newblock arXiv:2312.06585.
+
+\bibitem{zelikman2024quietstar}
+Eric Zelikman, Georges Harik, Yijia Shao, Varuna Jayasiri, Nick Haber, and
+  Noah~D. Goodman.
+\newblock {Quiet-STaR}: Language models can teach themselves to think before
+  speaking.
+\newblock {\em arXiv preprint arXiv:2403.09629}, 2024.
+
+\bibitem{lavrenko2001relevance}
+Victor Lavrenko and W.~Bruce Croft.
+\newblock Relevance-based language models.
+\newblock In {\em Proceedings of the 24th Annual International ACM SIGIR
+  Conference on Research and Development in Information Retrieval (SIGIR)},
+  pages 120--127, 2001.
+
+\bibitem{zheng2024stepback}
+Huaixiu~Steven Zheng, Swaroop Mishra, Xinyun Chen, Heng-Tze Cheng, Ed~H. Chi,
+  Quoc~V. Le, and Denny Zhou.
+\newblock Take a step back: Evoking reasoning via abstraction in large language
+  models.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2310.06117.
+
+\bibitem{gao2022hyde}
+Luyu Gao, Xueguang Ma, Jimmy Lin, and Jamie Callan.
+\newblock Precise zero-shot dense retrieval without relevance labels.
+\newblock {\em arXiv preprint arXiv:2212.10496}, 2022.
+
+\bibitem{wang2023query2doc}
+Liang Wang, Nan Yang, and Furu Wei.
+\newblock {Query2doc}: Query expansion with large language models.
+\newblock {\em arXiv preprint arXiv:2303.07678}, 2023.
+
+\bibitem{khattab2020colbert}
+Omar Khattab and Matei Zaharia.
+\newblock {ColBERT}: Efficient and effective passage search via contextualized
+  late interaction over {BERT}.
+\newblock {\em arXiv preprint arXiv:2004.12832}, 2020.
+
+\bibitem{formal2021splade}
+Thibault Formal, Benjamin Piwowarski, and St\'ephane Clinchant.
+\newblock {SPLADE}: Sparse lexical and expansion model for first stage ranking.
+\newblock {\em arXiv preprint arXiv:2107.05720}, 2021.
+
+\bibitem{ma2023repllama}
+Xueguang Ma, Liang Wang, Nan Yang, Furu Wei, and Jimmy Lin.
+\newblock Fine-tuning {LLaMA} for multi-stage text retrieval.
+\newblock {\em arXiv preprint arXiv:2310.08319}, 2023.
+
+\bibitem{lee2024nvembed}
+Chankyu Lee, Rajarshi Roy, Mengyao Xu, Jonathan Raiman, Mohammad Shoeybi, Bryan
+  Catanzaro, and Wei Ping.
+\newblock {NV-Embed}: Improved techniques for training {LLMs} as generalist
+  embedding models.
+\newblock {\em arXiv preprint arXiv:2405.17428}, 2024.
+
+\bibitem{zhang2017metaqa}
+Yuyu Zhang, Hanjun Dai, Zornitsa Kozareva, Alexander~J. Smola, and Le~Song.
+\newblock Variational reasoning for question answering with knowledge graph.
+\newblock {\em arXiv preprint arXiv:1709.04071}, 2017.
+
+\bibitem{yih2016webqsp}
+Wen-tau Yih, Matthew Richardson, Christopher Meek, Ming-Wei Chang, and Jina
+  Suh.
+\newblock The value of semantic parse labeling for knowledge base question
+  answering.
+\newblock In {\em Proceedings of the 54th Annual Meeting of the Association for
+  Computational Linguistics (Volume 2: Short Papers)}, pages 201--206, 2016.
+
+\bibitem{talmor2018complexwebq}
+Alon Talmor and Jonathan Berant.
+\newblock The web as a knowledge-base for answering complex questions.
+\newblock {\em arXiv preprint arXiv:1803.06643}, 2018.
+
+\bibitem{yang2018hotpotqa}
+Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Bengio, William~W. Cohen, Ruslan
+  Salakhutdinov, and Christopher~D. Manning.
+\newblock {HotpotQA}: A dataset for diverse, explainable multi-hop question
+  answering.
+\newblock {\em arXiv preprint arXiv:1809.09600}, 2018.
+
+\bibitem{anthropic2024contextual}
+{Anthropic}.
+\newblock Introducing contextual retrieval.
+\newblock anthropic.com/news/contextual-retrieval, 2024.
+
+\bibitem{sarthi2024raptor}
+Parth Sarthi, Salman Abdullah, Aditi Tuli, Shubh Khanna, Anna Goldie, and
+  Christopher~D. Manning.
+\newblock {RAPTOR}: Recursive abstractive processing for tree-organized
+  retrieval.
+\newblock {\em arXiv preprint arXiv:2401.18059}, 2024.
+
+\bibitem{asai2023selfrag}
+Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, and Hannaneh Hajishirzi.
+\newblock {Self-RAG}: Learning to retrieve, generate, and critique through
+  self-reflection.
+\newblock {\em arXiv preprint arXiv:2310.11511}, 2023.
+
+\bibitem{yan2024crag}
+Shi-Qi Yan, Jia-Chen Gu, Yun Zhu, and Zhen-Hua Ling.
+\newblock Corrective retrieval augmented generation.
+\newblock {\em arXiv preprint arXiv:2401.15884}, 2024.
+
+\bibitem{edge2024graphrag}
+Darren Edge, Ha~Trinh, Newman Cheng, Joshua Bradley, Alex Chao, Apurva Mody,
+  Steven Truitt, Dasha Metropolitansky, Robert~Osazuwa Ness, and Jonathan
+  Larson.
+\newblock From local to global: A graph {RAG} approach to query-focused
+  summarization.
+\newblock {\em arXiv preprint arXiv:2404.16130}, 2024.
+
+\bibitem{gunther2024latechunking}
+Michael G\"unther, Isabelle Mohr, Daniel~James Williams, Bo~Wang, and Han Xiao.
+\newblock Late chunking: Contextual chunk embeddings using long-context
+  embedding models.
+\newblock {\em arXiv preprint arXiv:2409.04701}, 2024.
+
+\bibitem{jeong2024adaptiverag}
+Soyeong Jeong, Jinheon Baek, Sukmin Cho, Sung~Ju Hwang, and Jong~C. Park.
+\newblock {Adaptive-RAG}: Learning to adapt retrieval-augmented large language
+  models through question complexity.
+\newblock In {\em Proceedings of NAACL 2024}, 2024.
+\newblock arXiv:2403.14403.
+
+\bibitem{zhang2024raft}
+Tianjun Zhang, Shishir~G. Patil, Naman Jain, Sheng Shen, Matei Zaharia, Ion
+  Stoica, and Joseph~E. Gonzalez.
+\newblock {RAFT}: Adapting language model to domain specific {RAG}.
+\newblock {\em arXiv preprint arXiv:2403.10131}, 2024.
+
+\bibitem{guo2024lightrag}
+Zirui Guo, Lianghao Xia, Yanhua Yu, Tu~Ao, and Chao Huang.
+\newblock {LightRAG}: Simple and fast retrieval-augmented generation.
+\newblock {\em arXiv preprint arXiv:2410.05779}, 2024.
+
+\bibitem{faysse2025colpali}
+Manuel Faysse, Hugues Sibille, Tony Wu, Bilel Omrani, Gautier Viaud, C\'eline
+  Hudelot, and Pierre Colombo.
+\newblock {ColPali}: Efficient document retrieval with vision language models.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2025.
+\newblock arXiv:2407.01449.
+
+\bibitem{chan2024cag}
+Brian~J. Chan, Chao-Ting Chen, Jui-Hung Cheng, and Hen-Hsen Huang.
+\newblock Don't do {RAG}: When cache-augmented generation is all you need for
+  knowledge tasks.
+\newblock {\em arXiv preprint arXiv:2412.15605}, 2024.
+
+\bibitem{hong2025contextrot}
+Kelly Hong, Anton Troynikov, and Jeff Huber.
+\newblock Context rot: How increasing input tokens impacts {LLM} performance.
+\newblock Chroma technical report, 2025.
+\newblock trychroma.com/research/context-rot.
+
+\bibitem{zou2024poisonedrag}
+Wei Zou, Runpeng Geng, Binghui Wang, and Jinyuan Jia.
+\newblock {PoisonedRAG}: Knowledge corruption attacks to retrieval-augmented
+  generation of large language models.
+\newblock {\em arXiv preprint arXiv:2402.07867}, 2024.
+
+\bibitem{barnett2024seven}
+Scott Barnett, Stefanus Kurniawan, Srikanth Thudumu, Zach Brannelly, and
+  Mohamed Abdelrazek.
+\newblock Seven failure points when engineering a retrieval augmented
+  generation system.
+\newblock {\em arXiv preprint arXiv:2401.05856}, 2024.
+
+\bibitem{magesh2024hallucination}
+Varun Magesh, Faiz Surani, Matthew Dahl, Mirac Suzgun, Christopher~D. Manning,
+  and Daniel~E. Ho.
+\newblock Hallucination-free? assessing the reliability of leading {AI} legal
+  research tools.
+\newblock {\em arXiv preprint arXiv:2405.20362}, 2024.
+
+\bibitem{dettmers2022llmint8}
+Tim Dettmers, Mike Lewis, Younes Belkada, and Luke Zettlemoyer.
+\newblock {LLM.int8()}: 8-bit matrix multiplication for transformers at scale.
+\newblock In {\em Advances in Neural Information Processing Systems 35}, 2022.
+\newblock arXiv:2208.07339.
+
+\bibitem{xiao2023smoothquant}
+Guangxuan Xiao, Ji~Lin, Mickael Seznec, Hao Wu, Julien Demouth, and Song Han.
+\newblock {SmoothQuant}: Accurate and efficient post-training quantization for
   large language models.
-\newblock In {\em ICLR}, 2024.
+\newblock In {\em International Conference on Machine Learning (ICML)}, 2023.
+\newblock arXiv:2211.10438.
+
+\bibitem{frantar2023gptq}
+Elias Frantar, Saleh Ashkboos, Torsten Hoefler, and Dan Alistarh.
+\newblock {GPTQ}: Accurate post-training quantization for generative
+  pre-trained transformers.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2023.
+\newblock arXiv:2210.17323.
+
+\bibitem{lin2024awq}
+Ji~Lin, Jiaming Tang, Haotian Tang, Shang Yang, Wei-Ming Chen, Wei-Chen Wang,
+  Guangxuan Xiao, Xingyu Dang, Chuang Gan, and Song Han.
+\newblock {AWQ}: Activation-aware weight quantization for on-device {LLM}
+  compression and acceleration.
+\newblock In {\em Proceedings of Machine Learning and Systems (MLSys)}, 2024.
+\newblock arXiv:2306.00978.
+
+\bibitem{yu2022orca}
+Gyeong-In Yu, Joo~Seong Jeong, Geon-Woo Kim, Soojeong Kim, and Byung-Gon Chun.
+\newblock Orca: A distributed serving system for transformer-based generative
+  models.
+\newblock In {\em 16th USENIX Symposium on Operating Systems Design and
+  Implementation (OSDI)}, 2022.
+
+\bibitem{kwon2023vllm}
+Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody~Hao Yu,
+  Joseph Gao, Hao Zhang, and Ion Stoica.
+\newblock Efficient memory management for large language model serving with
+  {PagedAttention}.
+\newblock In {\em Proceedings of the 29th Symposium on Operating Systems
+  Principles (SOSP)}, 2023.
+\newblock arXiv:2309.06180.
+
+\bibitem{zheng2024sglang}
+Lianmin Zheng, Liangsheng Yin, Zhiqiang Xie, Chuyue Sun, Jeff Huang, Cody~Hao
+  Yu, Shiyi Cao, Christos Kozyrakis, Ion Stoica, Clark Barrett, and Ying Sheng.
+\newblock {SGLang}: Efficient execution of structured language model programs.
+\newblock In {\em Advances in Neural Information Processing Systems 37}, 2024.
+\newblock arXiv:2312.07104.
+
+\bibitem{sheng2023slora}
+Ying Sheng, Shiyi Cao, Dacheng Li, Coleman Hooper, Nicholas Lee, Shuo Yang,
+  Christopher Chou, Banghua Zhu, Lianmin Zheng, Kurt Keutzer, Joseph~E.
+  Gonzalez, and Ion Stoica.
+\newblock {S-LoRA}: Serving thousands of concurrent {LoRA} adapters.
+\newblock {\em arXiv preprint arXiv:2311.03285}, 2023.
+
+\bibitem{sheng2023flexgen}
+Ying Sheng, Lianmin Zheng, Binhang Yuan, Zhuohan Li, Max Ryabinin, Beidi Chen,
+  Percy Liang, Christopher R{\'e}, Ion Stoica, and Ce~Zhang.
+\newblock {FlexGen}: High-throughput generative inference of large language
+  models with a single {GPU}.
+\newblock In {\em International Conference on Machine Learning (ICML)}, 2023.
+\newblock arXiv:2303.06865.
+
+\bibitem{leviathan2023speculative}
+Yaniv Leviathan, Matan Kalman, and Yossi Matias.
+\newblock Fast inference from transformers via speculative decoding.
+\newblock In {\em International Conference on Machine Learning (ICML)}, 2023.
+\newblock arXiv:2211.17192.
+
+\bibitem{chen2023accelerating}
+Charlie Chen, Sebastian Borgeaud, Geoffrey Irving, Jean-Baptiste Lespiau,
+  Laurent Sifre, and John Jumper.
+\newblock Accelerating large language model decoding with speculative sampling.
+\newblock {\em arXiv preprint arXiv:2302.01318}, 2023.
+
+\bibitem{miao2024specinfer}
+Xupeng Miao, Gabriele Oliaro, Zhihao Zhang, Xinhao Cheng, Zeyu Wang, Zhengxin
+  Zhang, Rae Ying~Yee Wong, Alan Zhu, Lijie Yang, Xiaoxiang Shi, et~al.
+\newblock {SpecInfer}: Accelerating large language model serving with
+  tree-based speculative inference and verification.
+\newblock In {\em ASPLOS 2024}, 2024.
+\newblock arXiv:2305.09781.
+
+\bibitem{cai2024medusa}
+Tianle Cai, Yuhong Li, Zhengyang Geng, Hongwu Peng, Jason~D. Lee, Deming Chen,
+  and Tri Dao.
+\newblock Medusa: Simple {LLM} inference acceleration framework with multiple
+  decoding heads.
+\newblock In {\em International Conference on Machine Learning (ICML)}, 2024.
+\newblock arXiv:2401.10774.
+
+\bibitem{li2024eagle}
+Yuhui Li, Fangyun Wei, Chao Zhang, and Hongyang Zhang.
+\newblock {EAGLE}: Speculative sampling requires rethinking feature
+  uncertainty.
+\newblock In {\em International Conference on Machine Learning (ICML)}, 2024.
+\newblock arXiv:2401.15077.
+
+\bibitem{zhong2024distserve}
+Yinmin Zhong, Shengyu Liu, Junda Chen, Jianbo Hu, Yibo Zhu, Xuanzhe Liu, Xin
+  Jin, and Hao Zhang.
+\newblock {DistServe}: Disaggregating prefill and decoding for
+  goodput-optimized large language model serving.
+\newblock In {\em 18th USENIX Symposium on Operating Systems Design and
+  Implementation (OSDI)}, 2024.
+\newblock arXiv:2401.09670.
+
+\bibitem{qin2024mooncake}
+Ruoyu Qin, Zheming Li, Weiran He, Mingxing Zhang, Yongwei Wu, Weimin Zheng, and
+  Xinran Xu.
+\newblock Mooncake: A {KVCache}-centric disaggregated architecture for {LLM}
+  serving.
+\newblock {\em arXiv preprint arXiv:2407.00079}, 2024.
+
+\bibitem{jin2024pdserve}
+Yibo Jin, Tao Wang, Huimin Lin, Mingyang Song, Peiyang Li, et~al.
+\newblock {P/D-Serve}: Serving disaggregated large language model at scale.
+\newblock {\em arXiv preprint arXiv:2408.08147}, 2024.
+
+\bibitem{dror2018hitchhiker}
+Rotem Dror, Gili Baumer, Segev Shlomov, and Roi Reichart.
+\newblock The hitchhiker's guide to testing statistical significance in natural
+  language processing.
+\newblock In {\em Proceedings of the 56th Annual Meeting of the Association for
+  Computational Linguistics (ACL)}, pages 1383--1392, 2018.
+
+\bibitem{guo2017calibration}
+Chuan Guo, Geoff Pleiss, Yu~Sun, and Kilian~Q. Weinberger.
+\newblock On calibration of modern neural networks.
+\newblock In {\em Proceedings of the 34th International Conference on Machine
+  Learning (ICML)}, 2017.
+\newblock arXiv:1706.04599.
+
+\bibitem{hendrycks2021mmlu}
+Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dan Song,
+  and Jacob Steinhardt.
+\newblock Measuring massive multitask language understanding.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2021.
+\newblock arXiv:2009.03300.
+
+\bibitem{srivastava2023bigbench}
+Aarohi Srivastava, Abhishek Rastogi, Abhishek Rao, Abu Awal~Md Shoeb, Abubakar
+  Abid, et~al.
+\newblock Beyond the imitation game: Quantifying and extrapolating the
+  capabilities of language models.
+\newblock {\em Transactions on Machine Learning Research (TMLR)}, 2023.
+\newblock arXiv:2206.04615.
+
+\bibitem{lin2022truthfulqa}
+Stephanie Lin, Jacob Hilton, and Owain Evans.
+\newblock {TruthfulQA}: Measuring how models mimic human falsehoods.
+\newblock In {\em Proceedings of ACL 2022}, 2022.
+\newblock arXiv:2109.07958.
+
+\bibitem{liang2022helm}
+Percy Liang, Rishi Bommasani, Tony Lee, Dimitris Tsipras, Dilara Soylu,
+  Michihiro Yasunaga, Yian Zhang, Deepak Narayanan, Yuhuai Wu, Ananya Kumar,
+  et~al.
+\newblock Holistic evaluation of language models.
+\newblock {\em Transactions on Machine Learning Research (TMLR)}, 2023.
+\newblock arXiv:2211.09110.
+
+\bibitem{zheng2023judging}
+Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao
+  Zhuang, Zi~Lin, Zhuohan Li, Dacheng Li, Eric~P. Xing, Hao Zhang, and Ion
+  Stoica.
+\newblock Judging {LLM}-as-a-judge with {MT-Bench} and {Chatbot Arena}.
+\newblock In {\em Advances in Neural Information Processing Systems 36
+  (Datasets and Benchmarks Track)}, 2023.
+\newblock arXiv:2306.05685.
+
+\bibitem{chiang2024arena}
+Wei-Lin Chiang, Lianmin Zheng, Ying Sheng, Anastasios~Nikolas Angelopoulos,
+  Tianle Li, Dacheng Li, Hao Zhang, Banghua Zhu, Michael Jordan, and Ion
+  Stoica.
+\newblock Chatbot arena: An open platform for evaluating {LLMs} by human
+  preference.
+\newblock {\em arXiv preprint arXiv:2403.04132}, 2024.
+
+\bibitem{liu2024agentbench}
+Xiao Liu, Hao Yu, Hanchen Zhang, Yifan Xu, Xuanyu Lei, Hanyu Lai, Yu~Gu,
+  Hangliang Ding, Kaiwen Men, Kejuan Yang, et~al.
+\newblock {AgentBench}: Evaluating {LLMs} as agents.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2308.03688.
+
+\bibitem{mialon2024gaia}
+Gr{\'e}goire Mialon, Cl{\'e}mentine Fourrier, Craig Swift, Thomas Wolf, Yann
+  LeCun, and Thomas Batty.
+\newblock {GAIA}: A benchmark for general {AI} assistants.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2311.12983.
+
+\bibitem{jimenez2024swebench}
+Carlos~E. Jimenez, John Yang, Alexander Wettig, Shunyu Yao, Kexin Pei, Ofir
+  Press, and Karthik Narasimhan.
+\newblock {SWE-bench}: Can language models resolve real-world {GitHub} issues?
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+\newblock arXiv:2310.06770.
+
+\bibitem{openai2024sweverified}
+{OpenAI}.
+\newblock Introducing {SWE-bench Verified}.
+\newblock \url{https://openai.com/index/introducing-swe-bench-verified/}, 2024.
+
+\bibitem{biderman2024lessons}
+Stella Biderman, Hailey Schoelkopf, Lintang Sutawika, Leo Gao, Jonathan Tow,
+  et~al.
+\newblock Lessons from the trenches on reproducible evaluation of language
+  models.
+\newblock {\em arXiv preprint arXiv:2405.14782}, 2024.
+
+\bibitem{greshake2023indirect}
+Kai Greshake, Sahar Abdelnabi, Shailesh Mishra, Christoph Endres, Thorsten
+  Holz, and Mario Fritz.
+\newblock Not what you've signed up for: Compromising real-world
+  {LLM}-integrated applications with indirect prompt injection.
+\newblock {\em arXiv preprint arXiv:2302.12173}, 2023.
+
+\bibitem{owasp2025llmtop10}
+{OWASP Gen AI Security Project}.
+\newblock {OWASP} top 10 for {LLM} applications 2025.
+\newblock \url{https://genai.owasp.org/llm-top-10/}, 2025.
+
+\bibitem{mitreatlas}
+{The MITRE Corporation}.
+\newblock {MITRE ATLAS}: Adversarial threat landscape for {AI} systems.
+\newblock atlas.mitre.org.
+\newblock cơ sở tri thức công khai, truy cập tháng 10/2026.
+
+\bibitem{anthropic2024manyshot}
+{Anthropic}.
+\newblock Many-shot jailbreaking.
+\newblock anthropic.com/research/many-shot-jailbreaking, 2024.
+
+\bibitem{russinovich2024crescendo}
+Mark Russinovich, Ahmed Salem, and Ronen Eldan.
+\newblock Great, now write an article about that: The crescendo multi-turn
+  {LLM} jailbreak attack.
+\newblock {\em arXiv preprint arXiv:2404.01833}, 2024.
+
+\bibitem{hughes2024bon}
+John Hughes, Sara Price, Aengus Lynch, Rylan Schaeffer, Fazl Barez, Sanmi
+  Koyejo, Henry Sleight, Erik Jones, Ethan Perez, and Mrinank Sharma.
+\newblock Best-of-{N} jailbreaking.
+\newblock {\em arXiv preprint arXiv:2412.03556}, 2024.
+
+\bibitem{shen2023dan}
+Xinyue Shen, Zeyuan Chen, Michael Backes, Yun Shen, and Yang Zhang.
+\newblock ``do anything now'': Characterizing and evaluating in-the-wild
+  jailbreak prompts on large language models.
+\newblock {\em arXiv preprint arXiv:2308.03825}, 2023.
+
+\bibitem{wei2023jailbroken}
+Alexander Wei, Nika Haghtalab, and Jacob Steinhardt.
+\newblock Jailbroken: How does {LLM} safety training fail?
+\newblock {\em arXiv preprint arXiv:2307.02483}, 2023.
+
+\bibitem{yong2023lowresource}
+Zheng-Xin Yong, Cristina Menghini, and Stephen~H. Bach.
+\newblock Low-resource languages jailbreak {GPT-4}.
+\newblock In {\em NeurIPS Workshop on Socially Responsible Language Modelling
+  Research (SoLaR)}, 2023.
+\newblock arXiv:2310.02446.
+
+\bibitem{souly2025poisonconstant}
+Alexandra Souly, Javier Rando, Ed~Chapman, Xander Davies, Burak Hasircioglu,
+  Ezzeldin Shereen, Carlos Mougan, Vasilios Mavroudis, Erik Jones, Chris Hicks,
+  Nicholas Carlini, Yarin Gal, and Robert Kirk.
+\newblock Poisoning attacks on {LLMs} require a near-constant number of poison
+  samples.
+\newblock {\em arXiv preprint arXiv:2510.07192}, 2025.
+
+\bibitem{shokri2017membership}
+Reza Shokri, Marco Stronati, Congzheng Song, and Vitaly Shmatikov.
+\newblock Membership inference attacks against machine learning models.
+\newblock In {\em Proceedings of the IEEE Symposium on Security and Privacy
+  (S\&P)}, 2017.
+\newblock arXiv:1610.05820.
+
+\bibitem{carlini2021extracting}
+Nicholas Carlini, Florian Tramer, Eric Wallace, Matthew Jagielski, Ariel
+  Herbert-Voss, Katherine Lee, Adam Roberts, Tom Brown, Dawn Song, Ulfar
+  Erlingsson, Alina Oprea, and Colin Raffel.
+\newblock Extracting training data from large language models.
+\newblock {\em arXiv preprint arXiv:2012.07805}, 2021.
+
+\bibitem{nasr2023scalable}
+Milad Nasr, Nicholas Carlini, Jonathan Hayase, Matthew Jagielski, A.~Feder
+  Cooper, Daphne Ippolito, Christopher~A. Choquette-Choo, Eric Wallace, Florian
+  Tram{\`e}r, and Katherine Lee.
+\newblock Scalable extraction of training data from (production) language
+  models.
+\newblock {\em arXiv preprint arXiv:2311.17035}, 2023.
+
+\bibitem{tramer2016stealing}
+Florian Tram{\`e}r, Fan Zhang, Ari Juels, Michael~K. Reiter, and Thomas
+  Ristenpart.
+\newblock Stealing machine learning models via prediction {APIs}.
+\newblock In {\em Proceedings of USENIX Security 2016}, 2016.
+\newblock arXiv:1609.02943.
+
+\bibitem{carlini2024stealing}
+Nicholas Carlini, Daniel Paleka, Krishnamurthy~Dj Dvijotham, Thomas Steinke,
+  Jonathan Hayase, A.~Feder Cooper, Katherine Lee, Matthew Jagielski, Milad
+  Nasr, Arthur Conmy, Itay Yona, Eric Wallace, David Rolnick, and Florian
+  Tram{\`e}r.
+\newblock Stealing part of a production language model.
+\newblock {\em arXiv preprint arXiv:2403.06634}, 2024.
+
+\bibitem{wallace2024instructionhierarchy}
+Eric Wallace, Kai Xiao, Reimar Leike, Lilian Weng, Johannes Heidecke, and Alex
+  Beutel.
+\newblock The instruction hierarchy: Training {LLMs} to prioritize privileged
+  instructions.
+\newblock {\em arXiv preprint arXiv:2404.13208}, 2024.
+
+\bibitem{inan2023llamaguard}
+Hakan Inan, Kartikeya Upasani, Jianfeng Chi, Rashi Rungta, Krithika Iyer,
+  Yuning Mao, Michael Tontchev, Qing Hu, Brian Fuller, Davide Testuggine, and
+  Madian Khabsa.
+\newblock {Llama Guard}: {LLM}-based input-output safeguard for human-ai
+  conversations.
+\newblock {\em arXiv preprint arXiv:2312.06674}, 2023.
+
+\bibitem{chennabasappa2025llamafirewall}
+Sahana Chennabasappa, Cyrus Nikolaidis, Daniel Song, David Molnar, et~al.
+\newblock {LlamaFirewall}: An open source guardrail system for building secure
+  ai agents.
+\newblock {\em arXiv preprint arXiv:2505.03574}, 2025.
+
+\bibitem{perez2022redteaming}
+Ethan Perez, Saffron Huang, Francis Song, Trevor Cai, Roman Ring, John
+  Aslanides, Amelia Glaese, Nat McAleese, and Geoffrey Irving.
+\newblock Red teaming language models with language models.
+\newblock {\em arXiv preprint arXiv:2202.03286}, 2022.
+
+\bibitem{zou2023universal}
+Andy Zou, Zifan Wang, Nicholas Carlini, Milad Nasr, J.~Zico Kolter, and Matt
+  Fredrikson.
+\newblock Universal and transferable adversarial attacks on aligned language
+  models.
+\newblock {\em arXiv preprint arXiv:2307.15043}, 2023.
+
+\bibitem{chao2023pair}
+Patrick Chao, Alexander Robey, Edgar Dobriban, Hamed Hassani, George~J. Pappas,
+  and Eric Wong.
+\newblock Jailbreaking black box large language models in twenty queries.
+\newblock {\em arXiv preprint arXiv:2310.08419}, 2023.
+
+\bibitem{mazeika2024harmbench}
+Mantas Mazeika, Long Phan, Xuwang Yin, Andy Zou, Zifan Wang, Norman Mu, Elham
+  Sakhaee, Nathaniel Li, Steven Basart, Bo~Li, David Forsyth, and Dan
+  Hendrycks.
+\newblock {HarmBench}: A standardized evaluation framework for automated red
+  teaming and robust refusal.
+\newblock {\em arXiv preprint arXiv:2402.04249}, 2024.
+
+\bibitem{chao2024jailbreakbench}
+Patrick Chao, Edoardo Debenedetti, Alexander Robey, Maksym Andriushchenko,
+  Francesco Croce, Vikash Sehwag, Edgar Dobriban, Nicolas Flammarion, George~J.
+  Pappas, Florian Tram{\`e}r, Hamed Hassani, and Eric Wong.
+\newblock {JailbreakBench}: An open robustness benchmark for jailbreaking large
+  language models.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS),
+  Datasets and Benchmarks Track}, 2024.
+
+\bibitem{souly2024strongreject}
+Alexandra Souly, Qingyuan Lu, Dillon Bowen, Tu~Trinh, Elvis Hsieh, Sana Pandey,
+  Pieter Abbeel, Justin Svegliato, Scott Emmons, Olivia Watkins, and Sam Toyer.
+\newblock A {StrongREJECT} for empty jailbreaks.
+\newblock {\em arXiv preprint arXiv:2402.10260}, 2024.
+
+\bibitem{debenedetti2024agentdojo}
+Edoardo Debenedetti, Jie Zhang, Mislav Balunovi{\'c}, Luca Beurer-Kellner, Marc
+  Fischer, and Florian Tram{\`e}r.
+\newblock {AgentDojo}: A dynamic environment to evaluate prompt injection
+  attacks and defenses for {LLM} agents.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS),
+  Datasets and Benchmarks Track}, 2024.
+
+\bibitem{andriushchenko2025agentharm}
+Maksym Andriushchenko, Alexandra Souly, Mateusz Dziemian, Derek Duenas, Maxwell
+  Lin, Justin Wang, Dan Hendrycks, Andy Zou, Zico Kolter, Matt Fredrikson, Eric
+  Winsor, Jerome Wynne, Yarin Gal, and Xander Davies.
+\newblock {AgentHarm}: A benchmark for measuring harmfulness of {LLM} agents.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2025.
+
+\bibitem{rottger2024xstest}
+Paul R{\"o}ttger, Hannah~Rose Kirk, Bertie Vidgen, Giuseppe Attanasio, Federico
+  Bianchi, and Dirk Hovy.
+\newblock {XSTest}: A test suite for identifying exaggerated safety behaviours
+  in large language models.
+\newblock In {\em Proceedings of the 2024 Conference of the North American
+  Chapter of the Association for Computational Linguistics (NAACL)}, 2024.
+
+\bibitem{zheng2024llamafactory}
+Yaowei Zheng, Richong Zhang, Junhao Zhang, Yanhan Ye, Zheyan Luo, Zhangchi
+  Feng, and Yongqiang Ma.
+\newblock {LlamaFactory}: Unified efficient fine-tuning of 100+ language
+  models.
+\newblock In {\em Proceedings of ACL 2024, System Demonstrations}, 2024.
+\newblock arXiv:2403.13372.
+
+\bibitem{zhao2024swift}
+Yuze Zhao, Jintao Huang, Jinghan Hu, Xingjun Wang, Yunlin Mao, Daoze Zhang,
+  Hong Zhang, Zeyinzi Jiang, Zhikai Wu, Baole Ai, Ang Wang, Wenmeng Zhou, and
+  Yingda Chen.
+\newblock {SWIFT}: A scalable lightweight infrastructure for fine-tuning.
+\newblock {\em arXiv preprint arXiv:2408.05517}, 2024.
+
+\bibitem{chen2016sublinear}
+Tianqi Chen, Bing Xu, Chiyuan Zhang, and Carlos Guestrin.
+\newblock Training deep nets with sublinear memory cost.
+\newblock {\em arXiv preprint arXiv:1604.06174}, 2016.
+
+\bibitem{wijmans2025cce}
+Erik Wijmans, Brody Huval, Alexander Hertzberg, Vladlen Koltun, and Philipp
+  Kr\"ahenb\"uhl.
+\newblock Cut your losses in large-vocabulary language models.
+\newblock In {\em International Conference on Learning Representations (ICLR),
+  Oral}, 2025.
+\newblock arXiv:2411.09009.
+
+\bibitem{shi2024instruction}
+Zhengyan Shi, Adam~X. Yang, Bin Wu, Laurence Aitchison, Emine Yilmaz, and Aldo
+  Lipani.
+\newblock Instruction tuning with loss over instructions.
+\newblock In {\em Advances in Neural Information Processing Systems 37
+  (NeurIPS)}, 2024.
+\newblock arXiv:2405.14394.
+
+\bibitem{beyer2016sre}
+Betsy Beyer, Chris Jones, Jennifer Petoff, and Niall~Richard Murphy, editors.
+\newblock {\em Site Reliability Engineering: How Google Runs Production
+  Systems}.
+\newblock O'Reilly Media, 2016.
+\newblock Chương 6, ``Monitoring Distributed Systems''. Bản trực tuyến:
+  \url{https://sre.google/sre-book/monitoring-distributed-systems/}.
+
+\bibitem{otel2026genaisemconv}
+{OpenTelemetry Authors}.
+\newblock {OpenTelemetry} semantic conventions for generative {AI}.
+\newblock \url{https://github.com/open-telemetry/semantic-conventions-genai},
+  2026.
+\newblock Trạng thái tài liệu: Development. Truy cập: 2026-10-28.
+
+\bibitem{joachims2016unbiased}
+Thorsten Joachims, Adith Swaminathan, and Tobias Schnabel.
+\newblock Unbiased learning-to-rank with biased feedback.
+\newblock {\em arXiv preprint arXiv:1608.04468}, 2016.
+
+\bibitem{hodgson2017featuretoggles}
+Pete Hodgson.
+\newblock Feature toggles (aka feature flags).
+\newblock \url{https://martinfowler.com/articles/feature-toggles.html}, 2017.
+\newblock Truy cập: 2026-10-28.
+
+\bibitem{ong2024routellm}
+Isaac Ong, Amjad Almahairi, Vincent Wu, Wei-Lin Chiang, Tianhao Wu, Joseph~E.
+  Gonzalez, M.~Waleed Kadous, and Ion Stoica.
+\newblock {RouteLLM}: Learning to route {LLMs} with preference data.
+\newblock {\em arXiv preprint arXiv:2406.18665}, 2024.
+
+\bibitem{tay2022efficient}
+Yi~Tay, Mostafa Dehghani, Dara Bahri, and Donald Metzler.
+\newblock Efficient transformers: A survey.
+\newblock {\em ACM Computing Surveys}, 55(6), 2022.
+\newblock arXiv:2009.06732.
+
+\bibitem{zhao2023survey}
+Wayne~Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Xiaolei Wang, Yupeng Hou,
+  Yingqian Min, Beichen Zhang, Junjie Zhang, Zican Dong, et~al.
+\newblock A survey of large language models.
+\newblock {\em arXiv preprint arXiv:2303.18223}, 2023.
 
 \end{thebibliography}

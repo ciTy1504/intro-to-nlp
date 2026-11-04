@@ -1,0 +1,42 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_rl/intro.tex
+% Chương mới (2026): tách toàn bộ phần RL, căn chỉnh và chưng cất ra khỏi
+% chương tinh chỉnh, chương suy luận và chương hiệu quả.
+
+\chapter{HẬU HUẤN LUYỆN: HỌC TĂNG CƯỜNG, CĂN CHỈNH VÀ CHƯNG CẤT}
+\label{chap:post_training}
+
+Chương~\ref{chap:finetuning_alignment} dừng lại ở tinh chỉnh theo chỉ dẫn. Sau bước đó, mô hình đã biết tuân theo mệnh lệnh, nhưng vẫn có thể tạo ra các kết quả không mong muốn:
+\begin{itemize}
+    \item \textbf{Không hữu ích:} trả lời “tôi không biết” quá thường xuyên, hoặc đưa ra các câu trả lời không liên quan.
+    \item \textbf{Không trung thực:} tự tin bịa đặt thông tin, trích dẫn các nguồn không tồn tại.
+    \item \textbf{Độc hại:} tạo ra nội dung nguy hiểm, thiên vị hoặc xúc phạm, ngay cả khi không được yêu cầu trực tiếp.
+\end{itemize}
+
+Các khái niệm “hữu ích”, “trung thực”, “vô hại” đều phức tạp, mơ hồ và phụ thuộc ngữ cảnh, nên không viết thành một hàm mất mát đơn giản được. Mục tiêu của quá trình \textbf{căn chỉnh (alignment)} thường được tóm trong ba nguyên tắc do các nhà nghiên cứu tại Anthropic đề xuất, gọi là “HHH”:
+\begin{enumerate}
+    \item \textbf{Helpful (hữu ích):} mô hình nên thực hiện ý định của người dùng một cách hiệu quả và đầy đủ, tuân theo chỉ dẫn thay vì lảng tránh hoặc từ chối một cách không cần thiết.
+    \item \textbf{Honest (trung thực):} mô hình không nên cố ý lừa dối hoặc bịa đặt. Khi không chắc chắn, nó nên thể hiện sự không chắc chắn đó thay vì đưa ra một câu trả lời sai một cách tự tin.
+    \item \textbf{Harmless (vô hại):} mô hình không nên gây tác hại, dù cho người dùng trực tiếp hay cho xã hội nói chung, và phải từ chối các yêu cầu tạo ra nội dung nguy hiểm, phi đạo đức hoặc bất hợp pháp.
+\end{enumerate}
+Cân bằng ba mục tiêu này là việc khó: một câu trả lời hoàn toàn trung thực có thể gây tổn thương và vì vậy không “vô hại”.
+
+\paragraph{Vì sao ba chữ H cần tới cả một chương.} Nếu chỉ cần dạy mô hình bắt chước những câu trả lời tốt do con người viết thì tinh chỉnh có giám sát đã đủ, và chương này sẽ không tồn tại. Nó tồn tại vì ba lý do mà các mục sau sẽ triển khai.
+
+Thứ nhất, với một câu hỏi mở, \emph{ta không có sẵn câu trả lời đúng để bắt chước}. Thứ thu thập được rẻ hơn nhiều là một \emph{so sánh}: giữa hai câu trả lời, người đọc thích câu nào hơn. Chuyển một đống so sánh thành một mô hình ngôn ngữ là bài toán của học tăng cường từ phản hồi con người, và của cả họ phương pháp ra đời sau nó.
+
+Thứ hai, huấn luyện trên văn bản của người khác và chạy trên văn bản của chính mình là hai hoàn cảnh khác nhau, và khoảng cách ấy tích lũy theo độ dài chuỗi. Đây không phải vấn đề về lượng dữ liệu mà về \emph{phân phối} sinh ra dữ liệu, nên không thu thập thêm mà hết được.
+
+Thứ ba, từ 2024 trở đi xuất hiện một lớp bài toán mà \emph{máy chấm được}: đáp án toán so khớp được, mã chạy được qua bộ test. Khi phần thưởng là một chương trình chứ không phải một mạng nơ-ron, ràng buộc giữ mô hình ở gần phân phối ban đầu không còn cần thiết, và mô hình được phép đi rất xa. Đó là cơ chế đằng sau các mô hình suy luận của giai đoạn 2025--2026.
+
+\paragraph{Cách chương này được tổ chức.} Phần lớn tài liệu về chủ đề này được trình bày như một danh sách tên gọi kèm điểm số. Chương này đi theo một trục khác: trước hết dựng một khung phân loại để biết mỗi phương pháp đang đứng ở đâu, rồi mới đi vào từng phương pháp, và mỗi lần đều hỏi \emph{công thức đổi chỗ nào, vì lý do gì, đổi xong thì mất gì}.
+
+\begin{itemize}
+    \item \textbf{Nền móng} (mục~\ref{sec:post_training_axes}--\ref{sec:rl_foundations}): hai trục phân loại mọi thuật toán hậu huấn luyện; họ hàm phân kỳ dùng để đo khoảng cách giữa hai phân phối; và bài toán học tăng cường của sinh văn bản, từ REINFORCE tới PPO.
+    \item \textbf{Học từ sở thích con người} (mục~\ref{ssec:rlhf}--\ref{sec:direct_preference}): RLHF ba bước, Constitutional AI, rồi nhánh bỏ hẳn học tăng cường -- DPO, IPO, KTO, ORPO, SimPO.
+    \item \textbf{Học từ phần thưởng kiểm chứng được} (mục~\ref{sec:rlvr_grpo}--\ref{sec:rl_limits}): RLVR, RLOO, GRPO và họ biến thể sau nó; rồi câu hỏi liệu học tăng cường có thực sự mở rộng năng lực của mô hình hay không.
+    \item \textbf{Học từ một mô hình khác} (mục~\ref{sec:llm_distillation}--\ref{sec:self_distillation}): chưng cất off-policy, chưng cất on-policy, và hướng 2026 là để mô hình làm thầy của chính nó.
+    \item \textbf{Lộ trình đọc} (mục~\ref{sec:post_training_reading_map}): khoảng mười lăm bài báo, xếp theo thứ tự nên đọc.
+\end{itemize}
+
+Chương~\ref{chap:reasoning} ngay sau đây dùng lại toàn bộ bộ máy này để phân tích một trường hợp cụ thể: DeepSeek-R1.

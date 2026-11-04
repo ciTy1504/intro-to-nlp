@@ -1,53 +1,10 @@
 This is BibTeX, Version 0.99d
-Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: main.aux
-Reallocating 'name_of_file' (item size: 1) to 6 items.
 The style file: unsrt.bst
-Reallocating 'name_of_file' (item size: 1) to 11 items.
 Database file #1: references.bib
 Warning--empty journal in radford2018improving
 Warning--can't use both volume and number fields in raffel2020exploring
 Warning--can't use both volume and number fields in jin2020bert
 Warning--can't use both volume and number fields in fedus2022switch
-You've used 119 entries,
-            1791 wiz_defined-function locations,
-            993 strings with 27258 characters,
-and the built_in function-call counts, 31383 in all, are:
-= -- 2483
-> -- 1810
-< -- 39
-+ -- 646
-- -- 527
-* -- 1894
-:= -- 4800
-add.period$ -- 364
-call.type$ -- 119
-change.case$ -- 116
-chr.to.int$ -- 0
-cite$ -- 123
-duplicate$ -- 1575
-empty$ -- 3072
-format.name$ -- 527
-if$ -- 7191
-int.to.chr$ -- 0
-int.to.str$ -- 119
-missing$ -- 118
-newline$ -- 600
-num.names$ -- 119
-pop$ -- 597
-preamble$ -- 1
-purify$ -- 0
-quote$ -- 0
-skip$ -- 855
-stack$ -- 0
-substring$ -- 1497
-swap$ -- 534
-text.length$ -- 39
-text.prefix$ -- 0
-top$ -- 0
-type$ -- 0
-warning$ -- 4
-while$ -- 241
-width$ -- 122
-write$ -- 1251
 (There were 4 warnings)

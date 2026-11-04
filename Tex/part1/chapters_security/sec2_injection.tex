@@ -41,7 +41,7 @@ Hai loại tấn công này khác nhau ở \emph{cái bị vượt qua} và ở 
 
 \textbf{Tiêm chỉ thị} nhắm vào ứng dụng. Kẻ tấn công chen chỉ thị của mình vào ngữ cảnh để hành vi của hệ thống đi lệch khỏi ý định của nhà phát triển: trả lời sai lệch, tiết lộ nội dung ngữ cảnh, hoặc gọi công cụ theo ý kẻ tấn công. Bên bị hại là chủ ứng dụng và người dùng của nó. Rào bị vượt qua là giả định của nhà phát triển rằng chỉ thị hệ thống có hiệu lực cao hơn nội dung dữ liệu.
 
-\textbf{Vượt rào an toàn} nhắm vào chính sách của mô hình. Kẻ tấn công tìm cách khiến mô hình sinh ra nội dung mà quy trình huấn luyện an toàn (mục~\ref{sec:alignment_methods}) đã dạy nó từ chối. Bên bị hại trước hết là nhà cung cấp mô hình và những người chịu tác động của nội dung đó, chứ không nhất thiết là chủ ứng dụng. Rào bị vượt qua là ranh giới hành vi do huấn luyện an toàn đặt ra.
+\textbf{Vượt rào an toàn} nhắm vào chính sách của mô hình. Kẻ tấn công tìm cách khiến mô hình sinh ra nội dung mà quy trình huấn luyện an toàn (chương~\ref{chap:post_training}) đã dạy nó từ chối. Bên bị hại trước hết là nhà cung cấp mô hình và những người chịu tác động của nội dung đó, chứ không nhất thiết là chủ ứng dụng. Rào bị vượt qua là ranh giới hành vi do huấn luyện an toàn đặt ra.
 
 OWASP ghi nhận rằng hai thuật ngữ thường được dùng thay nhau, và xếp vượt rào an toàn là \emph{một dạng} của tiêm chỉ thị, với đặc điểm phân biệt là kẻ tấn công nhắm tới việc làm mô hình bỏ qua hoàn toàn các quy tắc an toàn của nó, trong khi tiêm chỉ thị nói chung chỉ cần làm thay đổi hành vi~\cite{owasp2025llmtop10}. Cách xếp loại này hợp lý về mặt cơ chế, vì cả hai đều lợi dụng cùng một điều: mô hình không phân biệt được chỉ thị với dữ liệu.
 

@@ -182,7 +182,7 @@ p_i = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}} .
 Khi $T \to 0$, phân phối tiến tới one-hot đặt toàn bộ khối lượng vào logit lớn nhất (tức là $\arg\max$); khi $T \to \infty$, nó tiến tới phân phối đều. Và vì $a^z = e^{z \ln a}$, \textbf{đổi cơ số sang $a$ chính là đặt $T = 1/\ln a$}: cơ số lớn hơn $e$ làm phân phối sắc hơn, nhỏ hơn $e$ làm nó phẳng ra. Đây là một trong những núm vặn được dùng nhiều nhất trong sách này:
 \begin{itemize}
     \item \textbf{Sinh văn bản:} “nhiệt độ” khi lấy mẫu token tiếp theo chính là $T$ này -- thấp thì đầu ra an toàn và lặp, cao thì đa dạng và dễ lan man.
-    \item \textbf{Chưng cất tri thức:} Tăng $T$ để làm mềm phân phối của mô hình thầy, làm lộ ra thông tin về các lớp gần đúng thay vì chỉ lớp đúng (mục~\ref{sec:model_optimization}).
+    \item \textbf{Chưng cất tri thức:} Tăng $T$ để làm mềm phân phối của mô hình thầy, làm lộ ra thông tin về các lớp gần đúng thay vì chỉ lớp đúng (mục~\ref{ssec:knowledge_distillation}).
     \item \textbf{Chú ý:} Hệ số $1/\sqrt{d_k}$ trong scaled dot-product attention (mục~\ref{ssec:self_attention}) thực chất là một nhiệt độ. Nếu các thành phần của $q$ và $k$ độc lập, kỳ vọng $0$ và phương sai $1$ thì $q^\top k$ có phương sai $d_k$; chia cho $\sqrt{d_k}$ kéo phương sai về $1$, giữ softmax khỏi rơi vào vùng bão hòa nơi một logit áp đảo tất cả và gradient gần như triệt tiêu.
 \end{itemize}
 

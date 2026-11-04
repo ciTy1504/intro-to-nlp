@@ -9,74 +9,7 @@ Các mô hình ngôn ngữ lớn (LLMs) có kích thước rất lớn, đòi h�
 
 Các kỹ thuật tối ưu hóa mô hình nhằm giảm kích thước mô hình, tăng tốc độ suy luận và giảm yêu cầu bộ nhớ, trong khi giữ hiệu năng (độ chính xác) ở mức cao nhất có thể.
 
-Mục này trình bày nguyên lý chung của ba họ kỹ thuật tối ưu hóa chính: chưng cất, lượng tử hóa và cắt tỉa. Các mục tiếp theo của chương đi sâu vào những biến thể được thiết kế riêng cho LLM tự hồi quy quy mô tỷ tham số.
-
-\subsection{Chưng cất tri thức (Knowledge Distillation)}
-\label{ssec:knowledge_distillation}
-Các mô hình ngôn ngữ lớn (LLM) có chi phí tính toán cao cả khi huấn luyện và khi suy luận. Chưng cất tri thức chuyển kiến thức từ một mô hình lớn, phức tạp sang một mô hình nhỏ hơn, nhanh hơn mà vẫn giữ được phần lớn hiệu năng.
-
-\subsubsection{Trực giác cốt lõi: thầy dạy trò}
-Ý tưởng này được Hinton et al. \cite{hinton2015distilling} phổ biến năm 2015. Có hai mạng nơ-ron: một mạng rất lớn, phức tạp nhưng chính xác, gọi là \textbf{mô hình thầy (teacher model)}, và một mạng nhỏ hơn, nhanh hơn nhiều, gọi là \textbf{mô hình trò (student model)}. Thay vì huấn luyện mô hình trò từ đầu trên dữ liệu gốc, chưng cất tri thức huấn luyện nó bắt chước hành vi của mô hình thầy.
-
-\begin{keyidea}{Nhãn mềm của mô hình thầy mang nhiều thông tin hơn nhãn cứng}
-	Ngoài các nhãn cứng (hard labels) của dữ liệu (ví dụ: “tích cực” hoặc “tiêu cực”), mô hình trò còn được dạy bắt chước \textbf{phân phối xác suất đầu ra “mềm” (soft probabilities)} của mô hình thầy. Phân phối mềm cho biết mô hình thầy khái quát hóa và đánh giá mức tương đồng giữa các lớp như thế nào; phần thông tin này được gọi là \emph{dark knowledge}.
-\end{keyidea}
-
-Ví dụ, khi phân loại cảm xúc cho câu “Bộ phim này cũng được.”, một mô hình thầy có thể gán xác suất 0.7 cho “Trung tính”, 0.25 cho “Tích cực” và 0.05 cho “Tiêu cực”. Phân phối này cho biết câu gần với “Tích cực” hơn là với “Tiêu cực”, một tín hiệu huấn luyện giàu thông tin hơn nhãn cứng “Trung tính”.
-
-\subsubsection{Cơ chế hoạt động chi tiết}
-Quá trình chưng cất bao gồm việc huấn luyện mô hình trò trên một hàm mất mát kết hợp:
-
-\paragraph{1. Tạo nhãn mềm bằng nhiệt độ (Temperature Scaling)}
-Để khai thác dark knowledge, phân phối đầu ra của mô hình thầy cần bớt sắc nét. Logits của mô hình thầy (đầu ra trước lớp softmax) được chia cho một tham số gọi là \textbf{nhiệt độ (temperature, $T$)} trước khi đưa vào hàm softmax.
-$$ q_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)} $$
-Khi $T > 1$ (thường chọn $T$ trong khoảng 2--10), phân phối xác suất $q$ mềm hơn: các lớp không phải lớp tốt nhất nhận xác suất cao hơn, nhờ đó lộ ra cấu trúc tương quan giữa các lớp mà mô hình thầy đã học được.
-
-\paragraph{2. Xây dựng hàm mất mát kết hợp}
-Mô hình trò được huấn luyện để tối thiểu hóa một hàm mất mát là tổng có trọng số của hai thành phần:
-\begin{equation}
-	\mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{Hard}} + (1-\alpha) \cdot \mathcal{L}_{\text{Soft}}
-	\label{eq:distillation_loss}
-\end{equation}
-
-Trong đó:
-\begin{itemize}
-	\item \textbf{Mất mát cứng (Hard Loss):}
-	Là hàm mất mát Cross-Entropy thông thường giữa dự đoán của mô hình trò (tính với $T=1$)
-	và nhãn thật ($y_{\text{true}}$). Phần này đảm bảo mô hình trò vẫn học được thông tin chính xác từ dữ liệu gốc.
-	
-	\begin{equation*}
-		\mathcal{L}_{\text{Hard}} = \text{CrossEntropy}(y_{\text{true}}, p_{\text{student}}^{T=1})
-	\end{equation*}
-	
-	\item \textbf{Mất mát mềm (Soft Loss):}
-	Là hàm mất mát KL-Divergence (hoặc Cross-Entropy) giữa phân phối xác suất mềm của mô hình trò
-	và phân phối xác suất mềm của mô hình thầy (cả hai đều được tính với cùng nhiệt độ $T$).
-	Phần này buộc mô hình trò bắt chước phân phối đầu ra của mô hình thầy.
-	
-	\begin{equation*}
-		\mathcal{L}_{\text{Soft}} = T^2 \cdot \text{KL-Divergence}(q_{\text{teacher}}^T, p_{\text{student}}^T)
-	\end{equation*}
-	
-	Nhân với $T^2$ để độ lớn của gradient không giảm quá nhiều khi nhiệt độ tăng.
-	
-	\item $\alpha$ là siêu tham số (ví dụ $\alpha = 0.1$) để cân bằng giữa việc học từ dữ liệu thật và học từ mô hình thầy.
-\end{itemize}
-
-\begin{center}
-	\bookimage[0.8\textwidth]{knowledge_distillation}{Sơ đồ: cùng một mẫu dữ liệu đầu vào đi vào hai nhánh. Nhánh trên là mô hình thầy đã huấn luyện, cho ra logits rồi qua softmax với nhiệt độ T để thành nhãn mềm. Nhánh dưới là mô hình trò, cho ra hai đầu: một đầu softmax với T=1 so với nhãn thật để tính Hard Loss, một đầu softmax với cùng nhiệt độ T so với nhãn mềm của mô hình thầy để tính Soft Loss. Hai mất mát được cộng có trọng số thành mất mát tổng dùng để cập nhật mô hình trò.}
-	\captionof{figure}{Quy trình chưng cất tri thức. Mô hình trò học đồng thời từ nhãn cứng của dữ liệu (Hard Loss) và nhãn mềm được tạo ra bởi mô hình thầy (Soft Loss).}
-	\label{fig:knowledge_distillation}
-\end{center}
-
-
-\subsubsection{Ứng dụng và các biến thể}
-\begin{itemize}
-	\item \textbf{DistilBERT:} Dùng kỹ thuật này để tạo ra một phiên bản BERT nhỏ hơn 40\% và nhanh hơn 60\%, trong khi vẫn giữ lại 97\% hiệu năng trên benchmark GLUE.
-	\item \textbf{Chưng cất đặc trưng (Feature Distillation):} Thay vì chỉ bắt chước đầu ra cuối cùng, mô hình trò còn được huấn luyện để bắt chước các biểu diễn ở các lớp trung gian (ví dụ: các hidden state hoặc attention map) của mô hình thầy.
-	\item \textbf{Tự chưng cất (Self-Distillation):} Mô hình thầy và mô hình trò là cùng một kiến trúc. Mô hình được huấn luyện để đầu ra của nó ở các epoch sau chưng cất kiến thức từ chính nó ở các epoch trước.
-\end{itemize}
-Chưng cất tri thức giảm kích thước và tăng tốc độ mô hình; nó cũng có thể cải thiện khả năng tổng quát hóa của mô hình trò.
+Mục này trình bày nguyên lý chung của hai họ kỹ thuật làm nhẹ một mô hình đã huấn luyện xong: lượng tử hóa và cắt tỉa. Họ thứ ba -- chưng cất tri thức -- cũng làm mô hình nhỏ đi, nhưng nó là một \emph{quy trình huấn luyện} chứ không phải một phép biến đổi trên trọng số có sẵn, nên được trình bày cùng các phương pháp hậu huấn luyện khác ở mục~\ref{ssec:knowledge_distillation}.
 
 \subsection{Lượng tử hóa (Quantization)}
 \label{ssec:quantization}

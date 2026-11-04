@@ -1,12 +1,65 @@
 % !TEX root = ../main.tex
-% File: part1/chapters_efficiency/sec2b_on_policy_distillation.tex
+% File: part1/chapters_rl/sec10_onpolicy_distill.tex
+% Chuyển từ sec2_llm_distillation.tex và sec2b_on_policy_distillation.tex
 
 \section{Chưng cất on-policy}
 \label{sec:on_policy_distillation}
 
-Ô thứ tư của bảng~\ref{tab:post_training_quadrants} -- trò tự sinh chuỗi, thầy chấm từng token -- không phải một ý tưởng mới: GKD (mục~\ref{ssec:gkd}) đã mô tả đúng cơ chế đó từ 2023, và MiniLLM (mục~\ref{ssec:minillm}) còn sớm hơn. Cái mới nằm ở ba chỗ khác. Thứ nhất, cách đặt phương pháp này vào \emph{đúng hạ tầng RL sẵn có} thay vì xây một đường ống huấn luyện riêng. Thứ hai, các con số chi phí được công bố, cho phép so sánh nó với RL trên cùng một tác vụ. Thứ ba, một loạt kết quả về \emph{điều kiện} để nó hoạt động và các kiểu thất bại khi điều kiện đó không thỏa -- đủ nhiều để nhánh này đã có bài tổng quan riêng \cite{song2026opdsurvey}.
+Ô thứ tư của bảng~\ref{tab:post_training_quadrants} -- trò tự sinh chuỗi, thầy chấm từng token -- là ô duy nhất không phải hy sinh gì ở cả hai trục, và vì vậy cũng là ô được bàn nhiều nhất từ cuối 2025.
 
-Mục này đi theo đúng thứ tự ấy: cơ chế, chi phí, biến thể, điều kiện, giới hạn, và cuối cùng là quy tắc chọn giữa chưng cất on-policy, RL và SFT.
+Nó không phải một ý tưởng mới. Hai mục con đầu tiên dưới đây là hai cách đi tới nó từ năm 2023: MiniLLM tối ưu thẳng KL ngược ở mức chuỗi và phải trả giá bằng toàn bộ bộ máy học tăng cường, còn GKD tách nguồn chuỗi khỏi độ đo và nhờ đó tránh được cái giá ấy. Cái mới của giai đoạn 2025--2026 nằm ở ba chỗ khác. Thứ nhất, cách đặt phương pháp này vào \emph{đúng hạ tầng học tăng cường sẵn có} thay vì xây một đường ống huấn luyện riêng. Thứ hai, các con số chi phí được công bố, cho phép so sánh nó với học tăng cường trên cùng một tác vụ. Thứ ba, một loạt kết quả về \emph{điều kiện} để nó hoạt động và các kiểu thất bại khi điều kiện đó không thỏa -- đủ nhiều để nhánh này đã có bài tổng quan riêng \cite{song2026opdsurvey}.
+
+Mục này đi theo đúng thứ tự ấy: hai tiền thân, rồi cơ chế, chi phí, biến thể, điều kiện, giới hạn, và cuối cùng là quy tắc chọn giữa chưng cất on-policy, học tăng cường và SFT.
+
+\subsection{MiniLLM: KL ngược và ba kỹ thuật để nó chạy được}
+\label{ssec:minillm}
+
+\textbf{MiniLLM} \cite{gu2024minillm} là cách đọc thẳng nhất của lập luận trên: nếu KL ngược là độ đo đúng khi trò nhỏ hơn thầy, thì cứ tối ưu nó ở mức chuỗi,
+\[
+\theta^\star = \arg\min_\theta \mathrm{KL}\big(q_\theta \,\|\, p_T\big)
+= \arg\min_\theta \; \mathbb{E}_{y\sim q_\theta}\left[\log\frac{q_\theta(y\mid x)}{p_T(y\mid x)}\right].
+\]
+Bài báo mô tả hệ quả mong muốn đúng theo ngôn ngữ của mục trước: trò ``seek the major modes'' của thầy và gán xác suất thấp cho các vùng trống của thầy, thay vì bị ép phủ mọi mẫu của thầy kể cả các mẫu rất khó xảy ra.
+
+\paragraph{Vì sao nó biến thành một bài học tăng cường.} Kỳ vọng lấy theo $y\sim q_\theta$, tức theo chính tham số đang tối ưu, nên không thể lấy đạo hàm trực tiếp qua khâu lấy mẫu. Cách chuẩn là policy gradient. Đặt điểm chất lượng từng bước và tổng tích lũy của nó
+\[
+r_t = \log\frac{p_T(y_t\mid y_{<t},x)}{q_\theta(y_t\mid y_{<t},x)},
+\qquad
+R_t = \sum_{t'\ge t} r_{t'},
+\]
+thì gradient có dạng quen thuộc $-\mathbb{E}_{y\sim q_\theta}\big[\sum_t R_t\,\nabla_\theta \log q_\theta(y_t\mid y_{<t},x)\big]$. Nói cách khác, thầy đóng vai mô hình thưởng, và ta đang chạy RL. Mọi khó khăn của RL vì thế theo vào, và ba kỹ thuật của MiniLLM là ba miếng vá cho đúng ba khó khăn đó.
+
+\begin{enumerate}
+	\item \textbf{Phân rã theo từng bước, để giảm phương sai.} Bài báo quan sát rằng ``the error in the front tokens accumulates along the whole sentence'', nên ước lượng Monte Carlo của $R_t$ có phương sai lớn. Tách $R_t = r_t + R_{t+1}$: số hạng $r_t$ chỉ phụ thuộc token tại bước $t$, nên kỳ vọng của nó theo $y_t$ tính được \emph{chính xác} bằng cách cộng trên toàn từ vựng thay vì lấy mẫu. Chỉ phần đuôi $R_{t+1}$ mới cần Monte Carlo. Phương sai giảm, hội tụ nhanh hơn.
+	\item \textbf{Lấy mẫu trộn với thầy, để chống khai thác hàm thưởng.} Vì thầy là hàm thưởng, trò có thể tìm ra những chuỗi nhận điểm cao mà thực chất vô nghĩa; bài báo nêu ví dụ các chuỗi lặp cụm từ. Cách sửa là lấy mẫu từ hỗn hợp giữa phân phối của thầy và của trò, với hệ số $\alpha$ điều khiển mức trộn thầy vào ($\alpha = 0{,}2$ trong thí nghiệm). Rollout nhờ vậy ở lại trong vùng mà thầy cho là hợp lý.
+	\item \textbf{Chuẩn hóa theo độ dài, để chống thiên lệch câu ngắn.} $R_{t+1}$ là tổng của các log-tỉ số thường mang dấu âm, nên chuỗi càng dài thì tổng càng nhỏ: mục tiêu vô tình thưởng cho câu trả lời ngắn. Cách sửa là lấy trung bình thay cho tổng, chia cho số token còn lại.
+\end{enumerate}
+
+\paragraph{Kết quả và cách đọc chúng.} Trên các họ mô hình với quy mô từ 120M đến 13B tham số, MiniLLM cho văn bản ít lệch phân phối hơn, hiệu chỉnh xác suất (calibration) tốt hơn -- đo bằng ECE trên SST2 và BoolQ với LLaMA-7B -- và chất lượng sinh văn bản dài cao hơn các phương pháp chưng cất thông thường, với mức mất đa dạng mà các tác giả mô tả là không đáng kể. Điều đáng rút ra không phải bảng số mà là cấu trúc của phương pháp: ba kỹ thuật ổn định ở trên đều không liên quan gì tới chưng cất, chúng chỉ là giá phải trả cho việc đã chuyển bài toán thành RL. Câu hỏi tự nhiên tiếp theo là liệu có cách nào dùng KL ngược mà không phải trả giá đó không.
+
+\subsection{GKD: tách bạch nguồn chuỗi và độ đo}
+\label{ssec:gkd}
+
+\textbf{Generalized Knowledge Distillation (GKD)} \cite{agarwal2024gkd} trả lời đúng câu hỏi vừa nêu, bằng cách tách hai lựa chọn mà MiniLLM gộp làm một thành hai núm vặn độc lập.
+
+\paragraph{Núm thứ nhất: tỉ lệ dữ liệu của trò, $\lambda$.} Ở mỗi bước, với xác suất $\lambda$ thuật toán lấy một lô đầu vào và để \emph{trò} sinh đầu ra; ngược lại nó lấy một lô từ tập dữ liệu cố định (câu đích thật, hoặc đầu ra do thầy sinh sẵn). Tham số $\lambda\in[0,1]$ chính là ``student data fraction'' mà bài báo định nghĩa, tức tọa độ của phương pháp trên trục nguồn dữ liệu ở bảng~\ref{tab:post_training_quadrants}.
+
+\paragraph{Núm thứ hai: phân kỳ, qua Jensen--Shannon tổng quát.} Sau khi đã có lô chuỗi, GKD cực tiểu phân kỳ giữa phân phối token của thầy và của trò tại từng vị trí, với phân kỳ chọn được trong một họ liên tục:
+\[
+\begin{aligned}
+\mathcal{D}_{\mathrm{JSD}(\beta)}(P\|Q) = {}& \beta\,\mathrm{KL}\big(P \,\big\|\, \beta P + (1-\beta)Q\big)\\
+&+ (1-\beta)\,\mathrm{KL}\big(Q \,\big\|\, \beta P + (1-\beta)Q\big).
+\end{aligned}
+\]
+Họ này nội suy giữa hai chiều KL với hệ số bị chặn $0<\beta<1$: bài báo nêu rằng gradient của $\mathrm{JSD}(\beta)$ hành xử giống KL xuôi khi $\beta$ gần $0$ và giống KL ngược khi $\beta$ gần $1$. Điểm quan trọng về mặt số học là $\mathrm{JSD}(\beta)$ \emph{bị chặn}: vì cả hai số hạng đều so với phân phối trộn, không có tình huống một token thầy thích mà trò gán xác suất gần không sinh ra hình phạt vô cùng. Đó là lý do nó ổn định hơn KL xuôi thuần túy đúng ở tình huống mà chưng cất luôn rơi vào, tức khi trò không đủ năng lực khớp thầy.
+
+\paragraph{Vì sao GKD không phải là RL.} Đây là điểm kỹ thuật dễ bỏ qua nhất và cũng là điểm phân biệt GKD với MiniLLM. GKD \emph{không} truyền gradient qua khâu lấy mẫu: chuỗi do trò sinh ra, một khi đã sinh, được coi như dữ liệu cố định. Mục tiêu vì thế vẫn là một bài học có giám sát thông thường theo từng token, chỉ khác là tập dữ liệu được làm mới liên tục. Không có hàm thưởng, không có ước lượng gradient phương sai cao, không cần ba miếng vá của MiniLLM. Đổi lại, GKD không tối ưu đúng KL ngược \emph{mức chuỗi} mà tối ưu một phân kỳ mức token trên các chuỗi do trò sinh.
+
+\paragraph{Những gì trở thành trường hợp riêng.} Bài báo phát biểu rằng chưng cất on-policy và chưng cất có giám sát là GKD với KL xuôi và $\lambda$ bằng $1$ và $0$; ImitKD là GKD với KL xuôi và một lịch giảm dần cho $\lambda$; $f$-distill cũng là một trường hợp riêng. Cần nói rõ một điều mà cách trình bày phổ biến hay nói quá: \emph{bài báo GKD không tuyên bố MiniLLM là trường hợp riêng của nó}. Hai phương pháp tối ưu hai đại lượng khác nhau (mức chuỗi so với mức token) bằng hai cơ chế khác nhau (policy gradient so với học có giám sát trên dữ liệu làm mới); GKD được giới thiệu như một phương án đơn giản hơn chứ không phải một phương án bao trùm.
+
+\paragraph{Kết quả và hệ quả kiến trúc.} GKD được đánh giá trên tóm tắt, dịch máy, suy luận số học, và chưng cất không phụ thuộc tác vụ cho tinh chỉnh theo chỉ dẫn. Một hệ quả thực dụng đáng chú ý: vì khâu sinh chuỗi on-policy giống hệt khâu rollout trong RL, hai mục tiêu ghép được vào cùng một vòng huấn luyện, nên chưng cất và tinh chỉnh bằng học tăng cường (ví dụ RLHF, mục~\ref{ssec:rlhf}) không còn là hai giai đoạn tách rời.
+
+\paragraph{Từ bài báo sang quy trình sản xuất.} Dòng mô hình Qwen3 \cite{yang2025qwen3} dùng đúng cấu trúc này để tạo các mô hình nhỏ, với tên gọi \emph{strong-to-weak distillation} và hai giai đoạn nối tiếp. Giai đoạn off-policy chưng cất trên đầu ra của thầy, kết hợp đầu ra sinh ở cả hai chế độ \texttt{/think} và \texttt{/no\_think}, mà báo cáo mô tả là để ``đặt nền vững chắc cho giai đoạn on-policy tiếp theo''. Giai đoạn on-policy cho mô hình trò tự sinh chuỗi rồi căn logit của nó với logit của thầy (Qwen3-32B hoặc Qwen3-235B-A22B) sao cho cực tiểu phân kỳ KL; báo cáo chỉ ghi ``KL divergence'' mà không nói rõ chiều. Chính các con số chi phí của giai đoạn thứ hai là nội dung chính của mục~\ref{sec:on_policy_distillation}.
 
 \subsection{Cơ chế: trò tự sinh, thầy chấm từng token}
 \label{ssec:opd_mechanism}
@@ -162,6 +215,21 @@ Giới hạn quan trọng nhất của chưng cất on-policy là một hệ qu�
 
 \paragraph{Ba giới hạn còn lại, ngắn gọn.} Thứ nhất, trần năng lực: chưng cất chuyển năng lực chứ không tạo ra năng lực, nên không thay thế được RL ở biên của tri thức hiện có. Thứ hai, chi phí tăng mạnh khi thầy nằm xa vùng hỗ trợ của trò: bài gốc ghi rằng trong trường hợp đó ``we require a significantly larger batch size'', vì ước lượng một mẫu cho mỗi token trở nên quá nhiễu. Thứ ba, phương pháp đòi quyền truy cập thầy ở mức log-xác suất; các biến thể ở mục~\ref{ssec:opd_variants} nới được ràng buộc này nhưng mỗi biến thể đều trả giá ở một trục khác.
 
+\subsection{ExOPD: chưng cất on-policy chính là RL có ràng buộc KL dày}
+\label{ssec:exopd}
+
+Trần năng lực vừa nói tới -- trò không vượt được thầy -- nghe như một định luật. Yang và cộng sự \cite{yang2026exopd} chỉ ra rằng nó là hệ quả của một \emph{lựa chọn hệ số}, chứ không phải của bản chất phương pháp, và lựa chọn ấy đổi được.
+
+\paragraph{Mối liên hệ.} Các tác giả chứng minh rằng chưng cất on-policy là một trường hợp riêng của bài toán học tăng cường có ràng buộc KL với phần thưởng dày. Nhìn lại hai công thức thì phép đồng nhất khá tự nhiên: mục tiêu RLHF ở mục~\ref{ssec:rlhf} là ``cực đại phần thưởng, trừ $\beta$ lần KL so với mô hình tham chiếu'', còn chưng cất on-policy là ``cực tiểu KL so với thầy, trên rollout của trò''. Đặt phần thưởng từng token bằng $\log \pi_T - \log \pi_\theta$ thì mục tiêu thứ hai chính là mục tiêu thứ nhất với một bộ hệ số cụ thể.
+
+\paragraph{Vặn hệ số ấy ra khỏi giá trị mặc định.} Khi đã viết được dưới dạng đó, hai núm vặn hiện ra mà công thức chưng cất thông thường giấu đi: mô hình tham chiếu là mô hình nào, và phần thưởng được nhân hệ số bao nhiêu so với số hạng KL. Đặt hệ số phần thưởng \emph{lớn hơn 1} -- bài báo gọi là ExOPD -- cho kết quả tốt hơn chưng cất on-policy tiêu chuẩn một cách nhất quán trên suy luận toán và sinh mã. Trực giác là phép ngoại suy: nếu thầy nằm theo một hướng nhất định so với mô hình tham chiếu, thì thay vì dừng đúng ở thầy, đi thêm theo chính hướng đó. Trong thí nghiệm gộp nhiều mô hình chuyên biệt vào một trò duy nhất, cách này cho trò \emph{vượt} các thầy theo miền.
+
+Núm thứ hai: với chưng cất từ mô hình lớn xuống mô hình nhỏ, lấy \emph{bản trước khi học tăng cường} của chính thầy làm mô hình tham chiếu cho tín hiệu phần thưởng chính xác hơn. Cái giá là phải có quyền truy cập bản đó và phải chạy thêm một mô hình nữa.
+
+\begin{assess}{Trần năng lực có biến mất không}
+Không, nhưng nó không nằm ở chỗ ta tưởng. Phần thưởng vẫn được định nghĩa qua phân phối của thầy, nên thứ trò học vẫn là \emph{hướng} mà thầy chỉ ra; ngoại suy theo hướng đó không thể phát hiện ra một hướng hoàn toàn mới. Điều kết quả này bác bỏ là phát biểu mạnh hơn, rằng điểm dừng bắt buộc phải là chính thầy. Đây là kết quả năm 2026 và chưa có bản sao chép độc lập ở quy mô lớn, nên nên đọc như một hướng đáng thử chứ chưa phải một thực hành mặc định.
+\end{assess}
+
 \subsection{Chọn SFT, chưng cất on-policy, hay RL}
 \label{ssec:opd_decision}
 
@@ -207,3 +275,32 @@ Thầy không mạnh hơn trò một cách phân biệt được, hoặc lối s
 \begin{keyidea}{Tóm tắt mục}
 Chưng cất on-policy lấy phân phối dữ liệu từ trò và tín hiệu học từ thầy, nên nó đồng thời tránh được lệch phân phối của SFT và sự thưa thớt tín hiệu của RL. Cái giá là nó cần một ông thầy sẵn có và mạnh hơn, nên nó là công cụ \emph{chuyển giao} năng lực, không phải công cụ \emph{tạo ra} năng lực; và vì thầy phải chấm trên văn bản do trò viết, độ tin cậy của tín hiệu giảm dần theo độ sâu của chuỗi.
 \end{keyidea}
+
+\begin{table}[H]
+\centering\small
+\caption{Bản đồ các phương pháp chưng cất cho LLM, đọc theo hai trục của bảng~\ref{tab:post_training_quadrants}.}
+\label{tab:llm_distillation_map}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.9cm}XX@{}}
+\toprule
+\textbf{Phương pháp} & \textbf{Trò học từ chuỗi nào, tín hiệu gì} & \textbf{Vì sao thiết kế như vậy} \\
+\midrule
+Seq-KD / SFT trên dữ liệu thầy & Chuỗi của thầy (mode), cross-entropy & Thay phân phối chuỗi của thầy bằng mode nên chỉ cần văn bản; đơn giản nhất, nhưng lệch phân phối và mất mọi thứ ngoài mode \\
+\addlinespace
+Word-level KD & Tiền tố cố định, KL xuôi từng token & Tín hiệu dày nhất có thể, nhưng đòi chung bộ tách token và quyền đọc logit thầy \\
+\addlinespace
+MiniLLM & Chuỗi của trò, KL ngược mức chuỗi & Bám mode khi trò nhỏ hơn thầy; phải dùng policy gradient nên cần ba kỹ thuật ổn định \\
+\addlinespace
+GKD & Trộn chuỗi cố định và của trò theo $\lambda$, $\mathrm{JSD}(\beta)$ từng token & Tách nguồn chuỗi khỏi độ đo; phân kỳ bị chặn nên ổn định; không truyền gradient qua khâu lấy mẫu nên không phải RL \\
+\addlinespace
+Distilling Step-by-Step & Đáp án và lý giải của thầy & Lý giải là giám sát phụ, ràng buộc các bước trung gian chứ không chỉ kết quả \\
+\addlinespace
+KARD & Lý giải của thầy kèm tài liệu truy xuất & Mô hình nhỏ không đủ chỗ chứa kiến thức, nên đẩy kiến thức ra ngoài tham số \\
+\addlinespace
+RLAD & Chuỗi của trò, phần thưởng và thầy có chọn lọc & Gộp tín hiệu thưa đúng đắn với tín hiệu dày bị chặn trên, trong vùng tin cậy \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{assess}{Phần còn thiếu của bức tranh}
+Bảng~\ref{tab:llm_distillation_map} còn trống đúng một ô: trò tự sinh chuỗi, thầy chấm từng token, và mục tiêu là một phân kỳ từng token chứ không phải một phần thưởng cho cả chuỗi. GKD đã mở đường tới đó nhưng trình bày nó như một lựa chọn trong nhiều lựa chọn; những gì học được từ đó sau này -- cách đặt nó vào đúng hạ tầng RL sẵn có, chi phí thực tế so với RL, và các điều kiện để nó không thất bại -- là nội dung của mục~\ref{sec:on_policy_distillation}.
+\end{assess}

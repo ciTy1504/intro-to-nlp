@@ -1,0 +1,116 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_rl/sec3_rl_foundations.tex
+% Mục mới + phần cơ chế PPO chuyển lên từ chap5_5 (bước 3 của RLHF), nơi nó
+% nằm lẫn với phần đặc thù của RLHF dù bản thân nó là nền chung.
+
+\section{Nền tảng: sinh văn bản như một bài toán học tăng cường}
+\label{sec:rl_foundations}
+
+Mọi thuật toán ở nửa sau chương này -- PPO, RLOO, GRPO, DAPO, GSPO, và cả chưng cất on-policy -- đều là biến thể của cùng một công thức. Mục này dựng công thức đó một lần, để các mục sau chỉ cần nói ``đổi chỗ nào''. Ai đã quen với học tăng cường có thể đọc lướt; phần đáng dừng lại là chỗ bài toán sinh văn bản \emph{khác} bài toán điều khiển mà học tăng cường vốn được thiết kế cho.
+
+\subsection{Hình thức hóa, và ba chỗ bài toán này dễ hơn bình thường}
+\label{ssec:rl_formalization}
+
+Sinh một câu trả lời là một chuỗi quyết định, nên nó khớp khuôn quá trình quyết định Markov:
+\begin{itemize}
+	\item \textbf{Trạng thái} $s_t = (x, y_{<t})$: câu hỏi cộng phần đã sinh ra. Không gian trạng thái là tập mọi chuỗi, tức lớn vô hạn về thực tế.
+	\item \textbf{Hành động} $a_t = y_t$: token tiếp theo, chọn trong từ vựng -- cỡ $10^5$ lựa chọn ở mỗi bước.
+	\item \textbf{Chính sách} $\pi_\theta(y_t \mid x, y_{<t})$: chính là mô hình ngôn ngữ. Đây là điểm cần nhấn: \emph{không có một ``bộ điều khiển'' nào tách rời mô hình}; mô hình ngôn ngữ đã là một chính sách, và hậu huấn luyện là cập nhật trực tiếp lên nó.
+	\item \textbf{Phần thưởng} $R(x,y)$: một con số cho cả câu trả lời, do mô hình phần thưởng chấm hoặc do một chương trình kiểm chứng trả về.
+\end{itemize}
+Mục tiêu là cực đại
+\[
+J(\theta) \;=\; \mathbb{E}_{x \sim D,\; y \sim \pi_\theta(\cdot \mid x)}\big[R(x,y)\big].
+\]
+
+Ba đặc điểm làm bài toán này \emph{dễ hơn} bài toán điều khiển thông thường, và cả ba đều sẽ được khai thác.
+
+\textbf{Thứ nhất, chuyển trạng thái là tất định.} Nối thêm một token vào tiền tố cho ra đúng một tiền tố mới; không có môi trường ngẫu nhiên nào. Toàn bộ tính ngẫu nhiên của bài toán nằm trong chính sách, không nằm ngoài nó.
+
+\textbf{Thứ hai, phần thưởng chỉ được trao một lần, ở cuối.} Không có phần thưởng rải rác dọc đường. Cộng với đặc điểm thứ nhất, bài toán rút gọn được thành một \textbf{bandit theo ngữ cảnh}: trạng thái đầu là câu hỏi, \emph{một hành động} là toàn bộ câu trả lời, hết. Đây là lập luận trung tâm của RLOO (mục~\ref{ssec:rloo}), và nó giải thích vì sao các thuật toán dành cho LLM dần bỏ hết bộ máy xử lý phần thưởng trễ. Hệ số chiết khấu $\gamma$ cũng vì thế gần như luôn được đặt bằng 1: một rollout là một tập hữu hạn và không có lý do gì để ưu tiên phần thưởng đến sớm.
+
+\textbf{Thứ ba, ta đọc được xác suất của mọi hành động.} Một bộ điều khiển robot chỉ biết nó đã làm gì; một mô hình ngôn ngữ cho ra cả phân phối trên toàn từ vựng ở mỗi bước. Thông tin dôi ra này là thứ mà cả nhánh chưng cất khai thác, và là lý do mục~\ref{sec:divergences} tồn tại.
+
+Bù lại có một đặc điểm làm bài toán khó hơn hẳn: \textbf{phân bổ công}. Phần thưởng gắn với cả chuỗi dài hàng nghìn token, nên tự nó không nói bước nào đúng, bước nào sai. Đây chính là ``tín hiệu thưa'' ở trục thứ hai của bảng~\ref{tab:post_training_quadrants}, và phần lớn khác biệt giữa các thuật toán là các cách khác nhau để đoán ra thông tin đó từ nhiều mẫu.
+
+\subsection{Từ phần thưởng sang gradient}
+\label{ssec:policy_gradient}
+
+Việc cần làm nghe qua thì đơn giản: chỉnh $\theta$ sao cho $J(\theta)$ lớn lên. Chỗ vướng nằm ở chỗ $\theta$ không xuất hiện bên trong $R$; nó chỉ xuất hiện ở \emph{phân phối} dùng để lấy mẫu $y$. Mà lấy mẫu một chuỗi token là thao tác rời rạc, không khả vi, nên không thể lan truyền ngược điểm thưởng về $\theta$ theo kiểu học có giám sát. Đây là lý do bắt buộc phải dùng học tăng cường chứ không phải một hàm mất mát thông thường.
+
+Lối ra là đồng nhất thức gradient của chính sách (policy gradient) \cite{williams1992reinforce, sutton2000policygradient}: với mọi hàm phần thưởng $R(x,y)$ không phụ thuộc $\theta$,
+\[
+\nabla_{\theta}\,
+\mathbb{E}_{y \sim \pi_{\theta}}\big[ R(x,y) \big]
+= \mathbb{E}_{y \sim \pi_{\theta}}\big[
+	R(x,y)\, \nabla_{\theta} \log \pi_{\theta}(y \mid x)
+\big].
+\]
+Đẳng thức này có được bằng cách viết kỳ vọng thành tổng theo $y$, lấy đạo hàm vào trong tổng, rồi dùng $\nabla_{\theta} \pi_{\theta} = \pi_{\theta} \nabla_{\theta} \log \pi_{\theta}$. Vế phải chỉ còn chứa $\nabla_{\theta} \log \pi_{\theta}(y \mid x)$ -- đúng thứ mà một mô hình ngôn ngữ vẫn tính được bằng lan truyền ngược. Phần thưởng chỉ còn đóng vai trò một \emph{hệ số nhân vô hướng}: câu trả lời điểm cao thì được nhân hệ số lớn, nên xác suất sinh lại nó tăng lên. Thuật toán dùng thẳng ước lượng này, không thêm gì, là REINFORCE.
+
+\begin{keyidea}{Vì sao mọi thuật toán trong chương đều trông giống nhau}
+Hạ một hàm mất mát có giám sát là đi ngược gradient của $-\log \pi_\theta(y \mid x)$ trên dữ liệu cố định. Gradient chính sách là \emph{đúng biểu thức ấy}, nhân thêm một hệ số vô hướng, trên dữ liệu do chính mô hình sinh. Mọi khác biệt giữa PPO, RLOO, GRPO và họ biến thể của chúng nằm ở hai câu hỏi: hệ số vô hướng ấy tính thế nào, và được phép đi bao xa trước khi phải lấy mẫu lại.
+\end{keyidea}
+
+\subsection{Vì sao cần baseline và lợi thế}
+\label{ssec:baseline_advantage}
+
+Ước lượng trên không chệch nhưng phương sai rất lớn. Nếu mọi câu trả lời cho một câu hỏi đều được chấm quanh 7 điểm, thì hệ số nhân 7 chỉ làm mọi thứ to lên đồng loạt mà không nói được câu nào tốt hơn câu nào; cái mang thông tin là \emph{độ lệch} so với mức trung bình.
+
+Trừ đi một đại lượng $b$ không phụ thuộc $y$ giữ nguyên tính không chệch, vì
+\[
+\mathbb{E}_{y \sim \pi_\theta}\big[\,b\,\nabla_{\theta} \log \pi_{\theta}(y\mid x)\big]
+= b \sum_y \pi_\theta(y \mid x)\,\frac{\nabla_\theta \pi_\theta(y\mid x)}{\pi_\theta(y \mid x)}
+= b\,\nabla_\theta \sum_y \pi_\theta(y \mid x)
+= b\,\nabla_\theta 1 = 0 ,
+\]
+nhưng nó giảm phương sai. Điều kiện duy nhất là $b$ không được phụ thuộc vào chính mẫu $y$ đang được nhân -- và \emph{toàn bộ} sự khác nhau giữa PPO, RLOO và GRPO là ba cách khác nhau để lấy $b$.
+
+PPO lấy $b$ là một \textbf{mô hình giá trị} (value model, còn gọi là critic) $V_{\psi}(s_t)$: ước lượng phần thưởng còn lại kỳ vọng nếu sinh tiếp từ trạng thái $s_t = (x, y_{<t})$. Lợi thế (advantage) của token $t$ là phần vượt trội so với mức kỳ vọng đó. PPO \cite{schulman2017proximal} dùng bộ ước lượng GAE \cite{schulman2016gae} cắt ngắn:
+\[
+	\hat{A}_t = \delta_t + (\gamma\lambda)\,\delta_{t+1} + \dots + (\gamma\lambda)^{T-t+1}\delta_{T-1},
+	\qquad
+	\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t),
+\]
+với $\gamma$ là hệ số chiết khấu và $\lambda$ điều chỉnh đánh đổi chệch--phương sai. Trong RLHF, $V_{\psi}$ thường được khởi tạo từ mô hình phần thưởng và có kích thước xấp xỉ chính sách -- tức là một bản sao mô hình đầy đủ nữa trong bộ nhớ. Mục~\ref{ssec:rloo} và mục~\ref{ssec:grpo} sẽ cho thấy cái giá ấy không cần thiết.
+
+\subsection{Tái sử dụng mẫu: lấy mẫu quan trọng và phép cắt}
+\label{ssec:importance_clip}
+
+Mỗi vòng cập nhật phải sinh mẫu mới, mà sinh văn bản là phần tốn kém nhất của toàn bộ quy trình. Để dùng lại một lô mẫu cho nhiều bước gradient, ta phải chấp nhận rằng mẫu được sinh bởi chính sách \emph{cũ} $\pi_{\theta_{\text{old}}}$ trong khi đang tối ưu chính sách \emph{mới} $\pi_{\theta}$. Hiệu chỉnh chuẩn cho tình huống đó là lấy mẫu quan trọng (importance sampling), nhân thêm tỷ số
+\[
+	\rho_t(\theta) = \frac{
+		\pi_{\theta}(y_t \mid x, y_{<t})
+	}{
+		\pi_{\theta_{\text{old}}}(y_t \mid x, y_{<t})
+	},
+	\qquad
+	\rho_t(\theta_{\text{old}}) = 1 .
+\]
+Tỷ số này chỉ đáng tin khi hai chính sách còn gần nhau. Nếu cứ cực đại hóa $\mathbb{E}[\rho_t \hat{A}_t]$, bộ tối ưu sẽ đẩy $\rho_t$ ra xa 1 vô hạn với những token có $\hat{A}_t > 0$, và sau vài bước thì lô mẫu cũ không còn đại diện cho chính sách hiện tại nữa. PPO chặn việc đó bằng mục tiêu thay thế có cắt:
+\[
+	L^{\text{CLIP}}(\theta)
+	= \mathbb{E}_{t}
+	\Big[
+		\min\Big(
+			\rho_t(\theta) \, \hat{A}_t,\;
+			\text{clip}\big(\rho_t(\theta), 1 - \epsilon, 1 + \epsilon\big) \, \hat{A}_t
+		\Big)
+	\Big],
+	\qquad \epsilon \approx 0.1 \text{--} 0.2 .
+\]
+Đọc công thức theo dấu của $\hat{A}_t$ sẽ thấy ngay tác dụng. Khi $\hat{A}_t > 0$ (token tốt hơn kỳ vọng), hàm mục tiêu tăng theo $\rho_t$ nhưng đứng yên khi $\rho_t > 1 + \epsilon$: mô hình hết động lực đẩy xác suất lên nữa. Khi $\hat{A}_t < 0$, nó đứng yên khi $\rho_t < 1 - \epsilon$: mô hình hết động lực dìm xác suất xuống nữa.
+
+Phép $\min$ là chi tiết quan trọng -- nó lấy giá trị \emph{bi quan} trong hai nhánh, nên chỉ bỏ qua thay đổi của tỷ số khi thay đổi đó làm mục tiêu \emph{tốt lên}, còn khi thay đổi làm mục tiêu xấu đi thì vẫn tính đủ \cite{schulman2017proximal}. Bỏ $\min$ và chỉ giữ nhánh cắt thì một khi $\rho_t$ đã ra ngoài khoảng, gradient bằng 0 bất kể dấu của $\hat{A}_t$; bước đi lố không còn lực nào kéo ngược trở lại.
+
+\begin{pitfall}{Phép cắt xóa gradient chứ không chỉ chặn nó}
+Khi $\rho_t$ rơi ra ngoài khoảng $[1-\epsilon, 1+\epsilon]$ về phía bị cắt, đóng góp của token đó vào gradient bằng \emph{đúng không}, không phải một giá trị nhỏ. Với huấn luyện suy luận chuỗi dài, các token hiếm và mang nhiều thông tin nhất lại chính là các token có $\rho_t$ lệch xa 1, nên phép cắt loại bỏ đúng những token đáng học nhất. Đây là quan sát khởi nguồn cho DAPO và CISPO ở mục~\ref{ssec:grpo_variants}.
+\end{pitfall}
+
+\begin{keyidea}{Năm thứ cần nhớ tên}
+\textbf{Rollout:} một câu trả lời do mô hình tự sinh trong vòng huấn luyện.
+\textbf{Phần thưởng:} một con số chấm cả rollout.
+\textbf{Baseline:} mức tham chiếu để trừ đi, không được phụ thuộc rollout đang xét.
+\textbf{Lợi thế:} phần thưởng trừ baseline -- hệ số nhân thật sự trong gradient.
+\textbf{Phạt KL:} số hạng kéo mô hình về gần chính sách tham chiếu, để nó không trôi khỏi vùng mà phần thưởng còn đáng tin.
+\end{keyidea}

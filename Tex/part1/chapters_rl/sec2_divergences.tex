@@ -1,0 +1,179 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_rl/sec2_divergences.tex
+% Mục mới: họ hàm phân kỳ. Trước đây sách chỉ có vài đoạn về chiều KL nằm
+% trong mục chưng cất ở chương hiệu quả.
+
+\section{Họ hàm phân kỳ: đo khoảng cách giữa hai phân phối}
+\label{sec:divergences}
+
+Trục thứ hai của bảng~\ref{tab:post_training_quadrants} -- tín hiệu dày -- có nghĩa là ở mỗi vị trí trong chuỗi, ta so sánh \emph{hai phân phối trên toàn từ vựng}: phân phối của mô hình đang học và một phân phối tham chiếu nào đó. Phân phối tham chiếu có thể là nhãn one-hot của dữ liệu, là đầu ra của một mô hình thầy, hay là chính mô hình ở một thời điểm trước. Câu hỏi ``so sánh bằng cách nào'' nghe như một chi tiết kỹ thuật, nhưng nó quyết định mô hình học được hành vi gì, và nó quyết định luôn cả việc thuật toán có buộc phải sinh văn bản trong vòng huấn luyện hay không.
+
+Mục~\ref{ssec:ly_thuyet_thong_tin} đã dựng entropy, cross-entropy và phân kỳ KL cho mục đích đo lượng thông tin. Mục này dùng lại chúng cho mục đích khác -- làm hàm mất mát -- và mở rộng sang họ các phân kỳ ra đời để vá những chỗ KL hỏng.
+
+\begin{pitfall}{Đơn vị dùng trong mục này}
+Chương~\ref{chap:nhap_mon} đo thông tin bằng \emph{bit}, nên dùng $\log_2$. Tài liệu về huấn luyện thì gần như luôn dùng logarit tự nhiên, và mọi con số dưới đây tính bằng \emph{nat}. Đổi đơn vị chỉ là nhân với một hằng số nên không ảnh hưởng tới việc phân kỳ nào nhỏ hơn phân kỳ nào, nhưng nó làm các ngưỡng quen thuộc đổi theo: chặn trên của phân kỳ Jensen--Shannon là $\ln 2 \approx 0{,}693$ nat chứ không phải 1 bit.
+\end{pitfall}
+
+\subsection{Phân kỳ KL và tính bất đối xứng của nó}
+\label{ssec:kl_asymmetry}
+
+Với hai phân phối rời rạc $p$ và $q$ trên cùng một tập (ở đây là từ vựng),
+\[
+\mathrm{KL}(p \,\|\, q) \;=\; \sum_{v} p(v)\,\log\frac{p(v)}{q(v)}
+\;=\; \underbrace{-\sum_v p(v)\log q(v)}_{\text{cross-entropy } H(p,q)} \;-\; \underbrace{\Big(-\sum_v p(v)\log p(v)\Big)}_{\text{entropy } H(p)} .
+\]
+Hai tính chất cần nhớ. Thứ nhất, $\mathrm{KL} \ge 0$ và bằng 0 khi và chỉ khi $p = q$ (bất đẳng thức Gibbs). Thứ hai, và đây mới là chỗ quan trọng, \textbf{nó không đối xứng}: $\mathrm{KL}(p\|q) \ne \mathrm{KL}(q\|p)$. Nó cũng không thỏa bất đẳng thức tam giác. Vì vậy KL \emph{không phải} một khoảng cách, và việc gọi nó là ``khoảng cách KL'' gây hiểu lầm đúng ở chỗ nguy hiểm nhất: hai chiều cho ra hai hành vi khác hẳn nhau.
+
+Quy ước gọi tên trong suốt chương: đặt $p$ là phân phối \emph{mục tiêu} (dữ liệu, hoặc mô hình thầy) và $q_\theta$ là phân phối của mô hình đang học.
+\begin{itemize}
+	\item \textbf{KL xuôi (forward KL)} là $\mathrm{KL}(p\|q_\theta)$: kỳ vọng lấy theo $p$.
+	\item \textbf{KL ngược (reverse KL)} là $\mathrm{KL}(q_\theta\|p)$: kỳ vọng lấy theo $q_\theta$.
+\end{itemize}
+
+\paragraph{KL xuôi tránh số không, nên nó bao phủ mode.} Nhìn vào số hạng $p(v)\log\frac{p(v)}{q_\theta(v)}$. Nếu ở một token $v$ nào đó mà $p(v) > 0$ còn $q_\theta(v) \to 0$, số hạng ấy tiến ra $+\infty$. Nghĩa là KL xuôi phạt \emph{vô hạn} mọi chỗ mục tiêu có khối lượng mà mô hình lại gán xác suất gần không. Để tránh hình phạt đó, mô hình phải phủ xác suất lên khắp mọi nơi $p$ có mặt -- kể cả khi nó không đủ năng lực để phủ cho khéo, và phần xác suất thừa rơi vào những vùng mà bản thân $p$ cũng cho là vô lý. Ngược lại, chỗ nào $p(v) = 0$ thì số hạng bằng 0 bất kể $q_\theta(v)$ bằng bao nhiêu: KL xuôi \emph{không hề phạt} việc mô hình bịa ra xác suất ở nơi mục tiêu không có gì.
+
+\paragraph{KL ngược ép số không, nên nó bám mode.} Bây giờ nhìn $q_\theta(v)\log\frac{q_\theta(v)}{p(v)}$. Chỗ nào $p(v)$ rất nhỏ mà $q_\theta(v)$ không nhỏ theo thì logarit nổ ra lớn, nên mô hình bị ép phải đặt xác suất gần không ở mọi nơi mục tiêu gần không. Đổi lại, chỗ nào $q_\theta(v) \to 0$ thì số hạng tiến về 0 bất kể $p(v)$ lớn đến đâu: KL ngược \emph{cho phép} bỏ hẳn một số mode của mục tiêu mà không bị phạt.
+
+\begin{keyidea}{Một câu để nhớ hai chiều}
+KL xuôi hỏi ``mô hình có bỏ sót chỗ nào mục tiêu có không?'' nên nó trải mỏng. KL ngược hỏi ``mô hình có bịa ra chỗ nào mục tiêu không có không?'' nên nó co cụm. Chiều nào đúng phụ thuộc vào việc ta sợ \emph{bỏ sót} hay sợ \emph{bịa đặt} hơn.
+\end{keyidea}
+
+\subsection{Một ví dụ tính được bằng tay}
+\label{ssec:kl_worked_example}
+
+Lời giải thích trên dễ gật đầu mà khó tin cho tới khi thấy số. Lấy một từ vựng ba token $\{A, B, C\}$ và một mục tiêu có \emph{hai mode} cách nhau bởi một thung lũng gần như rỗng -- đúng tình huống ``có hai cách diễn đạt đều đúng, và một cách sai nằm giữa'':
+\[
+p = (0{,}495,\; 0{,}01,\; 0{,}495).
+\]
+So hai ứng viên. Ứng viên thứ nhất chọn hẳn một mode và bỏ mode kia; ứng viên thứ hai không dám bỏ gì nên trải đều:
+\[
+q_1 = (0{,}98,\; 0{,}01,\; 0{,}01),
+\qquad
+q_2 = (\tfrac13,\; \tfrac13,\; \tfrac13).
+\]
+
+\begin{table}[H]
+\centering\small
+\caption{Hai chiều KL chấm hai ứng viên theo hai thứ tự ngược nhau (đơn vị: nat).}
+\label{tab:kl_worked_example}
+\begin{tabularx}{\textwidth}{@{}Xccl@{}}
+\toprule
+\textbf{Phân kỳ} & \textbf{$q_1$ (bám mode)} & \textbf{$q_2$ (trải đều)} & \textbf{Chọn} \\
+\midrule
+KL xuôi $\mathrm{KL}(p\|q_\theta)$ & 1,59 & \textbf{0,36} & $q_2$ \\
+KL ngược $\mathrm{KL}(q_\theta\|p)$ & \textbf{0,63} & 0,91 & $q_1$ \\
+Jensen--Shannon & 0,19 & \textbf{0,11} & $q_2$, nhưng cách biệt nhỏ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Hai chiều KL xếp hạng \emph{ngược nhau} trên cùng một cặp ứng viên. Nguồn gốc của con số lớn nhất trong bảng rất dễ chỉ ra: $\mathrm{KL}(p\|q_1)$ nhận $0{,}495 \cdot \ln(0{,}495/0{,}01) \approx 1{,}93$ từ riêng token $C$ -- mode mà $q_1$ đã bỏ. Còn $\mathrm{KL}(q_2\|p)$ nhận $\tfrac13 \cdot \ln(\tfrac13/0{,}01) \approx 1{,}17$ từ riêng token $B$ -- cái thung lũng mà $q_2$ đã bịa xác suất vào.
+
+Dịch sang ngôn ngữ sinh văn bản: huấn luyện bằng KL xuôi cho ra một mô hình thỉnh thoảng sinh ra $B$, tức một câu trả lời mà \emph{ngay cả mô hình thầy cũng cho là sai}. Huấn luyện bằng KL ngược cho ra một mô hình không bao giờ sinh $B$, nhưng cũng gần như không bao giờ sinh $C$ -- một trong hai cách diễn đạt đúng đã biến mất.
+
+\subsection{Chọn chiều nào, và vì sao lựa chọn ấy kéo theo nguồn dữ liệu}
+\label{ssec:kl_direction_distillation}
+
+\paragraph{Khoảng cách năng lực làm chiều KL trở thành vấn đề thật.} Nếu mô hình đang học đủ lớn để biểu diễn chính xác phân phối mục tiêu, chiều KL không quan trọng mấy: cực tiểu của cả hai chiều đều là $q_\theta = p$, và bảng trên sẽ có một ứng viên thắng ở mọi dòng. Các bài toán trong chương này lại là những bài toán trong đó mô hình \emph{cố tình} không khớp được mục tiêu -- vì nó nhỏ hơn thầy nhiều lần, hoặc vì mục tiêu là một phân phối trên chuỗi mà không mô hình nào biểu diễn đủ. Khi không có cách nào khớp hoàn hảo, ta buộc phải quyết định sai ở đâu thì chấp nhận được, và đó đúng là thứ chiều KL quyết định.
+
+\paragraph{Lựa chọn phụ thuộc tác vụ.} Với tác vụ có đáp án đúng -- toán, sinh mã, trích xuất thông tin -- đa dạng không phải thứ ta cần giữ, và bám mode là lựa chọn đúng. Với sinh dữ liệu tổng hợp, viết sáng tạo, hoặc bất cứ ứng dụng nào mà sự đơn điệu của đầu ra là một lỗi, mất đa dạng là cái giá thật và phải cân nhắc. Mất đa dạng còn là vấn đề khi đầu ra của mô hình sẽ được dùng làm dữ liệu huấn luyện cho vòng sau, vì nó tích lũy qua các vòng.
+
+\paragraph{Một hệ quả tính toán nối thẳng vào trục thứ nhất.} KL xuôi lấy kỳ vọng theo $p$, tức chỉ cần mẫu của mục tiêu, tức tính được trên một tập dữ liệu tĩnh. KL ngược lấy kỳ vọng theo $q_\theta$, mà $q_\theta$ đổi sau \emph{mỗi} bước cập nhật, nên buộc phải sinh văn bản ngay trong vòng huấn luyện. Nói cách khác, chọn KL ngược \emph{ở mức chuỗi} là đã chọn luôn on-policy ở trục nguồn dữ liệu; hai lựa chọn không độc lập. Đây cũng là lý do hàm mất mát SFT chính là KL xuôi trá hình: cực tiểu cross-entropy trên dữ liệu cố định tương đương cực tiểu $\mathrm{KL}(p_{\text{dữ liệu}} \| q_\theta)$, vì $H(p)$ không phụ thuộc $\theta$.
+
+Nhưng cần phân biệt cho kỹ, vì đây là chỗ hay lẫn: ta hoàn toàn có thể tính KL ngược \emph{theo từng token}, trên một tiền tố cố định lấy từ dữ liệu. Khi đó chiều KL chỉ nói về cách so sánh hai phân phối \emph{tại một tiền tố cho trước}, còn tiền tố ấy đến từ đâu lại là chuyện của trục nguồn dữ liệu. Chính sự tách bạch này là điều GKD khai thác ở mục~\ref{ssec:gkd}, và nó cho phép dùng KL ngược mà không phải trả giá của gradient chính sách.
+
+\subsection{Jensen--Shannon: đối xứng và bị chặn}
+\label{ssec:jsd}
+
+Cả hai chiều KL đều có thể nổ ra vô hạn, và cả hai đều thiên vị một phía. Phân kỳ \textbf{Jensen--Shannon} \cite{lin1991divergence} sửa cả hai khuyết điểm bằng một thủ thuật đơn giản: đừng so $p$ với $q$, hãy so cả hai với \emph{hỗn hợp} của chúng. Đặt $m = \tfrac12(p+q)$,
+\[
+\mathrm{JSD}(p \,\|\, q) \;=\; \tfrac12 \mathrm{KL}(p \,\|\, m) \;+\; \tfrac12 \mathrm{KL}(q \,\|\, m).
+\]
+Ba tính chất có được ngay. Nó \textbf{đối xứng} theo xây dựng. Nó \textbf{bị chặn}: $0 \le \mathrm{JSD} \le \ln 2$, vì $m$ luôn lớn hơn hoặc bằng một nửa mỗi phân phối nên không tỉ số nào trong logarit vượt quá 2. Và căn bậc hai của nó \emph{là} một metric thực thụ, thỏa bất đẳng thức tam giác -- điều mà bản thân KL không có.
+
+Tính bị chặn mới là thứ đáng giá trong huấn luyện. Khi mô hình đang học còn kém, sẽ có những token mà thầy đặt xác suất cao còn trò đặt gần không; với KL xuôi, một token như vậy đủ để thống trị toàn bộ gradient của cả lô. Với JSD, đóng góp lớn nhất mà một token có thể tạo ra bị chặn, nên không bao giờ có một token nào lái cả bước cập nhật.
+
+\paragraph{Jensen--Shannon tổng quát: một núm vặn giữa hai chiều.} GKD \cite{agarwal2024gkd} thay hệ số $\tfrac12$ cố định bằng một tham số $\beta$, và dùng chính hỗn hợp lệch đó làm mốc:
+\[
+\begin{aligned}
+\mathcal{D}_{\mathrm{JSD}(\beta)}(p\|q) = {}& \beta\,\mathrm{KL}\big(p \,\big\|\, \beta p + (1-\beta)q\big)\\
+&+ (1-\beta)\,\mathrm{KL}\big(q \,\big\|\, \beta p + (1-\beta)q\big),
+\qquad 0 < \beta < 1 .
+\end{aligned}
+\]
+Với $\beta = \tfrac12$ ta được JSD thường. Hai đầu mút cho lại đúng hai chiều KL, và chỗ này đáng khai triển vì nó hay bị phát biểu lỏng lẻo. Đặt $m_\beta = \beta p + (1-\beta)q$ và cho $\beta \to 0$, khi đó $m_\beta \to q$. Số hạng thứ nhất là $\beta\,\mathrm{KL}(p\|m_\beta) \to \beta\,\mathrm{KL}(p\|q)$, tức bậc nhất theo $\beta$. Số hạng thứ hai là $(1-\beta)\mathrm{KL}(q \| q + \beta(p-q))$; khai triển KL quanh điểm trùng nhau thì số hạng bậc nhất triệt tiêu và phần còn lại là $O(\beta^2)$. Vậy
+\[
+\lim_{\beta \to 0} \frac{\mathcal{D}_{\mathrm{JSD}(\beta)}(p\|q)}{\beta} = \mathrm{KL}(p\|q),
+\qquad
+\lim_{\beta \to 1} \frac{\mathcal{D}_{\mathrm{JSD}(\beta)}(p\|q)}{1-\beta} = \mathrm{KL}(q\|p).
+\]
+Nói cho chính xác: bản thân $\mathcal{D}_{\mathrm{JSD}(\beta)}$ tiến về 0 ở cả hai đầu mút, thứ tiến về hai chiều KL là \emph{dạng đã chuẩn hóa} của nó, và vì vậy cũng là \emph{hướng} của gradient. Đó là nghĩa đúng của câu nói quen thuộc ``$\beta$ nhỏ thì giống KL xuôi, $\beta$ gần 1 thì giống KL ngược''. Trong thực hành, $\beta$ trở thành một siêu tham số liên tục nội suy giữa bao phủ mode và bám mode, thay cho một lựa chọn nhị phân.
+
+\paragraph{KL lệch.} DistiLLM \cite{ko2024distillm} dùng cùng thủ thuật ấy nhưng chỉ cho một chiều: thay vì $\mathrm{KL}(p\|q)$, lấy $\mathrm{KL}$ của $p$ so với một hỗn hợp nghiêng hẳn về $p$. Tỉ số trong logarit bị chặn như ở JSD, nên gradient không nổ, nhưng hàm mất mát vẫn giữ tính bất đối xứng của chiều được chọn. Cách đọc gọn: JSD tổng quát là ``làm mượt cả hai phía'', KL lệch là ``làm mượt một phía''.
+
+\subsection{Một họ duy nhất: phân kỳ \texorpdfstring{$f$}{f}}
+\label{ssec:f_divergence}
+
+Mọi phân kỳ nói trên là trường hợp riêng của một dạng chung. Với một hàm lồi $f$ thỏa $f(1) = 0$,
+\[
+D_f(p \,\|\, q) \;=\; \sum_v q(v)\, f\!\left(\frac{p(v)}{q(v)}\right).
+\]
+
+\begin{table}[H]
+\centering\small
+\caption{Vài phân kỳ quen thuộc và hàm sinh $f$ tương ứng.}
+\label{tab:f_divergences}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.4cm}lX@{}}
+\toprule
+\textbf{Phân kỳ} & \textbf{$f(t)$} & \textbf{Tính chất đáng nhớ} \\
+\midrule
+KL xuôi $\mathrm{KL}(p\|q)$ & $t\log t$ & Không chặn; tránh số không; bao phủ mode \\
+\addlinespace
+KL ngược $\mathrm{KL}(q\|p)$ & $-\log t$ & Không chặn; ép số không; bám mode \\
+\addlinespace
+Jensen--Shannon & $\frac{1}{2}\Big(t\log\frac{2t}{t+1} + \log\frac{2}{t+1}\Big)$ & Đối xứng; chặn bởi $\ln 2$; căn bậc hai là metric \\
+\addlinespace
+Biến phân toàn phần & $\tfrac12\lvert t - 1\rvert$ & Đối xứng; chặn bởi 1; gradient không mượt \\
+\addlinespace
+Chi bình phương & $(t-1)^2$ & Phạt rất nặng các tỉ số lớn \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Cách nhìn này có ích ở chỗ nó biến ``chọn hàm mất mát'' thành ``chọn hình dạng của $f$ gần $t = 1$ và ở hai đuôi'', và cho thấy ngay vì sao các phân kỳ bị chặn ổn định hơn: $f$ của chúng tăng chậm khi $t \to \infty$ và không tiến ra $-\infty$ khi $t \to 0$.
+
+\subsection{Phân kỳ nào xuất hiện ở đâu trong chương này}
+\label{ssec:divergence_map}
+
+Mục này không phải một phần phụ lục toán học; mọi thuật toán còn lại của chương đều chọn một dòng trong bảng dưới đây, và phần lớn các khác biệt giữa chúng đọc được ngay từ ô đã chọn.
+
+\begin{table}[H]
+\centering\small
+\caption{Phân kỳ mà mỗi phương pháp trong chương này tối ưu, và nó được đo ở đâu.}
+\label{tab:divergence_usage}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.5cm}>{\raggedright\arraybackslash}p{4.0cm}X@{}}
+\toprule
+\textbf{Phương pháp} & \textbf{Phân kỳ} & \textbf{Đo giữa hai phân phối nào, trên chuỗi nào} \\
+\midrule
+SFT (mục~\ref{sec:instruction_tuning}) & KL xuôi, từng token & Dữ liệu và mô hình, trên chuỗi cố định \\
+\addlinespace
+Phạt KL của RLHF (mục~\ref{ssec:rlhf}) & KL ngược, mức chuỗi & Mô hình và $\pi_{\text{ref}}$, trên rollout của mô hình \\
+\addlinespace
+DPO (mục~\ref{ssec:dpo}) & KL ngược, ngầm trong nghiệm dạng đóng & Mô hình và $\pi_{\text{ref}}$, trên cặp đã ghi sẵn \\
+\addlinespace
+GRPO (mục~\ref{ssec:grpo}) & KL ngược, ước lượng $\rho - \log\rho - 1$ & Mô hình và $\pi_{\text{ref}}$, trên rollout của mô hình \\
+\addlinespace
+Word-level KD (mục~\ref{ssec:seq_kd}) & KL xuôi, từng token & Thầy và trò, trên tiền tố cố định \\
+\addlinespace
+MiniLLM (mục~\ref{ssec:minillm}) & KL ngược, mức chuỗi & Thầy và trò, trên chuỗi do trò sinh \\
+\addlinespace
+GKD (mục~\ref{ssec:gkd}) & $\mathrm{JSD}(\beta)$, từng token & Thầy và trò, trên chuỗi trộn theo $\lambda$ \\
+\addlinespace
+Chưng cất on-policy (mục~\ref{sec:on_policy_distillation}) & KL ngược, từng token & Thầy và trò, trên chuỗi do trò sinh \\
+\addlinespace
+SDPO (mục~\ref{sec:self_distillation}) & Jensen--Shannon, từng token & Mô hình có và không có phản hồi, trên rollout của chính nó \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Đọc bảng theo cột thứ hai sẽ thấy KL ngược chiếm đa số, và lý do thì nhất quán: hậu huấn luyện gần như luôn là bài toán mà mô hình không đủ sức khớp mục tiêu, và trong hoàn cảnh đó, sinh ra một câu trả lời sai tệ hơn là bỏ sót một cách diễn đạt đúng.

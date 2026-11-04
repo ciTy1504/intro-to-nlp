@@ -1,6 +1,8 @@
-\chapter{LÝ THUYẾT VỀ TINH CHỈNH VÀ CĂN CHỈNH MÔ HÌNH}
+\chapter{LÝ THUYẾT VỀ TINH CHỈNH MÔ HÌNH}
 \label{chap:finetuning_alignment}
 
 Chương~\ref{chap:transformer_llms} và chương~\ref{chap:pretraining} đã trình bày kiến trúc của các mô hình ngôn ngữ lớn (LLMs) và cách chúng được \textbf{huấn luyện trước (pre-training)} trên một lượng dữ liệu văn bản khổng lồ. Quá trình đó cho mô hình hiểu biết về ngôn ngữ, ngữ pháp, ngữ nghĩa và một lượng lớn kiến thức về thế giới, nhưng vẫn ở mức tổng quát: mô hình chưa chuyên biệt cho một lĩnh vực hay một tác vụ cụ thể nào.
 
 Chương này tập trung vào giai đoạn thứ hai, giai đoạn \textbf{thích ứng (adaptation)}, nơi một mô hình nền tảng (foundation model) được chuyển thành một ứng dụng dùng được. Các kỹ thuật trình bày ở đây giúp LLM làm tốt những tác vụ cụ thể, từ phân loại email đến tuân theo các chỉ dẫn phức tạp của con người.
+
+Điểm chung của chúng là \emph{học bắt chước}: ở đâu đó có sẵn một câu trả lời đúng do con người viết, và mô hình được dạy sinh lại câu trả lời ấy. Giả thiết đó đủ cho phần lớn tác vụ có nhãn, nhưng nó sụp đổ khi câu trả lời đúng không tồn tại dưới dạng viết sẵn -- khi thứ ta muốn dạy là một phẩm chất như tính hữu ích, hoặc khi bài toán khó tới mức chính người soạn dữ liệu cũng phải mò. Các phương pháp cho hoàn cảnh đó là nội dung của chương~\ref{chap:post_training}.

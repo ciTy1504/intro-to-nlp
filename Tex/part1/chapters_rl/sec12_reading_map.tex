@@ -1,0 +1,43 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_rl/sec12_reading_map.tex
+% Lộ trình đọc + kết chương. Phụ lục A tra cứu theo bài báo; mục này xếp theo
+% thứ tự nên đọc.
+
+\section{Lộ trình đọc}
+\label{sec:post_training_reading_map}
+
+Phụ lục~A tra theo chiều ngược lại: cho một bài báo, nó nằm ở mục nào trong sách. Mục này xếp theo chiều thuận -- nếu muốn đọc bản gốc thay vì đọc về chúng, thì đọc theo thứ tự nào. Sáu chặng dưới đây khoảng mười lăm bài, và mỗi chặng chỉ nên bước sang chặng sau khi đã trả lời được câu hỏi đặt ở cuối chặng.
+
+\begin{enumerate}
+	\item \textbf{Nền sở thích.} InstructGPT \cite{ouyang2022training} $\rightarrow$ DPO \cite{rafailov2023direct} $\rightarrow$ Tülu 3 \cite{lambert2024tulu3}.\\
+	\emph{Câu hỏi:} vì sao một mô hình phần thưởng vô hướng lại là khâu trung gian có thể bỏ đi?
+
+	\item \textbf{Phần thưởng kiểm chứng được.} DeepSeekMath \cite{shao2024deepseekmath} $\rightarrow$ DeepSeek-R1 \cite{deepseekai2025r1} $\rightarrow$ DAPO \cite{yu2025dapo} $\rightarrow$ Dr.~GRPO \cite{liu2025drgrpo}.\\
+	\emph{Câu hỏi:} bỏ mô hình giá trị thì baseline lấy ở đâu, và phép chuẩn hóa nào trong GRPO là thừa?
+
+	\item \textbf{Giới hạn và quy luật mở rộng của học tăng cường.} ``Does RL Really Incentivize\ldots'' \cite{yue2025rlboundary} $\rightarrow$ ScaleRL \cite{khatri2025scalerl}.\\
+	\emph{Câu hỏi:} điều gì trong quy tắc cập nhật khiến học tăng cường không tạo ra được lời giải mà mô hình nền chưa từng lấy mẫu trúng?
+
+	\item \textbf{Chưng cất, từ off-policy sang on-policy.} Hinton \cite{hinton2015distilling} $\rightarrow$ Seq-KD \cite{kim2016sequence} $\rightarrow$ MiniLLM \cite{gu2024minillm} $\rightarrow$ GKD \cite{agarwal2024gkd}.\\
+	\emph{Câu hỏi:} chiều phân kỳ và nguồn chuỗi là hai lựa chọn độc lập ở chỗ nào, và gộp làm một thì phải trả giá gì?
+
+	\item \textbf{Chưng cất on-policy trong thực chiến.} Báo cáo của Thinking Machines \cite{lu2025opd} $\rightarrow$ MOPD \cite{ma2026mopd} $\rightarrow$ ``Rethinking OPD'' \cite{li2026rethinkingopd}.\\
+	\emph{Câu hỏi:} điều kiện nào phải thỏa thì nó mới chạy, và nó hỏng theo kiểu gì khi không thỏa?
+
+	\item \textbf{Tự chưng cất, hướng 2026.} OPSD \cite{zhao2026opsd} $\rightarrow$ SDFT \cite{shenfeld2026sdft} $\rightarrow$ SDPO \cite{huebotter2026sdpo}.\\
+	\emph{Câu hỏi:} một bản sao của chính mô hình lấy đâu ra lợi thế để làm thầy?
+\end{enumerate}
+
+\begin{deepdive}{Năm câu hỏi nên mang theo khi đọc bất kỳ bài nào}
+(1) Nó đổi \emph{giả định} nào so với bài trước? (2) Nó gỡ \emph{nút thắt} nào -- bộ nhớ, phương sai, chi phí sinh mẫu, hay chất lượng tín hiệu? (3) Nó \emph{đánh đổi} gì để lấy gì? (4) Có so sánh \emph{cùng ngân sách tính toán} không, hay chỉ so điểm cuối? (5) Kết quả đến từ một ablation có đối chứng, hay từ một bảng benchmark duy nhất? Câu hỏi thứ tư loại bỏ được phần lớn các tuyên bố cải tiến trong nhánh này.
+\end{deepdive}
+
+\bigskip
+\hrule
+\bigskip
+
+\begin{center}
+	\textbf{\Large KẾT THÚC CHƯƠNG \thechapter}
+\end{center}
+
+\textit{Chương này đi qua ba nguồn tín hiệu dùng để huấn luyện một mô hình sau khi nó đã biết tuân theo chỉ dẫn: sở thích của con người, phần thưởng do một chương trình kiểm chứng, và phân phối của một mô hình khác. Khung hai trục -- nguồn dữ liệu và độ dày tín hiệu -- cho thấy chúng không phải ba hướng cạnh tranh mà là ba ô của cùng một bảng, mỗi ô hy sinh một thứ khác nhau, và quy trình thực tế đi qua nhiều ô theo thứ tự. Phần còn bỏ ngỏ là làm cho mô hình \emph{suy luận đúng} trên những bài toán khó, chứ không chỉ \emph{trả lời theo ý con người}. Chương tiếp theo dùng lại toàn bộ bộ máy này để đọc một trường hợp cụ thể, và bổ sung trục còn thiếu: tiêu thêm tính toán vào lúc trả lời thay vì vào lúc huấn luyện.}

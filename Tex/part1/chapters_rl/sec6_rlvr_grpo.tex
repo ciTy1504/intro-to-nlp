@@ -1,0 +1,161 @@
+% !TEX root = ../main.tex
+% File: part1/chapters_rl/sec6_rlvr_grpo.tex
+% Chuyển từ chapters_reasoning/sec4 (RLVR) và chap5_5 (RLOO, GRPO)
+
+\section{RLVR và GRPO: học tăng cường với phần thưởng kiểm chứng được}
+\label{sec:rlvr_grpo}
+
+Hai mục trước đi theo hướng bỏ học tăng cường. Mục này đi hướng ngược lại:
+giữ học tăng cường, nhưng hỏi xem trong bộ máy của PPO có gì là thừa đối với
+mô hình ngôn ngữ, và thay hàm phần thưởng học được bằng một thứ không lách được.
+
+\subsection{RLVR: phần thưởng kiểm chứng được đổi gì trong bài toán tối ưu}
+\label{ssec:rlvr}
+RLHF (mục~\ref{ssec:rlhf}) giải bài toán
+\[
+\max_{\pi_\theta}\ \mathbb{E}_{x\sim\mathcal{D},\ y\sim\pi_\theta(\cdot\mid x)}\big[r_\phi(x,y)\big]
+\;-\; \beta\,\mathbb{D}_{\mathrm{KL}}\big[\pi_\theta(\cdot\mid x)\,\big\|\,\pi_{\mathrm{ref}}(\cdot\mid x)\big],
+\]
+trong đó $r_\phi$ là một mạng nơ-ron được khớp vào một tập so sánh hữu hạn. Hãy viết $r_\phi = r^\star + \varepsilon_\phi$, với $r^\star$ là đại lượng ta thực sự muốn cực đại và $\varepsilon_\phi$ là sai số xấp xỉ. Bộ tối ưu không phân biệt được hai số hạng; nó cực đại hóa tổng. Sai số $\varepsilon_\phi$ chỉ nhỏ trên vùng phân phối mà $r_\phi$ được khớp, còn nghiệm của $\arg\max$ lại có xu hướng rơi đúng vào nơi $\varepsilon_\phi$ dương và lớn. Vì vậy chính sách càng mạnh thì càng dễ tìm ra những câu trả lời ghi điểm cao theo $r_\phi$ nhưng kém theo $r^\star$ -- đó là \textbf{reward hacking}. Hệ quả: số hạng KL trong công thức trên không phải một chi tiết kỹ thuật mà là điều kiện để bài toán còn ý nghĩa. Hệ số $\beta$ giữ $\pi_\theta$ ở lại vùng mà $r_\phi$ còn đáng tin, tức là một vùng tin cậy quanh dữ liệu đã dùng để huấn luyện reward model.
+
+\paragraph{Thay hàm học được bằng một chương trình.}
+\textbf{RLVR (Reinforcement Learning with Verifiable Rewards)} -- thuật ngữ được đặt trong Tulu 3 \cite{lambert2024tulu3} -- thay $r_\phi$ bằng một hàm không có tham số:
+\[
+r(x,y) \;=\; \alpha \cdot \mathbf{1}\big[\texttt{check}(y,\, a^\star_x)\big],
+\]
+trong đó $a^\star_x$ là đáp án tham chiếu của câu hỏi $x$, $\alpha$ là một hằng số, và \texttt{check} là một chương trình do con người viết: so khớp đáp số trong \texttt{\textbackslash boxed\{\}}, chạy bộ test case, hoặc gọi một trình chứng minh. Ba tính chất của hàm này đổi bản chất bài toán tối ưu.
+\begin{itemize}
+	\item \textbf{Không có tham số nên không có $\varepsilon_\phi$ để khai thác.} Không tồn tại một câu trả lời nào ghi điểm cao theo \texttt{check} mà lại sai theo định nghĩa của \texttt{check}. Toàn bộ lập luận Goodhart ở trên sụp đổ ngay tại gốc.
+	\item \textbf{Không trôi theo phân phối.} Reward model phải được huấn luyện lại định kỳ khi chính sách rời xa dữ liệu cũ, và vòng lặp đó là phần tốn kém nhất của RLHF. Chương trình \texttt{check} cho ra đúng một kết quả ở bước 1 và ở bước 10 nghìn.
+	\item \textbf{Số hạng KL không còn phải gánh vai trò chống hack.} Đây là chỗ thay đổi quan sát được ngay trong công thức: DAPO \cite{yu2025dapo} \emph{bỏ hẳn} số hạng $\beta\,\mathbb{D}_{\mathrm{KL}}$, với lý do khi huấn luyện mô hình suy luận chuỗi dài thì phân phối của mô hình \emph{cần} đi rất xa khỏi mô hình khởi tạo, nên ràng buộc này không cần thiết.
+\end{itemize}
+Nói cách khác, RLVR không chỉ đổi nguồn tín hiệu; nó cho phép tháo bỏ chính ràng buộc vốn giới hạn mức dịch chuyển mà RLHF được phép thực hiện.
+
+\begin{pitfall}{RLVR loại bỏ reward hacking ở đâu, và không loại bỏ ở đâu}
+Phần thưởng là chính xác \emph{đối với phép kiểm tra}, không phải đối với điều ta muốn. Bốn kênh khai thác vẫn còn nguyên.
+\begin{enumerate}
+	\item \textbf{Verifier có dương tính giả.} So khớp đáp số chấp nhận một lời giải đi tới con số đúng bằng suy luận sai, bằng đoán, hoặc bằng ghi nhớ đáp án từ dữ liệu tiền huấn luyện. Bộ test case chấp nhận đoạn mã đặc biệt hóa đúng các test đó. Tối ưu đủ lâu, chính sách sẽ hội tụ vào các lối tắt này vì chúng rẻ hơn lời giải thật.
+	\item \textbf{Phần thưởng chỉ đặt ở kết quả nên chuỗi suy nghĩ không bị ràng buộc gì.} R1-Zero trộn lẫn ngôn ngữ chính vì không có gì trong $r$ phạt điều đó. Cách DeepSeek chữa là \emph{thêm} một số hạng thưởng định hình -- tỷ lệ từ thuộc ngôn ngữ mục tiêu -- tức là quay lại với reward shaping thủ công, và phải trả giá bằng một phần hiệu năng.
+	\item \textbf{Cắt cụt vì vượt độ dài tạo ra nhiễu nhãn.} Một lời giải đang đi đúng hướng nhưng bị cắt ở trần độ dài nhận phần thưởng 0. Tín hiệu này không nói ``lời giải sai'' mà nói ``ngân sách hết''. DAPO coi đây là nhiễu phần thưởng và vá bằng một hàm phạt có độ dốc (mục~\ref{ssec:grpo_variants}).
+	\item \textbf{Bản thân quy tắc cập nhật có thể sinh ra lợi ích mà không cần thông tin nào trong phần thưởng.} Huấn luyện Qwen2.5-Math-7B bằng GRPO với phần thưởng \emph{ngẫu nhiên} vẫn nâng MATH-500 lên 21.4 điểm, so với 29.1 điểm khi dùng đáp án thật \cite{shao2025spurious}. Khi đó ``phần thưởng kiểm chứng được'' không phải là thứ đang dạy mô hình. Đây là kênh nguy hiểm nhất vì nó không để lại dấu vết trong đường cong phần thưởng; mục~\ref{ssec:rl_capability_debate} bàn cách đối chứng.
+\end{enumerate}
+\end{pitfall}
+
+Thuật toán tối ưu phổ biến nhất cho RLVR là \textbf{GRPO} (mục~\ref{ssec:grpo}); họ biến thể của nó được mổ xẻ ở mục~\ref{ssec:grpo_variants}.
+
+\subsection{RLOO: quay lại REINFORCE với baseline bỏ-một}
+\label{ssec:rloo}
+
+\paragraph{Bài toán đặt ra.}
+DPO và IPO bỏ học tăng cường đi. Hướng ngược lại là giữ học tăng cường nhưng hỏi xem trong bộ máy của PPO, phần nào thực sự cần thiết cho LLM. PPO được thiết kế cho điều khiển liên tục: chuỗi dài hàng nghìn bước, phần thưởng rải rác dọc đường, chuyển trạng thái ngẫu nhiên, lấy mẫu đắt tới mức bắt buộc phải tái sử dụng dữ liệu. Ahmadian và cộng sự \cite{ahmadian2024rloo} chỉ ra rằng RLHF cho mô hình ngôn ngữ hầu như không có đặc điểm nào trong số đó.
+
+\paragraph{Vì sao bài toán thực ra là một bandit.}
+Hai quan sát. Thứ nhất, trong RLHF phần thưởng chỉ được trao \emph{một lần}, ở token \texttt{<EOS>}; mọi token khác chỉ nhận số hạng phạt KL. Thứ hai, chuyển trạng thái là tất định: nối thêm một token vào tiền tố cho ra đúng một tiền tố mới, không có môi trường ngẫu nhiên nào. Một quá trình quyết định Markov có chuyển trạng thái tất định và phần thưởng chỉ ở trạng thái cuối thì rút gọn được thành bài toán \textbf{bandit}: trạng thái đầu là prompt, \emph{một hành động} là toàn bộ câu trả lời, và thế là hết.
+
+Hệ quả đi thẳng vào thiết kế: hàm giá trị theo từng token mà GAE cần đang mô hình hóa các chuỗi dở dang -- những đối tượng không bao giờ được chấm điểm độc lập. Nó học một đại lượng mà bài toán không cung cấp dữ liệu trực tiếp, trong khi chiếm một bản sao mô hình đầy đủ trong bộ nhớ.
+
+\paragraph{Quay lại ước lượng gốc.}
+Bỏ phân rã theo token, ta trở về đúng công thức policy gradient ở bước 3 của RLHF, lần này với \( y \) là cả chuỗi và \( R(x,y) \) là phần thưởng đã trừ phạt KL:
+\[
+    \nabla_{\theta}\, J(\theta)
+    = \mathbb{E}_{x \sim D,\; y \sim \pi_{\theta}(\cdot \mid x)}
+    \big[ R(x,y)\, \nabla_{\theta}\log \pi_{\theta}(y \mid x) \big].
+\]
+Vấn đề còn lại vẫn là phương sai, và cách chữa vẫn là trừ đi một baseline \( b \). Điều kiện duy nhất để giữ tính không chệch là \( b \) không phụ thuộc vào chính mẫu \( y \) đang được nhân, vì khi đó \( \mathbb{E}_y\big[ b\, \nabla_{\theta}\log\pi_{\theta}(y \mid x) \big] = b\, \mathbb{E}_y\big[\nabla_{\theta}\log\pi_{\theta}(y \mid x)\big] = 0 \). PPO thỏa điều kiện đó ở mức từng token, bằng một mạng giá trị học được. Nhưng có một cách rẻ hơn nhiều.
+
+\paragraph{Baseline bỏ-một (leave-one-out).}
+Với mỗi prompt \( x \), lấy \( k \) câu trả lời độc lập cùng phân phối từ \( \pi_{\theta} \). Khi tính gradient cho mẫu thứ \( i \), dùng \emph{trung bình phần thưởng của \( k-1 \) mẫu còn lại} làm baseline:
+\[
+\begin{gathered}
+    \nabla_{\theta} J_{\text{RLOO}}
+    = \frac{1}{k}\sum_{i=1}^{k}
+    \Big[
+        R(x, y_{(i)}) - \underbrace{\frac{1}{k-1}\sum_{j \neq i} R(x, y_{(j)})}_{\text{baseline cho mẫu } i}
+    \Big]
+    \nabla_{\theta} \log \pi_{\theta}\big(y_{(i)} \mid x\big),
+    \\[4pt]
+    y_{(1)}, \dots, y_{(k)} \overset{\text{i.i.d.}}{\sim} \pi_{\theta}(\cdot \mid x).
+\end{gathered}
+\]
+Baseline này thỏa đúng điều kiện không chệch: \( k-1 \) mẫu kia độc lập với mẫu thứ \( i \), nên kỳ vọng của tích tách được thành tích các kỳ vọng và số hạng baseline triệt tiêu. Nó cũng không tốn thêm gì ngoài những mẫu ta đã phải sinh ra để ước lượng gradient. Nói cách khác, RLOO đổi một mô hình giá trị lấy vài lần lấy mẫu thêm -- và thu lại một ước lượng không chệch thay vì một xấp xỉ học được.
+
+Siêu tham số duy nhất mới là \( k \). Bài báo dùng \( k = 2 \) và \( k = 4 \); \( k \) lớn hơn cho baseline chính xác hơn và phương sai nhỏ hơn, với chi phí sinh văn bản tăng tuyến tính. So với PPO, RLOO giảm được một bản sao mô hình trong bộ nhớ vì không còn mạng giá trị, và bỏ hẳn các siêu tham số \( \gamma, \lambda \) của GAE. Trong thí nghiệm của bài báo trên TL;DR với trọng tài tự động, RLOO \( k=4 \) đạt tỷ lệ thắng 77.9 so với 67.6 của PPO và 66.6 của DPO; xu hướng tương tự lặp lại trên tập hội thoại Anthropic HH.
+
+\begin{keyidea}{RLOO là cầu nối tự nhiên sang GRPO}
+Cả RLOO lẫn GRPO đều bắt đầu từ cùng một nhận xét: nếu đã lấy nhiều mẫu cho \emph{cùng một prompt}, thì bản thân nhóm mẫu đó đã là một baseline, không cần học thêm mô hình giá trị nào. Khác biệt nằm ở ba chi tiết. RLOO loại mẫu đang xét ra khỏi baseline nên ước lượng không chệch, còn GRPO lấy trung bình cả nhóm (kể cả mẫu đang xét) rồi chia thêm cho độ lệch chuẩn. RLOO giữ phần thưởng ở mức cả chuỗi, còn GRPO trải advantage xuống từng token để dùng lại tỷ số xác suất và phép cắt của PPO. Và RLOO trừ phạt KL vào phần thưởng, còn GRPO cộng KL thẳng vào hàm mục tiêu.
+\end{keyidea}
+
+\paragraph{Giới hạn và khi nào nên dùng.}
+RLOO vẫn là phương pháp trực tuyến, nên chi phí sinh văn bản vẫn chiếm phần lớn thời gian huấn luyện, và vẫn cần một mô hình phần thưởng -- nghĩa là nguy cơ lách mô hình phần thưởng không hề giảm. Ước lượng chỉ đúng khi các mẫu được sinh từ chính \( \pi_{\theta} \) hiện tại, nên không có cơ chế tái sử dụng lô mẫu cho nhiều bước gradient như phép cắt của PPO; bước đi phải được kiểm soát bằng tốc độ học. Với \( k \) nhỏ, baseline chỉ dựa trên một hoặc vài mẫu nên vẫn nhiễu. RLOO là lựa chọn tốt khi đã có mô hình phần thưởng và ngân sách sinh mẫu trực tuyến, nhưng muốn cắt bớt bộ nhớ và số siêu tham số của PPO; và nó là bước đệm khái niệm thuận lợi để hiểu GRPO ở mục~\ref{ssec:grpo}.
+
+
+\subsection{Group Relative Policy Optimization (GRPO)}
+\label{ssec:grpo}
+
+\textbf{GRPO} được giới thiệu trong DeepSeekMath \cite{shao2024deepseekmath} và trở nên nổi tiếng nhờ DeepSeek-R1 \cite{deepseekai2025r1}. Mục này trình bày thuật toán; vai trò của nó trong việc huấn luyện các mô hình suy luận được phân tích sâu ở chương~\ref{chap:reasoning}.
+
+\paragraph{Bài toán đặt ra: lấy baseline ở đâu nếu bỏ mô hình giá trị.}
+PPO (bước 3 của RLHF) cần một \textbf{mô hình giá trị} (critic) $V_\psi$ để ước lượng advantage. Với LLM, critic thường lớn ngang mô hình chính sách, nên tốn gần gấp đôi bộ nhớ và tính toán. Khó khăn thứ hai nghiêm trọng hơn: khi phần thưởng chỉ được trao ở \emph{token cuối cùng} (câu trả lời đúng hay sai), không có dữ liệu giám sát trực tiếp nào cho giá trị của một chuỗi suy luận \emph{dở dang}, nên $V_\psi$ phải học một đại lượng mà bài toán gần như không nói gì về nó. Đây chính là nhận xét đã dẫn tới RLOO ở mục~\ref{ssec:rloo}.
+
+Vậy bỏ critic đi thì lấy gì làm baseline? Nhớ lại điều kiện duy nhất: baseline phải xấp xỉ phần thưởng kỳ vọng của prompt và không phụ thuộc quá chặt vào chính mẫu đang xét. Nhưng phần thưởng kỳ vọng của một câu hỏi thì ước lượng được bằng Monte Carlo, chỉ cần lấy vài mẫu cho cùng câu hỏi đó -- mà việc lấy nhiều mẫu cho cùng một câu hỏi vốn đã phải làm, vì đó là cách mô hình phần thưởng được huấn luyện (so sánh giữa các câu trả lời cho cùng một câu hỏi) và cũng là cách các bài toán kiểm chứng được vận hành. GRPO \cite{shao2024deepseekmath} lấy thẳng \textbf{điểm trung bình của nhóm} làm baseline, không học thêm mạng nào.
+
+\paragraph{Thuật toán.} Với mỗi câu hỏi $q$:
+\begin{enumerate}
+	\item Lấy mẫu một nhóm $G$ câu trả lời $\{o_1, \dots, o_G\}$ từ chính sách cũ $\pi_{\theta_{\text{old}}}$.
+	\item Chấm điểm từng câu trả lời để có phần thưởng $\{r_1, \dots, r_G\}$ -- bằng reward model, hoặc bằng \textbf{luật kiểm chứng} (so khớp đáp án toán, chạy test case của mã).
+	\item Tính advantage \textbf{tương đối trong nhóm} (với giám sát theo kết quả -- outcome supervision -- mọi token của $o_i$ nhận cùng một advantage):
+	\[
+	\hat{A}_{i,t} = \frac{r_i - \text{mean}(\{r_1,\dots,r_G\})}{\text{std}(\{r_1,\dots,r_G\})}.
+	\]
+	\item Cập nhật chính sách bằng cách cực đại hóa
+	\[
+	\begin{aligned}
+	\mathcal{J}_{\text{GRPO}}(\theta) = \mathbb{E}\Big[\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|o_i|}\sum_{t=1}^{|o_i|}\Big\{
+	&\min\big(\rho_{i,t}\hat{A}_{i,t},\ \text{clip}(\rho_{i,t}, 1-\epsilon, 1+\epsilon)\,\hat{A}_{i,t}\big) \\
+	&- \beta\, \mathbb{D}_{\text{KL}}\big[\pi_\theta \,\|\, \pi_{\text{ref}}\big]\Big\}\Big],
+	\end{aligned}
+	\]
+	với tỷ số xác suất theo từng token $\rho_{i,t} = \dfrac{\pi_\theta(o_{i,t}\mid q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t}\mid q, o_{i,<t})}$.
+\end{enumerate}
+
+\paragraph{Đọc công thức advantage.}
+Tử số $r_i - \text{mean}(\mathbf{r})$ là phần cốt lõi: nó nói câu trả lời thứ $i$ tốt hơn hay kém hơn \emph{mức trung bình của chính nhóm này}. Câu trả lời trên trung bình được kéo lên, dưới trung bình bị dìm xuống, bất kể thang điểm tuyệt đối là bao nhiêu. Hai chi tiết cần lưu ý.
+
+Thứ nhất, trung bình ở đây tính trên \emph{cả nhóm, kể cả mẫu $i$}. RLOO loại mẫu đang xét ra để giữ tính không chệch; GRPO không làm vậy, nên baseline có tương quan nhẹ với mẫu nó đang trừ và ước lượng gradient bị chệch một lượng cỡ $1/G$. Với $G$ đủ lớn thì ảnh hưởng nhỏ, nhưng đây là một khác biệt thật giữa hai phương pháp, không phải cách viết khác nhau của cùng một thứ.
+
+Thứ hai, mẫu số $\text{std}(\mathbf{r})$ đưa advantage của mọi câu hỏi về cùng một thang, nhờ đó một tốc độ học duy nhất dùng được cho cả lô dù các câu hỏi có độ khó rất khác nhau. Cái giá là nó khuếch đại gradient của những câu hỏi mà cả nhóm gần như đồng thuận (độ lệch chuẩn nhỏ), tức là thiên lệch theo độ khó; và nó không xác định khi độ lệch chuẩn bằng 0.
+
+\paragraph{Vì sao mọi token nhận cùng một advantage.}
+Với giám sát theo kết quả, phần thưởng gắn với \emph{cả câu trả lời}, nên $\hat{A}_{i,t}$ không đổi theo $t$: toàn bộ chuỗi $o_i$ được nâng lên hoặc dìm xuống như một khối. Nghĩa là GRPO không thực hiện phân bổ công (credit assignment) bên trong một câu trả lời -- nó không biết bước suy luận nào đã cứu bài giải. Việc phân bổ công diễn ra \emph{giữa các mẫu}: một bước suy luận xuất hiện thường xuyên trong các câu trả lời đúng và hiếm khi xuất hiện trong các câu sai sẽ nhận tổng lực kéo dương qua cả nhóm, còn bước chỉ xuất hiện trong những câu sai sẽ bị dìm. Đây là lý do $G$ không thể quá nhỏ: tín hiệu học đến từ sự tương phản trong nhóm.
+
+\paragraph{Hai chi tiết khác PPO kinh điển.}
+\begin{itemize}
+	\item \textbf{Vẫn giữ tỷ số xác suất và phép cắt.} Tuy baseline đã khác, GRPO vẫn dùng $\rho_{i,t}$ và \texttt{clip} như PPO, để một lô mẫu đã sinh ra có thể dùng cho vài bước gradient liên tiếp -- phần sinh văn bản là phần đắt nhất, nên tái sử dụng lô mẫu là điều đáng làm. Nếu chỉ đi đúng một bước gradient cho mỗi lô, tỷ số luôn bằng 1 và GRPO rút về đúng một biến thể REINFORCE với baseline nhóm, rất gần RLOO.
+	\item \textbf{KL nằm trong loss, không nằm trong phần thưởng.} InstructGPT trừ KL vào phần thưởng ở từng token; GRPO cộng trực tiếp số hạng KL vào mục tiêu. Nhờ vậy advantage chỉ phản ánh chất lượng câu trả lời, không trộn lẫn mức trôi của chính sách, và phép chuẩn hóa trong nhóm không bị số hạng KL làm méo.
+	\item \textbf{Bộ ước lượng KL không chệch và luôn dương:}
+	\[
+	\mathbb{D}_{\text{KL}}\big[\pi_\theta\|\pi_{\text{ref}}\big] \approx \frac{\pi_{\text{ref}}(o_{i,t}\mid q, o_{i,<t})}{\pi_\theta(o_{i,t}\mid q, o_{i,<t})} - \log\frac{\pi_{\text{ref}}(o_{i,t}\mid q, o_{i,<t})}{\pi_\theta(o_{i,t}\mid q, o_{i,<t})} - 1.
+	\]
+	Đặt $\rho = \pi_{\text{ref}}/\pi_\theta$ thì biểu thức là $\rho - \log\rho - 1$, luôn không âm với mọi $\rho > 0$ và bằng 0 khi $\rho = 1$. Bộ ước lượng hiển nhiên hơn, $-\log\rho$, cũng không chệch nhưng có thể \emph{âm} trên một mẫu đơn lẻ -- nghĩa là hình phạt biến thành phần thưởng ở một số token, gây nhiễu không cần thiết.
+\end{itemize}
+
+\paragraph{Siêu tham số.}
+Ba siêu tham số chính: $G$ (số câu trả lời mỗi câu hỏi -- lớn thì baseline chính xác hơn và tương phản trong nhóm rõ hơn, nhưng chi phí sinh mẫu tăng tuyến tính), $\epsilon$ (bề rộng cắt, vai trò hệt như trong PPO), và $\beta$ (trọng số KL). Với huấn luyện suy luận chuỗi dài, $\beta$ thường được đặt rất nhỏ hoặc bằng 0: DAPO \cite{yu2025dapo} bỏ hẳn số hạng KL, với lập luận rằng ở chế độ này phân phối của mô hình \emph{phải} đi xa khỏi mô hình ban đầu nên ràng buộc đó không còn hợp lý. Ngược lại, trong căn chỉnh theo sở thích thông thường, $\beta$ vẫn cần thiết vì mô hình phần thưởng dễ bị lách.
+
+\paragraph{Kết quả gốc.} Áp dụng GRPO lên DeepSeekMath-Instruct 7B chỉ với khoảng 144 nghìn câu hỏi dạng chuỗi suy luận từ GSM8K và MATH, độ chính xác tăng từ 82.9\% lên 88.2\% trên GSM8K và từ 46.8\% lên 51.7\% trên MATH -- kể cả trên các bài ngoài miền huấn luyện.
+
+\paragraph{Ưu điểm.}
+\begin{itemize}
+	\item Không cần mô hình giá trị $\Rightarrow$ tiết kiệm đáng kể bộ nhớ và tính toán.
+	\item Advantage tương đối trong nhóm khớp tự nhiên với cách reward model được huấn luyện (so sánh giữa các câu trả lời cho cùng câu hỏi).
+	\item Kết hợp rất tốt với \textbf{phần thưởng kiểm chứng được} (RLVR -- Reinforcement Learning with Verifiable Rewards), không cần reward model nơ-ron dễ bị “hack”.
+\end{itemize}
+
+\paragraph{Nhược điểm và các biến thể (chi tiết ở mục~\ref{sec:rl_algorithms}).}
+\begin{itemize}
+	\item \textbf{Nhóm có phương sai bằng 0:} Nếu cả $G$ câu trả lời đều đúng (hoặc đều sai), advantage bằng 0 và câu hỏi không đóng góp tín hiệu học. DAPO \cite{yu2025dapo} lọc bỏ các nhóm này (dynamic sampling).
+	\item \textbf{Thiên lệch độ dài và độ khó:} Chuẩn hóa theo $1/|o_i|$ và chia cho độ lệch chuẩn tạo ra thiên lệch -- ví dụ câu trả lời sai nhưng dài bị phạt nhẹ hơn trên mỗi token. Dr.~GRPO \cite{liu2025drgrpo} bỏ hai phép chuẩn hóa này.
+	\item \textbf{Tỷ số quan trọng theo token gây nhiễu,} đặc biệt với mô hình MoE; GSPO \cite{zheng2025gspo} chuyển sang tỷ số ở mức cả chuỗi.
+\end{itemize}
+
+GRPO hiện được hỗ trợ sẵn trong các framework phổ biến như TRL của Hugging Face (\texttt{GRPOTrainer}) và verl \cite{sheng2024hybridflow}. Hướng dẫn thực hành ở mục~\ref{sec:posttraining_trl} (Phần 2).
